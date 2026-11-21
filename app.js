@@ -57,6 +57,7 @@ async function act(path, body) {
     if (j && j.profile) G.profile = j.profile;
     if (j && 'run' in j) G.run = j.run;
     if (!j || j.err) { toast((j && j.err) || 'Coś poszło nie tak. Spróbuj jeszcze raz.', true, 3600); if (j && 'run' in j && G.screen !== 'fight') render(); return null; }
+    if (j.voided) toast('Gra dostała aktualizację zasad, więc poprzedni run został unieważniony. Zacznij nowy!', false, 6000);
     if (j.hatched && j.hatched.length) setTimeout(() => showHatched(j.hatched), 80);
     if (j.unlocks && j.unlocks.length) { for (const u of j.unlocks) { G.unlocks.push(u); toast('Odblokowano: ' + unlockName(u), false, 4200); } snd.sfx('unlock'); }
     return j;
@@ -195,7 +196,13 @@ function previewHTML() {
   const loot = nem && r.nemesis.tile && TILE[r.nemesis.tile] ? ` · odzyskasz: ${esc(TILE[r.nemesis.tile].name)}` : '';
   const lab = r.boss ? 'Boss tego piętra' : nem ? 'Twój Nemezis! Nagroda: Odznaka Sprawiedliwość Kurnika' + loot : r.elite ? 'Elitarny wróg na piętrze (nagroda: Odznaka)'
     : risky ? 'Drzwi dla personelu. Nagroda: ' + (r.door.reward === 'rare' ? 'wybór rzadkiego kafelka' : '+' + D.RULES.doorCoins + ' Ziaren') : 'Na tym piętrze czekają';
-  return `<div class="preview ${nem ? 'nem' : ''}"><div class="lab">${lab}</div>${items}${aff}</div>`;
+  const tp = r.tpl && D.FLOOR_TPL[r.tpl] ? `<div class="tplnote"><b>${esc(D.FLOOR_TPL[r.tpl].name)}.</b> ${esc(D.FLOOR_TPL[r.tpl].text)}</div>` : '';
+  // Od Garnka 1 serwer nie zdradza składu piętra: zaparowana szyba z jedną sylwetką (bez nazw i liczby wrogów).
+  if (r.hidden && !nem) {
+    const fogLab = r.elite ? 'Elitarny wróg za zaparowaną szybą (nagroda: Odznaka)' : risky ? lab : 'Szyba zaparowana: nie wiesz, kto czeka';
+    return `<div class="preview fog"><div class="lab">${fogLab}</div><div class="pv">${art.mysteryArt()}<span>?</span></div>${risky ? aff : ''}<div class="tplnote">Od Garnka 1 skład pięter jest tajemnicą. Bossów zapowiada pasek pięter.</div></div>`;
+  }
+  return `<div class="preview ${nem ? 'nem' : ''}"><div class="lab">${lab}</div>${items}${aff}${tp}</div>`;
 }
 // Okólnik Zarządu bieżącej strefy: pełna ramka na pierwszym piętrze strefy (i przy drzwiach), potem tylko nazwa w podtytule i pigułka na pasku.
 const zoneAt = (mode, n) => { for (const z of D.MODES[mode].zones) if (n <= z.upTo) return z.zone; return 2; };
@@ -463,7 +470,7 @@ function startFight(setup) {
   makeUnit('hero', { name: D.CHARS[run.char].name, art: art.heroArt(run.char, run.form), left: 17 });
   for (const e of f.enemies) makeUnit(e.uid, { e, name: e.name, art: art.enemyArt(e.art) });
   layoutUnits(); buildSkillbar(); updateUI(true);
-  if (boss) { banner(T.BOSS_INTRO[boss.boss].title, 'BOSS', false); snd.sfx('boss'); } else banner('Walka!', '', false);
+  if (boss) { banner(T.BOSS_INTRO[boss.boss].title, 'BOSS', false); snd.sfx('boss'); } else if (setup.tpl && D.FLOOR_TPL[setup.tpl]) banner(D.FLOOR_TPL[setup.tpl].name + '!', D.FLOOR_TPL[setup.tpl].text, false); else banner('Walka!', '', false);
   F.last = 0; F.raf = requestAnimationFrame(frame);
 }
 

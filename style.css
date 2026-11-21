@@ -437,3 +437,10 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 /* ikonki statystyk */
 .stats dt { display: flex; align-items: center; gap: 7px; }
 .stats .stico { width: 18px; height: 18px; flex: none; filter: drop-shadow(0 1px 0 rgba(0,0,0,.4)); }
+
+/* szablony pięter i zaparowany podgląd (od Garnka 1) */
+.tplnote { width: 100%; text-align: center; font-size: .85rem; color: var(--muted); }
+.tplnote b { color: var(--amber); }
+.preview.fog { position: relative; background: linear-gradient(180deg, rgba(190,205,215,.10), rgba(190,205,215,.04)); border-style: solid; border-color: #5a6a72; }
+.preview.fog .pv .fig { filter: blur(1.2px); opacity: .9; }
+.preview.fog::after { content: ''; position: absolute; inset: 0; border-radius: 12px; pointer-events: none; background: radial-gradient(60px 30px at 20% 30%, rgba(255,255,255,.08), transparent), radial-gradient(80px 40px at 75% 60%, rgba(255,255,255,.07), transparent); }
