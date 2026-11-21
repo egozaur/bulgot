@@ -361,6 +361,22 @@ const STI = {
 };
 export const statusIcon = kind => `<svg class="sti" viewBox="0 0 24 24" aria-hidden="true">${STI[kind] || ''}</svg>`;
 
+// Ikonki statystyk w panelu bocznym (viewBox 24, gruby kontur jak reszta grafiki).
+const SW = `stroke="${O}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"`;
+const STAT_ART = {
+  maxHp: `<path d="M12 21 C4 15 2 11 2 8 a5 5 0 0 1 10 -1.5 A5 5 0 0 1 22 8 c0 3 -2 7 -10 13z" fill="#e53950" ${SW}/><path d="M6 8 q0 -2 2 -2.5" stroke="#ff9aa8" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
+  atk: `<path d="M3 13 L19 5 L15 13 L19 21 z" fill="#ffb347" ${SW}/><path d="M3 13 h12" ${SW} fill="none"/><path d="M19 5 l2 -2 M19 21 l2 2" stroke="#fff3d6" stroke-width="1.6" stroke-linecap="round"/>`,
+  aspd: `<path d="M13 2 L5 14 h6 l-2 8 l9 -13 h-6 l2 -7z" fill="#ffd23f" ${SW}/>`,
+  armor: `<path d="M12 2 L20 5 v6 c0 6 -4 9 -8 11 c-4 -2 -8 -5 -8 -11 V5z" fill="#90a4ae" ${SW}/><path d="M12 5 v14" stroke="#cfd8dc" stroke-width="1.6"/>`,
+  crit: `<circle cx="12" cy="12" r="9" fill="#fff3d6" ${SW}/><circle cx="12" cy="12" r="5" fill="#e4572e" ${SW}/><circle cx="12" cy="12" r="1.6" fill="${O}"/>`,
+  evade: `<path d="M5 20 C5 11 10 4 20 3 C19 12 14 18 5 20z" fill="#e8f1ff" ${SW}/><path d="M5 20 L15 9" ${SW} fill="none"/>`,
+  regen: `<circle cx="12" cy="12" r="9.5" fill="#6fcf6f" ${SW}/><path d="M12 7 v10 M7 12 h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`,
+  luck: `<g fill="#4caf50" ${SW}><circle cx="8.5" cy="8.5" r="4"/><circle cx="15.5" cy="8.5" r="4"/><circle cx="8.5" cy="15.5" r="4"/><circle cx="15.5" cy="15.5" r="4"/></g><path d="M12 12 q3 5 7 9" ${SW} fill="none"/>`,
+  dmg: `<path d="M12 2 l2.5 6 l6 -2 l-3 5.5 l5 3 l-6 1.5 l1 6 l-5.5 -3.5 l-5.5 3.5 l1 -6 l-6 -1.5 l5 -3 l-3 -5.5 l6 2z" fill="#ff7a3d" ${SW}/>`,
+  critMult: `<path d="M12 2 l3 6.5 l7 1 l-5 5 l1.2 7 l-6.2 -3.3 l-6.2 3.3 l1.2 -7 l-5 -5 l7 -1z" fill="#ffd23f" ${SW}/>`,
+};
+export const statIcon = key => `<svg class="stico" viewBox="0 0 24 24" aria-hidden="true">${STAT_ART[key] || ''}</svg>`;
+
 // Odznaki Pracownicze: medal z kolorem i znakiem.
 const BADGE_ART = {
   'pracownik-miesiaca': ['#ffc933', '<path d="M24 14 l3 6 l6 1 l-4.5 4 l1 6 l-5.5 -3 l-5.5 3 l1 -6 l-4.5 -4 l6 -1z" fill="#fff" stroke="#2b1a12" stroke-width="1.4"/>'],

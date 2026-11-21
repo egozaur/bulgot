@@ -425,3 +425,15 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 .dmg.react { font-size: 30px; color: #fff3b0; }
 .dmg.react.szok { color: #ffb36b; } .dmg.react.goraczka { color: #b6f08a; } .dmg.react.kruchosc { color: #a8e6ff; }
 .dmg.txt.warn { color: #ff8a6a; }
+
+/* tempo walki przed walką */
+.speedpick { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.speedpick .lab { font: 600 11px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.speedpick .spd { min-width: 3.2em; padding: .35em .7em; border-radius: 10px; border: 3px solid var(--outline); background: var(--panel2); font-family: var(--display); font-size: 1.1rem; color: var(--ink); box-shadow: 0 3px 0 var(--outline); }
+.speedpick .spd.on { background: linear-gradient(#ffc56b, var(--amber2)); color: #1c1100; }
+.speedpick .spd:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.speedpick .note { flex-basis: 100%; text-align: center; color: var(--faint); font-size: .82rem; }
+
+/* ikonki statystyk */
+.stats dt { display: flex; align-items: center; gap: 7px; }
+.stats .stico { width: 18px; height: 18px; flex: none; filter: drop-shadow(0 1px 0 rgba(0,0,0,.4)); }

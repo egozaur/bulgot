@@ -225,8 +225,9 @@ function sideHTML() {
     const mu = s.lvl >= 3 && def.muts[(s.mut || 1) - 1];
     return `<div class="slot">${art.tileIcon(tile.id)}<div><div class="sn">${i + 1}. ${esc(def.name)}${mu ? `<span class="lv mut">${esc(mu.name)}</span>` : s.lvl >= 2 ? '<span class="lv">POZ. 2</span>' : ''}</div><div class="sd">${esc(def.text)}${s.lvl >= 2 ? ' (+30% mocy, -20% cooldownu)' : ''}${mu ? ' Mutacja: ' + esc(mu.text) : ''}</div></div></div>`;
   }).join('');
-  const rows = T.STAT_LABELS.map(([k, label, f]) => `<dt>${label}</dt><dd>${f ? f(S[k]) : S[k]}</dd>`).join('')
-    + (S.dmg ? `<dt>Obrażenia</dt><dd>+${S.dmg}%</dd>` : '') + (S.critMult !== 150 ? `<dt>Siła trafienia krytycznego</dt><dd>×${(S.critMult / 100).toFixed(2).replace('.', ',')}</dd>` : '');
+  const srow = (k, label, val) => `<dt>${art.statIcon(k)}<span>${label}</span></dt><dd>${val}</dd>`;
+  const rows = T.STAT_LABELS.map(([k, label, f]) => srow(k, label, f ? f(S[k]) : S[k])).join('')
+    + (S.dmg ? srow('dmg', 'Obrażenia', `+${S.dmg}%`) : '') + (S.critMult !== 150 ? srow('critMult', 'Siła trafienia krytycznego', `×${(S.critMult / 100).toFixed(2).replace('.', ',')}`) : '');
   const counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
   const chips = Object.entries(counts).map(([id, n]) => {
     const t = TILE[id], g = t.grow ? Math.min(t.grow.max, (r.grow || {})[id] || 0) : 0, fw = (r.flawed || []).find(w => w.id === id);
@@ -367,12 +368,24 @@ function stageBonus() {
     <div class="kron">${esc(fromDoor ? 'Ryzyko się opłaciło. Tym razem.' : T.BOSS_WIN_LINES[lastBoss()] || 'Boss padł, a łup czeka.')}</div><div class="cards">${cards}</div>`;
 }
 const lastBoss = () => { const b = G.run && G.run.stats.bossKills; return b && b[b.length - 1]; };
+function setSpeed(v) {
+  const F = G.fight; G.speed = v; store.set('bulgot:speed', v);
+  if (F) { F.speed = v; const sb = $('#speedbtn'); if (sb) { sb.textContent = '×' + v; sb.title = 'Tempo walki (F): ' + SPEED_NOTE[v]; } }
+  for (const b of document.querySelectorAll('[data-act=setspeed]')) { const on = +b.dataset.v === v; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); }
+  const n = $('#spdnote'); if (n) n.textContent = SPEED_NOTE[v];
+}
 function stagePrep() {
   const r = G.run;
   return `<div class="stage-title"><h2>Piętro ${r.round}: do walki!</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${decreeSub()}</div></div>
     <div class="kron">${esc(r.nemesisRound ? T.pickLine(T.NEMESIS_LINES, r.round + 1) : floorKron())}</div>${decreeHTML()}${previewHTML()}
     <div class="actions">${restBtn()}<button class="btn primary big" data-act="tofight" data-primary>Do walki!</button></div>
-    <div class="hint">W walce użyjesz umiejętności klawiszami 1, 2, 3. P robi pauzę. O to odpoczynek.</div>`;
+    ${speedPick()}
+    <div class="hint">W walce użyjesz umiejętności klawiszami 1, 2, 3. P robi pauzę, F zmienia tempo. O to odpoczynek.</div>`;
+}
+// Tempo walki: wybór przed walką (zapamiętywany), w walce mały przycisk ×N i klawisz F.
+const SPEED_NOTE = { 1: 'Spokojnie: pełny czas na serie umiejętności.', 2: 'Szybciej: walka i Okno Gdakania trwają o połowę krócej.', 3: 'Najszybciej: walka leci trzy razy szybciej, Okno Gdakania też. Trudniej o serie.' };
+function speedPick() {
+  return `<div class="speedpick" role="radiogroup" aria-label="Tempo walki"><span class="lab">Tempo walki</span>${[1, 2, 3].map(v => `<button class="spd${G.speed === v ? ' on' : ''}" data-act="setspeed" data-v="${v}" role="radio" aria-checked="${G.speed === v}">×${v}</button>`).join('')}<span class="note" id="spdnote">${SPEED_NOTE[G.speed]}</span></div>`;
 }
 function renderRun() {
   return `<div class="run">${topbarHTML()}${towerHTML()}<main class="stage">${stageHTML()}</main>${sideHTML()}</div>`;
@@ -441,7 +454,7 @@ function startFight(setup) {
       <div class="arena" id="arena">${art.arenaBg(setup.zone)}<div class="vign"></div>
         <div class="hud"><div class="box">Piętro ${setup.round} · ${esc(T.ZONE_NAMES[setup.zone])}</div>
           <div class="box timer" id="timer"><span id="tt">0:00</span><div class="tb"><i id="tbi" style="width:0"></i><u></u></div></div>
-          <div class="ctl"><button data-act="speed" id="speedbtn" title="Szybkość walki">×${F.speed}</button><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button></div></div>
+          <div class="ctl"><button data-act="speed" id="speedbtn" title="Tempo walki (F): ${SPEED_NOTE[F.speed]}">×${F.speed}</button><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button></div></div>
         <div id="units"></div><div id="fxl"></div></div>
       <div class="skillbar" id="skillbar"></div>
       <div class="kron" id="kline">${esc(boss ? T.BOSS_INTRO[boss.boss].quote : floorKron())}</div>
@@ -817,7 +830,8 @@ const ACT = {
     snd.unlock(); startFight(j.setup);
   },
   useskill: b => useSkill(+b.dataset.v),
-  speed: b => { const F = G.fight; G.speed = G.speed >= 3 ? 1 : G.speed + 1; store.set('bulgot:speed', G.speed); if (F) { F.speed = G.speed; $('#speedbtn').textContent = '×' + G.speed; } },
+  speed: b => { setSpeed(G.speed >= 3 ? 1 : G.speed + 1); },
+  setspeed: b => { setSpeed(+b.dataset.v); },
   speed2: b => { G.speed = G.speed >= 3 ? 1 : G.speed + 1; store.set('bulgot:speed', G.speed); b.textContent = '×' + G.speed; },
   pause: () => { const F = G.fight; if (!F || F.finishing) return; F.paused = !F.paused; $('#pausebtn').classList.toggle('on', F.paused); $('#pausebtn').textContent = F.paused ? 'Wznów' : 'Pauza'; if (F.paused) banner('Pauza', 'Naciśnij P, aby wznowić', false); },
   'retry-fight': () => { closeOverlay(); const cb = G.retryCb; G.retryCb = null; if (cb) cb(); },
@@ -894,6 +908,7 @@ document.addEventListener('keydown', e => {
     else if ((r.phase === 'badge' || r.phase === 'door' || (r.phase === 'event' && r.pending && (r.pending.kind === 'contract' || r.pending.kind === 'shrine'))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && ['1', '2', '3', '4', '5'].includes(k)) { const b = $(`.cards [data-act=pick][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && k === 'l') { const b = $('[data-act="pawnmenu"], [data-act="redeem"]'); if (b && !b.disabled) b.click(); }
+    else if (r.phase === 'fight' && k === 'f') ACT.speed();
     else if ((r.phase === 'offer' || r.phase === 'fight') && k === 'o') { const b = $('[data-act="rest"]'); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'offer' && k === 'r') { const b = $('[data-act="reroll"]'); if (b && !b.disabled) b.click(); }
     else if ((r.phase === 'event' || r.phase === 'bonus') && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-i="${+k - 1}"]`); if (b) b.click(); }
