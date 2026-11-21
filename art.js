@@ -119,6 +119,39 @@ export const portrait = (char, form = 'pyrtek') => heroArt(char, form);
 
 // ---------- Wrogowie i bossowie (patrzą w lewo, w stronę bohatera) ----------
 const ENEMY = {
+  duck: () => `
+    <path d="M80 62 q16 -2 14 -14 q-8 6 -16 4 z" fill="#f4e3b1" ${S}/>
+    <ellipse cx="58" cy="66" rx="28" ry="20" fill="#f4e3b1" ${S}/>
+    <path d="M48 62 q10 10 26 4" stroke="#d8c48a" stroke-width="3" ${NF} stroke-linecap="round"/>
+    <circle cx="34" cy="40" r="15" fill="#f4e3b1" ${S}/>
+    <path d="M22 44 q-14 0 -16 6 q8 4 18 0 z" fill="#ff9f1c" ${S}/>
+    ${eye(30, 36, 5.5, -1.5)}${brow(24, 28, 36, 31)}
+    <rect x="60" y="34" width="10" height="16" rx="2" fill="#e53950" ${S2} transform="rotate(20 65 42)"/>
+    <path d="M70 30 q-4 -8 2 -14 q2 6 6 6 q-2 4 -8 8z" fill="#ff7a3d" ${S2}/>
+    <path d="M70 27 q-1 -4 2 -6 q0 3 2 3 q-1 2 -4 3z" fill="#ffd166"/>
+    <path d="M48 86 v7 m-6 0 h12 M66 86 v7 m-6 0 h12" stroke="#ff9f1c" stroke-width="4" stroke-linecap="round"/>`,
+  zombie: () => `
+    <path d="M30 84 v9 m-6 1 h12 M54 84 v9 m-6 1 h12" stroke="#8fb3c9" stroke-width="4.5" stroke-linecap="round"/>
+    <ellipse cx="46" cy="64" rx="27" ry="24" fill="#d7ecf7" ${S}/>
+    <path d="M28 54 l6 4 l-4 4 M58 74 l6 -2 l-2 6" stroke="#7fb4d4" stroke-width="2.4" ${NF} stroke-linecap="round"/>
+    <path d="M70 58 q14 -4 18 6 q-10 2 -18 2 z" fill="#c6e3f2" ${S}/>
+    <circle cx="36" cy="34" r="16" fill="#d7ecf7" ${S}/>
+    <path d="M28 18 q-2 -10 6 -10 q0 -8 8 -4 q8 -2 6 8 q-6 4 -20 6z" fill="#9ccfe8" ${S2}/>
+    <path d="M20 36 l-12 3 l12 4 z" fill="#ffd27a" ${S2}/>
+    <circle cx="30" cy="31" r="5" fill="#fff" ${S2}/><path d="M27 28 l6 6 M33 28 l-6 6" stroke="${O}" stroke-width="1.8"/>
+    <circle cx="42" cy="30" r="4.5" fill="#fff" ${S2}/><circle cx="41" cy="31" r="2" fill="${O}"/>
+    <path d="M14 70 l6 -4 M76 82 l6 4 M64 22 l4 -4 M70 30 l6 -2" stroke="#bfeaff" stroke-width="2.4" stroke-linecap="round"/>`,
+  vulture: () => `
+    <path d="M62 50 q30 -10 34 18 q-14 -4 -26 6 z" fill="#5d4037" ${S}/>
+    <ellipse cx="56" cy="66" rx="24" ry="22" fill="#6d4c41" ${S}/>
+    <path d="M36 50 q-6 -4 -2 -12 q8 -2 12 6 z" fill="#efe6dc" ${S2}/>
+    <path d="M40 44 q-6 -14 4 -20" stroke="${O}" stroke-width="9" ${NF} stroke-linecap="round"/><path d="M40 44 q-6 -14 4 -20" stroke="#f2b8a0" stroke-width="5.5" ${NF} stroke-linecap="round"/>
+    <circle cx="38" cy="22" r="11" fill="#f2b8a0" ${S}/>
+    <path d="M28 22 q-12 0 -12 10 q6 -2 12 -4 z" fill="#ffd166" ${S2}/>
+    ${eye(36, 19, 5, -1.5)}${brow(30, 12, 42, 14)}
+    <rect x="42" y="64" width="22" height="16" rx="2" fill="#fff" ${S2}/><path d="M46 69 h14 M46 74 h10" stroke="#90a4ae" stroke-width="2"/>
+    <circle cx="33" cy="20" r="6.5" fill="none" stroke="${O}" stroke-width="1.8"/>
+    <path d="M48 88 v6 m-5 0 h10 M64 88 v6 m-5 0 h10" stroke="#ffd166" stroke-width="4" stroke-linecap="round"/>`,
   rat: () => `
     <path d="M86 70 q16 -6 8 -24" ${S} ${NF} stroke-width="3.5"/>
     <ellipse cx="54" cy="68" rx="30" ry="22" fill="#9aa0a8" ${S}/>
@@ -247,6 +280,11 @@ export function enemyArt(key) { return svg((ENEMY[key] || ENEMY.rat)(), '0 0 100
 const I = (inner) => svg(inner, '0 0 48 48', 'ico');
 const k = (fill, extra = '') => `fill="${fill}" ${S2} ${extra}`;
 const ICON = {
+  'automat-z-pasza': `<rect x="8" y="4" width="32" height="40" rx="4" ${k('#e53950')}/><rect x="13" y="9" width="22" height="18" rx="2" ${k('#bfeaff')}/><circle cx="18" cy="15" r="2.4" fill="#ffc933" stroke="${O}" stroke-width="1"/><circle cx="26" cy="20" r="2.4" fill="#ffc933" stroke="${O}" stroke-width="1"/><circle cx="30" cy="13" r="2.4" fill="#ffc933" stroke="${O}" stroke-width="1"/><rect x="13" y="32" width="14" height="6" rx="1" fill="${O}"/><circle cx="33" cy="35" r="3" ${k('#ffc933')}/>`,
+  'kontrakt-hr': `<path d="M10 4 h22 l8 8 v32 h-30z" ${k('#fff')}/><path d="M32 4 v8 h8" stroke="${O}" stroke-width="2" ${NF}/><path d="M15 16 h16 M15 22 h18 M15 28 h12" stroke="#90a4ae" stroke-width="2"/><path d="M14 38 q4 -6 8 0 q4 6 8 -2 q2 -3 6 0" stroke="#1e88e5" stroke-width="2.2" ${NF} stroke-linecap="round"/>`,
+  'kapliczka': `<path d="M8 20 L24 6 L40 20 Z" ${k('#8d6e63')}/><rect x="12" y="20" width="24" height="22" ${k('#f1e9d6')}/><path d="M20 42 v-12 q4 -4 8 0 v12" fill="#ffd166" stroke="${O}" stroke-width="2"/><path d="M24 2 v6 M21 4 h6" stroke="#ffc933" stroke-width="2.4" stroke-linecap="round"/><circle cx="24" cy="25" r="3" fill="#ff9f1c" stroke="${O}" stroke-width="1.2"/>`,
+  'umowa-etat': `<path d="M10 4 h22 l8 8 v32 h-30z" ${k('#fff3d6')}/><path d="M15 16 h16 M15 22 h18 M15 28 h12" stroke="#b08968" stroke-width="2"/><circle cx="31" cy="35" r="6" ${k('#e53950')}/>`,
+  'umowa-b2b': `<path d="M10 4 h22 l8 8 v32 h-30z" ${k('#e3f2fd')}/><path d="M15 16 h16 M15 22 h18 M15 28 h12" stroke="#5c8db8" stroke-width="2"/><text x="17" y="40" font-family="monospace" font-weight="700" font-size="9" fill="${O}">B2B</text>`,
   'jajko-na-twardo': `<ellipse cx="24" cy="27" rx="15" ry="18" ${k('#fff3d6')}/><ellipse cx="24" cy="31" rx="8" ry="8" fill="#ffc933" stroke="${O}" stroke-width="1.6"/><path d="M10 10 q3 -5 6 0 M20 6 q3 -5 6 0 M30 10 q3 -5 6 0" stroke="#ff7a3d" stroke-width="2.6" ${NF} stroke-linecap="round"/><path d="M6 30 l-4 2 M42 30 l4 2 M8 40 l-4 4 M40 40 l4 4" stroke="#e4572e" stroke-width="2.4" stroke-linecap="round"/>`,
   'termos': `<rect x="14" y="10" width="20" height="34" rx="6" ${k('#e53950')}/><rect x="14" y="27" width="20" height="17" rx="6" ${k('#7fd3ff')}/><rect x="17" y="4" width="14" height="7" rx="2" ${k('#90a4ae')}/><path d="M38 14 q-3 -4 0 -8 M42 18 q-3 -4 0 -8" stroke="#ff7a3d" stroke-width="2" ${NF} stroke-linecap="round"/><path d="M8 32 v8 M4 36 h8" stroke="#7fd3ff" stroke-width="2" stroke-linecap="round"/>`,
   'ostrogi-rzeznika': `<path d="M6 40 C14 28 26 18 42 6 C36 22 28 32 14 44z" ${k('#90a4ae')}/><path d="M10 36 L36 12" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M14 44 l-6 -6" stroke="${O}" stroke-width="2"/><path d="M30 30 q3 6 0 10 M36 26 q3 6 0 10 M42 22 q3 6 0 10" stroke="#e53950" stroke-width="3" ${NF} stroke-linecap="round"/>`,
@@ -318,6 +356,26 @@ const STI = {
   bleed: `<path d="M12 2 C8 9 5 12 5 16 a7 7 0 0 0 14 0 C19 12 16 9 12 2z" fill="#e53950" stroke="${O}" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 14 q0 3 3 4" stroke="#ff9aa8" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
 };
 export const statusIcon = kind => `<svg class="sti" viewBox="0 0 24 24" aria-hidden="true">${STI[kind] || ''}</svg>`;
+
+// Odznaki Pracownicze: medal z kolorem i znakiem.
+const BADGE_ART = {
+  'pracownik-miesiaca': ['#ffc933', '<path d="M24 14 l3 6 l6 1 l-4.5 4 l1 6 l-5.5 -3 l-5.5 3 l1 -6 l-4.5 -4 l6 -1z" fill="#fff" stroke="#2b1a12" stroke-width="1.4"/>'],
+  'nadgodziny': ['#90a4ae', '<circle cx="24" cy="24" r="8" fill="#fff" stroke="#2b1a12" stroke-width="1.6"/><path d="M24 24 v-5 M24 24 l4 2" stroke="#2b1a12" stroke-width="1.8" stroke-linecap="round"/>'],
+  'bhp': ['#ffb02e', '<path d="M15 27 q0 -10 9 -10 q9 0 9 10 z M13 27 h22" fill="#ffd166" stroke="#2b1a12" stroke-width="1.6"/>'],
+  'delegacja': ['#4fc3f7', '<path d="M14 26 l18 -8 l-6 14 l-3 -5 z" fill="#fff" stroke="#2b1a12" stroke-width="1.6" stroke-linejoin="round"/>'],
+  'team-building': ['#81c784', '<circle cx="19" cy="21" r="3.5" fill="#fff" stroke="#2b1a12" stroke-width="1.4"/><circle cx="29" cy="21" r="3.5" fill="#fff" stroke="#2b1a12" stroke-width="1.4"/><path d="M13 31 q6 -6 11 0 q5 -6 11 0" stroke="#2b1a12" stroke-width="1.8" fill="none"/>'],
+  'karta-multisport': ['#ba68c8', '<rect x="15" y="18" width="18" height="12" rx="2" fill="#fff" stroke="#2b1a12" stroke-width="1.6"/><path d="M18 22 h8" stroke="#2b1a12" stroke-width="1.8"/>'],
+  'awans': ['#e53950', '<path d="M24 15 l8 9 h-5 v9 h-6 v-9 h-5 z" fill="#fff" stroke="#2b1a12" stroke-width="1.6" stroke-linejoin="round"/>'],
+  'kawa-z-ekspresu': ['#8d6e63', '<path d="M16 20 h13 v8 q0 5 -6.5 5 q-6.5 0 -6.5 -5z M29 22 q4 0 4 3 q0 3 -4 3" fill="#fff" stroke="#2b1a12" stroke-width="1.6"/><path d="M20 15 q-1 -2 0 -4 M25 15 q-1 -2 0 -4" stroke="#fff" stroke-width="1.6" fill="none"/>'],
+  'nagana-z-wpisem': ['#ef5350', '<path d="M24 14 v12" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="24" cy="32" r="2.4" fill="#fff"/>'],
+  'fundusz-socjalny': ['#ffd54f', '<path d="M24 31 q-10 -6 -10 -12 q0 -5 5 -5 q3 0 5 3 q2 -3 5 -3 q5 0 5 5 q0 6 -10 12z" fill="#e53950" stroke="#2b1a12" stroke-width="1.6"/>'],
+  'klucz-do-serwerowni': ['#7fd3ff', '<circle cx="19" cy="22" r="5" fill="none" stroke="#fff" stroke-width="3"/><path d="M23 25 l9 9 M28 30 l3 -3 M31 33 l2 -2" stroke="#fff" stroke-width="3" stroke-linecap="round"/>'],
+  'parasol-ochronny': ['#26a69a', '<path d="M13 25 q11 -14 22 0 z" fill="#fff" stroke="#2b1a12" stroke-width="1.6"/><path d="M24 25 v8 q0 2 -2 2" stroke="#2b1a12" stroke-width="1.8" fill="none" stroke-linecap="round"/>'],
+};
+export function badgeIcon(id) {
+  const [c, g] = BADGE_ART[id] || ['#ccc', ''];
+  return I(`<path d="M15 2 l5 12 h8 l5 -12" fill="#e53950" stroke="${O}" stroke-width="2" stroke-linejoin="round"/><circle cx="24" cy="26" r="15" fill="${c}" stroke="${O}" stroke-width="2.4"/><circle cx="24" cy="26" r="11.5" fill="none" stroke="#fff" stroke-width="1.2" opacity=".6"/><g transform="translate(0 2)">${g}</g>`);
+}
 
 export function tileIcon(id) { return I(ICON[id] || `<circle cx="24" cy="24" r="14" ${k('#ccc')}/>`); }
 

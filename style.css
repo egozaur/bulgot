@@ -361,3 +361,11 @@ button.tile:disabled { opacity: .5; cursor: not-allowed; }
 .ms-row span { color: var(--muted); }
 .setline.ms { color: #ffd166; }
 @media (max-width: 700px) { .hatch-row .tile { width: 120px; } .qcard { width: 80px; height: 80px; } }
+
+/* Odznaki, elity, decyzje */
+.chip.badge .ico { width: 30px; height: 30px; }
+.tile.choice .ico { width: 64px; height: 64px; }
+.affixes { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 8px; width: 100%; }
+.tag.aff { color: #ffb4a2; border-color: #e4572e; text-transform: none; letter-spacing: 0; font: 600 11px/1.2 var(--body, sans-serif); }
+.unit .plate .affl { font: 700 9px/1 var(--mono); color: #ffb4a2; text-shadow: 0 1px 0 #000; margin-bottom: 2px; }
+.dmg.hurt.burn { color: #ffa45c; font-size: 18px; }

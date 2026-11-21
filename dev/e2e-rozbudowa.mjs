@@ -35,7 +35,7 @@ async function patchRun(fnSrc) {
 }
 
 // 1. Mutacja: grad na poziomie 2, w ofercie trzecia kopia.
-await patchRun(`run.skills = [{ id: 'grad', lvl: 2 }, { id: 'chlust', lvl: 1 }, { id: 'lodowy', lvl: 1 }]; run.tiles = ['kukurydziany-grad', 'rosolowy-chlust', 'lodowy-dziob']; run.offer = ['kukurydziany-grad', 'zgnile-jajo', 'darcie-pierza', 'ziarno-mocy']; run.phase = 'offer'; run.round = 7; run.tiles.push('twardy-grzebien', 'twardy-grzebien', 'twardy-grzebien', 'pancerz-z-pierza'); run.hp = 130;`);
+await patchRun(`run.skills = [{ id: 'grad', lvl: 2 }, { id: 'chlust', lvl: 1 }, { id: 'lodowy', lvl: 1 }]; run.tiles = ['kukurydziany-grad', 'rosolowy-chlust', 'lodowy-dziob']; run.offer = ['kukurydziany-grad', 'zgnile-jajo', 'darcie-pierza', 'ziarno-mocy']; run.phase = 'offer'; run.round = 7; run.tiles.push('twardy-grzebien', 'twardy-grzebien', 'twardy-grzebien', 'pancerz-z-pierza', 'pancerz-z-pierza', 'pancerz-z-pierza', 'twardy-grzebien', 'twardy-grzebien'); run.hp = 400;`);
 if ((await st()).screen !== 'run') fail('po przeładowaniu powinien być ekran runu: ' + JSON.stringify(await st()));
 const mutTag = await p.$$eval('.tag.mut', n => n.length);
 mutTag ? ok('karta pokazuje znacznik Mutacji') : fail('brak znacznika Mutacji');
@@ -67,7 +67,7 @@ for (let i = 0; i < 120 && !(await p.$('.modal')); i++) await wait(300);
 await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
 console.log('faza przed zestawami:', (await st()).phase);
 if ((await st()).phase !== 'over') {
-  await patchRun("run.tiles = ['chochla', 'kostka-rosolowa', 'lubczyk', 'garnek-cisnieniowy', 'teczka', 'krawat', 'polisa', 'kolczatka', 'twardy-grzebien', 'twardy-grzebien']; run.phase = 'fight'; run.fight = null; run.hp = 200;");
+  await patchRun("run.tiles = ['chochla', 'kostka-rosolowa', 'lubczyk', 'garnek-cisnieniowy', 'teczka', 'krawat', 'polisa', 'kolczatka', 'twardy-grzebien', 'twardy-grzebien', 'twardy-grzebien', 'ziarno-mocy', 'ziarno-mocy', 'ziarno-mocy', 'pancerz-z-pierza', 'pancerz-z-pierza']; run.round = 6; run.phase = 'fight'; run.fight = null; run.hp = 400;");
   await p.screenshot({ path: OUT + '/rozb-zestawy.png' });
   await p.click('[data-act=tofight]'); await wait(1500);
   const burn0 = await p.$$eval('.unit .sts .st.burn', n => n.length);
@@ -86,6 +86,32 @@ if ((await st()).phase !== 'over') {
   hm ? ok('okno Wylęgarni po wykluciu') : fail('brak okna Wylęgarni');
   await p.screenshot({ path: OUT + '/rozb-wylegarnia.png' });
 }
+// 3c. Odznaka po bossie, Kontrakt z HR, Kapliczka, podgląd elity.
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
+if ((await st()).phase !== 'over') {
+  await patchRun("run.phase = 'badge'; run.offer = []; run.pending = { kind: 'badge', offer: ['awans', 'parasol-ochronny', 'klucz-do-serwerowni'], bonus: false }; run.hp = 100;");
+  const bc = await p.$$eval('[data-act=choose]', n => n.length);
+  bc === 3 ? ok('ekran Odznaki: 3 karty') : fail('ekran Odznaki: ' + bc);
+  await p.screenshot({ path: OUT + '/rozb-odznaka.png' });
+  await p.keyboard.press('2'); await wait(600);
+  const sb = await p.evaluate(() => window.__bulgot.run.badges);
+  (sb && sb[0] === 'parasol-ochronny') ? ok('Odznaka wybrana klawiszem 2') : fail('Odznaka: ' + JSON.stringify(sb));
+  const chip = await p.$$eval('.chip.badge', n => n.length); chip ? ok('Odznaka w panelu bocznym') : fail('brak Odznaki w panelu');
+  await patchRun("run.phase = 'event'; run.offer = []; run.pending = { kind: 'contract' };");
+  (await p.$$eval('[data-act=choose]', n => n.length)) === 3 ? ok('ekran Kontraktu') : fail('ekran Kontraktu');
+  await p.screenshot({ path: OUT + '/rozb-kontrakt.png' });
+  await p.click('[data-act=choose][data-i="1"]'); await wait(500);
+  (await p.evaluate(() => window.__bulgot.run.tiles.includes('umowa-b2b'))) ? ok('B2B podpisane') : fail('B2B');
+  await patchRun("run.phase = 'event'; run.offer = []; run.pending = { kind: 'shrine', badge: 'bhp' }; run.hp = 20;");
+  await p.screenshot({ path: OUT + '/rozb-kapliczka.png' });
+  await p.click('[data-act=choose][data-i="0"]'); await wait(500);
+  const hh = await p.evaluate(() => [window.__bulgot.run.hp, window.__bulgot.run.maxHp]);
+  hh[0] === hh[1] ? ok('Kapliczka leczy') : fail('Kapliczka: ' + hh);
+  // elita z cechami na piętrze 3 (szybki tryb)
+  await patchRun("run.phase = 'offer'; run.round = 3; run.offer = ['ziarno-mocy', 'twardy-grzebien', 'szybki-dziob', 'kaczka-x'.slice(0,0) || 'ostry-dziob']; run.pending = null;");
+  const aff = await p.$$eval('.preview .tag.aff', n => n.length); aff ? ok('podgląd elity z cechami') : fail('brak cech elity w podglądzie');
+  await p.screenshot({ path: OUT + '/rozb-elita.png' });
+}
 // 4. Księga Kurnika: wszystkie kafelki z ikonami.
 await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
 await p.evaluate(() => { const m = document.querySelector('[data-act=menu]'); m && m.click(); }); await wait(300);
@@ -97,6 +123,10 @@ await p.evaluate(() => document.querySelector('[data-act=booktab][data-v=hatch]'
 const known = await p.$$eval('.modal .hatch-row:not(.unknown)', n => n.length);
 known >= 1 ? ok('Księga: odkryte przepisy ' + known) : fail('Księga: brak odkrytego przepisu');
 await p.screenshot({ path: OUT + '/rozb-ksiega-wyl.png' });
+await p.evaluate(() => document.querySelector('[data-act=booktab][data-v=badges]').click()); await wait(400);
+(await p.$$eval('.modal .ms-row', n => n.length)) >= 19 ? ok('Księga: Odznaki i cechy') : fail('Księga: Odznaki');
+await p.evaluate(() => document.querySelector('[data-act=booktab][data-v=foes]').click()); await wait(400);
+await p.screenshot({ path: OUT + '/rozb-wrogowie.png', fullPage: true });
 
 if (errs.length) fail('błędy strony:\n' + [...new Set(errs)].join('\n')); else ok('bez błędów w konsoli');
 await b.close();

@@ -2,7 +2,7 @@
 // Użycie (Windows: export PATH="/c/Users/Kurczak/tools/node:$PATH"):
 //   node dev/sim-balance.mjs [--mode full|quick] [--garnek 0..5] [--n 300] [--policy smart|random] [--pool starter|all] [--char pyrtek]
 // Bot używa dokładnie tych samych funkcji co serwer (rules.js, sim.js), więc liczby są prawdziwe.
-import { newRun, pickTile, reroll, buyOffer, rest, shopBuy, bet, bonusPick, fightSetup, fightFinish, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
+import { choose as chooseOpt, newRun, pickTile, reroll, buyOffer, rest, shopBuy, bet, bonusPick, fightSetup, fightFinish, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
 import { Fight } from '../../pl3y-server/src/games/bulgot/sim.js';
 import { TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, RULES } from '../../pl3y-server/src/games/bulgot/data.js';
 import { makeRng, mix } from '../../pl3y-server/src/games/bulgot/rng.js';
@@ -47,7 +47,7 @@ function tileValue(run, id) {
   const t = TILE_BY_ID[id];
   const base = power(run);
   const trial = JSON.parse(JSON.stringify(run));
-  if (t.event) return t.event === 'skrzynka' ? base * 1.12 : t.event === 'sklepik' ? base * 1.03 : base * 0.99;
+  if (t.event) return t.event === 'skrzynka' ? base * 1.12 : t.event === 'sklepik' ? base * 1.03 : t.event === 'automat' ? (run.coins >= 5 ? base * 1.09 : 0) : t.event === 'kapliczka' ? base * 1.06 : t.event === 'kontrakt' ? base * 1.05 : base * 0.99;
   if (t.type === 'skill') {
     const own = trial.skills.find(s => s.id === t.skill);
     if (own) { if (own.lvl >= 3) return base * 0.9; own.lvl++; }
@@ -122,13 +122,19 @@ function playRun(seed) {
       let slot;
       if (t.type === 'skill' && run.skills.length >= 3 && !run.skills.find(s => s.id === t.skill)) slot = run.skills.reduce((m, s, k, a) => (s.lvl < a[m].lvl ? k : m), 0);
       const res = pickTile(run, i, slot, 1 + rng.int(2));
-      if (res.err) { pickTile(run, run.offer.findIndex(id => TILE_BY_ID[id].type === 'stat'), 0); }
+      if (res.err) { let k = run.offer.findIndex(id => id && TILE_BY_ID[id].type === 'stat'); if (k < 0) k = run.offer.findIndex(id => id && !TILE_BY_ID[id].event); if (k < 0) k = run.offer.findIndex(id => id && id !== 'automat-z-pasza'); pickTile(run, k, 0, 1); }
     } else if (run.phase === 'event') {
       if (run.pending.kind === 'shop') {
         let bi = -1, bv = power(run) * 1.02;
         run.pending.offer.forEach((id, k) => { const t = TILE_BY_ID[id]; if (shopPrice(t, run) <= run.coins) { const v = tileValue(run, id); if (v > bv) { bv = v; bi = k; } } });
         shopBuy(run, bi, 0, 1);
-      } else bet(run, 0);
+      } else if (run.pending.kind === 'contract') chooseOpt(run, 0);
+      else if (run.pending.kind === 'shrine') chooseOpt(run, run.hp * 100 < statsOf(run).maxHp * 55 || !run.pending.badge ? 0 : 1);
+      else bet(run, 0);
+    } else if (run.phase === 'badge') {
+      let bi = 0, bv = -1;
+      run.pending.offer.forEach((b, k) => { const tr = JSON.parse(JSON.stringify(run)); tr.badges.push(b); const v = power(tr) * (1 + rng.next() * 0.02); if (v > bv) { bv = v; bi = k; } });
+      chooseOpt(run, bi);
     } else if (run.phase === 'bonus') {
       const i = choose(run, run.offer, rng);
       const t = TILE_BY_ID[run.offer[i]];
