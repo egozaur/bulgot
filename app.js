@@ -506,7 +506,7 @@ function startFight(setup) {
           <div class="box timer" id="timer"><span id="tt">0:00</span><div class="tb"><i id="tbi" style="width:0"></i><u></u></div></div>
           <div class="ctl"><button data-act="speed" id="speedbtn" title="Tempo walki (F): ${SPEED_NOTE[F.speed]}">×${F.speed}</button><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button></div></div>
         <div id="units"></div><div id="fxl"></div></div>
-      <div class="skillbar" id="skillbar"></div>
+      <div class="console"><div class="gdak" id="gdak" title="Okno Gdakania: użyj kolejnej umiejętności, zanim pasek się wyczerpie (2. w serii +20%, 3. +50%, trzy różne = Popłoch)"><span class="gl">OKNO GDAKANIA</span><div class="gbar"><i id="gdaki"></i></div><b id="gdakn">–</b></div><div class="skillbar" id="skillbar"></div></div>
       <div class="kron" id="kline">${esc(boss ? T.BOSS_INTRO[boss.boss].quote : floorKron())}</div>
     </main></div>`;
   F.arena = $('#arena');
@@ -643,6 +643,9 @@ function updateUI(first) {
     const fr = tick < e.frozenUntil && !e.dead; if (fr !== !!fl.fr) { fl.fr = fr; u.spr.classList.toggle('frozen', fr); }
     const gd = !!e.immune && !e.dead; if (gd !== !!fl.gd) { fl.gd = gd; u.fx.querySelectorAll('.guardfx').forEach(n => n.remove()); if (gd) u.fx.insertAdjacentHTML('beforeend', '<div class="guardfx"></div>'); }
   }
+  // wskaźnik Okna Gdakania: ile czasu zostało na kolejną umiejętność w serii
+  const gi = $('#gdaki'); if (gi) { const left = f.chain > 0 ? D.RULES.chainWindow - (tick - f.chainT) : -1, on = left > 0 && !f.over;
+    gi.style.width = on ? (left / D.RULES.chainWindow * 100) + '%' : '0%'; $('#gdak').classList.toggle('on', on); const gn = $('#gdakn'), tx = on ? '×' + f.chain : '–'; if (gn.textContent !== tx) gn.textContent = tx; }
   f.skills.forEach((s, i) => {
     const b = $('#sk' + i); if (!b) return;
     const def = D.SKILLS[s.id], total = Math.floor((s.lvl >= 2 ? Math.floor(def.cd * 80 / 100) : def.cd) * (100 - (f.S.cdPct || 0)) / 100), blocked = tick < s.blockedUntil;

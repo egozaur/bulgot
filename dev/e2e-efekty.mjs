@@ -16,7 +16,7 @@ await p.click('[data-act=new]'); await wait(200); await p.click('[data-act=start
 const go = await p.$('[data-act=introgo]'); if (go) { await go.click(); await wait(300); }
 // piętro z trzema wrogami (Rój albo zwykłe)
 const K = 'bulgot:local:player:run';
-await p.evaluate(K => { const r = JSON.parse(localStorage.getItem(K)); r.round = 9; r.phase = 'offer'; r.hp = 400; r.tiles = Array(20).fill('twardy-grzebien'); localStorage.setItem(K, JSON.stringify(r)); }, K);
+await p.evaluate(K => { const r = JSON.parse(localStorage.getItem(K)); r.round = 9; r.phase = 'offer'; r.hp = 400; r.tiles = Array(20).fill('twardy-grzebien'); r.skills = [{ id: 'grad', lvl: 1 }, { id: 'pianie', lvl: 2 }]; localStorage.setItem(K, JSON.stringify(r)); }, K);
 await p.reload({ waitUntil: 'load' }); await wait(600);
 const rs = await p.$('[data-act=resume]'); if (rs) { await rs.click(); await wait(400); }
 await p.keyboard.press('1'); await wait(500);
