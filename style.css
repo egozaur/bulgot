@@ -219,6 +219,11 @@ button.tile:disabled { opacity: .5; cursor: not-allowed; }
 .dmg { position: absolute; z-index: 6; font-family: var(--display); font-size: 26px; color: #fff; text-shadow: 0 2px 0 #000, 2px 0 0 #000, -2px 0 0 #000, 0 -2px 0 #000; pointer-events: none; animation: floatup 1s ease-out forwards; transform: translateX(-50%); white-space: nowrap; }
 .dmg.crit { font-size: 38px; color: var(--gold); }
 .dmg.hurt { color: #ff6b5a; } .dmg.heal { color: #7ae07a; } .dmg.txt { font-size: 18px; color: #cfe8ff; } .dmg.egg { color: #ffe08a; } .dmg.bleed { color: #ff9ad0; font-size: 18px; }
+.dmg.burn { color: #ffa45c; font-size: 18px; } .dmg.poison { color: #b5e37a; font-size: 18px; } .dmg.txt.frost { color: #9fe3ff; }
+.unit .plate .sts { display: flex; justify-content: center; gap: 3px; min-height: 0; margin-top: 2px; }
+.st { display: inline-flex; align-items: center; gap: 1px; padding: 1px 4px 1px 2px; border-radius: 8px; background: rgba(0,0,0,.6); font: 700 10px/1 var(--mono); color: #fff; }
+.st .sti { width: 13px; height: 13px; } .st.burn { color: #ffb37a; } .st.frost { color: #aee8ff; } .st.poison { color: #c5ec8f; } .st.bleed { color: #ff9aa8; }
+.sprite.frozen { filter: saturate(.3) brightness(1.15) drop-shadow(0 0 6px #7fd3ff) hue-rotate(160deg); }
 @keyframes floatup { 0% { opacity: 0; transform: translate(-50%, 8px) scale(.6); } 15% { opacity: 1; transform: translate(-50%, -6px) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -64px) scale(1); } }
 .banner { position: absolute; left: 0; right: 0; top: 26%; z-index: 8; text-align: center; pointer-events: none; animation: bannerin 1.8s ease-out forwards; }
 .banner b { display: inline-block; padding: .2em 1em; font-family: var(--display); font-size: clamp(1.6rem, 4vw, 3rem); color: #fff; letter-spacing: .08em; background: rgba(20,10,5,.78); border-top: 4px solid var(--amber); border-bottom: 4px solid var(--amber); text-shadow: 0 3px 0 #000; }

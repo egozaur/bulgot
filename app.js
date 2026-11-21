@@ -327,10 +327,10 @@ function makeUnit(key, o) {
   const F = G.fight, e = o.e, boss = e && e.boss, small = e && e.minion;
   const el = document.createElement('div');
   el.className = `unit ${key === 'hero' ? 'hero' : 'enemy'} ${boss ? 'boss' : ''} ${small ? 'small' : ''} idle`;
-  el.innerHTML = `<div class="plate"><div class="nm">${esc(o.name)}</div><div class="hpbar ${key === 'hero' ? '' : 'enemy'}"><i></i><b></b></div></div><div class="sprite">${o.art}</div><div class="fxs"></div>`;
+  el.innerHTML = `<div class="plate"><div class="nm">${esc(o.name)}</div><div class="hpbar ${key === 'hero' ? '' : 'enemy'}"><i></i><b></b></div><div class="sts"></div></div><div class="sprite">${o.art}</div><div class="fxs"></div>`;
   if (o.left != null) el.style.left = o.left + '%';
   $('#units').appendChild(el);
-  F.units.set(key, { el, spr: el.querySelector('.sprite'), bar: el.querySelector('.hpbar i'), txt: el.querySelector('.hpbar b'), fx: el.querySelector('.fxs'), e, x: o.left || 0, flags: {} });
+  F.units.set(key, { el, spr: el.querySelector('.sprite'), bar: el.querySelector('.hpbar i'), txt: el.querySelector('.hpbar b'), fx: el.querySelector('.fxs'), sts: el.querySelector('.sts'), e, x: o.left || 0, flags: {} });
   return F.units.get(key);
 }
 function layoutUnits() {
@@ -371,7 +371,7 @@ function onEvent(e) {
   const F = G.fight, f = F.f, hero = F.units.get('hero'), tu = k => F.units.get(k);
   switch (e.k) {
     case 'swing': cls(hero, 'lunge', 240); break;
-    case 'hit': { const u = tu(e.to); if (!u) break; cls(u, 'flash', 110); pop(e.crit ? e.d + '!' : e.d, e.crit ? 'crit' : e.kind === 'bleed' ? 'bleed' : e.kind === 'egg' ? 'egg' : '', u.x); snd.sfx(e.crit ? 'crit' : 'hit'); if (e.crit) shake(); break; }
+    case 'hit': { const u = tu(e.to); if (!u) break; cls(u, 'flash', 110); pop(e.crit ? e.d + '!' : e.d, e.crit ? 'crit' : e.kind === 'bleed' || e.kind === 'burn' || e.kind === 'poison' ? e.kind : e.kind === 'egg' ? 'egg' : '', u.x); snd.sfx(e.crit ? 'crit' : 'hit'); if (e.crit) shake(); break; }
     case 'hurt': { cls(hero, 'hurtshake', 260); pop('-' + e.d, 'hurt', 17); const a = tu(e.from); if (a) cls(a, 'lunge', 240); snd.sfx('hurt'); if (e.d * 100 >= f.S.maxHp * 12 || e.crit) shake(); break; }
     case 'heal': pop('+' + e.n, 'heal', 17); snd.sfx('heal'); break;
     case 'miss': { const u = tu(e.to); if (u) pop('unik', 'txt', u.x); snd.sfx('miss'); break; }
@@ -382,6 +382,8 @@ function onEvent(e) {
     case 'immune': { const u = tu(e.to); if (u) pop('nietykalny', 'txt', u.x); break; }
     case 'skill': { pop(D.SKILLS[e.id].name, 'txt', 17, 74); snd.sfx('skill'); break; }
     case 'stun': snd.sfx('stun'); break;
+    case 'freeze': { const u = tu(e.uid); if (u) pop('zamrożony!', 'txt frost', u.x, 74); snd.sfx('stun'); break; }
+    case 'resist': { const u = tu(e.to); if (u) pop('odporny', 'txt', u.x, 70); break; }
     case 'telegraph': snd.sfx('telegraph'); break;
     case 'egg': snd.sfx('egg'); break;
     case 'okrzyk': banner('Ostatni Okrzyk!', 'Chwila nietykalności', false); break;
@@ -412,6 +414,10 @@ function updateUI(first) {
     if (stunned !== !!fl.stun) { fl.stun = stunned; u.fx.querySelectorAll('.stars').forEach(n => n.remove()); if (stunned) u.fx.insertAdjacentHTML('beforeend', '<div class="stars"><i></i><i></i><i></i></div>'); }
     const tele = !!e.windup && !e.dead; if (tele !== !!fl.tele) { fl.tele = tele; u.fx.querySelectorAll('.tele').forEach(n => n.remove()); if (tele) u.fx.insertAdjacentHTML('beforeend', '<div class="tele"></div>'); }
     const sh = (e.shieldHits > 0 || e.shield > 0) && !e.dead; if (sh !== !!fl.sh) { fl.sh = sh; u.fx.querySelectorAll('.shieldfx').forEach(n => n.remove()); if (sh) u.fx.insertAdjacentHTML('beforeend', '<div class="shieldfx"></div>'); }
+    // efekty statusowe: ikonki ze stosami, zamrożenie barwi wroga na niebiesko
+    const stk = e.dead ? '' : ['burn', 'frost', 'poison', 'bleed'].filter(k => e[k] > 0).map(k => k + e[k]).join(' ');
+    if (stk !== (fl.stk || '')) { fl.stk = stk; u.sts.innerHTML = stk ? stk.split(' ').map(x => { const k = x.replace(/d+/, ''), n = x.slice(k.length); return `<span class="st ${k}">${art.statusIcon(k)}${n}</span>`; }).join('') : ''; }
+    const fr = tick < e.frozenUntil && !e.dead; if (fr !== !!fl.fr) { fl.fr = fr; u.spr.classList.toggle('frozen', fr); }
     const gd = !!e.immune && !e.dead; if (gd !== !!fl.gd) { fl.gd = gd; u.fx.querySelectorAll('.guardfx').forEach(n => n.remove()); if (gd) u.fx.insertAdjacentHTML('beforeend', '<div class="guardfx"></div>'); }
   }
   f.skills.forEach((s, i) => {

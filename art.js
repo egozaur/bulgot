@@ -279,6 +279,15 @@ const ICON = {
   'hazard-w-kurniku': `<path d="M8 18 l16 -10 l16 10 v16 l-16 10 l-16 -10z" ${k('#fff')}/><path d="M8 18 l16 10 l16 -10 M24 28 v16" stroke="${O}" stroke-width="2.4" ${NF}/><circle cx="24" cy="17" r="2.4" fill="${O}"/><circle cx="15" cy="30" r="2.4" fill="#e4572e"/><circle cx="32" cy="30" r="2.4" fill="#e4572e"/><circle cx="32" cy="38" r="2.4" fill="#e4572e"/>`,
   'zakazana-pasza': `<path d="M15 14 q-6 22 -3 28 h24 q3 -6 -3 -28z" ${k('#6a4c93')}/><path d="M14 14 q10 6 20 0 l-2 -6 h-16z" ${k('#7e5aa8')}/><circle cx="24" cy="27" r="8" ${k('#e8f5e9')}/><circle cx="21" cy="26" r="2.2" fill="${O}"/><circle cx="27" cy="26" r="2.2" fill="${O}"/><path d="M21 32 h6 M23 30 v4 M25 30 v4" stroke="${O}" stroke-width="1.6"/><path d="M8 8 q4 -5 8 0 M32 6 q4 -5 8 0" stroke="#76ff03" stroke-width="2.6" ${NF} stroke-linecap="round"/>`,
 };
+// Ikonki efektów statusowych (nad paskiem życia wroga i w opisach).
+const STI = {
+  burn: `<path d="M12 2 C16 7 19 10 19 15 a7 7 0 0 1 -14 0 C5 11 8 9 9 5 C10 8 11 9 12 9 C12 7 11 5 12 2z" fill="#ff7a3d" stroke="${O}" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12 C14 14 15 15 15 17 a3 3 0 0 1 -6 0 C9 15 11 14 12 12z" fill="#ffd166"/>`,
+  frost: `<path d="M12 2 v20 M3 7 l18 10 M3 17 l18 -10" stroke="${O}" stroke-width="4" stroke-linecap="round"/><path d="M12 2 v20 M3 7 l18 10 M3 17 l18 -10" stroke="#bfeaff" stroke-width="2" stroke-linecap="round"/>`,
+  poison: `<path d="M12 2 C8 9 5 12 5 16 a7 7 0 0 0 14 0 C19 12 16 9 12 2z" fill="#9ccc65" stroke="${O}" stroke-width="1.6" stroke-linejoin="round"/><circle cx="9.5" cy="15" r="1.6" fill="${O}"/><circle cx="14.5" cy="15" r="1.6" fill="${O}"/><path d="M9.5 19 h5" stroke="${O}" stroke-width="1.4"/>`,
+  bleed: `<path d="M12 2 C8 9 5 12 5 16 a7 7 0 0 0 14 0 C19 12 16 9 12 2z" fill="#e53950" stroke="${O}" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 14 q0 3 3 4" stroke="#ff9aa8" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
+};
+export const statusIcon = kind => `<svg class="sti" viewBox="0 0 24 24" aria-hidden="true">${STI[kind] || ''}</svg>`;
+
 export function tileIcon(id) { return I(ICON[id] || `<circle cx="24" cy="24" r="14" ${k('#ccc')}/>`); }
 
 // ---------- Tła aren (viewBox 1000x460) ----------
