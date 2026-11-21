@@ -18,7 +18,7 @@ Wszystkie 5 zmian z planu jest zrobionych, przetestowanych i zacommitowanych **l
 | 4 | **Wylęgarnia**: pary przedmiotów wykluwają legendarne; progi statystyk co 3 kopie; zakładka w Księdze z „?” dla nieodkrytych | 8 przepisów, 9 progów |
 | 5 | **Odznaki i elity**: Odznaka 1 z 3 po bossie i elicie; elity z cechami od Garnka 0; nowi wrogowie i wydarzenia | 12 Odznak, 7 cech, 3 wrogów, 3 wydarzenia |
 
-Kafelków w ofertach: 31 → 54. Do odblokowania osiągnięciami jest 19 kafelków (było 10), w tym Kogucia Kontra, Dziobanie Premii, Egzekucja Ostrogą, Garnek Ciśnieniowy, Szron, Premia Kwartalna i Kontrakt z HR.
+Kafelków w ofertach: 31 → 57. Do odblokowania osiągnięciami jest 17 kafelków (było 10), w tym Kogucia Kontra, Dziobanie Premii, Egzekucja Ostrogą, Garnek Ciśnieniowy, Szron, Premia Kwartalna i Kontrakt z HR.
 
 ## Trudność (bot, 1000 runów)
 
