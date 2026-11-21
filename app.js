@@ -218,10 +218,12 @@ function towerHTML() {
   for (let n = M.rounds; n >= 1; n--) {
     const nem = r.nemesis && !r.nemesis.beaten && r.nemesis.round === n, door = (r.doors || []).includes(n);
     const cls = ['floor', n < r.round || r.phase === 'over' && n <= r.done ? 'done' : '', n === r.round && r.phase !== 'over' ? 'now' : '', M.bosses[n] ? 'boss' : '', nem ? 'nem' : '', door ? 'door' : ''].join(' ');
-    const tip = 'Piętro ' + n + (nem ? ': ' + r.nemesis.name : door ? ': Rozwidlenie Korytarza' : '');
-    rows += `<div class="${cls}" title="${esc(tip)}">${M.bosses[n] || nem ? art.skullIcon() : ''}${nem ? '!' : ''}${door && !nem ? '<span class="dr">⌂</span>' : ''}${n}</div>`;
+    const tip = 'Piętro ' + n + (M.bosses[n] ? ': boss' : '') + (nem ? ': ' + r.nemesis.name : door ? ': Rozwidlenie Korytarza (Tylko dla personelu)' : '');
+    const isNow = n === r.round && r.phase !== 'over', up = isNow && G.cabFrom && G.cabFrom < n;
+    rows += `<div class="${cls}" title="${esc(tip)}">${isNow ? `<span class="cab${up ? ' up' : ''}" aria-hidden="true">${art.portrait(r.char, r.form)}</span>` : ''}${M.bosses[n] || nem ? art.skullIcon() : ''}${nem ? '<i class="alarm" aria-hidden="true"></i>!' : ''}${door && !nem ? '<span class="staff" aria-hidden="true">P</span>' : ''}<span class="fn">${n}</span></div>`;
   }
-  return `<aside class="tower" aria-label="Postęp"><h4>Piętra</h4>${rows}<div class="pot"></div></aside>`;
+  G.cabFrom = r.phase === 'over' ? 0 : r.round;
+  return `<aside class="tower shaft" aria-label="Postęp: szyb windy"><h4>Piętra</h4>${rows}<div class="pot"></div></aside>`;
 }
 function sideHTML() {
   const r = G.run, S = r.hero, ch = D.CHARS[r.char], form = D.FORMS.find(f => f.id === r.form) || D.FORMS[0];
