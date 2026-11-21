@@ -687,3 +687,20 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 .decree.letter .stamp { top: 4px; margin-top: 0; right: 64px; }
 .decree.letter .lhead { padding-right: 170px; }
 .decree.letter .lbody { padding-right: 56px; }
+
+/* ---------- remaster: wynik walki jako karta pracy ---------- */
+.jobcard { position: relative; margin: 8px auto 4px; max-width: 520px; padding: 10px 16px 14px; border-radius: 4px; color: #2b1a12; background: linear-gradient(#f7efda, #eadfc2); box-shadow: 0 5px 0 rgba(0,0,0,.4), 0 0 0 1px #c9b98f; transform: rotate(-.6deg); }
+.jobcard .jhead { display: flex; justify-content: space-between; gap: 8px; font: 700 10px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: #7a5a3a; border-bottom: 2px solid #2b1a12; padding-bottom: 6px; margin-bottom: 6px; }
+.jobcard .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+.jobcard .res-cell { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 7px 2px 5px; border: 0; border-bottom: 1px dashed #b9a88c; background: none; border-radius: 0; text-align: left; }
+.jobcard .res-cell span { font: 600 11px/1.2 var(--mono); color: #7a5a3a; text-transform: uppercase; letter-spacing: .06em; display: inline-flex; align-items: center; gap: 4px; }
+.jobcard .res-cell b { font: 400 1.25rem/1 var(--display); color: #1e3a8a; opacity: 0; animation: ink .35s ease-out forwards; animation-delay: calc(.25s + var(--d) * .28s); }
+.jobcard .res-cell .coin { width: 12px; height: 12px; }
+@keyframes ink { from { opacity: 0; transform: translateX(-8px); clip-path: inset(0 100% 0 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+.jstamp { position: absolute; right: 18px; bottom: -14px; padding: 6px 10px; border: 4px double #c0392b; border-radius: 8px; color: #c0392b; font: 400 1.05rem/1 var(--display); letter-spacing: .06em; text-align: center; background: rgba(255,250,240,.35);
+  transform: rotate(-14deg); mix-blend-mode: multiply; opacity: 0; animation: jstamp .3s 1.45s cubic-bezier(.2,.9,.3,1.5) forwards; }
+.jstamp.boss { color: #7a1f10; border-color: #7a1f10; font-size: 1.2rem; }
+@keyframes jstamp { from { opacity: 0; transform: rotate(-14deg) scale(2.4); } to { opacity: .9; transform: rotate(-14deg) scale(1); } }
+@media (max-width: 640px) { .jobcard .res-grid { grid-template-columns: 1fr; } }
+.jstamp { bottom: -30px; right: 6px; }
+.jobcard { margin-bottom: 26px; }

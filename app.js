@@ -723,21 +723,24 @@ async function finishFight() {
   const res = j.result;
   if (res.win !== local.win) toast('Serwer rozliczył walkę inaczej niż Twoja przeglądarka. Obowiązuje wynik serwera.', true, 5000);
   if (G.run.phase === 'over') { G.screen = 'run'; return showEnd(j); }
-  G.screen = 'run'; render(); showResult(j);
+  G.screen = 'run'; render(); showResult(j, F.setup.round);
 }
 function retryOverlay() {
   return new Promise(res => { G.retryCb = res; openOverlay('<h2>Brak połączenia</h2><p class="lead">Nie udało się rozliczyć walki z serwerem. Twój run jest bezpieczny, spróbuj ponownie.</p><div class="actions"><button class="btn primary" data-act="retry-fight" data-primary>Spróbuj jeszcze raz</button></div>', { narrow: true, force: true }); });
 }
 
-function showResult(j) {
+function showResult(j, floor) {
   const r = j.result, run = G.run, boss = j.boss;
   const line = boss ? T.BOSS_WIN_LINES[boss] : T.pickLine(T.WIN_LINES, run.round);
   const un = takeUnlocks();
+  // karta pracy: rubryki wypełniają się po kolei, na końcu pieczątka
   openOverlay(`<h2>${boss ? 'Boss pokonany!' : 'Piętro zdobyte!'}</h2><p class="lead">${esc(line)}</p>
-    <div class="res-grid"><div class="res-cell"><b>${(r.ticks / 10).toFixed(1).replace('.', ',')} s</b><span>czas walki</span></div>
-    <div class="res-cell"><b>${fmtNum(r.dealt)}</b><span>zadane obrażenia</span></div>
-    <div class="res-cell"><b>+${j.reward}</b><span>Ziarna ${art.coinIcon()}</span></div>
-    <div class="res-cell"><b>${run.hp}/${run.maxHp}</b><span>życie po leczeniu</span></div></div>
+    <div class="jobcard"><div class="jhead"><span>Karta pracy</span><span>Pracownik: ${esc(D.CHARS[run.char].name)}</span><span>Piętro ${floor || run.round}</span></div>
+    <div class="res-grid"><div class="res-cell" style="--d:0"><span>czas walki</span><b>${(r.ticks / 10).toFixed(1).replace('.', ',')} s</b></div>
+    <div class="res-cell" style="--d:1"><span>zadane obrażenia</span><b>${fmtNum(r.dealt)}</b></div>
+    <div class="res-cell" style="--d:2"><span>wypłata ${art.coinIcon()}</span><b>+${j.reward} Ziaren</b></div>
+    <div class="res-cell" style="--d:3"><span>życie po leczeniu</span><b>${run.hp}/${run.maxHp}</b></div></div>
+    <div class="jstamp ${boss ? 'boss' : ''}" aria-hidden="true">${boss ? 'BOSS<br>POKONANY' : 'PIĘTRO<br>ZALICZONE'}</div></div>
     ${r.stolen ? `<p class="hint">Złodzieje ukradli ci ${r.stolen} Ziaren.</p>` : ''}${r.usedRevive ? '<p class="hint">Gniazdo Zapasowe zostało zużyte.</p>' : ''}${resultExtras(j)}${unlocksHTML(un)}
     <div class="actions" style="margin-top:12px"><button class="btn primary big" data-act="close" data-primary>${j.bonus ? 'Wybierz nagrodę' : 'Dalej'}</button></div>`, { narrow: true, force: true });
 }
