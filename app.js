@@ -200,9 +200,9 @@ function previewHTML() {
   // Od Garnka 1 serwer nie zdradza składu piętra: zaparowana szyba z jedną sylwetką (bez nazw i liczby wrogów).
   if (r.hidden && !nem) {
     const fogLab = r.elite ? 'Elitarny wróg za zaparowaną szybą (nagroda: Odznaka)' : risky ? lab : 'Szyba zaparowana: nie wiesz, kto czeka';
-    return `<div class="preview fog"><div class="lab">${fogLab}</div><div class="pv">${art.mysteryArt()}<span>?</span></div>${risky ? aff : ''}<div class="tplnote">Od Garnka 1 skład pięter jest tajemnicą. Bossów zapowiada pasek pięter.</div></div>`;
+    return `<div class="preview doorview fog"><div class="lab">${fogLab}</div><div class="glass"><div class="pv">${art.mysteryArt()}<span>?</span></div></div>${risky ? aff : ''}<div class="tplnote">Od Garnka 1 skład pięter jest tajemnicą. Bossów zapowiada pasek pięter.</div></div>`;
   }
-  return `<div class="preview ${nem ? 'nem' : ''}"><div class="lab">${lab}</div>${items}${aff}${tp}</div>`;
+  return `<div class="preview doorview ${nem ? 'nem' : ''} ${r.boss ? 'bossdoor' : ''}"><div class="lab">${lab}</div><div class="glass">${items}</div>${aff}${tp}</div>`;
 }
 // Okólnik Zarządu bieżącej strefy: pełna ramka na pierwszym piętrze strefy (i przy drzwiach), potem tylko nazwa w podtytule i pigułka na pasku.
 const zoneAt = (mode, n) => { for (const z of D.MODES[mode].zones) if (n <= z.upTo) return z.zone; return 2; };

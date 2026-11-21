@@ -516,3 +516,23 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 .floor .cab.up { animation: cabup .9s cubic-bezier(.3,.8,.3,1) both; }
 @keyframes cabup { from { transform: translateY(calc(100% + 14px)); } }
 .floor .staff { right: 5px; width: 14px; height: 14px; padding: 0; display: grid; place-items: center; font-size: 9px; }
+
+/* ---------- remaster: podgląd piętra jako drzwi z okienkiem ---------- */
+.preview.doorview { border: 4px solid #1d1612; border-radius: 14px; padding: 8px 14px 10px; gap: 8px; box-shadow: 0 4px 0 var(--outline), inset 0 1px 0 rgba(255,255,255,.1);
+  background: radial-gradient(circle at 14px 14px, #a99f8f 0 2.5px, transparent 3px), radial-gradient(circle at calc(100% - 14px) 14px, #a99f8f 0 2.5px, transparent 3px),
+    radial-gradient(circle at 14px calc(100% - 14px), #a99f8f 0 2.5px, transparent 3px), radial-gradient(circle at calc(100% - 14px) calc(100% - 14px), #a99f8f 0 2.5px, transparent 3px),
+    linear-gradient(#4d4239, #3a312a); }
+.preview.doorview.bossdoor { background: radial-gradient(circle at 14px 14px, #d8a89a 0 2.5px, transparent 3px), radial-gradient(circle at calc(100% - 14px) 14px, #d8a89a 0 2.5px, transparent 3px), linear-gradient(#7a2516, #4e160c); }
+.preview.doorview.nem { background: linear-gradient(#4a2a63, #2c1840); border-color: #1a0e26; }
+.preview.doorview .lab { color: #e8dcc6; text-shadow: 0 1px 0 #000; }
+.preview .glass { position: relative; display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 10px; min-width: 50%; padding: 8px 18px 6px; border-radius: 10px;
+  border: 4px solid #1d1612; box-shadow: inset 0 0 0 2px #8f8574, inset 0 6px 16px rgba(0,0,0,.6); background: linear-gradient(160deg, rgba(160,200,220,.16), rgba(40,60,70,.25) 60%, rgba(160,200,220,.1)); overflow: hidden; }
+.preview .glass::before { content: ''; position: absolute; top: -20%; bottom: -20%; left: 12%; width: 18px; transform: rotate(18deg); background: rgba(255,255,255,.12); pointer-events: none; }
+.preview .glass .pv { color: #f3e6cc; text-shadow: 0 1px 2px #000; }
+/* zaparowana szyba (od Garnka 1) */
+.preview.fog .glass { background: linear-gradient(160deg, rgba(215,225,230,.42), rgba(170,185,195,.3)); }
+.preview.fog .glass .pv .fig { filter: blur(3px) brightness(.45); }
+.preview.fog .glass::after { content: ''; position: absolute; inset: 0; pointer-events: none; background:
+  radial-gradient(5px 7px at 22% 30%, rgba(255,255,255,.5), transparent), radial-gradient(4px 6px at 70% 22%, rgba(255,255,255,.45), transparent),
+  radial-gradient(3px 5px at 84% 70%, rgba(255,255,255,.4), transparent), radial-gradient(4px 6px at 35% 78%, rgba(255,255,255,.35), transparent); }
+.preview.fog .glass .pv span { color: #2b1a12; text-shadow: none; font: 700 1.2rem/1 var(--display); }
