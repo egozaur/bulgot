@@ -623,3 +623,30 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 .console .sk.none { display: grid; place-items: center; padding: 0 6px; color: var(--faint); }
 .console .sk .sn { margin-top: 26px; }
 .console .sk.none { color: #a8977c; }
+
+/* ---------- remaster: Furia jako alarm fabryczny ---------- */
+.arena.furious { animation: furyborder .7s steps(2) infinite; }
+@keyframes furyborder { 50% { border-color: #e4572e; box-shadow: 0 6px 0 var(--outline), 0 0 0 3px #e4572e, 0 0 26px rgba(228,87,46,.7); } }
+.beacons { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+.beacons i { position: absolute; top: 46px; width: 30px; height: 22px; border-radius: 15px 15px 4px 4px; background: radial-gradient(circle at 50% 70%, #ffb3a0, #e4572e 55%, #8e2a1a); border: 3px solid #2b1a12; box-shadow: 0 0 18px rgba(255,60,30,.9); }
+.beacons i:first-child { left: 18px; } .beacons i:last-child { right: 18px; }
+.beacons i::before { content: ''; position: absolute; left: 50%; top: 60%; width: 360px; height: 360px; margin: -180px 0 0 -180px; border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(255,70,40,.38) 0 22deg, transparent 22deg 180deg, rgba(255,70,40,.38) 180deg 202deg, transparent 202deg); animation: beacon 1.1s linear infinite; mix-blend-mode: screen; }
+.beacons i:last-child::before { animation-direction: reverse; }
+.beacons i::after { content: ''; position: absolute; left: -6px; right: -6px; bottom: -7px; height: 6px; border-radius: 2px; background: #3a312a; border: 2px solid #2b1a12; }
+@keyframes beacon { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .beacons i::before { display: none; } }
+
+/* ---------- remaster: wejście bossa jak w kinie ---------- */
+.cine { position: absolute; inset: 0; z-index: 9; display: grid; place-items: center; pointer-events: none; background: rgba(0,0,0,.35); animation: fadein .25s ease-out; }
+.cine .bar { position: absolute; left: 0; right: 0; height: 14%; background: #000; }
+.cine .bar.t { top: 0; animation: bartop .45s cubic-bezier(.2,.9,.3,1) both; } .cine .bar.b { bottom: 0; animation: barbot .45s cubic-bezier(.2,.9,.3,1) both; }
+@keyframes bartop { from { transform: translateY(-100%); } } @keyframes barbot { from { transform: translateY(100%); } }
+.cine .plate { text-align: center; padding: 14px 34px 16px; max-width: 70%; border-top: 3px solid #b4472a; border-bottom: 3px solid #b4472a; background: linear-gradient(90deg, transparent, rgba(30,8,4,.92) 15%, rgba(30,8,4,.92) 85%, transparent); animation: plate .6s .15s cubic-bezier(.2,.9,.3,1.2) both; }
+.cine small { font: 700 11px/1 var(--mono); letter-spacing: .3em; color: #ff9f80; }
+.cine h3 { font-size: 2.6rem; color: #ffd0bf; text-shadow: 0 3px 0 #2b1a12, 0 0 20px rgba(228,87,46,.6); margin: 6px 0 2px; }
+.cine em { display: block; font: italic 700 1.05rem/1.2 var(--body); color: var(--amber); }
+.cine p { margin: 10px 0 0; font-style: italic; color: #e9d9b6; font-size: .95rem; }
+.cine.out { animation: fadeout .45s ease-in forwards; }
+@keyframes plate { from { transform: scaleX(.2); opacity: 0; } }
+@keyframes fadeout { to { opacity: 0; } }

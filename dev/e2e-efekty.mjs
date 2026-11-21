@@ -44,6 +44,24 @@ const t1 = await p.evaluate(() => { const F = window.__bulgot.fight; F.stopUntil
 await wait(250);
 const t2 = await p.evaluate(() => window.__bulgot.fight.f.tick);
 check(t2 === t1, 'zamrożenie klatki wstrzymuje zegar walki (tick ' + t1 + ' → ' + t2 + ')');
+await wait(300);
+// Furia: alarm fabryczny
+await p.evaluate(() => { const f = window.__bulgot.fight.f, orig = f.step.bind(f); f.step = ins => { orig(ins); f.ev.push({ k: 'fury' }); f.step = orig; }; });
+await wait(500);
+check(await p.evaluate(() => !!document.querySelector('.arena.furious .beacons')), 'Furia: światła alarmowe');
+await p.screenshot({ path: `${OUT}/efekty-furia.png` });
+// wejście bossa: piętro 6 (Brojler)
+await p.evaluate(() => { const F = window.__bulgot.fight; F.f.over = true; });
+await wait(1500);
+await p.evaluate(K => { const r = JSON.parse(localStorage.getItem(K)); r.round = 6; r.phase = 'fight'; r.fight = null; r.hp = 400; localStorage.setItem(K, JSON.stringify(r)); }, K);
+await p.reload({ waitUntil: 'load' }); await wait(600);
+const rs2 = await p.$('[data-act=resume]'); if (rs2) { await rs2.click(); await wait(400); }
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); });
+const tf = await p.$('[data-act=tofight]'); if (tf) { await tf.click(); await wait(900); }
+const cine = await p.evaluate(() => ({ on: !!document.querySelector('.cine'), txt: document.querySelector('.cine')?.innerText || '', tick: window.__bulgot.fight && window.__bulgot.fight.f.tick }));
+check(cine.on && /Brojler/.test(cine.txt), 'wejście bossa: plansza z imieniem');
+check(cine.tick === 0, 'w trakcie wejścia bossa zegar walki stoi (tick ' + cine.tick + ')');
+await p.screenshot({ path: `${OUT}/efekty-boss.png` });
 check(!errs.length, 'bez błędów ' + errs.join(' | '));
 await b.close();
 console.log(bad ? 'NIEZALICZONY' : 'WSZYSTKO OK'); if (bad) process.exitCode = 1;

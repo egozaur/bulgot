@@ -513,7 +513,7 @@ function startFight(setup) {
   makeUnit('hero', { name: D.CHARS[run.char].name, art: art.heroArt(run.char, run.form), left: 17 });
   for (const e of f.enemies) makeUnit(e.uid, { e, name: e.name, art: art.enemyArt(e.art) });
   layoutUnits(); buildSkillbar(); updateUI(true);
-  if (boss) { banner(T.BOSS_INTRO[boss.boss].title, 'BOSS', false); snd.sfx('boss'); } else if (setup.tpl && D.FLOOR_TPL[setup.tpl]) banner(D.FLOOR_TPL[setup.tpl].name + '!', D.FLOOR_TPL[setup.tpl].text, false); else banner('Walka!', '', false);
+  if (boss) { bossIntro(boss); snd.sfx('boss'); } else if (setup.tpl && D.FLOOR_TPL[setup.tpl]) banner(D.FLOOR_TPL[setup.tpl].name + '!', D.FLOOR_TPL[setup.tpl].text, false); else banner('Walka!', '', false);
   F.last = 0; F.raf = requestAnimationFrame(frame);
 }
 
@@ -559,6 +559,14 @@ function pop(text, cls, x, bottom = 60) {
   $('#fxl').appendChild(d); setTimeout(() => d.remove(), 1000);
 }
 const cls = (u, c, ms) => { u.spr.classList.remove(c); void u.spr.offsetWidth; u.spr.classList.add(c); setTimeout(() => u.spr.classList.remove(c), ms); };
+// Wejście bossa jak w kinie: czarne pasy, plansza z imieniem i tytułem, tekst Kronikarza. Walka stoi (tylko obraz, zegar nie liczy).
+function bossIntro(boss) {
+  const F = G.fight, I = T.BOSS_INTRO[boss.boss] || { title: boss.name, quote: '' }, [nm, ...rest] = I.title.split(', ');
+  const el = document.createElement('div'); el.className = 'cine'; el.setAttribute('role', 'status');
+  el.innerHTML = `<i class="bar t"></i><i class="bar b"></i><div class="plate"><small>BOSS · PIĘTRO ${F.setup.round}</small><h3>${esc(nm)}</h3>${rest.length ? `<em>${esc(rest.join(', '))}</em>` : ''}<p>„${esc(I.quote)}”</p></div>`;
+  F.arena.appendChild(el); F.stopUntil = performance.now() + 2300;
+  setTimeout(() => el.classList.add('out'), 2000); setTimeout(() => el.remove(), 2500);
+}
 // Zamach skrzydłem bohatera (łuk przed dziobem) i pióra wylatujące z pokonanego wroga.
 function swoosh(u) {
   if (REDUCED.matches) return;
@@ -603,7 +611,7 @@ function onEvent(e) {
     case 'egg': snd.sfx('egg'); break;
     case 'okrzyk': banner('Ostatni Okrzyk!', 'Chwila nietykalności', false); break;
     case 'revive': banner('Gniazdo Zapasowe!', 'Kurczak wstaje z kolan', false); snd.sfx('heal'); break;
-    case 'fury': banner('FURIA!', 'Wrogowie wpadają w szał', true); snd.sfx('fury'); F.arena.classList.add('furious'); break;
+    case 'fury': banner('FURIA!', 'Wrogowie wpadają w szał', true); snd.sfx('fury'); F.arena.classList.add('furious'); if (!F.arena.querySelector('.beacons')) F.arena.insertAdjacentHTML('beforeend', '<div class="beacons" aria-hidden="true"><i></i><i></i></div>'); break;
     case 'summon': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: art.enemyArt(en.art) }); layoutUnits(); } break; }
     case 'phase': banner('Faza ' + e.n, '', true); snd.sfx('phase'); shake(); break;
     case 'skubanie': banner('Skubanie!', 'Wyłączony kafelek: ' + TILE[e.tile].name, true); snd.sfx('phase'); break;
