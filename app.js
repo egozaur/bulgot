@@ -253,7 +253,7 @@ function sideHTML() {
       <div class="hpbar" style="margin-top:6px"><i style="width:${pct}%"></i><b><span data-ctr="hp">${r.hp}</span> / ${S.maxHp}</b></div></div></div>
     <div class="panel"><h4>Umiejętności aktywne</h4><div class="slots">${slots}</div></div>
     ${r.badges && r.badges.length ? `<div class="panel"><h4>Odznaki (${r.badges.length})</h4><div class="chips">${r.badges.map(b => `<div class="chip badge" tabindex="0" data-tip="${esc(D.BADGES[b].name)}\n${esc(D.BADGES[b].text)}">${art.badgeIcon(b)}</div>`).join('')}</div></div>` : ''}
-    <div class="panel"><h4>Statystyki</h4><dl class="stats">${rows}</dl></div>
+    <div class="panel"><h4>Statystyki</h4>${zoneCompareHTML()}<dl class="stats">${rows}</dl></div>
     <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${sets}${mss}${pawnLine}${foxLine}</div></aside>`;
 }
 // Liczniki tablicy rozdzielczej: licznik odcinkowy wyniku i przewijanie wartości przy zmianie (zielony / czerwony błysk).
@@ -273,6 +273,29 @@ function rollCounters() {
     const step = now => { const q = Math.min(1, (now - t0) / dur), v = Math.round(from + (to - from) * (1 - Math.pow(1 - q, 3))); if (!el.isConnected) return; el.innerHTML = fmt(v); if (q < 1) requestAnimationFrame(step); };
     el.innerHTML = fmt(from); requestAnimationFrame(step);
   }
+}
+// Porównanie z typowym wrogiem bieżącej strefy (średnia z jawnych danych strefy, bez składu piętra):
+// atak = jak szybko pokonasz typową grupę, obrona = jak długo wytrzymasz jej ciosy. Słabo / OK / Mocno.
+function zoneCompare() {
+  const r = G.run, S = r.hero, M = D.MODES[r.mode], gm = D.garnekMods(r.garnek);
+  const pool = Object.values(D.ENEMIES).filter(e => e.zone === r.zone && !e.minion);
+  if (!pool.length || !S) return null;
+  const avg = k => pool.reduce((a, e) => a + (e[k] || 0), 0) / pool.length;
+  let h = 1, a = 1; for (let i = 1; i < r.round; i++) { h *= M.grow.hp; a *= M.grow.atk; }
+  if (r.round <= M.early.rounds) { h *= M.early.hp / 100; a *= M.early.atk / 100; }
+  const zm = M.zoneMul && M.zoneMul[r.zone]; if (zm) { h *= zm.hp / 100; a *= zm.atk / 100; }
+  h *= (100 + (gm.enemyHp || 0)) / 100; a *= (100 + (gm.enemyAtk || 0)) / 100;
+  const n = r.zone === 0 ? 1.5 : 2, eHp = avg('hp') * h * n, eArm = avg('armor'), eDps = avg('atk') * a * avg('aspd') / 100 * n * (100 - avg('evade')) / 100;
+  const crit = 1 + (S.crit || 0) * ((S.critMult || 150) - 100) / 10000;
+  const dps = Math.max(0.1, S.atk * (100 + (S.dmg || 0)) / 100 * S.aspd / 100 * crit * 100 / (100 + eArm));
+  const taken = Math.max(0.05, eDps * 100 / (100 + S.armor) * (100 - Math.min(75, S.evade || 0)) / 100 - (S.regen || 0));
+  return { off: 10 / (eHp / dps), def: (S.maxHp / taken) / 20 };
+}
+function zoneCompareHTML() {
+  const c = zoneCompare(); if (!c) return '';
+  const bar = (k, label, v, tip) => { const lv = v < 0.75 ? 'lo' : v > 1.3 ? 'hi' : 'ok', word = { lo: 'słabo', ok: 'OK', hi: 'mocno' }[lv];
+    return `<div class="zc ${lv}" tabindex="0" data-tip="${esc(tip)}">${art.statIcon(k)}<span class="zl">${label}</span><span class="zb"><i style="width:${Math.round(Math.min(1, v / 2) * 100)}%"></i><u></u></span><b>${word}</b></div>`; };
+  return `<div class="zcmp" aria-label="Porównanie z wrogami strefy">${bar('atk', 'Atak', c.off, 'Jak szybko pokonasz typową grupę wrogów tej strefy (Atak, Tempo, Kryt, Obrażenia kontra ich Życie i Pancerz).')}${bar('armor', 'Obrona', c.def, 'Jak długo wytrzymasz ciosy typowej grupy wrogów tej strefy (Życie, Pancerz, Unik, Regeneracja kontra ich Atak).')}</div>`;
 }
 function topbarHTML() {
   const r = G.run, M = D.MODES[r.mode];

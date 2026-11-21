@@ -474,3 +474,17 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 @keyframes flashdown { 0%, 30% { box-shadow: 0 0 0 2px #e4572e, 0 0 16px rgba(228,87,46,.9); } }
 @media (max-width: 1360px) { .disp { font-size: 1rem; } }
 .hpbar b { grid-auto-flow: column; justify-content: center; white-space: pre; }
+
+/* porównanie z wrogami strefy (słabo / OK / mocno) */
+.zcmp { display: grid; gap: 5px; margin: 0 0 10px; padding: 8px; border-radius: 10px; background: rgba(0,0,0,.25); border: 1px solid var(--line); }
+.zc { position: relative; display: grid; grid-template-columns: 18px 52px 1fr 52px; align-items: center; gap: 7px; font-size: .82rem; }
+.zc .stico { width: 18px; height: 18px; }
+.zc .zl { color: var(--muted); }
+.zc .zb { position: relative; height: 9px; border-radius: 5px; background: #17110c; border: 1px solid var(--outline); overflow: hidden; }
+.zc .zb i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; transition: width .5s; }
+.zc .zb u { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; background: rgba(255,255,255,.35); }
+.zc b { font: 700 .72rem/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; text-align: right; }
+.zc.lo .zb i { background: linear-gradient(90deg, #a3321a, #e4572e); } .zc.lo b { color: #ff8a6a; }
+.zc.ok .zb i { background: linear-gradient(90deg, #b9742c, #ffb347); } .zc.ok b { color: var(--amber); }
+.zc.hi .zb i { background: linear-gradient(90deg, #2f8f3a, #6fcf6f); } .zc.hi b { color: #8fe38f; }
+.zc[data-tip]:hover::after { content: attr(data-tip); position: absolute; z-index: 30; left: 0; right: 0; bottom: calc(100% + 6px); padding: 8px 10px; border-radius: 10px; background: #120d09; border: 2px solid var(--amber); color: var(--ink); font-size: .8rem; white-space: normal; }
