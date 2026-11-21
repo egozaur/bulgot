@@ -75,6 +75,17 @@ if ((await st()).phase !== 'over') {
   await p.screenshot({ path: OUT + '/rozb-walka2.png' });
   for (let i = 0; i < 150 && !(await p.$('.modal')); i++) await wait(300);
 }
+// 3b. Wylęgarnia: składnik w ofercie ma znacznik, wybór wykluwa przedmiot i pokazuje okno.
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
+if ((await st()).phase !== 'over') {
+  await patchRun("run.tiles = ['tykajace-jajo', 'ziarno-mocy', 'ziarno-mocy']; run.offer = ['kostka-rosolowa', 'ziarno-mocy', 'twardy-grzebien', 'szybki-dziob']; run.phase = 'offer'; run.hp = 100;");
+  const hz = await p.$$eval('.tag.hatch', n => n.map(x => x.textContent));
+  hz.length >= 2 ? ok('znaczniki Wylęgarni/progu: ' + hz.join(', ')) : fail('brak znaczników: ' + hz.join(','));
+  await p.keyboard.press('1'); await wait(700);
+  const hm = await p.$$eval('.modal .hatch-row', n => n.length);
+  hm ? ok('okno Wylęgarni po wykluciu') : fail('brak okna Wylęgarni');
+  await p.screenshot({ path: OUT + '/rozb-wylegarnia.png' });
+}
 // 4. Księga Kurnika: wszystkie kafelki z ikonami.
 await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
 await p.evaluate(() => { const m = document.querySelector('[data-act=menu]'); m && m.click(); }); await wait(300);
@@ -82,6 +93,10 @@ await p.evaluate(() => document.querySelector('[data-act=book]').click()); await
 const cards = await p.$$eval('.book-grid .tile', n => n.length);
 cards >= 40 ? ok('Księga: ' + cards + ' kafelków') : fail('Księga: ' + cards);
 await p.screenshot({ path: OUT + '/rozb-ksiega.png', fullPage: true });
+await p.evaluate(() => document.querySelector('[data-act=booktab][data-v=hatch]').click()); await wait(400);
+const known = await p.$$eval('.modal .hatch-row:not(.unknown)', n => n.length);
+known >= 1 ? ok('Księga: odkryte przepisy ' + known) : fail('Księga: brak odkrytego przepisu');
+await p.screenshot({ path: OUT + '/rozb-ksiega-wyl.png' });
 
 if (errs.length) fail('błędy strony:\n' + [...new Set(errs)].join('\n')); else ok('bez błędów w konsoli');
 await b.close();

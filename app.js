@@ -57,9 +57,21 @@ async function act(path, body) {
     if (j && j.profile) G.profile = j.profile;
     if (j && 'run' in j) G.run = j.run;
     if (!j || j.err) { toast((j && j.err) || 'Coś poszło nie tak. Spróbuj jeszcze raz.', true, 3600); if (j && 'run' in j && G.screen !== 'fight') render(); return null; }
+    if (j.hatched && j.hatched.length) setTimeout(() => showHatched(j.hatched), 80);
     if (j.unlocks && j.unlocks.length) { for (const u of j.unlocks) { G.unlocks.push(u); toast('Odblokowano: ' + unlockName(u), false, 4200); } snd.sfx('unlock'); }
     return j;
   } finally { G.busy = false; document.body.classList.remove('busy'); }
+}
+// Wylęgarnia: okno z wyklutym przedmiotem.
+function showHatched(ids) {
+  const rows = ids.map(id => { const r = D.RECIPES.find(x => x.out === id); return `<div class="hatch-row">${r.of.map(c => tileCard(c, { static: true, mini: true })).join('<div class="hplus">+</div>')}<div class="hplus">=</div>${tileCard(id, { static: true, mini: true })}</div>`; }).join('');
+  snd.sfx('unlock');
+  openOverlay(`<h2>Wylęgarnia!</h2><p class="lead">Dwa przedmioty zlepiły się w gnieździe i wykluło się coś legendarnego. Nowy przedmiot ma efekty obu i liczy się do ich zestawów.</p>${rows}<div class="actions" style="margin-top:14px"><button class="btn primary" data-act="close" data-primary>Wspaniale</button></div>`, { narrow: false });
+}
+// Przepis, który dany kafelek by dokończył (masz już drugi składnik).
+function recipeFor(id) {
+  const r = G.run; if (!r) return null;
+  return D.RECIPES.find(x => x.of.includes(id) && !r.tiles.includes(x.out) && x.of.every(c => c === id || r.tiles.includes(c))) || null;
 }
 const unlockName = u => u.kind === 'char' ? D.CHARS[u.target].name : TILE[u.target].name;
 
@@ -140,6 +152,13 @@ function tileCard(id, o = {}) {
   const tags = [`<span class="tag">${D.TYPES[t.type]}</span>`, `<span class="tag rar">${D.RARITY[t.rarity]}</span>`];
   for (const st of setsOf(t)) tags.push(`<span class="tag set">${D.SETS[st].name}${run && !o.static ? ' ' + (setOwned(st) + 1) : ''}</span>`);
   for (const tg of (t.tags || [])) if (D.ELEMENTS[tg]) tags.push(`<span class="tag el" style="--ec:${D.ELEMENTS[tg].color}">${D.ELEMENTS[tg].name}</span>`);
+  if (run && !o.static) {
+    const rc = recipeFor(id), known = rc && G.profile && (G.profile.recipes || []).includes(rc.out);
+    if (rc) tags.push(`<span class="tag hatch">${known ? 'Wykluje: ' + esc(TILE[rc.out].name) : 'Wylęgarnia!'}</span>`);
+    else if (D.RECIPES.some(x => x.of.includes(id))) tags.push('<span class="tag">Składnik</span>');
+    const ms = D.MILESTONES[id];
+    if (ms) { const n = run.tiles.filter(x => x === id).length % D.MILESTONE_EVERY; tags.push(`<span class="tag ${n === D.MILESTONE_EVERY - 1 ? 'hatch' : ''}">${n === D.MILESTONE_EVERY - 1 ? esc(ms.name) + '!' : 'Próg ' + (n + 1) + '/' + D.MILESTONE_EVERY}</span>`); }
+  }
   if (own && own.lvl >= 2) tags.push('<span class="tag up mut">Mutacja</span>');
   else if (own) tags.push('<span class="tag up">Poziom 2</span>');
   else if (t.type === 'skill' && run && run.skills.length >= D.RULES.maxSkills && !o.static) tags.push('<span class="tag">Zastąp slot</span>');
@@ -184,13 +203,14 @@ function sideHTML() {
   const counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
   const chips = Object.entries(counts).map(([id, n]) => { const t = TILE[id]; return `<div class="chip r${t.rarity}" tabindex="0" data-tip="${esc(t.name)}\n${esc(t.text)}">${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : ''}</div>`; }).join('');
   const sets = Object.entries(D.SETS).map(([id, st]) => { const n = setOwned(id); if (!n) return ''; const total = D.TILES.filter(t => t.set === id).length; return `<div class="setline">Zestaw ${st.name} ${n}/${total}${n >= 2 ? ': ' + st.b2 : ''}${n >= 3 ? '; ' + st.b3 : ''}${n >= 4 && st.b4 ? '; ' + st.b4 : ''}</div>`; }).join('');
+  const mss = Object.entries(D.MILESTONES).map(([id, m]) => { const n = Math.floor(r.tiles.filter(x => x === id).length / D.MILESTONE_EVERY); return n ? `<div class="setline ms">${esc(m.name)}${n > 1 ? ' ×' + n : ''}: ${esc(m.text)}</div>` : ''; }).join('');
   const pct = Math.max(0, Math.min(100, r.hp / S.maxHp * 100));
   return `<aside class="side">
     <div class="panel hero-card">${art.heroArt(r.char, r.form)}<div><div class="nm">${esc(ch.name)}</div><div class="fm">${esc(form.name)}</div>
       <div class="hpbar" style="margin-top:6px"><i style="width:${pct}%"></i><b>${r.hp} / ${S.maxHp}</b></div></div></div>
     <div class="panel"><h4>Umiejętności aktywne</h4><div class="slots">${slots}</div></div>
     <div class="panel"><h4>Statystyki</h4><dl class="stats">${rows}</dl></div>
-    <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${sets}</div></aside>`;
+    <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${sets}${mss}</div></aside>`;
 }
 function topbarHTML() {
   const r = G.run, M = D.MODES[r.mode];
@@ -552,10 +572,19 @@ async function showRanking(mode) {
   }).join('')}</tbody></table>`;
 }
 function showBook(tab = 'tiles') {
-  const p = G.profile, tabs = [['tiles', 'Kafelki'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania']];
+  const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania']];
   let body = '';
-  if (tab === 'tiles') {
-    body = `<p class="lead">Poznane: ${D.TILES.filter(t => !t.lock || p.tiles.includes(t.id)).length} z ${D.TILES.length} dostępnych kafelków.</p><div class="book-grid">${D.TILES.map((t, i) => {
+  if (tab === 'hatch') {
+    const known = p.recipes || [];
+    const rows = D.RECIPES.map(r => known.includes(r.out)
+      ? `<div class="hatch-row">${r.of.map(c => tileCard(c, { static: true, mini: true })).join('<div class="hplus">+</div>')}<div class="hplus">=</div>${tileCard(r.out, { static: true, mini: true })}</div>`
+      : '<div class="hatch-row unknown"><div class="qcard">?</div><div class="hplus">+</div><div class="qcard">?</div><div class="hplus">=</div><div class="qcard leg">?</div></div>').join('');
+    const ms = Object.entries(D.MILESTONES).map(([id, m]) => `<div class="ms-row">${art.tileIcon(id)}<div><b>${D.MILESTONE_EVERY}× ${esc(TILE[id].name)} = ${esc(m.name)}</b><br><span>${esc(m.text)}</span></div></div>`).join('');
+    body = `<p class="lead">Dwa pasujące przedmioty wykluwają legendarny. Odkryte przepisy: ${known.length} z ${D.RECIPES.length}. Na kartach w ofercie znacznik <b>Wylęgarnia!</b> mówi, że kafelek dokończy przepis.</p>${rows}
+      <div class="sec">Progi statystyk</div><p class="lead">Każde ${D.MILESTONE_EVERY} kopie tej samej statystyki dają dodatkową premię.</p><div class="ms-grid">${ms}</div>`;
+  } else if (tab === 'tiles') {
+    const list = D.TILES.filter(t => !t.hatched);
+    body = `<p class="lead">Poznane: ${list.filter(t => !t.lock || p.tiles.includes(t.id)).length} z ${list.length} dostępnych kafelków.</p><div class="book-grid">${list.map((t, i) => {
       const open = !t.lock || p.tiles.includes(t.id), u = t.lock && D.UNLOCK_BY_ID[t.lock];
       return tileCard(t.id, { static: true, mini: true, i, locked: !open, lockText: open ? '' : (u && u.text) });
     }).join('')}</div>`;

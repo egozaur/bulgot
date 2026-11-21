@@ -347,3 +347,17 @@ button.tile:disabled { opacity: .5; cursor: not-allowed; }
 
 @media (max-width: 1120px) { .tower { align-self: auto; } .floor { flex: none; height: 30px; } .run { min-height: 0; } }
 @media (max-width: 640px) { .topbar { padding: 10px 14px; gap: 10px; } .topbar .brand { font-size: 1.6rem; } .pill { font-size: 1rem; } .zone-name { font-size: 1.1rem; } .topbar .btn.small { font-size: 1rem; } }
+
+/* Wylęgarnia i progi */
+.tag.hatch { color: #1a0026; background: #ffd166; border-color: #ffd166; }
+.hatch-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+.hatch-row .tile { width: 170px; }
+.hplus { font: 700 28px/1 var(--display); color: var(--gold); }
+.qcard { width: 120px; height: 120px; border-radius: 14px; border: 2px dashed var(--line); display: grid; place-items: center; font: 700 40px/1 var(--display); color: var(--faint); }
+.qcard.leg { border-color: #ffb02e; color: #ffb02e; }
+.ms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.ms-row { display: flex; gap: 10px; align-items: center; padding: 8px; border-radius: 10px; background: rgba(0,0,0,.25); font-size: 13px; }
+.ms-row .ico { width: 40px; height: 40px; flex: none; }
+.ms-row span { color: var(--muted); }
+.setline.ms { color: #ffd166; }
+@media (max-width: 700px) { .hatch-row .tile { width: 120px; } .qcard { width: 80px; height: 80px; } }
