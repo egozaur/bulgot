@@ -88,6 +88,7 @@ export const HELP = [
   ['Mutacje', 'Druga kopia umiejętności daje poziom 2 (+30% mocy, krótszy cooldown). Trzecia kopia to Mutacja: wybierasz jedną z dwóch gałęzi, która na stałe zmienia działanie umiejętności.'],
   ['Wylęgarnia', 'Niektóre pary przedmiotów wykluwają legendarny przedmiot (znacznik „Wylęgarnia!” na karcie). Każde 3 kopie tej samej statystyki dają dodatkową premię (np. 3× Ziarno Mocy = Kolba Mocy). Odkryte przepisy są w Księdze Kurnika.'],
   ['Odznaki', 'Za pokonanie bossa albo elitarnego wroga wybierasz Odznakę Pracowniczą: stały bonus do końca runu. Elity mają cechy (np. Wampiryczny, Wybuchowy), które widać w podglądzie piętra.'],
+  ['Klawiatura', 'Strzałki przesuwają zaznaczenie między kartami i przyciskami (także w oknach), Enter zatwierdza. Skróty: 1–4 wybór, Shift+1–4 dokup, R reroll, O odpoczynek, w walce 1/2/3 umiejętności, P pauza, F szybkość.'],
   ['Reroll', 'Nie podoba Ci się oferta? Za Ziarna możesz ją przelosować. Pierwszy kosztuje 2, każdy kolejny w tej rundzie o 1 więcej.'],
   ['Odpoczynek', 'Za 4 Ziarna leczysz 20% życia, raz na rundę, przed walką (przycisk pod ofertą i na ekranie przed walką). Dobry sposób, żeby nie wchodzić na kolejne piętro poobijanym.'],
   ['Dokupowanie', 'Jeden kafelek z oferty bierzesz za darmo, a pozostałe możesz dokupić za Ziarna: zwykły 6, rzadki 12, epicki 20, legendarny 30. Wydarzeń (Sklepik, Hazard, Skrzynka, Automat, Kontrakt, Kapliczka) nie da się kupić, tylko wybrać. Niewydane Ziarna dają punkty na koniec runu.'],

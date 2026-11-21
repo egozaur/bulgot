@@ -369,3 +369,7 @@ button.tile:disabled { opacity: .5; cursor: not-allowed; }
 .tag.aff { color: #ffb4a2; border-color: #e4572e; text-transform: none; letter-spacing: 0; font: 600 11px/1.2 var(--body, sans-serif); }
 .unit .plate .affl { font: 700 9px/1 var(--mono); color: #ffb4a2; text-shadow: 0 1px 0 #000; margin-bottom: 2px; }
 .dmg.hurt.burn { color: #ffa45c; font-size: 18px; }
+
+/* zaznaczenie z klawiatury (strzałki + Enter) */
+button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.tile:focus-visible { outline: 4px solid var(--gold); outline-offset: 4px; transform: translateY(-4px); box-shadow: 0 0 0 2px #000, 0 10px 30px rgba(255, 201, 51, .35); }

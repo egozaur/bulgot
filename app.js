@@ -257,7 +257,7 @@ function stageOffer() {
     <div class="kron">${esc(floorKron())}</div>${previewHTML()}
     <div class="cards">${cards}</div>
     <div class="actions"><button class="btn" data-act="reroll" ${r.coins < cost ? 'disabled' : ''}>Reroll ${free ? '(za darmo)' : `za ${cost} ${art.coinIcon()}`}</button>${restBtn()}</div>
-    <div class="hint">Jeden kafelek bierzesz za darmo (klawisze 1–${r.offer.length}), pozostałe możesz dokupić (Shift + cyfra). R przelosowuje ofertę.</div>`;
+    <div class="hint">Jeden kafelek bierzesz za darmo (klawisze 1–${r.offer.length}), pozostałe możesz dokupić (Shift + cyfra). R przelosowuje ofertę. Strzałki i Enter też działają.</div>`;
 }
 function stageShop() {
   const r = G.run, cards = r.pending.offer.map((id, i) => tileCard(id, { i, act: 'buy', price: shopPrice(TILE[id]) })).join('');
@@ -735,10 +735,38 @@ document.addEventListener('click', e => {
   const fn = ACT[b.dataset.act];
   if (fn) { if (!['pick', 'buy', 'reroll', 'useskill', 'bet'].includes(b.dataset.act)) snd.sfx('click'); fn(b, e); }
 });
+// ---------- sterowanie strzałkami ----------
+// Strzałki przesuwają zaznaczenie do najbliższego przycisku w danym kierunku (karty, Dokup, Reroll, okna), Enter zatwierdza zaznaczony.
+const ARROWS = { arrowleft: [-1, 0], arrowright: [1, 0], arrowup: [0, -1], arrowdown: [0, 1] };
+function navItems() {
+  const root = overlayOpen() ? $('#overlay') : $('#screen');
+  if (!root) return [];
+  return [...root.querySelectorAll('button:not([disabled]), [data-act][tabindex]')].filter(b => { const r = b.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(b).visibility !== 'hidden'; });
+}
+function navCurrent(items) { const a = document.activeElement; return items.includes(a) ? a : null; }
+function navMove(dx, dy) {
+  const items = navItems(); if (!items.length) return;
+  const cur = navCurrent(items);
+  if (!cur) { const first = items.find(b => b.closest('.cards')) || items.find(b => b.hasAttribute('data-primary')) || items[0]; first.focus(); first.scrollIntoView({ block: 'nearest' }); return; }
+  const c = cur.getBoundingClientRect(), cx = c.left + c.width / 2, cy = c.top + c.height / 2;
+  let best = null, bs = Infinity;
+  for (const b of items) {
+    if (b === cur) continue;
+    const r = b.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, ddx = x - cx, ddy = y - cy;
+    const along = ddx * dx + ddy * dy; if (along <= 4) continue;            // tylko w wybranym kierunku
+    const side = Math.abs(dx ? ddy : ddx);
+    const sc = along + side * 2.5;
+    if (sc < bs) { bs = sc; best = b; }
+  }
+  if (best) { best.focus(); best.scrollIntoView({ block: 'nearest' }); }
+}
+
 document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const F = G.fight, k = e.key.toLowerCase();
   if (k === 'escape') { if (overlayOpen() && !$('#overlay').dataset.force) closeOverlay(); return; }
+  if (ARROWS[k] && !(F && !overlayOpen())) { e.preventDefault(); navMove(...ARROWS[k]); return; }
+  if (k === 'enter') { const cur = navCurrent(navItems()); if (cur) { e.preventDefault(); cur.click(); return; } }
   if (overlayOpen()) {
     if (k === 'enter') { const p = $('#overlay [data-primary]'); if (p) { e.preventDefault(); p.click(); } }
     return;
