@@ -88,7 +88,17 @@ export const HELP = [
   ['Mutacje', 'Druga kopia umiejętności daje poziom 2 (+30% mocy, krótszy cooldown). Trzecia kopia to Mutacja: wybierasz jedną z dwóch gałęzi, która na stałe zmienia działanie umiejętności.'],
   ['Wylęgarnia', 'Niektóre pary przedmiotów wykluwają legendarny przedmiot (znacznik „Wylęgarnia!” na karcie). Każde 3 kopie tej samej statystyki dają dodatkową premię (np. 3× Ziarno Mocy = Kolba Mocy). Odkryte przepisy są w Księdze Kurnika.'],
   ['Odznaki', 'Za pokonanie bossa albo elitarnego wroga wybierasz Odznakę Pracowniczą: stały bonus do końca runu. Elity mają cechy (np. Wampiryczny, Wybuchowy), które widać w podglądzie piętra.'],
-  ['Klawiatura', 'Strzałki przesuwają zaznaczenie między kartami i przyciskami (także w oknach), Enter zatwierdza. Skróty: 1–4 wybór, Shift+1–4 dokup, R reroll, O odpoczynek, w walce 1/2/3 umiejętności, P pauza, F szybkość.'],
+  ['Reakcje', 'Dwa różne efekty na jednym wrogu łączą się w reakcję. Oparzenie + Mróz = Szok Termiczny (wybuch zależny od stosów), Salmonella + Krwawienie = Gorączka (efekty bolą mocniej, a śmierć zaraża resztę), Mróz + Krwawienie = Kruchość (następne trafienie jest krytyczne). Odkryte reakcje trafiają do Księgi Kurnika.'],
+  ['Seria (Okno Gdakania)', 'Umiejętność użyta do 1,5 s po poprzedniej trafia mocniej: druga w serii +20%, trzecia +50%. Trzy różne umiejętności w jednej serii to Pełna Kurza Seria: wszyscy wrogowie wpadają w Popłoch (ogłuszenie na 1 s). Czasem warto przytrzymać umiejętność i odpalić wszystko naraz.'],
+  ['Rozwidlenie Korytarza', 'Na niektórych piętrach (znak drzwi na pasku pięter) wybierasz drzwi. Zwykłe prowadzą na spokojne piętro. Za drzwiami „Tylko dla personelu” pierwszy wróg ma cechę elity i jest dużo silniejszy, ale nagroda to dodatkowe Ziarna albo wybór 1 z 3 rzadkich kafelków.'],
+  ['Lombard Lisa', 'Przed wyborem kafelka możesz zastawić u Lisa jeden kafelek z budowy (nie umiejętność) i od razu dostać jego pełną cenę w Ziarnach. Wykupisz go tylko na następnym piętrze, za 150% ceny. Jeśli nie wykupisz, Lis zatrzymuje kafelek, a wszystkie Lisy Windykatory w tym runie są o 25% silniejsze.'],
+  ['Odsetki w Spiżarni', 'Po każdej wygranej walce dostajesz +1 Ziarno za każde 10 niewydanych Ziaren, najwyżej +3 (Kaczor Hazardzista +5). Oszczędzanie też jest strategią.'],
+  ['Okólniki Zarządu', 'Każda strefa fabryki ma własny okólnik, który zmienia zasady (np. Audyt Wydatków: darmowe rerolle, droższe dokupowanie). Bieżący okólnik widać nad ofertą i na górnym pasku. W każdym runie okólniki są inne.'],
+  ['Wadliwa Partia', 'Czasem kafelek w ofercie ma pieczątkę „Wada fabryczna”. Jego efekty są o 50% mocniejsze, ale ma ukrytą wadę, która ujawnia się i zaczyna działać po następnej walce. Wylęgarnia usuwa wadę, gdy kafelek jest składnikiem przepisu.'],
+  ['Kafelki rosnące', 'Pierze Weterana, Trofeum z Piór i Skarbonka Pisklęcia zaczynają słabo i rosną z każdą walką, gdy spełnisz ich warunek. Stan licznika widać na kafelku w panelu po prawej.'],
+  ['Awans Wroga (Nemezis)', 'Zwykły wróg, który zakończy twój run, awansuje: dostaje tytuł, cechę elity i kradnie jeden twój kafelek. W następnym runie czeka na piętrze w swojej strefie (znak czaszki z wykrzyknikiem). Pokonany oddaje kafelek i daje Odznakę Sprawiedliwość Kurnika. Jeśli znowu wygra, awansuje wyżej.'],
+  ['Testament Pyrtka', 'Po przegranej możesz zapisać jeden kafelek (zwykły albo rzadki) następnemu kurczakowi. Pojawi się jako piąta karta pierwszej oferty w kolejnym runie. Jeśli masz więcej postaci, testament działa tylko dla innej postaci niż ta, która go spisała.'],
+  ['Klawiatura','Strzałki przesuwają zaznaczenie między kartami i przyciskami (także w oknach), Enter zatwierdza. Skróty: 1–4 wybór, Shift+1–4 dokup, R reroll, O odpoczynek, w walce 1/2/3 umiejętności, P pauza, F szybkość.'],
   ['Reroll', 'Nie podoba Ci się oferta? Za Ziarna możesz ją przelosować. Pierwszy kosztuje 2, każdy kolejny w tej rundzie o 1 więcej.'],
   ['Odpoczynek', 'Za 4 Ziarna leczysz 20% życia, raz na rundę, przed walką (przycisk pod ofertą i na ekranie przed walką). Dobry sposób, żeby nie wchodzić na kolejne piętro poobijanym.'],
   ['Dokupowanie', 'Jeden kafelek z oferty bierzesz za darmo, a pozostałe możesz dokupić za Ziarna: zwykły 6, rzadki 12, epicki 20, legendarny 30. Wydarzeń (Sklepik, Hazard, Skrzynka, Automat, Kontrakt, Kapliczka) nie da się kupić, tylko wybrać. Niewydane Ziarna dają punkty na koniec runu.'],
@@ -100,4 +110,14 @@ export const HELP = [
 ];
 
 // Wybór deterministyczny (ta sama runda, ta sama linia).
-export const pickLine = (arr, n) => arr[Math.abs(n | 0) % arr.length];
+// Rozwidlenie Korytarza i Awans Wroga.
+export const DOOR_LINES = [
+  'Korytarz rozwidlał się. Jedne drzwi skrzypiały zwyczajnie, drugie nosiły napis „Tylko dla personelu”.',
+  'Z lewej pachniało spokojem, z prawej premią i kłopotami.',
+  'Kronikarz zawahał się. Pyrtek nie.',
+];
+export const NEMESIS_LINES = [
+  'Pamiętasz go? On ciebie pamięta. Awansował na twoich piórach.',
+  'Czas wyrównać rachunki. Z odsetkami.',
+];
+export const pickLine =(arr, n) => arr[Math.abs(n | 0) % arr.length];

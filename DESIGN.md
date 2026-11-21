@@ -343,3 +343,28 @@ Wzrost wrogów: pełny 1,125 (życie) i 1,08 (atak), szybki 1,14 i 1,098. Strefa
 | Tylko kafelki startowe (nowy gracz) | 49% | 55% |
 | Bez dokupowania | 17% | – |
 Porażki rozkładają się na elity i bossów (po 2–6%), strefa III straszy do końca, Prezes w szybkim zabija ok. 13% runów.
+
+## 11. Rozbudowa „jeszcze jedna partia” (2026-11-21): 10 mechanik retencji
+
+Cel: więcej powodów do kolejnego runu (combo, ryzyko, nieprzewidywalność, rewanż). Wszystko liczy serwer (deterministycznie z ziarna runu), klient tylko rysuje.
+
+### W walce i na kafelkach
+- **Reakcje** (`REACTIONS`, `sim.js` → `react()`): dwa różne efekty na jednym wrogu. Oparzenie + Mróz = **Szok Termiczny** (15% Ataku na stos obu efektów, maks. 300%, zdejmuje Mróz i połowę Oparzenia); Salmonella + Krwawienie = **Gorączka** (5 s: Salmonella i Krwawienie +50%, śmierć w Gorączce daje 3 stosy Salmonelli pozostałym); Mróz + Krwawienie = **Kruchość** (następne trafienie zawsze krytyczne, także umiejętnością). Przerwa 3 s na wroga i reakcję. Odkryte reakcje trafiają do profilu (`p.reactions`) i Księgi.
+- **Kafelki rosnące** (`TILES[].grow`, licznik `run.grow`, logika w `stats.js` i `fightFinish`): Pierze Weterana (+3% Ataku za wygraną poniżej 40% Życia, maks. 15), Trofeum z Piór (+2 maks. Życia za wroga, do 4 na walkę, maks. 60), Skarbonka Pisklęcia (+1 Ziarno, +1 za piętro bez Odpoczynku, maks. +5).
+- **Okno Gdakania** (`RULES.chainWindow/chainPct/chainStun`): umiejętność do 1,5 s po poprzedniej: 2. w serii +20% obrażeń, 3. +50%; trzy różne = Pełna Kurza Seria (Popłoch: ogłuszenie 1 s).
+
+### Ryzyko i nagroda
+- **Rozwidlenie Korytarza** (`MODES.*.doors`, faza `door`, `choose {i}`): pełny 2, 5, 8, 11, 14, 17; szybki 2, 6, 9. Drzwi „Tylko dla personelu”: pierwszy wróg ma cechę elity (losowana z ziarna), 165% Życia i 125% Ataku, najwyżej z jednym pomocnikiem; nagroda +8 Ziaren albo wybór 1 z 3 rzadkich kafelków (faza `bonus`). Bez Odznaki.
+- **Lombard Lisa** (`pawn {id}`, `redeem`): zastaw kafelka (nie umiejętność, nie umowa, nie z wadą) za pełną cenę rzadkości; wykup tylko na następnym piętrze za 150%; przepadek: `run.foxDebt++`, Lisy Windykatory +25% Życia/Ataku i +1 do limitu kradzieży za każdy.
+- **Odsetki w Spiżarni** (`RULES.interestPer/interestMax`, `CHARS.kaczor.interestMax`): po wygranej +1 Ziarno za każde 10 niewydanych, maks. 3 (Kaczor 5). Niezależne od Odsetek zestawu Korporacyjnego.
+
+### Nieprzewidywalność
+- **Okólniki Zarządu** (`DECREES`, `run.decrees` = 3 różne z ziarna przy starcie): Oszczędności Energii (Mróz 2x dłużej, Oparzenie o połowę), Audyt Wydatków (2 darmowe rerolle na piętro, dokupowanie +50%), Wyjazd Integracyjny (zestawy +1 sztuka), Premia Motywacyjna (wrogowie +15% Życia, +3 Ziarna za piętro), Praca Zdalna (Odpoczynek x2, leczenie po walce -10 pkt proc.), Tryb Pilny (Furia od 30 s, premia za szybkość x2). Widok zdradza tylko okólnik bieżącej strefy.
+- **Wadliwa Partia** (`FLAWS`, `run.flawAt`, `run.flawed`): w głównej ofercie 25% szans, że jeden kafelek statystyki/przedmiotu ma wadę. Dodatnie efekty +50%; wada (Samozapłon, Rozklejony, Wybuchowa Usterka, Ciężki, Kruchy, Żarłoczny) jest ukryta i zaczyna działać po następnej walce. Wylęgarnia usuwa wadę razem ze składnikiem; Lis nie przyjmuje wadliwego towaru.
+
+### Meta między runami
+- **Awans Wroga (Nemezis)** (`profile.nemesis`, `run.nemesis`, `makeNemesis`): zwykły wróg, który zakończył run (nie boss), dostaje tytuł, imię, cechę elity i kradnie losowy kafelek (nie umiejętność). W następnym runie czeka na zwykłym piętrze swojej strefy (140% Życia, 115% Ataku, +10/+5 pkt proc. za każdy kolejny awans), z jednym pomocnikiem. Pokonany: kafelek wraca, Odznaka Sprawiedliwość Kurnika (`BADGES.sprawiedliwosc`, `special`, poza losowymi ofertami), Nemezis znika z profilu. Jeśli znowu wygra: `lvl++`.
+- **Testament Pyrtka** (`will {i}` po przegranej, `profile.will`, `run.will`): jeden kafelek zwykły lub rzadki z przegranego runu staje się piątą kartą pierwszej oferty następnego runu (także po rerollach, dopóki go nie weźmiesz). Przy kilku postaciach działa tylko dla innej postaci niż ta, która go spisała.
+
+### Balans po rozbudowie (bot, 600–800 runów)
+Same nowe mechaniki podniosły wygrane bota z 58% do ok. 80% (G0), głównie przez ryzykowne drzwi. Po wzmocnieniu wroga za drzwiami (165/125%) i przestrojeniu wzrostu (pełny `grow` 1,14/1,093, szybki 1,16/1,11): G0 pełny 60%, szybki 57%, G2 52%, G5 17–19% (tak jak przed rozbudową). Pomiar pojedynczych mechanik: nakładka z nadpisanymi `RULES`/`MODES` (wszystko wyłączone = 59%, zgodnie z poprzednią wersją).

@@ -58,6 +58,7 @@ function tileValue(run, id) {
     return power(trial);
   }
   trial.tiles.push(id);
+  if (t.grow) trial.grow = { ...(trial.grow || {}), [id]: Math.min(t.grow.max, Math.round(t.grow.max / 3)) };   // kafelek rosnący: wyceniany z oczekiwanym wzrostem
   const v = power(trial);
   if (id === 'zakazana-pasza') return v * 0.95;
   return v;
@@ -132,6 +133,10 @@ function playRun(seed) {
       } else if (run.pending.kind === 'contract') chooseOpt(run, 0);
       else if (run.pending.kind === 'shrine') chooseOpt(run, run.hp * 100 < statsOf(run).maxHp * 55 || !run.pending.badge ? 0 : 1);
       else bet(run, 0);
+    } else if (run.phase === 'door') {
+      // Rozwidlenie: ryzykowne drzwi, gdy życie jest wysokie (--doors never|always|smart)
+      const S = statsOf(run), d = arg('doors', 'smart');
+      chooseOpt(run, d === 'always' ? 1 : d === 'never' ? 0 : run.hp * 100 >= S.maxHp * 80 ? 1 : 0);
     } else if (run.phase === 'badge') {
       let bi = 0, bv = -1;
       run.pending.offer.forEach((b, k) => { const tr = JSON.parse(JSON.stringify(run)); tr.badges.push(b); const v = power(tr) * (1 + rng.next() * 0.02); if (v > bv) { bv = v; bi = k; } });

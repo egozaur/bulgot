@@ -280,6 +280,10 @@ export function enemyArt(key) { return svg((ENEMY[key] || ENEMY.rat)(), '0 0 100
 const I = (inner) => svg(inner, '0 0 48 48', 'ico');
 const k = (fill, extra = '') => `fill="${fill}" ${S2} ${extra}`;
 const ICON = {
+  // Kafelki rosnące
+  'pierze-weterana': `<path d="M40 5 Q14 8 9 40 l5 3 Q18 18 40 5z" ${k('#e9dcc0')}/><path d="M12 41 L30 15 M16 30 l9 2 M20 24 l9 1 M24 19 l8 0" stroke="${O}" stroke-width="1.8" ${NF}/><path d="M23 10 l9 9 M27 8 l8 8" stroke="#e53950" stroke-width="3" stroke-linecap="round"/>`,
+  'trofeum-z-pior': `<path d="M15 22 q-5 -13 3 -18 q3 9 -1 18z" ${k('#ffc933')}/><path d="M23 22 q-1 -15 6 -19 q2 11 -3 19z" ${k('#e53950')}/><path d="M30 22 q4 -11 11 -12 q-2 9 -8 12z" ${k('#7fd3ff')}/><rect x="9" y="21" width="30" height="22" rx="4" ${k('#8d6e63')}/><circle cx="24" cy="32" r="5" ${k('#ffc933')}/><path d="M24 29 v6 M21 32 h6" stroke="${O}" stroke-width="1.6"/>`,
+  'skarbonka-piskleca': `<ellipse cx="23" cy="29" rx="16" ry="13" ${k('#ffd166')}/><rect x="18" y="14" width="10" height="3.4" rx="1.7" fill="${O}"/><circle cx="31" cy="25" r="2.2" fill="${O}"/><path d="M38 27 l7 2.5 l-7 2.5z" ${k('#ff9f1c')}/><path d="M15 41 v4 M29 41 v4" stroke="${O}" stroke-width="3" stroke-linecap="round"/><path d="M10 25 q-5 -2 -4 -7 q5 1 6 5" ${k('#ffe08a')}/>`,
   'automat-z-pasza': `<rect x="8" y="4" width="32" height="40" rx="4" ${k('#e53950')}/><rect x="13" y="9" width="22" height="18" rx="2" ${k('#bfeaff')}/><circle cx="18" cy="15" r="2.4" fill="#ffc933" stroke="${O}" stroke-width="1"/><circle cx="26" cy="20" r="2.4" fill="#ffc933" stroke="${O}" stroke-width="1"/><circle cx="30" cy="13" r="2.4" fill="#ffc933" stroke="${O}" stroke-width="1"/><rect x="13" y="32" width="14" height="6" rx="1" fill="${O}"/><circle cx="33" cy="35" r="3" ${k('#ffc933')}/>`,
   'kontrakt-hr': `<path d="M10 4 h22 l8 8 v32 h-30z" ${k('#fff')}/><path d="M32 4 v8 h8" stroke="${O}" stroke-width="2" ${NF}/><path d="M15 16 h16 M15 22 h18 M15 28 h12" stroke="#90a4ae" stroke-width="2"/><path d="M14 38 q4 -6 8 0 q4 6 8 -2 q2 -3 6 0" stroke="#1e88e5" stroke-width="2.2" ${NF} stroke-linecap="round"/>`,
   'kapliczka': `<path d="M8 20 L24 6 L40 20 Z" ${k('#8d6e63')}/><rect x="12" y="20" width="24" height="22" ${k('#f1e9d6')}/><path d="M20 42 v-12 q4 -4 8 0 v12" fill="#ffd166" stroke="${O}" stroke-width="2"/><path d="M24 2 v6 M21 4 h6" stroke="#ffc933" stroke-width="2.4" stroke-linecap="round"/><circle cx="24" cy="25" r="3" fill="#ff9f1c" stroke="${O}" stroke-width="1.2"/>`,
@@ -370,6 +374,7 @@ const BADGE_ART = {
   'nagana-z-wpisem': ['#ef5350', '<path d="M24 14 v12" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="24" cy="32" r="2.4" fill="#fff"/>'],
   'fundusz-socjalny': ['#ffd54f', '<path d="M24 31 q-10 -6 -10 -12 q0 -5 5 -5 q3 0 5 3 q2 -3 5 -3 q5 0 5 5 q0 6 -10 12z" fill="#e53950" stroke="#2b1a12" stroke-width="1.6"/>'],
   'klucz-do-serwerowni': ['#7fd3ff', '<circle cx="19" cy="22" r="5" fill="none" stroke="#fff" stroke-width="3"/><path d="M23 25 l9 9 M28 30 l3 -3 M31 33 l2 -2" stroke="#fff" stroke-width="3" stroke-linecap="round"/>'],
+  'sprawiedliwosc': ['#7e57c2', '<path d="M24 14 v18 M15 18 h18" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M15 18 l-4 8 h8z M33 18 l-4 8 h8z" fill="#fff" stroke="#2b1a12" stroke-width="1.2" stroke-linejoin="round"/><path d="M19 32 h10" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>'],
   'parasol-ochronny': ['#26a69a', '<path d="M13 25 q11 -14 22 0 z" fill="#fff" stroke="#2b1a12" stroke-width="1.6"/><path d="M24 25 v8 q0 2 -2 2" stroke="#2b1a12" stroke-width="1.8" fill="none" stroke-linecap="round"/>'],
 };
 export function badgeIcon(id) {
@@ -378,6 +383,16 @@ export function badgeIcon(id) {
 }
 
 export function tileIcon(id) { return I(ICON[id] || `<circle cx="24" cy="24" r="14" ${k('#ccc')}/>`); }
+
+// Rozwidlenie Korytarza: zwykłe drzwi albo drzwi „Tylko dla personelu”.
+export function doorIcon(risky) {
+  return I(`<rect x="11" y="5" width="26" height="40" rx="2" ${k(risky ? '#7a2b1c' : '#8d6e63')}/><rect x="15" y="9" width="18" height="14" rx="1" fill="none" stroke="${O}" stroke-width="1.6"/><rect x="15" y="26" width="18" height="14" rx="1" fill="none" stroke="${O}" stroke-width="1.6"/><circle cx="31" cy="27" r="2.2" ${k('#ffc933')}/>`
+    + (risky ? `<rect x="7" y="13" width="34" height="8" rx="2" ${k('#ffd166')}/><path d="M11 17 h26" stroke="${O}" stroke-width="1.4" stroke-dasharray="3 2"/><path d="M24 28 l4 8 h-8z" ${k('#e53950')}/>` : '')
+    + `<path d="M5 45 h38" stroke="${O}" stroke-width="3" stroke-linecap="round"/>`);
+}
+// Lombard Lisa i Okólnik Zarządu (małe ikonki do przycisków i ramek).
+export const pawnIcon = () => I(`<path d="M10 14 l6 -9 l4 9 h8 l4 -9 l6 9 v12 q0 14 -14 16 q-14 -2 -14 -16z" ${k('#ff8a3d')}/><path d="M17 30 q7 6 14 0" ${k('#fff3d6')}/><circle cx="19" cy="22" r="2" fill="${O}"/><circle cx="29" cy="22" r="2" fill="${O}"/><circle cx="36" cy="38" r="7" ${k('#ffc933')}/>`);
+export const decreeIcon = () => I(`<path d="M9 4 h24 l6 6 v34 h-30z" ${k('#fff')}/><path d="M14 14 h18 M14 20 h20 M14 26 h14" stroke="#90a4ae" stroke-width="2"/><circle cx="31" cy="36" r="6" ${k('#e53950')}/><path d="M28 36 h6" stroke="#fff" stroke-width="1.6"/>`);
 
 // ---------- Tła aren (viewBox 1000x460) ----------
 const BG = {

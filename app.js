@@ -122,7 +122,15 @@ function renderHome() {
       : `<button class="btn primary big" data-act="new" data-primary>Graj</button>`}
       <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk</button><button class="btn ghost" data-act="history">Historia (test)</button></div>
       ${bestLine ? `<div class="best">Najlepsze wyniki. ${bestLine}</div>` : ''}
+      ${metaNotes()}
     </div></div></div>`;
+}
+// Awans Wroga i Testament Pyrtka: to, co czeka w następnym runie.
+function metaNotes() {
+  const p = G.profile, out = [];
+  if (p.nemesis) { const n = p.nemesis, t = n.tile && TILE[n.tile]; out.push(`<div class="meta-note nem">${art.skullIcon()} <span>Twój Nemezis: <b>${esc(n.name)}</b>${n.lvl > 1 ? ' (awans ' + n.lvl + '.)' : ''}${t ? `, ukradł ci <b>${esc(t.name)}</b>` : ''}. Czeka w następnym runie.</span></div>`); }
+  if (p.will && TILE[p.will.tile]) { const ch = D.CHARS[p.will.char], multi = p.chars.length > 1; out.push(`<div class="meta-note will">${art.tileIcon(p.will.tile)} <span>Testament: <b>${esc(TILE[p.will.tile].name)}</b> czeka w pierwszej ofercie${multi ? ` następnego runu postacią inną niż ${esc(ch ? ch.name : '')}` : ' następnego runu'}.</span></div>`); }
+  return out.join('');
 }
 
 // ---------- przygotowanie runu ----------
@@ -141,6 +149,7 @@ function renderSetup() {
     <div class="sec">Postać <small>nowe odblokowujesz osiągnięciami</small></div><div class="opts chars">${chars}</div>
     <div class="sec">Temperatura Garnka <small>wygrana na poziomie N odblokowuje N+1 i podnosi mnożnik wyniku o 25%</small></div>
     <div class="garnek-row">${gs}</div><div class="gtext"><b>${esc(g.name)}.</b> ${esc(g.text)}</div>
+    ${metaNotes()}
     <div class="start-row"><button class="btn primary big" data-act="start" data-primary>Do garnka!</button></div></div>`;
 }
 
@@ -177,16 +186,33 @@ const enemyDef = id => D.ENEMIES[id] || D.BOSSES[id];
 function previewHTML() {
   const r = G.run; let ids = r.enemies || [];
   if (r.boss === 'prezes') ids = ['kot-ochroniarz', 'kot-ochroniarz', 'prezes'];
-  const items = ids.map(id => { const d = enemyDef(id); const boss = !!D.BOSSES[id]; return `<div class="pv ${boss ? 'boss' : ''}">${art.enemyArt(d.art)}<span>${esc(id === 'kot-ochroniarz' && r.boss === 'prezes' ? 'Ochroniarz' : d.name)}</span></div>`; }).join('');
-  const aff = r.elite && r.affixes ? `<div class="affixes">${r.affixes.map(a => `<span class="tag aff" title="${esc(D.AFFIXES[a].text)}">${esc(D.AFFIXES[a].name)}: ${esc(D.AFFIXES[a].text)}</span>`).join('')}</div>` : '';
-  return `<div class="preview"><div class="lab">${r.boss ? 'Boss tego piętra' : r.elite ? 'Elitarny wróg na piętrze (nagroda: Odznaka)' : 'Na tym piętrze czekają'}</div>${items}${aff}</div>`;
+  const nem = r.nemesisRound && r.nemesis, risky = r.door && r.door.risky;
+  const items = ids.map((id, i) => { const d = enemyDef(id); const boss = !!D.BOSSES[id], big = i === 0 && (nem || risky);
+    const name = i === 0 && nem ? r.nemesis.name : id === 'kot-ochroniarz' && r.boss === 'prezes' ? 'Ochroniarz' : (i === 0 && risky ? 'Elitarny ' : '') + d.name;
+    return `<div class="pv ${boss ? 'boss' : ''} ${big ? 'boss nemesis' : ''}">${art.enemyArt(d.art)}<span>${esc(name)}</span></div>`; }).join('');
+  const affs = r.elite && r.affixes ? r.affixes : nem ? [r.nemesis.affix] : risky ? [r.door.affix] : null;
+  const aff = affs ? `<div class="affixes">${affs.map(a => `<span class="tag aff" title="${esc(D.AFFIXES[a].text)}">${esc(D.AFFIXES[a].name)}: ${esc(D.AFFIXES[a].text)}</span>`).join('')}</div>` : '';
+  const loot = nem && r.nemesis.tile && TILE[r.nemesis.tile] ? ` · odzyskasz: ${esc(TILE[r.nemesis.tile].name)}` : '';
+  const lab = r.boss ? 'Boss tego piętra' : nem ? 'Twój Nemezis! Nagroda: Odznaka Sprawiedliwość Kurnika' + loot : r.elite ? 'Elitarny wróg na piętrze (nagroda: Odznaka)'
+    : risky ? 'Drzwi dla personelu. Nagroda: ' + (r.door.reward === 'rare' ? 'wybór rzadkiego kafelka' : '+' + D.RULES.doorCoins + ' Ziaren') : 'Na tym piętrze czekają';
+  return `<div class="preview ${nem ? 'nem' : ''}"><div class="lab">${lab}</div>${items}${aff}</div>`;
 }
+// Okólnik Zarządu bieżącej strefy: pełna ramka na pierwszym piętrze strefy (i przy drzwiach), potem tylko nazwa w podtytule i pigułka na pasku.
+const zoneAt = (mode, n) => { for (const z of D.MODES[mode].zones) if (n <= z.upTo) return z.zone; return 2; };
+function decreeHTML(always = false) {
+  const r = G.run, d = r.decree && D.DECREES[r.decree];
+  if (!d || !(always || r.round === 1 || zoneAt(r.mode, r.round - 1) !== zoneAt(r.mode, r.round))) return '';
+  return `<div class="decree">${art.decreeIcon()}<div><b>Nowy Okólnik Zarządu: ${esc(d.name)}.</b> ${esc(d.text)}</div></div>`;
+}
+const decreeSub = () => { const d = G.run.decree && D.DECREES[G.run.decree]; return d ? ` · <span class="dsub" title="${esc(d.text)}">Okólnik: ${esc(d.name)}</span>` : ''; };
 function towerHTML() {
   const r = G.run, M = D.MODES[r.mode];
   let rows = '';
   for (let n = M.rounds; n >= 1; n--) {
-    const cls = ['floor', n < r.round || r.phase === 'over' && n <= r.done ? 'done' : '', n === r.round && r.phase !== 'over' ? 'now' : '', M.bosses[n] ? 'boss' : ''].join(' ');
-    rows += `<div class="${cls}" title="Piętro ${n}">${M.bosses[n] ? art.skullIcon() : ''}${n}</div>`;
+    const nem = r.nemesis && !r.nemesis.beaten && r.nemesis.round === n, door = (r.doors || []).includes(n);
+    const cls = ['floor', n < r.round || r.phase === 'over' && n <= r.done ? 'done' : '', n === r.round && r.phase !== 'over' ? 'now' : '', M.bosses[n] ? 'boss' : '', nem ? 'nem' : '', door ? 'door' : ''].join(' ');
+    const tip = 'Piętro ' + n + (nem ? ': ' + r.nemesis.name : door ? ': Rozwidlenie Korytarza' : '');
+    rows += `<div class="${cls}" title="${esc(tip)}">${M.bosses[n] || nem ? art.skullIcon() : ''}${nem ? '!' : ''}${door && !nem ? '<span class="dr">⌂</span>' : ''}${n}</div>`;
   }
   return `<aside class="tower" aria-label="Postęp"><h4>Piętra</h4>${rows}<div class="pot"></div></aside>`;
 }
@@ -202,7 +228,15 @@ function sideHTML() {
   const rows = T.STAT_LABELS.map(([k, label, f]) => `<dt>${label}</dt><dd>${f ? f(S[k]) : S[k]}</dd>`).join('')
     + (S.dmg ? `<dt>Obrażenia</dt><dd>+${S.dmg}%</dd>` : '') + (S.critMult !== 150 ? `<dt>Siła trafienia krytycznego</dt><dd>×${(S.critMult / 100).toFixed(2).replace('.', ',')}</dd>` : '');
   const counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
-  const chips = Object.entries(counts).map(([id, n]) => { const t = TILE[id]; return `<div class="chip r${t.rarity}" tabindex="0" data-tip="${esc(t.name)}\n${esc(t.text)}">${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : ''}</div>`; }).join('');
+  const chips = Object.entries(counts).map(([id, n]) => {
+    const t = TILE[id], g = t.grow ? Math.min(t.grow.max, (r.grow || {})[id] || 0) : 0, fw = (r.flawed || []).find(w => w.id === id);
+    let tip = t.name + '\n' + t.text;
+    if (t.grow) tip += '\nLicznik: ' + g + ' / ' + t.grow.max;
+    if (fw) tip += '\nWada fabryczna (+50% efektów): ' + (fw.flaw ? D.FLAWS[fw.flaw].name + '. ' + D.FLAWS[fw.flaw].text : 'ujawni się po walce');
+    return `<div class="chip r${t.rarity} ${fw ? 'flawed' : ''}" tabindex="0" data-tip="${esc(tip)}">${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : t.grow && g ? `<sup class="gr">+${g}</sup>` : ''}</div>`;
+  }).join('');
+  const pawnLine = r.pawned ? `<div class="setline pawn">W lombardzie: ${esc(TILE[r.pawned.id].name)}${r.pawned.canRedeem ? ` (wykup za ${r.pawned.cost} Ziaren tylko na tym piętrze)` : ' (wykup na następnym piętrze)'}</div>` : '';
+  const foxLine = r.foxDebt ? `<div class="setline pawn">Lisy Windykatory silniejsze o ${r.foxDebt * D.RULES.pawnFox}% (przepadłe zastawy)</div>` : '';
   const sets = Object.entries(D.SETS).map(([id, st]) => { const n = setOwned(id); if (!n) return ''; const total = D.TILES.filter(t => t.set === id).length; return `<div class="setline">Zestaw ${st.name} ${n}/${total}${n >= 2 ? ': ' + st.b2 : ''}${n >= 3 ? '; ' + st.b3 : ''}${n >= 4 && st.b4 ? '; ' + st.b4 : ''}</div>`; }).join('');
   const mss = Object.entries(D.MILESTONES).map(([id, m]) => { const n = Math.floor(r.tiles.filter(x => x === id).length / D.MILESTONE_EVERY); return n ? `<div class="setline ms">${esc(m.name)}${n > 1 ? ' ×' + n : ''}: ${esc(m.text)}</div>` : ''; }).join('');
   const pct = Math.max(0, Math.min(100, r.hp / S.maxHp * 100));
@@ -212,13 +246,14 @@ function sideHTML() {
     <div class="panel"><h4>Umiejętności aktywne</h4><div class="slots">${slots}</div></div>
     ${r.badges && r.badges.length ? `<div class="panel"><h4>Odznaki (${r.badges.length})</h4><div class="chips">${r.badges.map(b => `<div class="chip badge" tabindex="0" data-tip="${esc(D.BADGES[b].name)}\n${esc(D.BADGES[b].text)}">${art.badgeIcon(b)}</div>`).join('')}</div></div>` : ''}
     <div class="panel"><h4>Statystyki</h4><dl class="stats">${rows}</dl></div>
-    <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${sets}${mss}</div></aside>`;
+    <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${sets}${mss}${pawnLine}${foxLine}</div></aside>`;
 }
 function topbarHTML() {
   const r = G.run, M = D.MODES[r.mode];
   return `<div class="topbar"><span class="brand">BULGOT</span>
     <span class="pill">Piętro <b>${r.round}</b> / ${r.rounds}</span><span class="zone-name">${esc(T.ZONE_NAMES[r.zone])}</span><span class="spacer"></span>
-    <span class="pill" title="Ziarna: waluta na rerolle i zakupy">${art.coinIcon()} <b>${r.coins}</b></span>
+    <span class="pill" title="Ziarna: waluta na rerolle i zakupy. Odsetki po wygranej walce: +${Math.min(r.interestMax || 3, Math.floor(r.coins / D.RULES.interestPer))}">${art.coinIcon()} <b>${r.coins}</b></span>
+    ${r.decree && D.DECREES[r.decree] ? `<span class="pill dec" tabindex="0" title="${esc(D.DECREES[r.decree].name + ': ' + D.DECREES[r.decree].text)}">${art.decreeIcon()} Okólnik</span>` : ''}
     <span class="pill">${M.name}</span>${r.garnek ? `<span class="pill g">Garnek ${r.garnek} · ${D.GARNEK[r.garnek].name}</span>` : ''}
     <span class="pill" title="Wynik na żywo">★ ${fmtNum(r.score)}</span>
     <button class="btn small" data-act="menu">Menu</button></div>`;
@@ -228,6 +263,7 @@ function stageHTML() {
   if (r.phase === 'offer') return stageOffer();
   if (r.phase === 'event') { const kd = r.pending.kind; return kd === 'shop' ? stageShop() : kd === 'contract' ? stageContract() : kd === 'shrine' ? stageShrine() : stageGamble(); }
   if (r.phase === 'badge') return stageBadge();
+  if (r.phase === 'door') return stageDoor();
   if (r.phase === 'bonus') return stageBonus();
   if (r.phase === 'fight') return stagePrep();
   return '';
@@ -248,16 +284,42 @@ function offerCard(id, i) {
   const buy = t.event
     ? '<div class="buynote">Wydarzenie: tylko do wyboru</div>'
     : `<button class="btn small buy" data-act="buyoffer" data-i="${i}" ${r.coins < price || left < 2 ? 'disabled' : ''} title="Dokup ten kafelek za Ziarna (Shift + ${i + 1}). Darmowy wybór zostaje.">Dokup za ${price} ${art.coinIcon()}</button>`;
-  return `<div class="slotcard">${tileCard(id, { i })}${buy}</div>`;
+  const flaw = i === r.flawAt, will = r.will && id === r.will;
+  const stamp = flaw ? '<div class="stamp flaw" title="Efekty kafelka są o 50% mocniejsze, ale ma ukrytą wadę, która ujawni się po następnej walce.">Wada fabryczna · +50%</div>'
+    : will ? '<div class="stamp will" title="Kafelek zapisany w Testamencie Pyrtka po poprzednim runie.">Testament</div>' : '';
+  return `<div class="slotcard ${flaw ? 'flawed' : ''} ${will ? 'willed' : ''}">${stamp}${tileCard(id, { i })}${buy}</div>`;
+}
+// Lombard Lisa: przycisk zastawu albo wykupu.
+function pawnBtn() {
+  const r = G.run, p = r.pawned;
+  if (p && p.canRedeem) return `<button class="btn" data-act="redeem" ${r.coins < p.cost ? 'disabled' : ''} title="Lis odda kafelek tylko na tym piętrze">${art.pawnIcon()} Wykup: ${esc(TILE[p.id].name)} za ${p.cost} ${art.coinIcon()}</button>`;
+  if (p) return '';
+  return `<button class="btn" data-act="pawnmenu" ${pawnable().length ? '' : 'disabled'} title="Zastaw kafelek u Lisa za pełną cenę (klawisz L)">${art.pawnIcon()} Lombard Lisa</button>`;
+}
+const pawnable = () => { const r = G.run; return [...new Set(r.tiles)].filter(id => { const t = TILE[id]; return t && t.type !== 'skill' && !t.hidden && !(r.flawed || []).some(w => w.id === id); }); };
+function showPawn() {
+  const r = G.run, cards = pawnable().map((id, i) => `<div class="slotcard">${tileCard(id, { i, static: true, mini: true })}<button class="btn small buy" data-act="pawn" data-v="${id}">Zastaw za ${D.RULES.prices[TILE[id].rarity]} ${art.coinIcon()}</button></div>`).join('');
+  openOverlay(`<h2>Lombard Lisa</h2><p class="lead">Lis da ci od ręki pełną cenę kafelka. Wykupisz go tylko na <b>następnym piętrze</b> za ${D.RULES.pawnBack}% ceny. Jeśli nie wykupisz, kafelek przepada, a Lisy Windykatory w tym runie są o ${D.RULES.pawnFox}% silniejsze.</p><div class="cards pawn-grid">${cards}</div>`);
 }
 function stageOffer() {
   const r = G.run, cards = r.offer.map((id, i) => id ? offerCard(id, i) : '<div class="slotcard"><div class="tile gone">Dokupione</div></div>').join('');
   const cost = r.rerollCost, free = cost === 0;
-  return `<div class="stage-title"><h2>Piętro ${r.round}${r.boss ? ' · BOSS' : ''}</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${r.elite ? ' · elitarny wróg' : ''}</div></div>
-    <div class="kron">${esc(floorKron())}</div>${previewHTML()}
+  const lost = r.lostPawn && r.foxDebt ? `<div class="hint warn">Lis zatrzymał ${esc(TILE[r.lostPawn] ? TILE[r.lostPawn].name : '')}. Lisy Windykatory są silniejsze o ${r.foxDebt * D.RULES.pawnFox}%.</div>` : '';
+  return `<div class="stage-title"><h2>Piętro ${r.round}${r.boss ? ' · BOSS' : ''}</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${r.elite ? ' · elitarny wróg' : ''}${decreeSub()}</div></div>
+    <div class="kron">${esc(r.nemesisRound ? T.pickLine(T.NEMESIS_LINES, r.round) : floorKron())}</div>${decreeHTML()}${previewHTML()}
     <div class="cards">${cards}</div>
-    <div class="actions"><button class="btn" data-act="reroll" ${r.coins < cost ? 'disabled' : ''}>Reroll ${free ? '(za darmo)' : `za ${cost} ${art.coinIcon()}`}</button>${restBtn()}</div>
-    <div class="hint">Jeden kafelek bierzesz za darmo (klawisze 1–${r.offer.length}), pozostałe możesz dokupić (Shift + cyfra). R przelosowuje ofertę. Strzałki i Enter też działają.</div>`;
+    <div class="actions"><button class="btn" data-act="reroll" ${r.coins < cost ? 'disabled' : ''}>Reroll ${free ? '(za darmo)' : `za ${cost} ${art.coinIcon()}`}</button>${restBtn()}${pawnBtn()}</div>${lost}
+    <div class="hint">Jeden kafelek bierzesz za darmo (klawisze 1–${r.offer.length}), pozostałe możesz dokupić (Shift + cyfra). R przelosowuje ofertę, L otwiera Lombard. Strzałki i Enter też działają.</div>`;
+}
+function stageDoor() {
+  const r = G.run, P = r.pending, a = D.AFFIXES[P.affix];
+  const reward = P.reward === 'rare' ? 'wybór 1 z 3 rzadkich kafelków' : `+${P.coins} Ziaren`;
+  const cards = [
+    choiceCard(0, art.doorIcon(false), 'Zwykłe drzwi', 'Spokojne piętro: zwykli wrogowie i zwykła nagroda.'),
+    choiceCard(1, art.doorIcon(true), 'Tylko dla personelu', `Pierwszy wróg ma cechę ${a.name} (${a.text}) i jest dużo silniejszy. Przychodzi najwyżej z jednym pomocnikiem.`, `<div class="tmeta"><span class="tag up">Nagroda: ${esc(reward)}</span></div>`),
+  ].join('');
+  return `<div class="stage-title"><h2>Piętro ${r.round}: Rozwidlenie Korytarza</h2><div class="sub">Masz ${r.hp} / ${r.maxHp} Życia. Wybierz drzwi.</div></div>
+    <div class="kron">${esc(T.pickLine(T.DOOR_LINES, r.round))}</div>${decreeHTML(true)}<div class="cards">${cards}</div>`;
 }
 function stageShop() {
   const r = G.run, cards = r.pending.offer.map((id, i) => tileCard(id, { i, act: 'buy', price: shopPrice(TILE[id]) })).join('');
@@ -265,7 +327,7 @@ function stageShop() {
     <div class="kron">Babcia nie bierze kart. Babcia bierze ziarno.</div><div class="cards">${cards}</div>
     <div class="actions"><button class="btn" data-act="leave">Wychodzę bez zakupu</button></div>`;
 }
-const shopPrice = t => { const p = D.RULES.prices[t.rarity], d = G.run && G.run.buyDisc; return d ? Math.max(1, Math.floor(p * (100 - d) / 100)) : p; };
+const shopPrice = t => { const p = Math.ceil(D.RULES.prices[t.rarity] * ((G.run && G.run.priceMul) || 100) / 100), d = G.run && G.run.buyDisc; return d ? Math.max(1, Math.floor(p * (100 - d) / 100)) : p; };
 const setsOf = t => t.sets || (t.set ? [t.set] : []);
 function stageGamble() {
   const r = G.run, c = r.coins, q = Math.max(1, Math.floor(c / 4)), h = Math.max(1, Math.floor(c / 2));
@@ -300,15 +362,15 @@ function stageShrine() {
 }
 function stageBonus() {
   const r = G.run, cards = r.offer.map((id, i) => tileCard(id, { i, act: 'bonuspick' })).join('');
-  const bs = r.boss || '', name = bs ? D.BOSSES[bs].name : 'Bossa';
-  return `<div class="stage-title"><h2>Nagroda za pokonanie bossa</h2><div class="sub">Wybierz jeden z trzech rzadkich lub lepszych kafelków</div></div>
-    <div class="kron">${esc(T.BOSS_WIN_LINES[lastBoss()] || 'Boss padł, a łup czeka.')}</div><div class="cards">${cards}</div>`;
+  const fromDoor = !r.boss && r.door && r.door.risky;
+  return `<div class="stage-title"><h2>${fromDoor ? 'Łup zza drzwi dla personelu' : 'Nagroda za pokonanie bossa'}</h2><div class="sub">Wybierz jeden z trzech rzadkich lub lepszych kafelków</div></div>
+    <div class="kron">${esc(fromDoor ? 'Ryzyko się opłaciło. Tym razem.' : T.BOSS_WIN_LINES[lastBoss()] || 'Boss padł, a łup czeka.')}</div><div class="cards">${cards}</div>`;
 }
 const lastBoss = () => { const b = G.run && G.run.stats.bossKills; return b && b[b.length - 1]; };
 function stagePrep() {
   const r = G.run;
-  return `<div class="stage-title"><h2>Piętro ${r.round}: do walki!</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}</div></div>
-    <div class="kron">${esc(floorKron())}</div>${previewHTML()}
+  return `<div class="stage-title"><h2>Piętro ${r.round}: do walki!</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${decreeSub()}</div></div>
+    <div class="kron">${esc(r.nemesisRound ? T.pickLine(T.NEMESIS_LINES, r.round + 1) : floorKron())}</div>${decreeHTML()}${previewHTML()}
     <div class="actions">${restBtn()}<button class="btn primary big" data-act="tofight" data-primary>Do walki!</button></div>
     <div class="hint">W walce użyjesz umiejętności klawiszami 1, 2, 3. P robi pauzę. O to odpoczynek.</div>`;
 }
@@ -331,13 +393,15 @@ function askMut(tile, cb) {
   const opts = sk.muts.map((m, k) => `<button class="slot mutopt" data-act="mutchoose" data-v="${k + 1}">${art.tileIcon(tile.id)}<div><div class="sn">${esc(m.name)}</div><div class="sd">${esc(m.text)}</div></div></button>`).join('');
   openOverlay(`<h2>Mutacja: ${esc(sk.name)}</h2><p class="lead">Trzecia kopia zmienia umiejętność na stałe. Zachowuje moc poziomu 2 i dostaje jedną z dwóch cech. Wybierz gałąź:</p><div class="slotpick">${opts}</div>`, { narrow: true });
 }
+const flawToast = (i, t) => { if (i === G.lastFlawAt) toast('Wada fabryczna: ' + t.name + ' działa o 50% mocniej, a ukryta wada ujawni się po walce.', false, 4600); };
 async function doPick(i, slot, mut) {
   const r = G.run, id = r.offer[i], t = TILE[id];
   if (!t) return;
   if (needChoice(t, slot, mut, (s2, m2) => doPick(i, s2, m2))) return;
+  G.lastFlawAt = r.flawAt;
   const j = await act('pick', { i, slot, mut });
   if (!j) return;
-  snd.sfx('pick');
+  snd.sfx('pick'); flawToast(i, t);
   if (j.crate) return showCrate(j.crate);
   if (j.automat) toast('Automat wypluł: ' + j.automat.map(id => TILE[id].name).join(' i '), false, 4200);
   render();
@@ -346,9 +410,10 @@ async function doBuy(i, slot, mut) {
   const r = G.run, id = r.offer[i], t = id && TILE[id];
   if (!t) return;
   if (needChoice(t, slot, mut, (s2, m2) => doBuy(i, s2, m2))) return;
+  G.lastFlawAt = r.flawAt;
   const j = await act('buy', { i, slot, mut });
   if (!j) return;
-  snd.sfx('coin'); toast('Dokupiono: ' + t.name + ' (-' + j.price + ' Ziaren)');
+  snd.sfx('coin'); toast('Dokupiono: ' + t.name + ' (-' + j.price + ' Ziaren)'); flawToast(i, t);
   render();
 }
 function askSlot(tile, cb) {
@@ -466,6 +531,10 @@ function onEvent(e) {
     case 'blockslot': banner('Restrukturyzacja', 'Slot ' + (e.slot + 1) + ' zablokowany', true); snd.sfx('phase'); break;
     case 'steal': pop('-1 Ziarno', 'txt', 17, 70); break;
     case 'kill': { const u = tu(e.uid); if (u) { u.el.classList.remove('idle'); u.el.classList.add('dead'); setTimeout(() => { u.el.remove(); F.units.delete(e.uid); }, 650); layoutUnits(); } break; }
+    case 'react': { const u = tu(e.uid), R = D.REACTIONS[e.r]; if (u && R) pop(R.name + '!', 'react ' + e.r, u.x, 80); if (e.r === 'szok') shake(); snd.sfx('crit'); break; }
+    case 'chain': pop('Seria ×' + e.n, 'txt gold', 17, 84); break;
+    case 'seria': banner('Pełna Kurza Seria!', 'Popłoch: wrogowie ogłuszeni', false); snd.sfx('unlock'); shake(); break;
+    case 'flaw': pop(e.f === 'samozaplon' ? 'Samozapłon!' : 'Usterka!', 'txt warn', 17, 80); snd.sfx('hurt'); break;
     case 'victory': snd.sfx('win'); break;
     case 'defeat': snd.sfx('lose'); break;
     case 'timeout': snd.sfx('lose'); break;
@@ -502,7 +571,7 @@ function updateUI(first) {
   const secs = Math.floor(tick / 10);
   $('#tt').textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
   $('#tbi').style.width = Math.min(100, tick / MAX_TICKS * 100) + '%';
-  $('#timer').classList.toggle('fury', tick >= FURY_FROM);
+  $('#timer').classList.toggle('fury', tick >= (f.furyFrom || FURY_FROM));
 }
 
 function frame(ts) {
@@ -559,8 +628,24 @@ function showResult(j) {
     <div class="res-cell"><b>${fmtNum(r.dealt)}</b><span>zadane obrażenia</span></div>
     <div class="res-cell"><b>+${j.reward}</b><span>Ziarna ${art.coinIcon()}</span></div>
     <div class="res-cell"><b>${run.hp}/${run.maxHp}</b><span>życie po leczeniu</span></div></div>
-    ${r.stolen ? `<p class="hint">Złodzieje ukradli ci ${r.stolen} Ziaren.</p>` : ''}${r.usedRevive ? '<p class="hint">Gniazdo Zapasowe zostało zużyte.</p>' : ''}${unlocksHTML(un)}
+    ${r.stolen ? `<p class="hint">Złodzieje ukradli ci ${r.stolen} Ziaren.</p>` : ''}${r.usedRevive ? '<p class="hint">Gniazdo Zapasowe zostało zużyte.</p>' : ''}${resultExtras(j)}${unlocksHTML(un)}
     <div class="actions" style="margin-top:12px"><button class="btn primary big" data-act="close" data-primary>${j.bonus ? 'Wybierz nagrodę' : 'Dalej'}</button></div>`, { narrow: true, force: true });
+}
+// Dopiski do wyniku walki: Odsetki, drzwi, serie, reakcje, kafelki rosnące, ujawnione wady, Nemezis.
+function resultExtras(j) {
+  const r = j.result || {}, out = [];
+  if (j.nemesis) out.push(`<div class="unlock-box"><b>Sprawiedliwości stało się zadość!</b><div class="hint" style="text-align:left">Nemezis pokonany. Dostajesz Odznakę Sprawiedliwość Kurnika${j.nemesis.tile ? ' i odzyskujesz: ' + esc(TILE[j.nemesis.tile].name) : ''}.</div></div>`);
+  const coins = [];
+  if (j.interest) coins.push(`Odsetki w Spiżarni: +${j.interest}`);
+  if (j.doorCoins) coins.push(`łup zza drzwi: +${j.doorCoins}`);
+  if (coins.length) out.push(`<p class="hint">${coins.join(' · ')} ${art.coinIcon()}</p>`);
+  const fx = [];
+  if (r.chains) fx.push(`Pełne Kurze Serie: ${r.chains}`);
+  if (r.reactions) fx.push(`reakcje: ${r.reactions} (${(r.reactSeen || []).map(k => D.REACTIONS[k] ? D.REACTIONS[k].name : k).join(', ')})`);
+  if (fx.length) out.push(`<p class="hint">${esc(fx.join(' · '))}</p>`);
+  if (j.grew && j.grew.length) out.push(`<p class="hint">Urosło: ${j.grew.map(id => esc(TILE[id].name) + ' (' + Math.min(TILE[id].grow.max, (G.run.grow || {})[id] || 0) + '/' + TILE[id].grow.max + ')').join(', ')}</p>`);
+  if (j.revealed && j.revealed.length) out.push(j.revealed.map(w => `<div class="unlock-box flawbox"><b>Wada ujawniona: ${esc(TILE[w.id].name)} · ${esc(D.FLAWS[w.flaw].name)}</b><div class="hint" style="text-align:left">${esc(D.FLAWS[w.flaw].text)} Działa od teraz. Wylęgarnia usuwa wadę razem ze składnikiem.</div></div>`).join(''));
+  return out.join('');
 }
 function takeUnlocks() { const u = G.unlocks; G.unlocks = []; return u; }
 function unlocksHTML(list) {
@@ -568,11 +653,23 @@ function unlocksHTML(list) {
   return list.map(u => `<div class="unlock-box"><b>Odblokowano ${u.kind === 'char' ? 'postać' : 'kafelek'}: ${esc(unlockName(u))}</b><div class="hint" style="text-align:left">${esc(u.text)}</div></div>`).join('');
 }
 
-function showEnd(j) {
-  const r = G.run, e = j.end || {}, win = r.ended === 'win', un = takeUnlocks();
+// Po przegranej: kto awansował (Nemezis) i Testament Pyrtka (wybór kafelka do następnego runu).
+function endMeta(j) {
+  const r = G.run, p = G.profile, out = [];
+  if (r.ended !== 'lose') return '';
+  if (j.result && p.nemesis) { const n = p.nemesis, t = n.tile && TILE[n.tile]; out.push(`<div class="unlock-box nembox"><b>Awans Wroga: ${esc(n.name)}${n.lvl > 1 ? ' (awans ' + n.lvl + '.)' : ''}</b><div class="hint" style="text-align:left">${n.lvl > 1 ? 'Znowu wygrał i awansował wyżej.' : 'Twój zabójca dostał awans i cechę ' + esc(D.AFFIXES[n.affix].name) + '.'}${t ? ' Ukradł ci: ' + esc(t.name) + '.' : ''} Czeka na ciebie w następnym runie.</div></div>`); }
+  if (r.willOptions && r.willOptions.length) {
+    out.push(`<div class="sec">Testament Pyrtka</div><p class="lead">Zapisz jeden kafelek następnemu kurczakowi. Pojawi się jako piąta karta pierwszej oferty${p.chars.length > 1 ? ' w runie inną postacią' : ''}.</p>
+      <div class="cards will-grid">${r.willOptions.map((id, i) => `<div class="slotcard">${tileCard(id, { i, static: true, mini: true })}<button class="btn small buy" data-act="will" data-i="${i}">Zapisz</button></div>`).join('')}</div>
+      <div class="actions"><button class="btn small ghost" data-act="will" data-i="-1">Bez testamentu</button></div>`);
+  } else if (p.will && j.will) out.push(`<div class="unlock-box"><b>Testament spisany: ${esc(TILE[p.will.tile].name)}</b><div class="hint" style="text-align:left">Czeka w pierwszej ofercie następnego runu.</div></div>`);
+  return out.join('');
+}
+function showEnd(j, quiet = false) {
+  const r = G.run, e = j.end || (G.lastEndJ && G.lastEndJ.end) || {}, win = r.ended === 'win', un = takeUnlocks();
   const mult = (100 + D.RULES.garnekScore * r.garnek) / 100;
-  G.lastEnd = e;
-  snd.sfx(win ? 'win' : 'lose'); if (!win) snd.sfx('bulgot');
+  G.lastEnd = e; G.lastEndJ = j;
+  if (!quiet) { snd.sfx(win ? 'win' : 'lose'); if (!win) snd.sfx('bulgot'); }
   const lines = win ? T.END_WIN.lines : [T.pickLine(T.LOSE_LINES, r.done)];
   openOverlay(`<h2 class="end-title ${win ? '' : 'lose'}">${win ? T.END_WIN.title : T.END_LOSE.title}</h2>
     ${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}
@@ -583,7 +680,7 @@ function showEnd(j) {
       <tr class="total"><td>Wynik</td><td>${fmtNum(r.score)}</td></tr></table>
     ${e.newBest ? '<p class="lead" style="color:var(--gold)"><b>Nowy rekord życiowy w tym trybie!</b></p>' : ''}
     ${e.rank ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}
-    ${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano Temperaturę Garnka ${G.profile.garnek}: ${esc(D.GARNEK[G.profile.garnek].name)}</b></div>` : ''}${unlocksHTML(un)}
+    ${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano Temperaturę Garnka ${G.profile.garnek}: ${esc(D.GARNEK[G.profile.garnek].name)}</b></div>` : ''}${unlocksHTML(un)}${endMeta(j)}
     <div class="actions" style="margin-top:14px"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div>`, { force: true });
   G.screen = 'home'; render();
 }
@@ -603,9 +700,17 @@ async function showRanking(mode) {
   }).join('')}</tbody></table>`;
 }
 function showBook(tab = 'tiles') {
-  const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['badges', 'Odznaki'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania']];
+  const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['react', 'Reakcje i Okólniki'], ['badges', 'Odznaki'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania']];
   let body = '';
-  if (tab === 'badges') {
+  if (tab === 'react') {
+    const known = p.reactions || [];
+    body = `<p class="lead">Dwa różne efekty na jednym wrogu łączą się w reakcję. Odkryte: ${known.length} z ${Object.keys(D.REACTIONS).length}.</p><div class="ms-grid">${Object.values(D.REACTIONS).map(R => known.includes(R.id)
+      ? `<div class="ms-row">${art.statusIcon(R.of[0])}${art.statusIcon(R.of[1])}<div><b>${esc(R.name)}</b><br><span>${esc(R.text)}</span></div></div>`
+      : `<div class="ms-row unknown">${art.statusIcon(R.of[0])}${art.statusIcon(R.of[1])}<div><b>?</b><br><span>${esc(D.STATUS[R.of[0]].name)} + ${esc(D.STATUS[R.of[1]].name)}: jeszcze nie odkryto.</span></div></div>`).join('')}</div>
+      <div class="sec">Okólniki Zarządu</div><p class="lead">Każda strefa w runie ma inny okólnik, który zmienia zasady.</p><div class="ms-grid">${Object.values(D.DECREES).map(d => `<div class="ms-row">${art.decreeIcon()}<div><b>${esc(d.name)}</b><br><span>${esc(d.text)}</span></div></div>`).join('')}</div>
+      <div class="sec">Wady fabryczne</div><p class="lead">Kafelek z pieczątką „Wada fabryczna” jest o 50% mocniejszy, ale po następnej walce ujawnia jedną z wad:</p><div class="ms-grid">${Object.values(D.FLAWS).map(f => `<div class="ms-row"><div><b>${esc(f.name)}</b><br><span>${esc(f.text)}</span></div></div>`).join('')}</div>
+      ${p.nemesis ? `<div class="sec">Twój Nemezis</div><p class="lead">${esc(p.nemesis.name)}, cecha ${esc(D.AFFIXES[p.nemesis.affix].name)}${p.nemesis.tile ? ', ukradł ' + esc(TILE[p.nemesis.tile].name) : ''}. Pokonane Nemezis: ${p.counters.nemesisKills || 0}.</p>` : ''}`;
+  } else if (tab === 'badges') {
     body = `<p class="lead">Odznaki Pracownicze dostajesz za pokonanie bossa albo elitarnego wroga (wybór 1 z 3) i w Kapliczce. Działają do końca runu.</p><div class="ms-grid">${Object.entries(D.BADGES).map(([id, b]) => `<div class="ms-row">${art.badgeIcon(id)}<div><b>${esc(b.name)}</b><br><span>${esc(b.text)}</span></div></div>`).join('')}</div>
       <div class="sec">Cechy elitarnych wrogów</div><p class="lead">Elita ma jedną cechę (od Garnka 2: dwie). Podgląd piętra pokazuje je przed walką.</p><div class="ms-grid">${Object.values(D.AFFIXES).map(a => `<div class="ms-row"><div><b>${esc(a.name)}</b><br><span>${esc(a.text)}</span></div></div>`).join('')}</div>`;
   } else if (tab === 'hatch') {
@@ -690,6 +795,10 @@ const ACT = {
   introgo: () => { closeOverlay(); },
   pick: b => doPick(+b.dataset.i),
   buyoffer: b => doBuy(+b.dataset.i),
+  pawnmenu: () => showPawn(),
+  pawn: async b => { const id = b.dataset.v; const j = await act('pawn', { id }); if (!j) return; closeOverlay(); snd.sfx('coin'); toast(`Lis wziął ${TILE[id].name} i dał ${j.price} Ziaren. Wykup na następnym piętrze.`, false, 4200); render(); },
+  redeem: async () => { const j = await act('redeem'); if (!j) return; snd.sfx('unlock'); toast(`Wykupiono: ${TILE[j.redeemed].name} (-${j.cost} Ziaren)`); render(); },
+  will: async b => { const i = +b.dataset.i; const j = await act('will', { i }); if (!j) return; snd.sfx(i >= 0 ? 'unlock' : 'click'); showEnd({ ...G.lastEndJ, will: j.will || null }, true); },
   rest: async () => { const j = await act('rest'); if (!j) return; snd.sfx('heal'); toast('Odpoczynek: +' + j.healed + ' życia (-' + j.cost + ' Ziarna)'); render(); },
   reroll: async () => { const j = await act('reroll'); if (j) { snd.sfx('reroll'); render(); } },
   buy: b => ACT.shopgo(+b.dataset.i),
@@ -780,10 +889,11 @@ document.addEventListener('keydown', e => {
   }
   const r = G.run;
   if (G.screen === 'run' && r) {
-    const dg = /^Digit([1-4])$/.exec(e.code);
+    const dg = /^Digit([1-5])$/.exec(e.code);
     if (r.phase === 'offer' && dg && e.shiftKey) { const b = $(`.cards [data-act=buyoffer][data-i="${+dg[1] - 1}"]`); if (b && !b.disabled) b.click(); }
-    else if ((r.phase === 'badge' || (r.phase === 'event' && r.pending && (r.pending.kind === 'contract' || r.pending.kind === 'shrine'))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
-    else if (r.phase === 'offer' && ['1', '2', '3', '4'].includes(k)) { const b = $(`.cards [data-act=pick][data-i="${+k - 1}"]`); if (b) b.click(); }
+    else if ((r.phase === 'badge' || r.phase === 'door' || (r.phase === 'event' && r.pending && (r.pending.kind === 'contract' || r.pending.kind === 'shrine'))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
+    else if (r.phase === 'offer' && ['1', '2', '3', '4', '5'].includes(k)) { const b = $(`.cards [data-act=pick][data-i="${+k - 1}"]`); if (b) b.click(); }
+    else if (r.phase === 'offer' && k === 'l') { const b = $('[data-act="pawnmenu"], [data-act="redeem"]'); if (b && !b.disabled) b.click(); }
     else if ((r.phase === 'offer' || r.phase === 'fight') && k === 'o') { const b = $('[data-act="rest"]'); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'offer' && k === 'r') { const b = $('[data-act="reroll"]'); if (b && !b.disabled) b.click(); }
     else if ((r.phase === 'event' || r.phase === 'bonus') && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-i="${+k - 1}"]`); if (b) b.click(); }
