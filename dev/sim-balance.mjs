@@ -2,7 +2,7 @@
 // Użycie (Windows: export PATH="/c/Users/Kurczak/tools/node:$PATH"):
 //   node dev/sim-balance.mjs [--mode full|quick] [--garnek 0..5] [--n 300] [--policy smart|random] [--pool starter|all] [--char pyrtek]
 // Bot używa dokładnie tych samych funkcji co serwer (rules.js, sim.js), więc liczby są prawdziwe.
-import { newRun, pickTile, reroll, shopBuy, bet, bonusPick, fightSetup, fightFinish, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
+import { newRun, pickTile, reroll, buyOffer, shopBuy, bet, bonusPick, fightSetup, fightFinish, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
 import { Fight } from '../../pl3y-server/src/games/bulgot/sim.js';
 import { TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, RULES } from '../../pl3y-server/src/games/bulgot/data.js';
 import { makeRng, mix } from '../../pl3y-server/src/games/bulgot/rng.js';
@@ -13,11 +13,15 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i >= 0 
 const MODE = arg('mode', 'full'), GARNEK = +arg('garnek', 0), N = +arg('n', 300), POLICY = arg('policy', 'smart'), POOL = arg('pool', 'all'), CHAR = arg('char', 'pyrtek');
 const SEED0 = +arg('seed', 1);
 const TRACE = process.argv.includes('--trace');
+const NOBUY = process.argv.includes('--nobuy'), BUYMIN = +arg('buymin', 1.05);
 const PER = {};
 // Pokrętła do strojenia (nie zmieniają plików): mnożniki życia/ataku wrogów i bossów oraz tempo wzrostu na rundę.
 const HPM = +arg('hpmul', 1), ATKM = +arg('atkmul', 1), BHPM = +arg('bosshp', 1), BATKM = +arg('bossatk', 1);
 if (arg('grow')) { const [h, a] = arg('grow').split(',').map(Number); MODES[MODE].grow = { hp: h, atk: a }; }
 if (arg('heal')) RULES.healPct = +arg('heal');
+if (arg('income')) { const [a, b2] = arg('income').split(',').map(Number); RULES.coinsRound = a; RULES.coinsBoss = b2; }
+if (arg('prices')) RULES.prices = arg('prices').split(',').map(Number);
+const MAXBUY = +arg('maxbuy', 9);
 if (arg('basehp')) CHARS.pyrtek.base.hp = +arg('basehp');
 for (const e of Object.values(ENEMIES)) { e.hp = Math.round(e.hp * HPM); e.atk = Math.max(1, Math.round(e.atk * ATKM)); }
 for (const e of Object.values(BOSSES)) { e.hp = Math.round(e.hp * BHPM); e.atk = Math.max(1, Math.round(e.atk * BATKM)); }
@@ -92,6 +96,19 @@ function playRun(seed) {
       let i = choose(run, run.offer, rng);
       const best = tileValue(run, run.offer[i]) / power(run);
       if (POLICY === 'smart' && best < 1.04 && run.coins >= rerollCost(run) + 2 && run.paid < 2) { reroll(run); continue; }
+      // dokupowanie: najpierw najlepsze opłacalne kafelki z reszty oferty (wolny wybór zostaje)
+      if (POLICY === 'smart' && !NOBUY) {
+        const p0 = power(run);
+        const opts = run.offer.map((id, k) => ({ id, k })).filter(o => o.id && o.k !== i && !TILE_BY_ID[o.id].event).map(o => ({ ...o, gain: tileValue(run, o.id) / p0 })).sort((a, b) => b.gain - a.gain);
+        let nb = 0;
+        for (const o of opts) {
+          if (nb >= MAXBUY) break;
+          const t0 = TILE_BY_ID[o.id], price = shopPrice(t0);
+          if (o.gain < BUYMIN || price > run.coins || run.offer.filter(x => x).length < 2) continue;
+          let sl; if (t0.type === 'skill' && run.skills.length >= 3 && !run.skills.find(s => s.id === t0.skill)) sl = run.skills.reduce((m, s, k, a) => (s.lvl < a[m].lvl ? k : m), 0);
+          if (buyOffer(run, o.k, sl).ok) nb++;
+        }
+      }
       const t = TILE_BY_ID[run.offer[i]];
       let slot;
       if (t.type === 'skill' && run.skills.length >= 3 && !run.skills.find(s => s.id === t.skill)) slot = run.skills.reduce((m, s, k, a) => (s.lvl < a[m].lvl ? k : m), 0);

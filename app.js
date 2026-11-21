@@ -25,6 +25,13 @@ const G = {
 };
 window.__bulgot = G;      // podgląd stanu w testach
 
+// Skalowanie: na dużych monitorach cały interfejs rośnie (zoom), a --vh to wysokość okna w jednostkach po przeskalowaniu.
+function applyScale() {
+  const w = innerWidth, h = innerHeight, sc = Math.max(1, Math.min(w / 1440, h / 860, 2.2)), root = document.documentElement;
+  root.style.setProperty('--s', sc.toFixed(3)); root.style.setProperty('--vh', (h / sc).toFixed(1) + 'px');
+}
+applyScale(); addEventListener('resize', applyScale);
+
 // ---------- drobne narzędzia UI ----------
 function toast(msg, err = false, ms = 2800) {
   const d = document.createElement('div'); d.className = 'toast' + (err ? ' err' : ''); d.textContent = msg;
@@ -101,7 +108,7 @@ function renderHome() {
       ${run ? `<div class="resume">Trwa run: <b>${esc(D.MODES[run.mode].name)}</b>, piętro ${run.round}/${run.rounds}, ${run.coins} ${art.coinIcon()} Ziaren</div>
         <button class="btn primary big" data-act="resume" data-primary>Kontynuuj</button><button class="btn small ghost" data-act="abandon">Porzuć run</button>`
       : `<button class="btn primary big" data-act="new" data-primary>Graj</button>`}
-      <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk</button></div>
+      <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk</button><button class="btn ghost" data-act="history">Historia (test)</button></div>
       ${bestLine ? `<div class="best">Najlepsze wyniki. ${bestLine}</div>` : ''}
     </div></div></div>`;
 }
@@ -170,7 +177,7 @@ function sideHTML() {
     return `<div class="slot">${art.tileIcon(tile.id)}<div><div class="sn">${i + 1}. ${esc(def.name)}${s.lvl >= 2 ? '<span class="lv">POZ. 2</span>' : ''}</div><div class="sd">${esc(def.text)}${s.lvl >= 2 ? ' (+30% mocy, -20% cooldownu)' : ''}</div></div></div>`;
   }).join('');
   const rows = T.STAT_LABELS.map(([k, label, f]) => `<dt>${label}</dt><dd>${f ? f(S[k]) : S[k]}</dd>`).join('')
-    + (S.dmg ? `<dt>Obrażenia</dt><dd>+${S.dmg}%</dd>` : '') + (S.critMult !== 150 ? `<dt>Mnożnik krytyka</dt><dd>×${(S.critMult / 100).toFixed(2).replace('.', ',')}</dd>` : '');
+    + (S.dmg ? `<dt>Obrażenia</dt><dd>+${S.dmg}%</dd>` : '') + (S.critMult !== 150 ? `<dt>Siła trafienia krytycznego</dt><dd>×${(S.critMult / 100).toFixed(2).replace('.', ',')}</dd>` : '');
   const counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
   const chips = Object.entries(counts).map(([id, n]) => { const t = TILE[id]; return `<div class="chip r${t.rarity}" tabindex="0" data-tip="${esc(t.name)}\n${esc(t.text)}">${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : ''}</div>`; }).join('');
   const sets = Object.entries(D.SETS).map(([id, st]) => { const n = setOwned(id); if (!n) return ''; const total = D.TILES.filter(t => t.set === id).length; return `<div class="setline">Zestaw ${st.name} ${n}/${total}${n >= 2 ? ': ' + st.b2 : ''}${n >= 3 ? '; ' + st.b3 : ''}</div>`; }).join('');
@@ -204,14 +211,21 @@ function floorKron() {
   if (r.boss) return T.BOSS_INTRO[r.boss].quote;
   return T.pickLine(T.OFFER_LINES[r.zone], r.round - 1);
 }
+function offerCard(id, i) {
+  const r = G.run, t = TILE[id], price = shopPrice(t), left = r.offer.filter(Boolean).length;
+  const buy = t.event
+    ? '<div class="buynote">Wydarzenie: tylko do wyboru</div>'
+    : `<button class="btn small buy" data-act="buyoffer" data-i="${i}" ${r.coins < price || left < 2 ? 'disabled' : ''} title="Dokup ten kafelek za Ziarna (Shift + ${i + 1}). Darmowy wybór zostaje.">Dokup za ${price} ${art.coinIcon()}</button>`;
+  return `<div class="slotcard">${tileCard(id, { i })}${buy}</div>`;
+}
 function stageOffer() {
-  const r = G.run, cards = r.offer.map((id, i) => tileCard(id, { i })).join('');
+  const r = G.run, cards = r.offer.map((id, i) => id ? offerCard(id, i) : '<div class="slotcard"><div class="tile gone">Dokupione</div></div>').join('');
   const cost = r.rerollCost, free = cost === 0;
   return `<div class="stage-title"><h2>Piętro ${r.round}${r.boss ? ' · BOSS' : ''}</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${r.elite ? ' · elitarny wróg' : ''}</div></div>
     <div class="kron">${esc(floorKron())}</div>${previewHTML()}
     <div class="cards">${cards}</div>
     <div class="actions"><button class="btn" data-act="reroll" ${r.coins < cost ? 'disabled' : ''}>Reroll ${free ? '(za darmo)' : `za ${cost} ${art.coinIcon()}`}</button></div>
-    <div class="hint">Wybierz jeden kafelek (klawisze 1–${r.offer.length}). R przelosowuje ofertę.</div>`;
+    <div class="hint">Jeden kafelek bierzesz za darmo (klawisze 1–${r.offer.length}), pozostałe możesz dokupić (Shift + cyfra). R przelosowuje ofertę.</div>`;
 }
 function stageShop() {
   const r = G.run, cards = r.pending.offer.map((id, i) => tileCard(id, { i, act: 'buy', price: shopPrice(TILE[id]) })).join('');
@@ -219,7 +233,7 @@ function stageShop() {
     <div class="kron">Babcia nie bierze kart. Babcia bierze ziarno.</div><div class="cards">${cards}</div>
     <div class="actions"><button class="btn" data-act="leave">Wychodzę bez zakupu</button></div>`;
 }
-const shopPrice = t => [4, 8, 13, 20][t.rarity];
+const shopPrice = t => D.RULES.prices[t.rarity];
 function stageGamble() {
   const r = G.run, c = r.coins, q = Math.max(1, Math.floor(c / 4)), h = Math.max(1, Math.floor(c / 2));
   const bets = c > 0 ? [...new Set([1, q, h, c])].filter(x => x <= c).map(x => `<button class="btn" data-act="bet" data-v="${x}">Stawiam ${x} ${art.coinIcon()}</button>`).join('') : '<span class="hint">Nie masz czym grać.</span>';
@@ -254,6 +268,15 @@ async function doPick(i, slot) {
   if (!j) return;
   snd.sfx('pick');
   if (j.crate) return showCrate(j.crate);
+  render();
+}
+async function doBuy(i, slot) {
+  const r = G.run, id = r.offer[i], t = id && TILE[id];
+  if (!t) return;
+  if (t.type === 'skill' && slot === undefined && !r.skills.find(s => s.id === t.skill) && r.skills.length >= D.RULES.maxSkills) return askSlot(t, s => doBuy(i, s));
+  const j = await act('buy', { i, slot });
+  if (!j) return;
+  snd.sfx('coin'); toast('Dokupiono: ' + t.name + ' (-' + j.price + ' Ziaren)');
   render();
 }
 function askSlot(tile, cb) {
@@ -516,6 +539,21 @@ function showBook(tab = 'tiles') {
   }
   openOverlay(`<h2>Księga Kurnika</h2><div class="tabs">${tabs.map(([id, n]) => `<button class="tab ${id === tab ? 'on' : ''}" data-act="booktab" data-v="${id}">${n}</button>`).join('')}</div>${body}`);
 }
+// TESTOWA historia gier: ostatnie 10 runów z dziennikiem rund. Przycisk pobiera plik JSON do analizy.
+async function showHistory() {
+  const j = await act('history'); if (!j) return;
+  const all = j.history || [], last = all.slice(-10).reverse();
+  G.hist = all.slice(-10);
+  const when = t => new Date(t).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const rows = last.map(h => {
+    const lastLog = h.log && h.log[h.log.length - 1], killer = h.outcome === 'lose' && !h.abandoned && lastLog ? lastLog.enemies.map(e => e.n).join(', ') : '';
+    const res = h.outcome === 'win' ? '<b style="color:var(--green)">WYGRANA</b>' : h.abandoned ? 'porzucony' : '<b style="color:#ff8a6a">porażka</b>';
+    return `<tr><td>${when(h.ended)}</td><td>${esc(D.MODES[h.mode].name)}${h.garnek ? ' · G' + h.garnek : ''}</td><td>${esc((D.CHARS[h.char] || {}).name || h.char)}</td><td>${res}</td><td>${h.floorsDone}/${D.MODES[h.mode].rounds}</td><td class="sc">${fmtNum(h.score)}</td><td>${esc(killer)}</td></tr>`;
+  }).join('');
+  openOverlay(`<h2>Historia gier (test)</h2><p class="lead">Ostatnie ${last.length} runów zapisuje się automatycznie, z dziennikiem każdej rundy. Po testach napisz, żeby ją przeanalizować.</p>
+    ${rows ? `<table class="rank-list"><thead><tr><th>Kiedy</th><th>Tryb</th><th>Postać</th><th>Wynik</th><th>Piętra</th><th style="text-align:right">Punkty</th><th>Pokonał go</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="lead">Brak zakończonych runów. Zagraj i wróć tutaj.</p>'}
+    <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="histdl" ${rows ? '' : 'disabled'}>Pobierz JSON (ostatnie 10)</button><button class="btn" data-act="histcopy" ${rows ? '' : 'disabled'}>Skopiuj JSON</button></div>`);
+}
 function showHelp() {
   openOverlay(`<h2>Jak grać</h2><p class="lead">${esc(T.INTRO.join(' '))}</p><div class="help-list">${T.HELP.map(([h, t]) => `<div><b>${h}</b><p>${esc(t)}</p></div>`).join('')}</div>`);
 }
@@ -527,7 +565,7 @@ function showSettings() {
 }
 function showMenu() {
   const r = G.run && G.run.phase !== 'over';
-  openOverlay(`<h2>Menu</h2><div class="actions" style="flex-direction:column;align-items:stretch"><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk i walka</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="ranking">Ranking</button><button class="btn primary" data-act="home">Wróć do menu głównego${r ? ' (run zapisany)' : ''}</button>${r ? '<button class="btn danger" data-act="abandon">Porzuć run</button>' : ''}</div>`, { narrow: true });
+  openOverlay(`<h2>Menu</h2><div class="actions" style="flex-direction:column;align-items:stretch"><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk i walka</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="history">Historia gier (test)</button><button class="btn primary" data-act="home">Wróć do menu głównego${r ? ' (run zapisany)' : ''}</button>${r ? '<button class="btn danger" data-act="abandon">Porzuć run</button>' : ''}</div>`, { narrow: true });
 }
 function showIntro(then) {
   store.set('bulgot:intro', '1');
@@ -556,6 +594,7 @@ const ACT = {
   },
   introgo: () => { closeOverlay(); },
   pick: b => doPick(+b.dataset.i),
+  buyoffer: b => doBuy(+b.dataset.i),
   reroll: async () => { const j = await act('reroll'); if (j) { snd.sfx('reroll'); render(); } },
   buy: async b => { const j = await act('shop', { i: +b.dataset.i }); if (j) { snd.sfx('coin'); render(); } },
   leave: async () => { const j = await act('shop', { i: -1 }); if (j) render(); },
@@ -578,6 +617,9 @@ const ACT = {
   ranking: () => showRanking(G.run ? G.run.mode : G.setup.mode),
   ranktab: b => showRanking(b.dataset.v),
   book: () => showBook(), booktab: b => showBook(b.dataset.v),
+  history: () => showHistory(),
+  histdl: () => { const blob = new Blob([JSON.stringify(G.hist || [], null, 1)], { type: 'application/json' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bulgot-historia.json'; document.body.appendChild(a); a.click(); a.remove(); toast('Pobrano bulgot-historia.json'); },
+  histcopy: async () => { try { await navigator.clipboard.writeText(JSON.stringify(G.hist || [], null, 1)); toast('Skopiowano historię do schowka'); } catch (e) { toast('Nie udało się skopiować. Użyj przycisku Pobierz.', true); } },
   help: () => showHelp(), settings: () => showSettings(), menu: () => showMenu(),
   tsfx: b => { snd.setSfx(!snd.settings.sfx); showSettings(); },
   tmusic: b => { snd.setMusic(!snd.settings.music); showSettings(); },
@@ -611,7 +653,9 @@ document.addEventListener('keydown', e => {
   }
   const r = G.run;
   if (G.screen === 'run' && r) {
-    if (r.phase === 'offer' && ['1', '2', '3', '4'].includes(k)) { const b = $(`.cards [data-i="${+k - 1}"]`); if (b) b.click(); }
+    const dg = /^Digit([1-4])$/.exec(e.code);
+    if (r.phase === 'offer' && dg && e.shiftKey) { const b = $(`.cards [data-act=buyoffer][data-i="${+dg[1] - 1}"]`); if (b && !b.disabled) b.click(); }
+    else if (r.phase === 'offer' && ['1', '2', '3', '4'].includes(k)) { const b = $(`.cards [data-act=pick][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && k === 'r') { const b = $('[data-act="reroll"]'); if (b && !b.disabled) b.click(); }
     else if ((r.phase === 'event' || r.phase === 'bonus') && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (k === 'enter') { const p = $('[data-primary]'); if (p) p.click(); }

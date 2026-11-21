@@ -48,7 +48,7 @@ Forma kurczaka zmienia się z postępem: Pyrtek (rundy 1–6), Kogut (7–12), K
 Jedna runda to wybór kafelka, walka i nagroda; po 20 takich rundach (w trybie szybkim po 10) run kończy się zwycięstwem albo porażką.
 
 1. **Start runu:** tryb (szybki albo pełny), postać i poziom trudności.
-2. **Oferta:** 4 kafelki, bierzesz jeden. Reroll kosztuje 2 Ziarna, każdy kolejny w tej samej rundzie o 1 więcej (2, 3, 4…); w nowej rundzie cena wraca do 2.
+2. **Oferta:** 4 kafelki, jeden bierzesz za darmo, a pozostałe możesz dokupić za Ziarna (zwykły 6, rzadki 12, epicki 20, legendarny 30; wydarzeń nie kupisz). Pierwsza oferta zawsze zawiera umiejętność. Reroll kosztuje 2 Ziarna, każdy kolejny w tej samej rundzie o 1 więcej (2, 3, 4…); w nowej rundzie cena wraca do 2.
 3. **Walka:** 30–60 sekund, automatyczna z aktywnymi umiejętnościami klikanymi przez gracza.
 4. **Nagroda:** 4 Ziarna za rundę, 6 za bossa; po walce leczenie 35% maks. Życia.
 5. **Boss:** po bossie 1 i 2 dodatkowa oferta 3 kafelków rzadkich lub lepszych.
@@ -82,7 +82,7 @@ Walka jest automatyczna: kurczak i wróg biją się sami, a gracz decyduje, kied
 | Atak | 8 | Bazowe obrażenia jednego ciosu |
 | Tempo ataku | 1,0 / s | Liczba ciosów na sekundę |
 | Pancerz | 0 | Zmniejsza obrażenia (wzór niżej) |
-| Krytyk | 5% (×1,5) | Szansa i mnożnik mocniejszego ciosu |
+| Szansa na trafienie krytyczne | 5% (siła ×1,5) | Szansa i siła mocniejszego ciosu |
 | Unik | 0% | Szansa, że cios nie trafi |
 | Regeneracja | 0 / s | Leczenie w trakcie walki |
 | Szczęście | 0 | Poprawia rzadkość kafelków w ofertach |
@@ -91,10 +91,10 @@ Walka jest automatyczna: kurczak i wróg biją się sami, a gracz decyduje, kied
 obrażenia = Atak × (1 + b) × k × 100 / (100 + P)
 ```
 
-b = suma premii procentowych, k = mnożnik krytyka (1, gdy cios nie jest krytyczny), P = pancerz celu. Wrogowie rosną z rundą r (tryb pełny; szybki ma 1.07 i 1.045, a bossowie w nim 80% życia i 90% ataku):
+b = suma premii procentowych, k = mnożnik krytyka (1, gdy cios nie jest krytyczny), P = pancerz celu. Wrogowie rosną z rundą r (tryb pełny; szybki ma 1.085 i 1.057, a bossowie w nim 80% życia i 90% ataku; na pierwszych 4 piętrach, w szybkim na 3, wrogowie mają +35% życia i -20% ataku):
 
 ```
-Życie_r = Życie_0 × 1.065^(r-1)      Atak_r = Atak_0 × 1.04^(r-1)
+Życie_r = Życie_0 × 1.085^(r-1)      Atak_r = Atak_0 × 1.052^(r-1)
 ```
 
 Zasady silnika:
@@ -118,7 +118,7 @@ Przykład rundy 1: Pyrtek (70 Życia, Atak 8, 1 cios/s) kontra Szczur Pasz (19 �
 | Twardy Grzebień | +20 maks. Życia | Zwykły |
 | Szybki Dziób | +10% tempa ataku | Zwykły |
 | Pancerz z Pierza | +6 Pancerza | Zwykły |
-| Czujne Oko | +8% krytyku | Rzadki |
+| Czujne Oko | +8% szansy na trafienie krytyczne | Rzadki |
 | Zwinne Nogi | +6% uniku | Rzadki |
 | Ciepłe Gniazdko | +2 Regeneracji / s | Rzadki |
 | Czterolistna Koniczyna | +10 Szczęścia | Epicki |
@@ -144,10 +144,10 @@ Przykład rundy 1: Pyrtek (70 Życia, Atak 8, 1 cios/s) kontra Szczur Pasz (19 �
 | Worek Kukurydzy | +8% Ataku za każde 10 Ziaren (maks. +40%) | Zbożowe | Zwykły |
 | Młocarnia | 15% szans na rozbicie 10% Pancerza wroga przy trafieniu | Zbożowe | Rzadki |
 | Siewnik | +1 Ataku na stałe po każdej wygranej rundzie | Zbożowe | Epicki |
-| Opaska Rambo | +15% obrażeń, +10% krytyku | Rambo | Rzadki |
+| Opaska Rambo | +15% obrażeń, +10% szansy na trafienie krytyczne | Rambo | Rzadki |
 | Kamizelka Kuloodporna | +15 Pancerza, -10% tempa ataku | Rambo | Zwykły |
 | Ostrogi Bojowe | Ataki krwawią: 4 obrażenia / s przez 3 s | Rambo | Rzadki |
-| Okulary Aviatory | +30% do mnożnika krytyka | Rambo | Epicki |
+| Okulary Aviatory | +30% do siły trafienia krytycznego | Rambo | Epicki |
 
 Bonusy zestawów liczymy od dwóch posiadanych przedmiotów tego samego zestawu:
 
@@ -203,7 +203,7 @@ Między runami odblokowujesz wyłącznie nowe opcje (postacie i kafelki), nigdy 
 | Pyrtek | Uniwersalny | Statystyki bazowe | Od startu |
 | Kwoka Babcia | Czołg | +30% Życia, -20% tempa ataku, start z umiejętnością Zagrzebanie w Sianie | Ukończ pełny run |
 | Kaczor Hazardzista | Ryzyko | +10 Ziaren, 1 darmowy reroll na rundę, więcej kafelków ryzyka w ofertach | Weź 5 kafelków ryzyka w jednym runie |
-| Indor Bogdan | Ciężkie ciosy | +60% Ataku, -30% tempa ataku, 15% krytyku | Pokonaj Prezesa Rosołu w trybie szybkim |
+| Indor Bogdan | Ciężkie ciosy | +60% Ataku, -30% tempa ataku, 15% szansy na trafienie krytyczne | Pokonaj Prezesa Rosołu w trybie szybkim |
 
 Dziesięć kafelków jest zablokowanych na start:
 
@@ -286,16 +286,16 @@ Wszystkie siedem etapów jest wykonanych (2026-11-21), a gra działa w przegląd
 
 Rozstrzygnięte przed startem: nazwa i adres to **Bulgot** pod `/bulgot/`, ikony kafelków to własne SVG, a umiejętności mają 3 sloty.
 
-## 9. Wyniki balansu (symulator, 1000 runów botem)
+## 9. Wyniki balansu (po dodaniu dokupowania) (symulator, 1000 runów botem)
 
 Bot wybiera kafelki heurystyką (siła buildu = obrażenia × wytrzymałość), używa umiejętności we właściwych momentach i potrafi przelosować słabą ofertę. Człowiek powinien radzić sobie podobnie albo lepiej. Cel: wczesne rundy bezpieczne, skoki trudności na bossach i w strefie III.
 
 | Konfiguracja | Wygrane bota |
 | --- | --- |
-| Pełny, Garnek 0, wszystkie kafelki | ok. 40% |
-| Pełny, Garnek 0, tylko 20 startowych kafelków | ok. 10% |
-| Pełny, Garnek 0 / 1 / 2 / 3 / 4 / 5 | ok. 40 / 32 / 30 / 12 / 8 / 0% |
-| Szybki, Garnek 0 | ok. 29% |
+| Pełny, Garnek 0, wszystkie kafelki, bot dokupuje | ok. 50% |
+| Pełny, Garnek 0, bot nie dokupuje wcale | ok. 6% |
+| Pełny, Garnek 0, tylko 20 startowych kafelków | ok. 13% |
+| Szybki, Garnek 0 | ok. 44% |
 | Pełny, bot wybierający losowo | poniżej 1% |
 
 Postacie (pełny, Garnek 0): Pyrtek ok. 40%, Kwoka Babcia ok. 49%, Kaczor Hazardzista ok. 33%, Indor Bogdan ok. 37%. Powtórzenie: `node dev/sim-balance.mjs --mode full --n 1000 --table`.
