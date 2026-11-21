@@ -114,8 +114,8 @@ function renderHome() {
   <div class="home"><div class="home-bg"></div><div class="bubbles">${bubblesHTML()}</div>
   <div class="home-in">
     <div class="me-badge" ${LOCAL ? '' : 'data-act="changeplayer" style="cursor:pointer"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>
-    ${art.towerArt()}
-    <h1 class="logo" aria-label="Bulgot">${[...'BULGOT'].map(c => `<span>${c}</span>`).join('')}</h1>
+    ${art.towerArt(G.profile.garnek || 0)}
+    <h1 class="logo" aria-label="Bulgot">${[...'BULGOT'].map((c, i) => `<span style="--i:${i}">${c}</span>`).join('')}</h1>
     <div class="tagline">${esc(T.TAGLINE)}</div>
     <div class="home-actions">
       ${run ? `<div class="resume">Trwa run: <b>${esc(D.MODES[run.mode].name)}</b>, piętro ${run.round}/${run.rounds}, ${run.coins} ${art.coinIcon()} Ziaren</div>
@@ -140,16 +140,19 @@ function renderSetup() {
   const modes = Object.entries(T.MODE_INFO).map(([id, m]) => `<button class="opt ${s.mode === id ? 'on' : ''}" data-act="setmode" data-v="${id}"><h3>${m.name}</h3><p>${m.text}</p></button>`).join('');
   const chars = Object.values(D.CHARS).map(c => {
     const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock];
-    return `<button class="opt char-opt ${s.char === c.id ? 'on' : ''} ${open ? '' : 'locked'}" data-act="setchar" data-v="${c.id}" ${open ? '' : 'aria-disabled="true"'}>${art.portrait(c.id, 'pyrtek')}<div><h3>${esc(c.name)}</h3><p>${esc(c.style)}. ${esc(c.text)}</p>${open ? '' : `<div class="lockmsg">Zablokowana: ${esc(u ? u.text : '')}</div>`}</div></button>`;
+    // legitymacja pracownicza: zdjęcie, stanowisko, kod kreskowy, pieczątka ZABLOKOWANY
+    const no = String([...c.id].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 99991, 7)).padStart(5, '0');
+    return `<button class="opt char-opt idcard ${s.char === c.id ? 'on' : ''} ${open ? '' : 'locked'}" data-act="setchar" data-v="${c.id}" ${open ? '' : 'aria-disabled="true"'}><div class="idhead">Legitymacja pracownicza · K.R. S.A.</div><div class="idbody"><div class="photo">${art.portrait(c.id, 'pyrtek')}</div><div class="idf"><h3>${esc(c.name)}</h3><div class="post">Stanowisko: <b>${esc(c.style)}</b></div><p>${esc(c.text)}</p></div></div><div class="idfoot">${art.barcode(c.id)}<span>Nr ${no}</span></div>${open ? '' : `<span class="idstamp" aria-hidden="true">ZABLOKOWANY</span><div class="lockmsg">Jak odblokować: ${esc(u ? u.text : '')}</div>`}</button>`;
   }).join('');
-  const gs = D.GARNEK.map((g, i) => `<button class="gbtn ${s.garnek === i ? 'on' : ''} ${i > p.garnek ? 'locked' : ''}" data-act="setgarnek" data-v="${i}" ${i > p.garnek ? 'aria-disabled="true"' : ''}>${i} · ${g.name}</button>`).join('');
+  // termometr: od „Letni” do „Wulkan Rosołu”; rtęć dochodzi do wybranego poziomu
+  const gs = D.GARNEK.map((g, i) => `<button class="gbtn ${s.garnek === i ? 'on' : ''} ${i > p.garnek ? 'locked' : ''}" data-act="setgarnek" data-v="${i}" style="--gi:${i}" ${i > p.garnek ? 'aria-disabled="true"' : ''}><i class="tick"></i><span class="gn">${i}</span><span class="gl">${g.name}</span>${i > p.garnek ? '<span class="glock" aria-label="zablokowany">🔒</span>' : ''}</button>`).join('');
   const g = D.GARNEK[s.garnek];
   return `<div class="setup">
     <div class="screen-head"><h2>Nowy run</h2><button class="btn small ghost" data-act="home">← Menu</button></div>
     <div class="sec">Tryb</div><div class="opts">${modes}</div>
     <div class="sec">Postać <small>nowe odblokowujesz osiągnięciami</small></div><div class="opts chars">${chars}</div>
     <div class="sec">Temperatura Garnka <small>wygrana na poziomie N odblokowuje N+1 i podnosi mnożnik wyniku o 25%</small></div>
-    <div class="garnek-row">${gs}</div><div class="gtext"><b>${esc(g.name)}.</b> ${esc(g.text)}</div>
+    <div class="thermo" style="--lv:${s.garnek}"><div class="bulb"></div><div class="tube"><i class="merc"></i></div><div class="garnek-row">${gs}</div></div><div class="gtext"><b>${esc(g.name)}.</b> ${esc(g.text)}</div>
     ${metaNotes()}
     <div class="start-row"><button class="btn primary big" data-act="start" data-primary>Do garnka!</button></div></div>`;
 }

@@ -729,3 +729,74 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 @keyframes fconf { from { transform: translate(0, 0) rotate(0); opacity: 0; } 10% { opacity: 1; } to { transform: translate(var(--dx), 250px) rotate(calc(var(--r) + 540deg)); opacity: 0; } }
 #endscore.done { animation: scorepop .4s ease-out; color: var(--gold); }
 @keyframes scorepop { 50% { transform: scale(1.25); } }
+
+/* ---------- remaster: ekran startowy (żywa fabryka) i logo z bąbelków ---------- */
+.tower-art { overflow: visible; }
+.tower-art .blink { animation: winblink 4s steps(1) infinite; }
+.tower-art .blink.b1 { animation-delay: -1s; animation-duration: 5.5s; } .tower-art .blink.b2 { animation-delay: -2.3s; animation-duration: 3.2s; } .tower-art .blink.b3 { animation-delay: -.6s; animation-duration: 6.4s; }
+@keyframes winblink { 0% { fill: #ffd36a; } 40% { fill: #3d4770; } 70% { fill: #ffe9a8; } }
+.tower-art .smoke circle { fill: rgba(200,190,175,.55); animation: smoke 3.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.tower-art .smoke circle:nth-child(2) { animation-delay: 1.2s; } .tower-art .smoke circle:nth-child(3) { animation-delay: 2.4s; }
+@keyframes smoke { from { transform: translate(0, 0) scale(.5); opacity: .9; } to { transform: translate(-26px, -70px) scale(2.4); opacity: 0; } }
+.tower-art .pb { fill: #fff3d6; stroke: #12142a; stroke-width: 1; animation: potbub 1.6s ease-out infinite; transform-box: fill-box; transform-origin: center; opacity: 0; }
+@keyframes potbub { 0% { transform: translateY(0) scale(.4); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-16px) scale(1.2); opacity: 0; } }
+.tower-art.heat2 .pb, .tower-art.heat3 .pb { animation-duration: 1.1s; } .tower-art.heat4 .pb, .tower-art.heat5 .pb { animation-duration: .7s; }
+.tower-art.heat0 .flame, .tower-art.heat1 .flame { opacity: .5; } .tower-art.heat4 .flame, .tower-art.heat5 .flame { stroke: #ffd23f; stroke-width: 6; }
+.tower-art .flame { animation: flamew .4s ease-in-out infinite alternate; }
+@keyframes flamew { to { transform: translateY(-2px); } }
+.tower-art.heat5 .hpot { animation: potshake .25s linear infinite; transform-box: fill-box; transform-origin: center bottom; }
+@keyframes potshake { 50% { transform: rotate(1.5deg); } }
+/* logo: litery jak bąbelki z wrzątku; co ok. 2 s jedna „pęka” i nadmuchuje się od nowa */
+.logo span { position: relative; padding: 0 .04em; background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.55) 0 6%, transparent 7%), radial-gradient(circle at 50% 50%, transparent 55%, rgba(255,255,255,.08) 70%, transparent 72%);
+  -webkit-background-clip: border-box; border-radius: 45%; animation: bob 2.6s ease-in-out infinite, logopop 12s calc(var(--i) * 2s) ease-out infinite; }
+@keyframes logopop { 0% { transform: scale(1); } 2% { transform: scale(1.22, 1.16); filter: brightness(1.3); } 3% { transform: scale(.2); opacity: 0; } 6% { transform: scale(.6); opacity: .6; } 9% { transform: scale(1.06); opacity: 1; } 11%, 100% { transform: scale(1); } }
+.logo span::after { content: ''; position: absolute; left: 50%; top: 40%; width: 1.1em; height: 1.1em; margin: -.55em 0 0 -.55em; border-radius: 50%; border: 3px solid rgba(255,220,160,.7); opacity: 0; animation: logoring 12s calc(var(--i) * 2s) ease-out infinite; pointer-events: none; }
+@keyframes logoring { 0%, 2% { transform: scale(.4); opacity: 0; } 3% { opacity: .9; } 8% { transform: scale(1.6); opacity: 0; } 100% { opacity: 0; } }
+.logo span { background: none; }
+.logo span::before { content: ''; position: absolute; left: 18%; top: 14%; width: .14em; height: .1em; border-radius: 50%; background: rgba(255,255,255,.75); transform: rotate(-30deg); pointer-events: none; }
+
+/* ---------- remaster: karty postaci jako legitymacje pracownicze ---------- */
+.opts.chars { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.char-opt.idcard { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0; overflow: hidden; text-align: left; color: #2b1a12; background: linear-gradient(#f5ecd6, #e6d8b6); border: 3px solid #2b1a12; border-radius: 12px; }
+.char-opt.idcard .idhead { padding: 5px 10px; font: 700 9px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: #fff3d6; background: linear-gradient(90deg, #8e2a1a, #b4472a); }
+.char-opt.idcard .idbody { display: grid; grid-template-columns: 74px 1fr; gap: 10px; padding: 9px 10px 4px; align-items: start; }
+.char-opt.idcard .photo { width: 74px; height: 84px; border: 2px solid #2b1a12; border-radius: 4px; background: linear-gradient(#bcd3df, #8fb0c2); display: grid; place-items: end center; overflow: hidden; }
+.char-opt.idcard .photo .fig { width: 76px; height: 76px; margin-bottom: -6px; }
+.char-opt.idcard h3 { font-size: 1.05rem; color: #2b1a12; margin: 0; }
+.char-opt.idcard .post { font-size: .74rem; color: #7a5a3a; margin: 2px 0 4px; } .char-opt.idcard .post b { color: #8e2a1a; }
+.char-opt.idcard p { font-size: .76rem; line-height: 1.3; color: #3d2b1e; margin: 0; }
+.char-opt.idcard .idfoot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 10px 7px; font: 700 9px/1 var(--mono); color: #7a5a3a; }
+.char-opt.idcard .barcode { width: 110px; height: 18px; }
+.char-opt.idcard.on { box-shadow: 0 0 0 4px var(--amber), 0 6px 0 var(--outline), 0 0 24px rgba(255,179,71,.45); transform: translateY(-3px); }
+.char-opt.idcard.locked { opacity: 1; filter: saturate(.4); }
+.char-opt.idcard.locked .photo .fig { filter: brightness(0) opacity(.6); }
+.char-opt.idcard .idstamp { position: absolute; right: 8px; top: 36%; padding: 3px 8px; border: 3px double #c0392b; border-radius: 6px; color: #c0392b; font: 400 1rem/1 var(--display); letter-spacing: .08em; transform: rotate(-16deg); mix-blend-mode: multiply; background: rgba(255,240,230,.4); }
+.char-opt.idcard .lockmsg { margin: 0 10px 8px; padding: 4px 6px; border-radius: 4px; background: rgba(192,57,43,.12); color: #8e2a1a; font-size: .72rem; }
+/* ---------- remaster: wybór Garnka jako termometr ---------- */
+.thermo { position: relative; display: grid; grid-template-columns: 34px 1fr; align-items: center; margin: 6px 0 2px; padding: 34px 10px 6px 4px; }
+.thermo .bulb { width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffb3a0, #e4572e 55%, #8e2a1a); border: 3px solid #2b1a12; z-index: 1; }
+.thermo .tube { position: absolute; left: 30px; right: 10px; top: 45px; height: 14px; border-radius: 0 8px 8px 0; background: #f3ead7; border: 3px solid #2b1a12; border-left: 0; overflow: hidden; }
+.thermo .merc { position: absolute; left: 0; top: 0; bottom: 0; width: calc((var(--lv) + .5) / 6 * 100%); background: linear-gradient(90deg, #4aa3df, #ffb347 35%, #e4572e 70%, #8e2a1a); transition: width .4s cubic-bezier(.2,.9,.3,1.2); }
+.thermo .garnek-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; flex-wrap: nowrap; position: relative; top: -34px; margin-bottom: -18px; }
+.thermo .gbtn { position: relative; display: grid; justify-items: center; gap: 2px; padding: 0 2px 4px; background: none; border: 0; box-shadow: none; color: var(--ink); font-family: var(--display); }
+.thermo .gbtn .tick { width: 3px; height: 10px; background: #2b1a12; margin-top: 23px; order: 2; }
+.thermo .gbtn .gn { order: 3; margin-top: 6px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--panel2); border: 3px solid var(--outline); font-size: .95rem; }
+.thermo .gbtn .gl { order: 4; font-size: .82rem; color: var(--muted); white-space: nowrap; }
+.thermo .gbtn .glock { position: absolute; top: 40px; right: 18%; font-size: .7rem; }
+.thermo .gbtn.on { background: none; }
+.thermo .gbtn.on .gn { background: linear-gradient(#ff9a4a, #e4572e); color: #fff; box-shadow: 0 0 12px rgba(228,87,46,.8); }
+.thermo .gbtn.on .gl { color: var(--amber); }
+.thermo .gbtn.locked { opacity: .45; }
+.thermo .gbtn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 8px; }
+/* poprawki: termometr w dwóch rzędach (rurka nad podziałką), pieczątka na zdjęciu */
+.thermo { display: block; padding: 0; margin: 8px 0 0; }
+.thermo .bulb { position: absolute; left: 0; top: 0; width: 30px; height: 30px; }
+.thermo .tube { left: 24px; right: 0; top: 8px; }
+.thermo .merc { width: calc((var(--lv) + .5) / 6 * 100%); }
+.thermo .garnek-row { top: 0; margin: 0 0 0 24px; padding-top: 24px; }
+.thermo .gbtn .tick { order: 1; margin-top: 0; height: 8px; }
+.thermo .gbtn .gn { order: 2; margin-top: 2px; }
+.thermo .gbtn .gl { order: 3; }
+.thermo .gbtn .glock { position: static; order: 4; font-size: .7rem; }
+.char-opt.idcard .idstamp { right: auto; left: 4px; top: 70px; font-size: .78rem; padding: 2px 5px; }
+.char-opt.idcard .idhead { letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

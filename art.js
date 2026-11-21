@@ -451,13 +451,18 @@ const BG = {
 export function arenaBg(zone) { return `<svg class="arena-bg" viewBox="0 0 1000 460" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${(BG[zone] || BG[0])()}</svg>`; }
 
 // ---------- Logo i wieżowiec (ekran startowy) ----------
-export function towerArt() {
+// Fabryka na ekranie startowym: migające okna, dym z komina i garnek u stóp, który bulgocze mocniej przy wyższym Garnku.
+export function towerArt(heat = 0) {
   const floors = Array.from({ length: 12 }, (_, i) => {
     const y = 190 - i * 13;
-    return `<rect x="70" y="${y}" width="80" height="11" fill="${i % 3 === 0 ? '#2c3150' : '#262b47'}" stroke="#12142a" stroke-width="1"/>${[0, 1, 2, 3].map(j => `<rect x="${76 + j * 19}" y="${y + 2}" width="10" height="7" fill="${(i * 7 + j * 3) % 5 === 0 ? '#ffd36a' : '#3d4770'}"/>`).join('')}`;
+    return `<rect x="70" y="${y}" width="80" height="11" fill="${i % 3 === 0 ? '#2c3150' : '#262b47'}" stroke="#12142a" stroke-width="1"/>${[0, 1, 2, 3].map(j => `<rect x="${76 + j * 19}" y="${y + 2}" width="10" height="7" fill="${(i * 7 + j * 3) % 5 === 0 ? '#ffd36a' : '#3d4770'}"${(i * 5 + j * 11) % 7 === 0 ? ` class="blink b${(i + j) % 4}"` : ''}/>`).join('')}`;
   }).join('');
-  return `<svg class="tower-art" viewBox="0 -52 220 312" aria-hidden="true">
+  const h = Math.max(0, Math.min(5, heat | 0)), bub = Array.from({ length: 3 + h * 2 }, (_, i) => `<circle class="pb" cx="${152 + (i * 13) % 44}" cy="222" r="${2 + (i % 3)}" style="animation-delay:${(i * 0.37).toFixed(2)}s"/>`).join('');
+  return `<svg class="tower-art heat${h}" viewBox="0 -52 220 312" aria-hidden="true">
     <path d="M30 210 h160 v14 h-160z" fill="#12142a"/>
+    <rect x="36" y="120" width="18" height="90" fill="#3a2d22" stroke="#12142a" stroke-width="2"/><rect x="33" y="114" width="24" height="8" fill="#5d4a3a" stroke="#12142a" stroke-width="2"/>
+    <g class="smoke"><circle cx="45" cy="104" r="8"/><circle cx="45" cy="104" r="8"/><circle cx="45" cy="104" r="8"/></g>
+    <g class="hpot"><path d="M150 226 q0 26 24 26 q24 0 24 -26z" fill="#e4572e" stroke="#12142a" stroke-width="3"/><ellipse cx="174" cy="226" rx="27" ry="6" fill="#b4472a" stroke="#12142a" stroke-width="3"/><ellipse cx="174" cy="226" rx="21" ry="3.5" fill="#f4b860"/>${bub}<path d="M156 252 l-4 6 M192 252 l4 6" stroke="#12142a" stroke-width="3"/><path d="M160 262 q14 -10 28 0" stroke="#ff8c2b" stroke-width="4" fill="none" class="flame"/></g>
     ${floors}
     <path d="M62 36 h96 v156 h-96z" fill="none"/>
     <rect x="66" y="26" width="88" height="14" rx="3" fill="#455a64" stroke="#12142a" stroke-width="2"/>
@@ -483,5 +488,11 @@ export const potArt = (prezes = false) => svg(`
   <ellipse cx="100" cy="46" rx="62" ry="8" fill="#f4b860" stroke="${O}" stroke-width="2"/>
   <circle cx="78" cy="45" r="3" fill="#ffe08a"/><circle cx="118" cy="47" r="2.4" fill="#ffe08a"/><circle cx="102" cy="44" r="1.8" fill="#fff3b0"/>
   ${prezes ? `<rect x="78" y="70" width="44" height="16" rx="3" fill="#fff3d6" ${S2}/><text x="100" y="82" text-anchor="middle" font-family="Lilita One, Impact, sans-serif" font-size="11" fill="${O}">PREZES</text>` : ''}`, '0 0 200 120', 'pot-art');
+// Kod kreskowy legitymacji (paski wyliczone z identyfikatora postaci, zawsze takie same).
+export function barcode(id) {
+  let h = 7, x = 0, bars = '';
+  for (let i = 0; i < 26; i++) { h = (h * 31 + id.charCodeAt(i % id.length) + i) % 9973; const w = 1 + (h % 3); if (i % 2 === 0) bars += `<rect x="${x}" y="0" width="${w}" height="20" fill="#2b1a12"/>`; x += w + (h % 2); }
+  return `<svg class="barcode" viewBox="0 0 ${x} 20" preserveAspectRatio="none" aria-hidden="true">${bars}</svg>`;
+}
 export const menuIcon = (cls = 'mico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6 h16 M4 12 h16 M4 18 h16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
 export const skullIcon =(cls = 'skull') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 C5 2 3 8 5 12 l1 4 h12 l1 -4 C21 8 19 2 12 2z" fill="#f1e9d6" stroke="#2b1a12" stroke-width="1.8" stroke-linejoin="round"/><circle cx="9" cy="10" r="2.4" fill="#2b1a12"/><circle cx="15" cy="10" r="2.4" fill="#2b1a12"/><path d="M9 17 v4 M12 17 v4 M15 17 v4" stroke="#2b1a12" stroke-width="1.8"/></svg>`;
