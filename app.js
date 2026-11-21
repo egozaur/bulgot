@@ -559,6 +559,17 @@ function pop(text, cls, x, bottom = 60) {
   $('#fxl').appendChild(d); setTimeout(() => d.remove(), 1000);
 }
 const cls = (u, c, ms) => { u.spr.classList.remove(c); void u.spr.offsetWidth; u.spr.classList.add(c); setTimeout(() => u.spr.classList.remove(c), ms); };
+// Zamach skrzydłem bohatera (łuk przed dziobem) i pióra wylatujące z pokonanego wroga.
+function swoosh(u) {
+  if (REDUCED.matches) return;
+  const w = document.createElement('div'); w.className = 'swoosh'; w.setAttribute('aria-hidden', 'true'); u.el.appendChild(w); setTimeout(() => w.remove(), 300);
+}
+function feathers(u) {
+  if (REDUCED.matches) return;
+  const w = document.createElement('div'); w.className = 'feathers'; w.setAttribute('aria-hidden', 'true');
+  w.innerHTML = [[-60, -70, -40], [-20, -95, 20], [30, -85, 60], [65, -55, 110], [-75, -20, -90], [10, -110, 150]].map(([x, y, r], i) => `<i style="--x:${x}px;--y:${y}px;--r:${r}deg;animation-delay:${i * 30}ms"></i>`).join('');
+  u.el.appendChild(w); setTimeout(() => w.remove(), 900);
+}
 // Mini-wybuch Reakcji na wrogu: Szok = kłąb pary, Gorączka = zielony puls, Kruchość = pęknięcie lodu.
 function burst(u, kind) {
   const b = document.createElement('div'); b.className = 'rburst rb-' + kind; b.setAttribute('aria-hidden', 'true');
@@ -570,8 +581,8 @@ function shake() { const a = $('#arena'); if (!a) return; a.classList.remove('sh
 function onEvent(e) {
   const F = G.fight, f = F.f, hero = F.units.get('hero'), tu = k => F.units.get(k);
   switch (e.k) {
-    case 'swing': cls(hero, 'lunge', 240); break;
-    case 'hit': { const u = tu(e.to); if (!u) break; cls(u, 'flash', 110); pop(e.crit ? e.d + '!' : e.d, e.crit ? 'crit' : e.kind === 'bleed' || e.kind === 'burn' || e.kind === 'poison' ? e.kind : e.kind === 'egg' ? 'egg' : '', u.x); snd.sfx(e.crit ? 'crit' : 'hit'); if (e.crit) shake(); break; }
+    case 'swing': cls(hero, 'lunge', 240); swoosh(hero); break;
+    case 'hit': { const u = tu(e.to); if (!u) break; cls(u, 'flash', 110); if (!['burn', 'poison', 'bleed'].includes(e.kind)) cls(u, e.crit ? 'knockbig' : 'knock', 220); pop(e.crit ? e.d + '!' : e.d, e.crit ? 'crit' : e.kind === 'bleed' || e.kind === 'burn' || e.kind === 'poison' ? e.kind : e.kind === 'egg' ? 'egg' : '', u.x); snd.sfx(e.crit ? 'crit' : 'hit'); if (e.crit) shake(); break; }
     case 'hurt': { cls(hero, 'hurtshake', 260); pop('-' + e.d, e.kind === 'burn' ? 'hurt burn' : 'hurt', 17); const a = tu(e.from); if (a) cls(a, 'lunge', 240); snd.sfx('hurt'); if (e.d * 100 >= f.S.maxHp * 12 || e.crit) shake(); break; }
     case 'heal': pop('+' + e.n, 'heal', 17); snd.sfx('heal'); break;
     case 'miss': { const u = tu(e.to); if (u) pop('unik', 'txt', u.x); snd.sfx('miss'); break; }
@@ -599,7 +610,7 @@ function onEvent(e) {
     case 'skubanie-end': pop('kafelek wraca', 'txt', 17, 74); break;
     case 'blockslot': banner('Restrukturyzacja', 'Slot ' + (e.slot + 1) + ' zablokowany', true); snd.sfx('phase'); break;
     case 'steal': pop('-1 Ziarno', 'txt', 17, 70); break;
-    case 'kill': { const u = tu(e.uid); if (u) { u.el.classList.remove('idle'); u.el.classList.add('dead'); setTimeout(() => { u.el.remove(); F.units.delete(e.uid); }, 650); layoutUnits(); } break; }
+    case 'kill': { const u = tu(e.uid); if (u) { u.el.classList.remove('idle'); u.el.classList.add('dead'); feathers(u); setTimeout(() => { u.el.remove(); F.units.delete(e.uid); }, 900); layoutUnits(); } break; }
     case 'react': { const u = tu(e.uid), R = D.REACTIONS[e.r]; if (u && R) { pop(R.name + '!', 'react ' + e.r, u.x, 80); burst(u, e.r); } if (e.r === 'szok') shake(); if (!REDUCED.matches) F.stopUntil = performance.now() + 120; snd.sfx('crit'); break; }
     case 'chain': pop('Seria ×' + e.n, 'txt gold', 17, 84); break;
     case 'seria': banner('Pełna Kurza Seria!', 'Popłoch: wrogowie ogłuszeni', false); snd.sfx('unlock'); shake(); break;
