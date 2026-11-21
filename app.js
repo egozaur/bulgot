@@ -559,6 +559,12 @@ function pop(text, cls, x, bottom = 60) {
   $('#fxl').appendChild(d); setTimeout(() => d.remove(), 1000);
 }
 const cls = (u, c, ms) => { u.spr.classList.remove(c); void u.spr.offsetWidth; u.spr.classList.add(c); setTimeout(() => u.spr.classList.remove(c), ms); };
+// Mini-wybuch Reakcji na wrogu: Szok = kłąb pary, Gorączka = zielony puls, Kruchość = pęknięcie lodu.
+function burst(u, kind) {
+  const b = document.createElement('div'); b.className = 'rburst rb-' + kind; b.setAttribute('aria-hidden', 'true');
+  b.innerHTML = kind === 'kruchosc' ? art.crackArt() : '<i></i><i></i><i></i><i></i><i></i>';
+  u.el.appendChild(b); setTimeout(() => b.remove(), 900);
+}
 function shake() { const a = $('#arena'); if (!a) return; a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake'); }
 
 function onEvent(e) {
@@ -594,7 +600,7 @@ function onEvent(e) {
     case 'blockslot': banner('Restrukturyzacja', 'Slot ' + (e.slot + 1) + ' zablokowany', true); snd.sfx('phase'); break;
     case 'steal': pop('-1 Ziarno', 'txt', 17, 70); break;
     case 'kill': { const u = tu(e.uid); if (u) { u.el.classList.remove('idle'); u.el.classList.add('dead'); setTimeout(() => { u.el.remove(); F.units.delete(e.uid); }, 650); layoutUnits(); } break; }
-    case 'react': { const u = tu(e.uid), R = D.REACTIONS[e.r]; if (u && R) pop(R.name + '!', 'react ' + e.r, u.x, 80); if (e.r === 'szok') shake(); snd.sfx('crit'); break; }
+    case 'react': { const u = tu(e.uid), R = D.REACTIONS[e.r]; if (u && R) { pop(R.name + '!', 'react ' + e.r, u.x, 80); burst(u, e.r); } if (e.r === 'szok') shake(); if (!REDUCED.matches) F.stopUntil = performance.now() + 120; snd.sfx('crit'); break; }
     case 'chain': pop('Seria ×' + e.n, 'txt gold', 17, 84); break;
     case 'seria': banner('Pełna Kurza Seria!', 'Popłoch: wrogowie ogłuszeni', false); snd.sfx('unlock'); shake(); break;
     case 'flaw': pop(e.f === 'samozaplon' ? 'Samozapłon!' : 'Usterka!', 'txt warn', 17, 80); snd.sfx('hurt'); break;
@@ -644,9 +650,10 @@ function frame(ts) {
   const F = G.fight; if (!F) return;
   if (!F.last) F.last = ts;
   let dt = ts - F.last; F.last = ts; if (dt > 250) dt = 250;
-  if (!F.paused && !F.f.over) {
+  // zamrożenie klatki po Reakcji: stoi tylko obraz (zegar walki nie liczy), więc powtórka na serwerze się zgadza
+  if (!F.paused && !F.f.over && !(F.stopUntil > ts)) {
     F.acc += dt * F.speed;
-    while (F.acc >= 100 && !F.f.over) { F.acc -= 100; stepOnce(); }
+    while (F.acc >= 100 && !F.f.over && !(F.stopUntil > ts)) { F.acc -= 100; stepOnce(); }
   }
   if (F.f.over && !F.finishing) { F.finishing = true; finishFight(); }
   F.raf = requestAnimationFrame(frame);
