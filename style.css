@@ -650,3 +650,19 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 .cine.out { animation: fadeout .45s ease-in forwards; }
 @keyframes plate { from { transform: scaleX(.2); opacity: 0; } }
 @keyframes fadeout { to { opacity: 0; } }
+
+/* ---------- remaster: głębia areny (3 warstwy z paralaksą) ---------- */
+.arena .pl { position: absolute; inset: -3%; pointer-events: none; transition: transform .25s ease-out; }
+.arena .pl-bg { transform: translate(calc(var(--px, 0) * -10px), calc(var(--py, 0) * -6px)) scale(1.02); animation: drift 14s ease-in-out infinite alternate; }
+.arena .pl-bg .arena-bg { position: absolute; inset: 0; }
+@keyframes drift { to { translate: -6px 2px; } }
+.arena .pl-haze { transform: translate(calc(var(--px, 0) * -18px), calc(var(--py, 0) * -10px)); opacity: .55; mix-blend-mode: screen;
+  background: radial-gradient(3px 3px at 12% 30%, rgba(255,240,210,.7), transparent), radial-gradient(2px 2px at 30% 62%, rgba(255,240,210,.6), transparent), radial-gradient(3px 3px at 48% 22%, rgba(255,240,210,.5), transparent),
+    radial-gradient(2px 2px at 66% 48%, rgba(255,240,210,.6), transparent), radial-gradient(3px 3px at 84% 34%, rgba(255,240,210,.5), transparent), radial-gradient(2px 2px at 92% 70%, rgba(255,240,210,.6), transparent),
+    linear-gradient(180deg, transparent 40%, rgba(255,200,140,.06) 75%, transparent); background-size: 100% 100%; animation: motes 18s linear infinite; }
+@keyframes motes { from { background-position: 0 0; } to { background-position: 0 -120px; } }
+.arena.z1 .pl-haze { background-color: rgba(170,215,255,.04); }
+.arena.z2 .pl-haze { background-color: rgba(255,220,160,.03); }
+.arena .pl-fore { top: auto; height: 16%; bottom: -4%; transform: translate(calc(var(--px, 0) * -34px), 0); z-index: 5;
+  background: radial-gradient(ellipse 9% 70% at 6% 100%, rgba(10,6,4,.85) 60%, transparent 62%), radial-gradient(ellipse 7% 55% at 94% 100%, rgba(10,6,4,.85) 60%, transparent 62%),
+    linear-gradient(180deg, transparent, rgba(10,6,4,.55)); filter: blur(1.5px); }

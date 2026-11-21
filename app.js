@@ -501,7 +501,7 @@ function startFight(setup) {
   const boss = setup.enemies.find(e => e.boss);
   $('#screen').innerHTML = `<div class="run" style="grid-template-columns:minmax(0,1fr);max-width:1240px">${topbarHTML()}
     <main class="stage fightwrap">
-      <div class="arena" id="arena">${art.arenaBg(setup.zone)}<div class="vign"></div>
+      <div class="arena z${setup.zone}" id="arena"><div class="pl pl-bg">${art.arenaBg(setup.zone)}</div><div class="pl pl-haze" aria-hidden="true"></div><div class="pl pl-fore" aria-hidden="true"></div><div class="vign"></div>
         <div class="hud"><div class="box">Piętro ${setup.round} · ${esc(T.ZONE_NAMES[setup.zone])}</div>
           <div class="box timer" id="timer"><span id="tt">0:00</span><div class="tb"><i id="tbi" style="width:0"></i><u></u></div></div>
           <div class="ctl"><button data-act="speed" id="speedbtn" title="Tempo walki (F): ${SPEED_NOTE[F.speed]}">×${F.speed}</button><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button></div></div>
@@ -510,6 +510,8 @@ function startFight(setup) {
       <div class="kron" id="kline">${esc(boss ? T.BOSS_INTRO[boss.boss].quote : floorKron())}</div>
     </main></div>`;
   F.arena = $('#arena');
+  // lekka paralaksa: tło, mgiełka i pierwszy plan przesuwają się za kursorem w różnym tempie (bez wpływu na walkę)
+  if (!REDUCED.matches) F.arena.addEventListener('pointermove', ev => { const r = F.arena.getBoundingClientRect(); F.arena.style.setProperty('--px', ((ev.clientX - r.left) / r.width - .5).toFixed(3)); F.arena.style.setProperty('--py', ((ev.clientY - r.top) / r.height - .5).toFixed(3)); });
   makeUnit('hero', { name: D.CHARS[run.char].name, art: art.heroArt(run.char, run.form), left: 17 });
   for (const e of f.enemies) makeUnit(e.uid, { e, name: e.name, art: art.enemyArt(e.art) });
   layoutUnits(); buildSkillbar(); updateUI(true);
