@@ -472,5 +472,16 @@ export const coinIcon = (cls = 'coin') => `<svg class="${cls}" viewBox="0 0 24 2
 export const mysteryArt = () => svg(`<ellipse cx="50" cy="95" rx="26" ry="4" fill="rgba(0,0,0,.35)"/><path d="M26 92 q-4 -30 8 -46 q-8 -22 16 -28 q24 6 16 28 q12 16 8 46z" fill="#3a2d22" ${S}/><text x="50" y="70" text-anchor="middle" font-family="Lilita One, Impact, sans-serif" font-size="34" fill="#ffd166" stroke="${O}" stroke-width="2" paint-order="stroke">?</text>`, '0 0 100 100', 'fig enemy-fig mystery');
 // Pęknięcie lodu (Reakcja Kruchość).
 export const crackArt = () => `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 50 L20 18 M50 50 L82 22 M50 50 L88 62 M50 50 L58 92 M50 50 L14 70 M34 34 L22 44 M68 36 L78 44 M66 58 L74 76 M40 62 L28 82" stroke="#e8f8ff" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M50 50 L20 18 M50 50 L82 22 M50 50 L88 62 M50 50 L58 92 M50 50 L14 70" stroke="#4aa3df" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="50" cy="50" r="7" fill="#fff"/></svg>`;
+// Garnek z rosołem (ekran końca): przy porażce kurczak wpada do środka, przy wygranej stoi na garnku Prezesa.
+export const potArt = (prezes = false) => svg(`
+  <ellipse cx="100" cy="112" rx="70" ry="6" fill="rgba(0,0,0,.35)"/>
+  <path d="M44 106 l-6 8 M156 106 l6 8" ${S} ${NF}/>
+  <path d="M28 46 q0 62 72 62 q72 0 72 -62z" fill="${prezes ? '#ffc933' : '#e4572e'}" ${S}/>
+  <path d="M40 62 q8 34 50 40" stroke="rgba(255,255,255,.35)" stroke-width="6" stroke-linecap="round" ${NF}/>
+  <path d="M18 48 q-12 0 -12 10 q0 8 12 6 M182 48 q12 0 12 10 q0 8 -12 6" ${S} ${NF}/>
+  <ellipse cx="100" cy="46" rx="74" ry="13" fill="${prezes ? '#e0a100' : '#b4472a'}" ${S}/>
+  <ellipse cx="100" cy="46" rx="62" ry="8" fill="#f4b860" stroke="${O}" stroke-width="2"/>
+  <circle cx="78" cy="45" r="3" fill="#ffe08a"/><circle cx="118" cy="47" r="2.4" fill="#ffe08a"/><circle cx="102" cy="44" r="1.8" fill="#fff3b0"/>
+  ${prezes ? `<rect x="78" y="70" width="44" height="16" rx="3" fill="#fff3d6" ${S2}/><text x="100" y="82" text-anchor="middle" font-family="Lilita One, Impact, sans-serif" font-size="11" fill="${O}">PREZES</text>` : ''}`, '0 0 200 120', 'pot-art');
 export const menuIcon = (cls = 'mico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6 h16 M4 12 h16 M4 18 h16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
 export const skullIcon =(cls = 'skull') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 C5 2 3 8 5 12 l1 4 h12 l1 -4 C21 8 19 2 12 2z" fill="#f1e9d6" stroke="#2b1a12" stroke-width="1.8" stroke-linejoin="round"/><circle cx="9" cy="10" r="2.4" fill="#2b1a12"/><circle cx="15" cy="10" r="2.4" fill="#2b1a12"/><path d="M9 17 v4 M12 17 v4 M15 17 v4" stroke="#2b1a12" stroke-width="1.8"/></svg>`;

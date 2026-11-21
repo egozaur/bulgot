@@ -778,24 +778,34 @@ function endMeta(j) {
   } else if (p.will && j.will) out.push(`<div class="unlock-box"><b>Testament spisany: ${esc(TILE[p.will.tile].name)}</b><div class="hint" style="text-align:left">Czeka w pierwszej ofercie następnego runu.</div></div>`);
   return out.join('');
 }
+// Wynik na ekranie końca nabija się od zera (licznik jak w automacie); bez animacji przy prefers-reduced-motion.
+function countUp(el, quiet) {
+  if (!el || quiet || REDUCED.matches) return;
+  const to = +el.dataset.v, t0 = performance.now(), dur = Math.min(2600, 900 + to / 20);
+  const step = now => { if (!el.isConnected) return; const q = Math.min(1, (now - t0) / dur); el.textContent = fmtNum(Math.round(to * (1 - Math.pow(1 - q, 3)))); if (q < 1) requestAnimationFrame(step); else el.classList.add('done'); };
+  el.textContent = '0'; setTimeout(() => requestAnimationFrame(step), 700);
+}
 function showEnd(j, quiet = false) {
   const r = G.run, e = j.end || (G.lastEndJ && G.lastEndJ.end) || {}, win = r.ended === 'win', un = takeUnlocks();
   const mult = (100 + D.RULES.garnekScore * r.garnek) / 100;
   G.lastEnd = e; G.lastEndJ = j;
   if (!quiet) { snd.sfx(win ? 'win' : 'lose'); if (!win) snd.sfx('bulgot'); }
   const lines = win ? T.END_WIN.lines : [T.pickLine(T.LOSE_LINES, r.done)];
-  openOverlay(`<h2 class="end-title ${win ? '' : 'lose'}">${win ? T.END_WIN.title : T.END_LOSE.title}</h2>
+  const feathers = win ? [8, 18, 27, 36, 45, 55, 63, 72, 81, 90].map((x, i) => `<i style="left:${x}%;--r:${(i * 67) % 360}deg;--dl:${(i * 0.17).toFixed(2)}s;--dx:${(i % 2 ? 1 : -1) * (10 + i * 3)}px"></i>`).join('') : '';
+  const scene = `<div class="endscene ${win ? 'win' : 'lose'}" aria-hidden="true"><div class="es-steam"><i></i><i></i><i></i></div><div class="es-clip"><div class="es-hero">${art.portrait(r.char, r.form)}</div></div><div class="es-pot">${art.potArt(win)}</div>${win ? `<div class="es-confetti">${feathers}</div>` : ''}</div>`;
+  openOverlay(`${scene}<h2 class="end-title ${win ? '' : 'lose'}">${win ? T.END_WIN.title : T.END_LOSE.title}</h2>
     ${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}
     <table class="scoretable"><tr><td>Ukończone piętra (${r.done} × ${D.RULES.scoreRound})</td><td>${fmtNum(r.done * D.RULES.scoreRound)}</td></tr>
       <tr><td>Ziarna w kieszeni (${r.coins} × ${D.RULES.scoreCoin})</td><td>${fmtNum(r.coins * D.RULES.scoreCoin)}</td></tr>
       <tr><td>Premia za szybkość walk</td><td>${fmtNum(r.timeBonus)}</td></tr>
       ${r.garnek ? `<tr><td>Mnożnik Garnka ${r.garnek} (${D.GARNEK[r.garnek].name})</td><td>×${mult.toFixed(2).replace('.', ',')}</td></tr>` : ''}
-      <tr class="total"><td>Wynik</td><td>${fmtNum(r.score)}</td></tr></table>
+      <tr class="total"><td>Wynik</td><td id="endscore" data-v="${r.score}">${fmtNum(r.score)}</td></tr></table>
     ${e.newBest ? '<p class="lead" style="color:var(--gold)"><b>Nowy rekord życiowy w tym trybie!</b></p>' : ''}
     ${e.rank ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}
     ${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano Temperaturę Garnka ${G.profile.garnek}: ${esc(D.GARNEK[G.profile.garnek].name)}</b></div>` : ''}${unlocksHTML(un)}${endMeta(j)}
     <div class="actions" style="margin-top:14px"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div>`, { force: true });
   G.screen = 'home'; render();
+  countUp($('#endscore'), quiet);
 }
 
 // ---------- okna: ranking, księga, pomoc, ustawienia, menu ----------

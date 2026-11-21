@@ -704,3 +704,28 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 @media (max-width: 640px) { .jobcard .res-grid { grid-template-columns: 1fr; } }
 .jstamp { bottom: -30px; right: 6px; }
 .jobcard { margin-bottom: 26px; }
+
+/* ---------- remaster: ekran końca (garnek, para, konfetti z piór, nabijany wynik) ---------- */
+.endscene { position: relative; width: 240px; height: 170px; margin: -6px auto 4px; }
+.endscene .es-pot { position: absolute; left: 0; right: 0; bottom: 0; }
+.endscene .pot-art { width: 100%; height: auto; }
+.endscene .es-clip { position: absolute; left: 70px; width: 100px; bottom: 90px; height: 90px; overflow: hidden; }
+.endscene .es-hero { position: absolute; left: 10px; bottom: 0; width: 80px; height: 80px; }
+.endscene .es-hero .fig { width: 80px; height: 80px; }
+.endscene.lose .es-hero { animation: intopot 1.4s .3s cubic-bezier(.5,0,.9,.4) forwards; }
+@keyframes intopot { 0% { transform: translateY(-60px) rotate(0); } 35% { transform: translateY(-75px) rotate(120deg); } 100% { transform: translateY(95px) rotate(200deg); } }
+.endscene.win .es-clip { overflow: visible; bottom: 84px; }
+.endscene.win .es-hero { animation: onpot .8s .2s cubic-bezier(.2,.9,.3,1.4) both, cheer 1s 1.2s ease-in-out infinite; }
+@keyframes onpot { from { transform: translateY(-90px) scale(.6); opacity: 0; } }
+@keyframes cheer { 50% { transform: translateY(-8px) rotate(-4deg); } }
+.endscene .es-steam { position: absolute; left: 60px; right: 60px; bottom: 96px; height: 60px; pointer-events: none; }
+.endscene .es-steam i { position: absolute; bottom: 0; width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.75), rgba(255,255,255,0) 70%); animation: esteam 2.2s ease-out infinite; }
+.endscene .es-steam i:nth-child(1) { left: 10%; } .endscene .es-steam i:nth-child(2) { left: 40%; animation-delay: .7s; } .endscene .es-steam i:nth-child(3) { left: 70%; animation-delay: 1.4s; }
+.endscene.lose .es-steam i { animation-duration: 1.4s; width: 44px; height: 44px; }
+@keyframes esteam { from { transform: translateY(0) scale(.5); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(-70px) scale(1.4); opacity: 0; } }
+.es-confetti { position: absolute; left: -60px; right: -60px; top: -30px; height: 240px; pointer-events: none; overflow: hidden; }
+.es-confetti i { position: absolute; top: -12px; width: 14px; height: 7px; border-radius: 50% 50% 50% 50% / 100% 100% 0 0; background: #fff3d6; border: 1px solid #2b1a12; animation: fconf 2.6s var(--dl) ease-in infinite; }
+.es-confetti i:nth-child(3n) { background: #ffd34e; } .es-confetti i:nth-child(3n+1) { background: #ff9a4a; }
+@keyframes fconf { from { transform: translate(0, 0) rotate(0); opacity: 0; } 10% { opacity: 1; } to { transform: translate(var(--dx), 250px) rotate(calc(var(--r) + 540deg)); opacity: 0; } }
+#endscore.done { animation: scorepop .4s ease-out; color: var(--gold); }
+@keyframes scorepop { 50% { transform: scale(1.25); } }
