@@ -4,7 +4,7 @@
 // Bot używa dokładnie tych samych funkcji co serwer (rules.js, sim.js), więc liczby są prawdziwe.
 import { choose as chooseOpt, newRun, pickTile, reroll, buyOffer, rest, shopBuy, bet, bonusPick, fightSetup, fightFinish, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
 import { Fight } from '../../pl3y-server/src/games/bulgot/sim.js';
-import { TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, RULES } from '../../pl3y-server/src/games/bulgot/data.js';
+import { AFFIXES, TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, RULES } from '../../pl3y-server/src/games/bulgot/data.js';
 import { makeRng, mix } from '../../pl3y-server/src/games/bulgot/rng.js';
 import { heroStats } from '../../pl3y-server/src/games/bulgot/stats.js';
 import { loadoutOf } from '../../pl3y-server/src/games/bulgot/rules.js';
@@ -23,6 +23,7 @@ if (arg('heal')) RULES.healPct = +arg('heal');
 if (arg('income')) { const [a, b2] = arg('income').split(',').map(Number); RULES.coinsRound = a; RULES.coinsBoss = b2; }
 if (arg('prices')) RULES.prices = arg('prices').split(',').map(Number);
 const MAXBUY = +arg('maxbuy', 9);
+if (arg('affix')) for (const k of Object.keys(AFFIXES)) if (k !== arg('affix')) delete AFFIXES[k];   // --affix X: elity zawsze z tą cechą
 if (arg('basehp')) CHARS.pyrtek.base.hp = +arg('basehp');
 for (const e of Object.values(ENEMIES)) { e.hp = Math.round(e.hp * HPM); e.atk = Math.max(1, Math.round(e.atk * ATKM)); }
 for (const e of Object.values(BOSSES)) { e.hp = Math.round(e.hp * BHPM); e.atk = Math.max(1, Math.round(e.atk * BATKM)); }
@@ -64,7 +65,7 @@ function tileValue(run, id) {
 function choose(run, ids, rng) {
   if (POLICY === 'random') return rng.int(ids.length);
   let best = 0, bv = -1;
-  ids.forEach((id, i) => { const v = tileValue(run, id) * (1 + rng.next() * 0.03); if (v > bv) { bv = v; best = i; } });
+  ids.forEach((id, i) => { if (!id) return; const v = tileValue(run, id) * (1 + rng.next() * 0.03); if (v > bv) { bv = v; best = i; } });
   return best;
 }
 
@@ -166,9 +167,12 @@ const rounds = MODES[MODE].rounds;
 const died = Array(rounds + 2).fill(0);
 let wins = 0, scoreSum = 0, roundsSum = 0, timeSum = 0;
 const t0 = Date.now();
+const TS = {}, BS = {};   // --tilestats: ile runów miało kafelek / Odznakę i ile z nich wygrało
 for (let s = 0; s < N; s++) {
   const run = playRun(SEED0 * 100003 + s);
   if (run.ended === 'win') wins++; else died[run.round]++;
+  for (const id of new Set([...run.tiles, ...run.skills.map(k => 'skill:' + k.id + (k.lvl >= 3 ? '+mut' : ''))])) { const x = (TS[id] = TS[id] || { n: 0, w: 0 }); x.n++; if (run.ended === 'win') x.w++; }
+  for (const b of (run.badges || [])) { const x = (BS[b] = BS[b] || { n: 0, w: 0 }); x.n++; if (run.ended === 'win') x.w++; }
   scoreSum += run.score; roundsSum += run.done;
 }
 console.log(`Tryb ${MODE}, Garnek ${GARNEK}, postać ${CHAR}, bot ${POLICY}, pula ${POOL}, ${N} runów (${Date.now() - t0} ms)`);
@@ -179,4 +183,10 @@ console.log(line);
 if (process.argv.includes('--table')) {
   console.log('Runda  walk  wygr%  śr.strata życia przy wygranej');
   for (const r of Object.keys(PER).map(Number).sort((a, b) => a - b)) { const x = PER[r]; console.log(String(r).padStart(4), String(x.n).padStart(5), (x.win / x.n * 100).toFixed(0).padStart(5) + '%', x.win ? (x.loss / x.win * 100).toFixed(0).padStart(6) + '%' : '    -'); }
+}
+
+if (process.argv.includes('--tilestats')) {
+  const rows = Object.entries({ ...TS, ...Object.fromEntries(Object.entries(BS).map(([k, v]) => ['badge:' + k, v])) }).sort((a, b) => b[1].w / b[1].n - a[1].w / a[1].n);
+  console.log('Kafelek / umiejętność / Odznaka: runów z nim, % wygranych');
+  for (const [id, x] of rows) console.log(id.padEnd(34), String(x.n).padStart(5), (x.w / x.n * 100).toFixed(0).padStart(4) + '%');
 }
