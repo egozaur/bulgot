@@ -94,7 +94,7 @@ function render() {
     case 'noplayer': root.innerHTML = `<div class="loading" style="flex-direction:column;gap:14px;text-align:center"><span>Do gry w Bulgot potrzebny jest nick.</span><button class="btn primary" data-act="retry">Wybierz nick</button><a class="btn ghost" href="/">← PL3Y</a></div>`; break;
     case 'home': root.innerHTML = renderHome(); break;
     case 'setup': root.innerHTML = renderSetup(); break;
-    case 'run': root.innerHTML = renderRun(); rollCounters(); break;
+    case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); break;
     case 'fight': return;   // arena buduje się w startFight()
   }
 }
@@ -209,7 +209,9 @@ const zoneAt = (mode, n) => { for (const z of D.MODES[mode].zones) if (n <= z.up
 function decreeHTML(always = false) {
   const r = G.run, d = r.decree && D.DECREES[r.decree];
   if (!d || !(always || r.round === 1 || zoneAt(r.mode, r.round - 1) !== zoneAt(r.mode, r.round))) return '';
-  return `<div class="decree">${art.decreeIcon()}<div><b>Nowy Okólnik Zarządu: ${esc(d.name)}.</b> ${esc(d.text)}</div></div>`;
+  if ((G.tucked || {})[r.id + ':' + r.decree]) return '';
+  // pismo Zarządu z pieczątką: wjeżdża przy wejściu do strefy, po chwili (albo po „Zwiń”) chowa się do pigułki Okólnik na pasku
+  return `<div class="decree letter" data-k="${r.id}:${r.decree}"><div class="lhead">Korporacja Rosołowa S.A. · Zarząd · Okólnik nr ${r.zone + 1}</div><div class="lbody">${art.decreeIcon()}<div><b>Nowy Okólnik Zarządu: ${esc(d.name)}.</b> ${esc(d.text)}</div></div><span class="stamp" aria-hidden="true">ZATWIERDZONO<small>ZARZĄD</small></span><button class="ltuck" data-act="tuck" title="Schowaj pismo (zostaje w pigułce Okólnik na pasku)">Zwiń</button></div>`;
 }
 const decreeSub = () => { const d = G.run.decree && D.DECREES[G.run.decree]; return d ? ` · <span class="dsub" title="${esc(d.text)}">Okólnik: ${esc(d.name)}</span>` : ''; };
 function towerHTML() {
@@ -298,6 +300,17 @@ function zoneCompareHTML() {
   const bar = (k, label, v, tip) => { const lv = v < 0.75 ? 'lo' : v > 1.3 ? 'hi' : 'ok', word = { lo: 'słabo', ok: 'OK', hi: 'mocno' }[lv];
     return `<div class="zc ${lv}" tabindex="0" data-tip="${esc(tip)}">${art.statIcon(k)}<span class="zl">${label}</span><span class="zb"><i style="width:${Math.round(Math.min(1, v / 2) * 100)}%"></i><u></u></span><b>${word}</b></div>`; };
   return `<div class="zcmp" aria-label="Porównanie z wrogami strefy">${bar('atk', 'Atak', c.off, 'Jak szybko pokonasz typową grupę wrogów tej strefy (Atak, Tempo, Kryt, Obrażenia kontra ich Życie i Pancerz).')}${bar('armor', 'Obrona', c.def, 'Jak długo wytrzymasz ciosy typowej grupy wrogów tej strefy (Życie, Pancerz, Unik, Regeneracja kontra ich Atak).')}</div>`;
+}
+function tuckLetter(el) {
+  if (!el || el.classList.contains('tucked')) return;
+  (G.tucked || (G.tucked = {}))[el.dataset.k] = true;
+  const pill = $('.pill.dec'); if (pill) { pill.classList.remove('ping'); void pill.offsetWidth; pill.classList.add('ping'); }
+  if (REDUCED.matches) { el.remove(); return; }
+  el.classList.add('tucked'); setTimeout(() => el.remove(), 650);
+}
+function armLetter() {
+  const el = $('.decree.letter'); if (!el) return;
+  clearTimeout(G.letterT); G.letterT = setTimeout(() => tuckLetter($('.decree.letter')), 9000);
 }
 function topbarHTML() {
   const r = G.run, M = D.MODES[r.mode];
@@ -893,6 +906,7 @@ const ACT = {
   pick: b => doPick(+b.dataset.i),
   buyoffer: b => doBuy(+b.dataset.i),
   pawnmenu: () => showPawn(),
+  tuck: b => tuckLetter(b.closest('.decree')),
   pawn: async b => { const id = b.dataset.v; const j = await act('pawn', { id }); if (!j) return; closeOverlay(); snd.sfx('coin'); toast(`Lis wziął ${TILE[id].name} i dał ${j.price} Ziaren. Wykup na następnym piętrze.`, false, 4200); render(); },
   redeem: async () => { const j = await act('redeem'); if (!j) return; snd.sfx('unlock'); toast(`Wykupiono: ${TILE[j.redeemed].name} (-${j.cost} Ziaren)`); render(); },
   will: async b => { const i = +b.dataset.i; const j = await act('will', { i }); if (!j) return; snd.sfx(i >= 0 ? 'unlock' : 'click'); showEnd({ ...G.lastEndJ, will: j.will || null }, true); },

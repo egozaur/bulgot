@@ -666,3 +666,24 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 .arena .pl-fore { top: auto; height: 16%; bottom: -4%; transform: translate(calc(var(--px, 0) * -34px), 0); z-index: 5;
   background: radial-gradient(ellipse 9% 70% at 6% 100%, rgba(10,6,4,.85) 60%, transparent 62%), radial-gradient(ellipse 7% 55% at 94% 100%, rgba(10,6,4,.85) 60%, transparent 62%),
     linear-gradient(180deg, transparent, rgba(10,6,4,.55)); filter: blur(1.5px); }
+
+/* ---------- remaster: Okólnik jako pismo z pieczątką Zarządu ---------- */
+.decree.letter { position: relative; display: block; max-width: 720px; padding: 10px 18px 12px 18px; border-radius: 4px; border: 0; color: #2b1a12;
+  background: linear-gradient(#fbf5e6, #efe5cd); box-shadow: 0 6px 0 rgba(0,0,0,.35), 0 0 0 1px #c9b98f; transform-origin: 85% -40%; animation: letterin .55s cubic-bezier(.2,.9,.3,1.15) both; }
+.decree.letter::before { content: ''; position: absolute; inset: 0; border-radius: 4px; pointer-events: none; background: repeating-linear-gradient(transparent 0 21px, rgba(120,150,190,.18) 21px 22px); }
+.decree.letter .lhead { font: 700 9.5px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #7a5a3a; border-bottom: 2px solid #b4472a; padding-bottom: 5px; margin-bottom: 6px; padding-right: 110px; }
+.decree.letter .lbody { display: flex; align-items: center; gap: 10px; padding-right: 96px; font-size: .92rem; }
+.decree.letter .lbody b { color: #7a1f10; }
+.decree.letter .stamp { position: absolute; right: 54px; top: 50%; margin-top: -24px; padding: 4px 8px; border: 3px double #c0392b; border-radius: 6px; color: #c0392b; font: 700 11px/1.05 var(--display); letter-spacing: .06em; text-align: center; transform: rotate(-12deg); opacity: .85; mix-blend-mode: multiply; animation: stamp .35s .45s cubic-bezier(.2,.9,.3,1.4) both; }
+.decree.letter .stamp small { display: block; font-size: 9px; letter-spacing: .2em; }
+.decree.letter .ltuck { position: absolute; right: 8px; bottom: 6px; padding: 2px 7px; border-radius: 6px; border: 1px solid #b9a88c; background: #efe5cd; color: #7a5a3a; font: 700 10px/1.2 var(--mono); }
+.decree.letter.tucked { animation: lettertuck .6s cubic-bezier(.6,0,.8,.4) forwards; }
+@keyframes letterin { from { transform: translateY(-60px) rotate(-3deg) scale(.9); opacity: 0; } }
+@keyframes stamp { from { transform: rotate(-12deg) scale(2.2); opacity: 0; } }
+@keyframes lettertuck { to { transform: translate(38%, -260%) scale(.08) rotate(8deg); opacity: 0; } }
+.pill.dec.ping { animation: decping .9s ease-out; }
+@keyframes decping { 0%, 40% { box-shadow: 0 0 0 3px #ffd23f, 0 0 18px rgba(255,210,63,.8); transform: scale(1.08); } }
+@media (max-width: 640px) { .decree.letter .stamp { display: none; } .decree.letter .lbody, .decree.letter .lhead { padding-right: 0; } }
+.decree.letter .stamp { top: 4px; margin-top: 0; right: 64px; }
+.decree.letter .lhead { padding-right: 170px; }
+.decree.letter .lbody { padding-right: 56px; }
