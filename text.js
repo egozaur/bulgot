@@ -85,6 +85,7 @@ export const HELP = [
   ['Jedna runda', 'Wybierasz jeden z czterech kafelków, potem następuje walka. Po wygranej dostajesz Ziarna i odzyskujesz część życia.'],
   ['Kafelki', 'Statystyki, umiejętności aktywne, przedmioty z synergią i ryzykowne wydarzenia. Trzy przedmioty z jednego zestawu (Jajeczne, Zbożowe, Rambo) dają mocne bonusy.'],
   ['Reroll', 'Nie podoba Ci się oferta? Za Ziarna możesz ją przelosować. Pierwszy kosztuje 2, każdy kolejny w tej rundzie o 1 więcej.'],
+  ['Odpoczynek', 'Za 4 Ziarna leczysz 20% życia, raz na rundę, przed walką (przycisk pod ofertą i na ekranie przed walką). Dobry sposób, żeby nie wchodzić na kolejne piętro poobijanym.'],
   ['Dokupowanie', 'Jeden kafelek z oferty bierzesz za darmo, a pozostałe możesz dokupić za Ziarna: zwykły 6, rzadki 12, epicki 20, legendarny 30. Wydarzeń (Sklepik, Hazard, Skrzynka) nie da się kupić, tylko wybrać. Niewydane Ziarna dają punkty na koniec runu.'],
   ['Walka', 'Kurczak bije się sam. Ty decydujesz, kiedy użyć umiejętności: klawisze 1, 2, 3 albo kliknięcie. Dobrze wybrany moment (ogłuszenie, unik) wygrywa z bossami.'],
   ['Bossowie', 'Mają fazy i własne sztuczki. Ogłuszenie przerywa ich szarże i telegrafowane ciosy, Unik Skrzydłem pozwala je przeczekać.'],

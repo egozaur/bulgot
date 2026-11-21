@@ -50,7 +50,7 @@ Jedna runda to wybór kafelka, walka i nagroda; po 20 takich rundach (w trybie s
 1. **Start runu:** tryb (szybki albo pełny), postać i poziom trudności.
 2. **Oferta:** 4 kafelki, jeden bierzesz za darmo, a pozostałe możesz dokupić za Ziarna (zwykły 6, rzadki 12, epicki 20, legendarny 30; wydarzeń nie kupisz). Pierwsza oferta zawsze zawiera umiejętność. Reroll kosztuje 2 Ziarna, każdy kolejny w tej samej rundzie o 1 więcej (2, 3, 4…); w nowej rundzie cena wraca do 2.
 3. **Walka:** 30–60 sekund, automatyczna z aktywnymi umiejętnościami klikanymi przez gracza.
-4. **Nagroda:** 4 Ziarna za rundę, 6 za bossa; po walce leczenie 35% maks. Życia.
+4. **Nagroda:** 4 Ziarna za rundę, 6 za bossa; po walce leczenie 35% maks. Życia. Przed walką można za 4 Ziarna odpocząć (+20% życia, raz na rundę).
 5. **Boss:** po bossie 1 i 2 dodatkowa oferta 3 kafelków rzadkich lub lepszych.
 6. **Koniec:** porażka kończy run (Gniazdo Zapasowe może ją raz odwrócić), wynik trafia do rankingu.
 
@@ -91,22 +91,22 @@ Walka jest automatyczna: kurczak i wróg biją się sami, a gracz decyduje, kied
 obrażenia = Atak × (1 + b) × k × 100 / (100 + P)
 ```
 
-b = suma premii procentowych, k = mnożnik krytyka (1, gdy cios nie jest krytyczny), P = pancerz celu. Wrogowie rosną z rundą r (tryb pełny; szybki ma 1.085 i 1.057, a bossowie w nim 80% życia i 90% ataku; na pierwszych 4 piętrach, w szybkim na 3, wrogowie mają +35% życia i -20% ataku):
+b = suma premii procentowych, k = mnożnik krytyka (1, gdy cios nie jest krytyczny), P = pancerz celu. Wrogowie rosną z rundą r (tryb pełny; szybki ma 1.13 i 1.092, a bossowie w nim 80% życia i 90% ataku; na pierwszych 4 piętrach, w szybkim na 3, wrogowie mają +35% życia i -20% ataku):
 
 ```
-Życie_r = Życie_0 × 1.085^(r-1)      Atak_r = Atak_0 × 1.052^(r-1)
+Życie_r = Życie_0 × 1.107^(r-1)      Atak_r = Atak_0 × 1.07^(r-1)
 ```
 
 Zasady silnika:
 
 - Czas liczony w tickach po 100 ms, losowość z ziarna (seed): ta sama walka z tymi samymi wejściami daje zawsze ten sam wynik.
 - Po 45 s wróg wpada w Furię (+5% obrażeń na sekundę), żeby walka nie utknęła w remisie. Limit 90 s.
-- Umiejętności startują z 40% cooldownu (żeby nie zabijać w 1. ticku). Umiejętność wzięta drugi raz awansuje na poziom 2: +30% mocy i -20% cooldownu. Gdy wszystkie 3 sloty są zajęte, nowa umiejętność zastępuje wybraną.
+- Umiejętności startują z 15% cooldownu (nie zabijają w 1. ticku, gotowe po ok. 1 s). Umiejętność wzięta drugi raz awansuje na poziom 2: +30% mocy i -20% cooldownu. Gdy wszystkie 3 sloty są zajęte, nowa umiejętność zastępuje wybraną.
 - Ogłuszenie przerywa szarże i telegrafowane ataki bossów.
 
 Przykład rundy 1: Pyrtek (70 Życia, Atak 8, 1 cios/s) kontra Szczur Pasz (19 Życia, Atak 3, 1,2 ciosu/s). Pyrtek wygrywa po ok. 3 s i traci kilka punktów Życia. Runda 1 uczy pętli; pierwsze większe wyzwanie dopiero w rundach 4–6.
 
-## 4. Kafelki na start (30)
+## 4. Kafelki na start (31)
 
 20 dostępnych od razu, 10 odblokowywanych osiągnięciami (sekcja 6). Wszystko w plikach danych JSON, dodanie kafelka nie wymaga zmian w kodzie.
 
@@ -114,7 +114,8 @@ Przykład rundy 1: Pyrtek (70 Życia, Atak 8, 1 cios/s) kontra Szczur Pasz (19 �
 
 | Kafelek | Efekt | Rzadkość |
 |---|---|---|
-| Ziarno Mocy | +4 Atak | Zwykły |
+| Ziarno Mocy | +6 Atak | Zwykły |
+| Ostry Dziób | +12% obrażeń | Zwykły |
 | Twardy Grzebień | +20 maks. Życia | Zwykły |
 | Szybki Dziób | +10% tempa ataku | Zwykły |
 | Pancerz z Pierza | +6 Pancerza | Zwykły |
@@ -127,12 +128,12 @@ Przykład rundy 1: Pyrtek (70 Życia, Atak 8, 1 cios/s) kontra Szczur Pasz (19 �
 
 | Kafelek | Efekt | Cooldown | Rzadkość |
 |---|---|---|---|
-| Kukurydziany Grad | 5 pocisków po 60% Ataku | 10 s | Zwykły |
-| Pianie Grozy | Ogłusza wroga na 2 s | 14 s | Rzadki |
-| Jajeczny Granat | 250% Ataku w jednym uderzeniu | 12 s | Rzadki |
-| Dziobnięcie Szału | +50% tempa ataku przez 6 s | 18 s | Rzadki |
-| Unik Skrzydłem | Nietykalność przez 1,5 s | 16 s | Epicki |
-| Zagrzebanie w Sianie | Leczy 30% maks. Życia | 25 s | Epicki |
+| Kukurydziany Grad | 5 pocisków po 60% Ataku | 6,5 s | Zwykły |
+| Pianie Grozy | Ogłusza wroga na 2 s | 9 s | Rzadki |
+| Jajeczny Granat | 250% Ataku w jednym uderzeniu | 8 s | Rzadki |
+| Dziobnięcie Szału | +50% tempa ataku przez 6 s | 12 s | Rzadki |
+| Unik Skrzydłem | Nietykalność przez 1,5 s | 10 s | Epicki |
+| Zagrzebanie w Sianie | Leczy 30% maks. Życia | 16 s | Epicki |
 
 ### Przedmioty z synergią
 
@@ -292,10 +293,10 @@ Bot wybiera kafelki heurystyką (siła buildu = obrażenia × wytrzymałość), 
 
 | Konfiguracja | Wygrane bota |
 | --- | --- |
-| Pełny, Garnek 0, wszystkie kafelki, bot dokupuje | ok. 50% |
-| Pełny, Garnek 0, bot nie dokupuje wcale | ok. 6% |
-| Pełny, Garnek 0, tylko 20 startowych kafelków | ok. 13% |
-| Szybki, Garnek 0 | ok. 44% |
+| Pełny, Garnek 0, wszystkie kafelki, bot dokupuje | ok. 65% |
+| Pełny, Garnek 0, bot nie dokupuje wcale | ok. 13% |
+| Pełny, Garnek 0, tylko 21 startowych kafelków | ok. 46% |
+| Szybki, Garnek 0 | ok. 65% |
 | Pełny, bot wybierający losowo | poniżej 1% |
 
 Postacie (pełny, Garnek 0): Pyrtek ok. 40%, Kwoka Babcia ok. 49%, Kaczor Hazardzista ok. 33%, Indor Bogdan ok. 37%. Powtórzenie: `node dev/sim-balance.mjs --mode full --n 1000 --table`.

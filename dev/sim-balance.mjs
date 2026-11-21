@@ -2,7 +2,7 @@
 // Użycie (Windows: export PATH="/c/Users/Kurczak/tools/node:$PATH"):
 //   node dev/sim-balance.mjs [--mode full|quick] [--garnek 0..5] [--n 300] [--policy smart|random] [--pool starter|all] [--char pyrtek]
 // Bot używa dokładnie tych samych funkcji co serwer (rules.js, sim.js), więc liczby są prawdziwe.
-import { newRun, pickTile, reroll, buyOffer, shopBuy, bet, bonusPick, fightSetup, fightFinish, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
+import { newRun, pickTile, reroll, buyOffer, rest, shopBuy, bet, bonusPick, fightSetup, fightFinish, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
 import { Fight } from '../../pl3y-server/src/games/bulgot/sim.js';
 import { TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, RULES } from '../../pl3y-server/src/games/bulgot/data.js';
 import { makeRng, mix } from '../../pl3y-server/src/games/bulgot/rng.js';
@@ -13,6 +13,7 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i >= 0 
 const MODE = arg('mode', 'full'), GARNEK = +arg('garnek', 0), N = +arg('n', 300), POLICY = arg('policy', 'smart'), POOL = arg('pool', 'all'), CHAR = arg('char', 'pyrtek');
 const SEED0 = +arg('seed', 1);
 const TRACE = process.argv.includes('--trace');
+const NOREST = process.argv.includes('--norest'), RESTBELOW = +arg('restbelow', 55);
 const NOBUY = process.argv.includes('--nobuy'), BUYMIN = +arg('buymin', 1.05);
 const PER = {};
 // Pokrętła do strojenia (nie zmieniają plików): mnożniki życia/ataku wrogów i bossów oraz tempo wzrostu na rundę.
@@ -127,6 +128,8 @@ function playRun(seed) {
       const res = bonusPick(run, i, slot);
       if (res.err) bonusPick(run, i, 0);
     } else if (run.phase === 'fight') {
+      // Odpoczynek: za Ziarna leczy część życia przed walką, gdy bohater jest mocno poobijany
+      if (!NOREST && POLICY === 'smart' && run.hp * 100 < statsOf(run).maxHp * RESTBELOW && run.coins >= RULES.restCost && !run.rested) rest(run);
       const { setup } = fightSetup(run);
       const before = { hp: run.hp, coins: run.coins };
       const out = fightFinish(run, botInputs(setup));

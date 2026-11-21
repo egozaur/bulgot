@@ -211,6 +211,12 @@ function floorKron() {
   if (r.boss) return T.BOSS_INTRO[r.boss].quote;
   return T.pickLine(T.OFFER_LINES[r.zone], r.round - 1);
 }
+// Odpoczynek: za Ziarna leczy część życia, raz na rundę, przed walką.
+function restBtn() {
+  const r = G.run, off = r.rested || r.hp >= r.maxHp || r.coins < r.restCost;
+  const why = r.rested ? 'W tej rundzie już odpoczywałeś' : r.hp >= r.maxHp ? 'Masz pełne życie' : r.coins < r.restCost ? 'Za mało Ziaren' : 'Odpoczynek (klawisz O)';
+  return `<button class="btn" data-act="rest" ${off ? 'disabled' : ''} title="${why}">Odpoczynek: +${r.restPct}% życia za ${r.restCost} ${art.coinIcon()}</button>`;
+}
 function offerCard(id, i) {
   const r = G.run, t = TILE[id], price = shopPrice(t), left = r.offer.filter(Boolean).length;
   const buy = t.event
@@ -224,7 +230,7 @@ function stageOffer() {
   return `<div class="stage-title"><h2>Piętro ${r.round}${r.boss ? ' · BOSS' : ''}</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${r.elite ? ' · elitarny wróg' : ''}</div></div>
     <div class="kron">${esc(floorKron())}</div>${previewHTML()}
     <div class="cards">${cards}</div>
-    <div class="actions"><button class="btn" data-act="reroll" ${r.coins < cost ? 'disabled' : ''}>Reroll ${free ? '(za darmo)' : `za ${cost} ${art.coinIcon()}`}</button></div>
+    <div class="actions"><button class="btn" data-act="reroll" ${r.coins < cost ? 'disabled' : ''}>Reroll ${free ? '(za darmo)' : `za ${cost} ${art.coinIcon()}`}</button>${restBtn()}</div>
     <div class="hint">Jeden kafelek bierzesz za darmo (klawisze 1–${r.offer.length}), pozostałe możesz dokupić (Shift + cyfra). R przelosowuje ofertę.</div>`;
 }
 function stageShop() {
@@ -252,8 +258,8 @@ function stagePrep() {
   const r = G.run;
   return `<div class="stage-title"><h2>Piętro ${r.round}: do walki!</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}</div></div>
     <div class="kron">${esc(floorKron())}</div>${previewHTML()}
-    <div class="actions"><button class="btn primary big" data-act="tofight" data-primary>Do walki!</button></div>
-    <div class="hint">W walce użyjesz umiejętności klawiszami 1, 2, 3. P robi pauzę.</div>`;
+    <div class="actions">${restBtn()}<button class="btn primary big" data-act="tofight" data-primary>Do walki!</button></div>
+    <div class="hint">W walce użyjesz umiejętności klawiszami 1, 2, 3. P robi pauzę. O to odpoczynek.</div>`;
 }
 function renderRun() {
   return `<div class="run">${topbarHTML()}${towerHTML()}<main class="stage">${stageHTML()}</main>${sideHTML()}</div>`;
@@ -595,6 +601,7 @@ const ACT = {
   introgo: () => { closeOverlay(); },
   pick: b => doPick(+b.dataset.i),
   buyoffer: b => doBuy(+b.dataset.i),
+  rest: async () => { const j = await act('rest'); if (!j) return; snd.sfx('heal'); toast('Odpoczynek: +' + j.healed + ' życia (-' + j.cost + ' Ziarna)'); render(); },
   reroll: async () => { const j = await act('reroll'); if (j) { snd.sfx('reroll'); render(); } },
   buy: async b => { const j = await act('shop', { i: +b.dataset.i }); if (j) { snd.sfx('coin'); render(); } },
   leave: async () => { const j = await act('shop', { i: -1 }); if (j) render(); },
@@ -656,6 +663,7 @@ document.addEventListener('keydown', e => {
     const dg = /^Digit([1-4])$/.exec(e.code);
     if (r.phase === 'offer' && dg && e.shiftKey) { const b = $(`.cards [data-act=buyoffer][data-i="${+dg[1] - 1}"]`); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'offer' && ['1', '2', '3', '4'].includes(k)) { const b = $(`.cards [data-act=pick][data-i="${+k - 1}"]`); if (b) b.click(); }
+    else if ((r.phase === 'offer' || r.phase === 'fight') && k === 'o') { const b = $('[data-act="rest"]'); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'offer' && k === 'r') { const b = $('[data-act="reroll"]'); if (b && !b.disabled) b.click(); }
     else if ((r.phase === 'event' || r.phase === 'bonus') && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (k === 'enter') { const p = $('[data-primary]'); if (p) p.click(); }

@@ -21,7 +21,7 @@ Repo `egozaur/bulgot` (GitHub Pages pod `https://pl3y.pl/bulgot/`), czysty HTML/
 - **Dane** (kafelki, wrogowie, bossowie, postacie, Garnek, odblokowania) są w `pl3y-server/src/games/bulgot/data.js` jako moduł JS, nie JSON (działa tak samo w Workerze, Node i przeglądarce bez asercji importu). Nowy kafelek = nowy obiekt w `TILES` + ikona w `art.js` (`ICON`). Statystyki wrogów stroi się symulatorem (`dev/sim-balance.mjs`), nie na oko.
 
 ### Protokół (POST `/api/bg/<akcja>`, ciało zawsze z `pt` = token gracza)
-`state`, `start {mode,char,garnek}`, `pick {i,slot?}`, `buy {i,slot?}` (dokup kafelek z oferty za Ziarna; cena wg rzadkości w `RULES.prices`, wolny wybór zostaje), `reroll`, `shop {i}` (-1 = wyjdź), `history` (TESTOWA historia ostatnich 30 runów z dziennikiem rund; do usunięcia po testach), `bet {amount}`, `bonus {i,slot?}`, `fightstart` (zwraca `setup` z ziarnem walki), `fightfinish {inputs}`, `abandon`. Odpowiedź: `{ok, profile, run, ...}` albo `{err, code}` (400/409; 401 gdy brak sesji lub nicka). `GET /api/bg/ranks?mode=quick|full`. Opis stanu: `rules.js` → `view()`.
+`state`, `start {mode,char,garnek}`, `pick {i,slot?}`, `buy {i,slot?}` (dokup kafelek z oferty za Ziarna; cena wg rzadkości w `RULES.prices`, wolny wybór zostaje), `reroll`, `rest`, `shop {i}` (-1 = wyjdź), `history` (TESTOWA historia ostatnich 30 runów z dziennikiem rund; do usunięcia po testach), `bet {amount}`, `bonus {i,slot?}`, `fightstart` (zwraca `setup` z ziarnem walki), `fightfinish {inputs}`, `abandon`. Odpowiedź: `{ok, profile, run, ...}` albo `{err, code}` (400/409; 401 gdy brak sesji lub nicka). `GET /api/bg/ranks?mode=quick|full`. Opis stanu: `rules.js` → `view()`.
 
 ### Rzeczy, o które łatwo się potknąć
 - **Ekonomia**: 4 Ziarna za rundę (6 za bossa), ceny dokupienia 6/12/20/30, reroll 2+1 za kolejny. Dokupowanie mocno wzmacnia gracza (bot: 6% wygranych bez niego, ok. 50% z nim), więc przy każdej zmianie cen lub dochodu przestrój tempo wzrostu wrogów (`MODES.*.grow`) symulatorem.
@@ -29,7 +29,10 @@ Repo `egozaur/bulgot` (GitHub Pages pod `https://pl3y.pl/bulgot/`), czysty HTML/
 - Interfejs skaluje się z rozmiarem okna (`applyScale()` w `app.js`: CSS `zoom` + zmienna `--vh`); nie używaj `100vh` w CSS, tylko `var(--vh, 100vh)`.
 - Nowa klasa DO = nowy `[[migrations]]` w `pl3y-server/wrangler.toml` (Bulgot ma `v8`). Nie zmieniaj nazw `BgPlayer`/`BgRanks` ani tagu `v8` (kasuje dane graczy).
 - `view()` w `rules.js` nie zdradza `seed`; nie dodawaj do widoku niczego, z czego da się wyliczyć przyszłe oferty lub spotkania.
-- Poziom 2 umiejętności: +30% mocy, -20% cooldownu; sloty: 3. Start umiejętności z 40% cooldownu (żeby nie zabijać w 1. ticku).
+- Poziom 2 umiejętności: +30% mocy, -20% cooldownu; sloty: 3. Start umiejętności z 15% cooldownu (nie zabija w 1. ticku, gotowa po ok. 1 s).
+- **Odpoczynek** (`rest`): 4 Ziarna = +20% życia, raz na rundę, tylko przed walką (po `fightstart` nie, bo powtórka musi się zgadzać).
+- Prezes i jego Ochroniarze mają `idle: 30` (3 s bez ataków na starcie walki).
+- Pełny opis projektu dla nowej osoby: `PRZEKAZANIE.md`.
 - Strefy: tryb szybki to strefy I i II (Prezes zawsze w strefie III, patrz `zoneOf`). Mnożniki bossów w trybie szybkim: `MODES.quick.bossPct`.
 - Wyciszenie lobby (`localStorage.pl3y_mute === '1'`) wycisza też efekty Bulgota. Ustawienia gry: `bulgot:sfx`, `bulgot:music`, `bulgot:speed`, `bulgot:mode`.
 - Push do `main` = produkcja (GitHub Pages). Zawsze pytaj przed pushem.

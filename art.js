@@ -248,6 +248,7 @@ const I = (inner) => svg(inner, '0 0 48 48', 'ico');
 const k = (fill, extra = '') => `fill="${fill}" ${S2} ${extra}`;
 const ICON = {
   'ziarno-mocy': `<path d="M24 5 C35 12 37 27 24 43 C11 27 13 12 24 5z" ${k('#ffc933')}/><path d="M24 12 C28 19 28 27 24 35" stroke="#fff3b0" stroke-width="3" ${NF} stroke-linecap="round"/><path d="M38 10 l2 4 l4 2 l-4 2 l-2 4 l-2 -4 l-4 -2 l4 -2z" fill="#fff" stroke="${O}" stroke-width="1.4"/>`,
+  'ostry-dziob': `<path d="M5 26 L34 8 L43 22 L34 38 Z" ${k('#cfd8dc')}/><path d="M10 25 L33 12" stroke="#fff" stroke-width="3" ${NF} stroke-linecap="round"/><path d="M20 30 L36 22" stroke="#90a4ae" stroke-width="2.4" ${NF} stroke-linecap="round"/><path d="M40 6 l1.6 3.4 l3.4 1.6 l-3.4 1.6 l-1.6 3.4 l-1.6 -3.4 l-3.4 -1.6 l3.4 -1.6z" fill="#fff" stroke="${O}" stroke-width="1.2"/>`,
   'twardy-grzebien': `<path d="M6 36 q-4 -16 8 -19 q1 -11 10 -7 q9 -7 13 4 q11 3 7 22 z" ${k('#e4572e')}/><path d="M14 30 q2 -8 8 -9" stroke="#ff9d7a" stroke-width="3" ${NF} stroke-linecap="round"/>`,
   'szybki-dziob': `<path d="M14 11 l28 13 l-28 13 z" ${k('#ffb02e')}/><path d="M14 24 h22" stroke="${O}" stroke-width="2" ${NF}/><path d="M2 15 h9 M0 24 h11 M2 33 h9" stroke="${O}" stroke-width="2.6" stroke-linecap="round"/>`,
   'pancerz-z-pierza': `<path d="M24 4 l17 6 v15 q0 13 -17 19 q-17 -6 -17 -19 v-15 z" ${k('#8ecae6')}/><path d="M24 11 q11 11 0 26 q-11 -15 0 -26z" ${k('#fff')}/><path d="M24 13 v24" stroke="${O}" stroke-width="1.8"/>`,
