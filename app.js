@@ -620,6 +620,9 @@ function updateUI(first) {
     // efekty statusowe: ikonki ze stosami, zamrożenie barwi wroga na niebiesko
     const stk = e.dead ? '' : ['burn', 'frost', 'poison', 'bleed'].filter(k => e[k] > 0).map(k => k + e[k]).join(' ');
     if (stk !== (fl.stk || '')) { fl.stk = stk; u.sts.innerHTML = stk ? stk.split(' ').map(x => { const k = x.replace(/[0-9]+/, ''), n = x.slice(k.length); return `<span class="st ${k}">${art.statusIcon(k)}${n}</span>`; }).join('') : ''; }
+    // aura statusów na samym wrogu: płomyki (Oparzenie), szron (Mróz), bąbelki (Salmonella), krople (Krwawienie)
+    const au = e.dead ? '' : ['burn', 'frost', 'poison', 'bleed'].filter(k => e[k] > 0).join(' ');
+    if (au !== (fl.au || '')) { fl.au = au; if (!u.aura) { u.fx.insertAdjacentHTML('beforeend', '<div class="aura"><i class="a-burn"></i><i class="a-burn b2"></i><i class="a-burn b3"></i><i class="a-frost"></i><i class="a-poison"></i><i class="a-poison p2"></i><i class="a-poison p3"></i><i class="a-bleed"></i><i class="a-bleed d2"></i></div>'); u.aura = u.fx.lastElementChild; } u.aura.className = 'aura ' + au.split(' ').filter(Boolean).map(k => 'au-' + k).join(' '); }
     const fr = tick < e.frozenUntil && !e.dead; if (fr !== !!fl.fr) { fl.fr = fr; u.spr.classList.toggle('frozen', fr); }
     const gd = !!e.immune && !e.dead; if (gd !== !!fl.gd) { fl.gd = gd; u.fx.querySelectorAll('.guardfx').forEach(n => n.remove()); if (gd) u.fx.insertAdjacentHTML('beforeend', '<div class="guardfx"></div>'); }
   }
