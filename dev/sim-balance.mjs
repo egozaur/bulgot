@@ -33,7 +33,7 @@ function power(run) {
   const crit = Math.min(1, S.crit / 100) * (S.critMult / 100 - 1);
   const dps = S.atk * (S.aspd / 100) * (1 + crit) * (1 + S.dmg / 100) + (S.egg ? 1.2 * S.atk / (S.egg / 10) : 0) + S.bleed * 0.6;
   const ehp = (S.maxHp * (1 + S.regen / 12)) * (1 + S.armor / 100) / (1 - Math.min(75, S.evade) / 100);
-  const skills = run.skills.reduce((a, s) => a + (s.lvl >= 2 ? 0.16 : 0.1), 0);
+  const skills = run.skills.reduce((a, s) => a + (s.lvl >= 3 ? 0.22 : s.lvl >= 2 ? 0.16 : 0.1), 0);
   return dps * ehp * (1 + skills) * (S.revive ? 1.1 : 1) * (1 + S.luck * 0.004);
 }
 function tileValue(run, id) {
@@ -43,7 +43,7 @@ function tileValue(run, id) {
   if (t.event) return t.event === 'skrzynka' ? base * 1.12 : t.event === 'sklepik' ? base * 1.03 : base * 0.99;
   if (t.type === 'skill') {
     const own = trial.skills.find(s => s.id === t.skill);
-    if (own) own.lvl = Math.min(2, own.lvl + 1);
+    if (own) { if (own.lvl >= 3) return base * 0.9; own.lvl++; }
     else if (trial.skills.length < 3) trial.skills.push({ id: t.skill, lvl: 1 });
     else return base * 0.9;
     trial.tiles.push(id);
@@ -72,7 +72,8 @@ function botInputs(setup) {
       const windup = alive.some(e => e.windup);
       let use = false;
       switch (s.id) {
-        case 'grad': case 'granat': case 'dziobniecie': use = alive.length > 0; break;
+        case 'grad': case 'granat': case 'dziobniecie': case 'chlust': case 'lodowy': case 'zgnile': case 'darcie': case 'premia': case 'egzekucja': use = alive.length > 0; break;
+        case 'kontra': case 'kapiel': use = windup || f.hp * 100 < f.S.maxHp * 70; break;
         case 'pianie': use = windup || alive.length >= 2 || alive.some(e => e.boss); break;
         case 'unik': use = windup || f.hp * 100 < f.S.maxHp * 45; break;
         case 'zagrzebanie': use = f.hp * 100 < f.S.maxHp * 55; break;
@@ -107,26 +108,26 @@ function playRun(seed) {
           const t0 = TILE_BY_ID[o.id], price = shopPrice(t0);
           if (o.gain < BUYMIN || price > run.coins || run.offer.filter(x => x).length < 2) continue;
           let sl; if (t0.type === 'skill' && run.skills.length >= 3 && !run.skills.find(s => s.id === t0.skill)) sl = run.skills.reduce((m, s, k, a) => (s.lvl < a[m].lvl ? k : m), 0);
-          if (buyOffer(run, o.k, sl).ok) nb++;
+          if (buyOffer(run, o.k, sl, 1 + rng.int(2)).ok) nb++;
         }
       }
       const t = TILE_BY_ID[run.offer[i]];
       let slot;
       if (t.type === 'skill' && run.skills.length >= 3 && !run.skills.find(s => s.id === t.skill)) slot = run.skills.reduce((m, s, k, a) => (s.lvl < a[m].lvl ? k : m), 0);
-      const res = pickTile(run, i, slot);
+      const res = pickTile(run, i, slot, 1 + rng.int(2));
       if (res.err) { pickTile(run, run.offer.findIndex(id => TILE_BY_ID[id].type === 'stat'), 0); }
     } else if (run.phase === 'event') {
       if (run.pending.kind === 'shop') {
         let bi = -1, bv = power(run) * 1.02;
         run.pending.offer.forEach((id, k) => { const t = TILE_BY_ID[id]; if (shopPrice(t) <= run.coins) { const v = tileValue(run, id); if (v > bv) { bv = v; bi = k; } } });
-        shopBuy(run, bi, 0);
+        shopBuy(run, bi, 0, 1);
       } else bet(run, 0);
     } else if (run.phase === 'bonus') {
       const i = choose(run, run.offer, rng);
       const t = TILE_BY_ID[run.offer[i]];
       let slot; if (t.type === 'skill' && run.skills.length >= 3) slot = 0;
-      const res = bonusPick(run, i, slot);
-      if (res.err) bonusPick(run, i, 0);
+      const res = bonusPick(run, i, slot, 1 + rng.int(2));
+      if (res.err) bonusPick(run, i, 0, 1);
     } else if (run.phase === 'fight') {
       // Odpoczynek: za Ziarna leczy część życia przed walką, gdy bohater jest mocno poobijany
       if (!NOREST && POLICY === 'smart' && run.hp * 100 < statsOf(run).maxHp * RESTBELOW && run.coins >= RULES.restCost && !run.rested) rest(run);

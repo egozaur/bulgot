@@ -135,6 +135,11 @@ button.tile:disabled { opacity: .5; cursor: not-allowed; }
 .tag.rar { color: var(--rc); border-color: var(--rc); }
 .tag.set { color: #8fd1c7; border-color: #2a9d8f; }
 .tag.up { color: #1c1100; background: var(--gold); border-color: var(--gold); }
+.tag.up.mut { background: #c77dff; border-color: #c77dff; color: #1a0026; }
+.tag.el { color: var(--ec); border-color: var(--ec); }
+.lv.mut { background: #c77dff !important; color: #1a0026 !important; }
+.mutopt { width: 100%; text-align: left; cursor: pointer; }
+.dmg.txt.gold { color: var(--gold); }
 .tile .price { margin-top: 8px; font-family: var(--display); font-size: 1.15rem; color: var(--gold); }
 .tile .price.no { color: #d77; }
 .tile.mini { width: 170px; min-height: 0; padding: 8px; }

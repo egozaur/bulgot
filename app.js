@@ -139,7 +139,9 @@ function tileCard(id, o = {}) {
   const own = run && t.type === 'skill' ? run.skills.find(s => s.id === t.skill) : null;
   const tags = [`<span class="tag">${D.TYPES[t.type]}</span>`, `<span class="tag rar">${D.RARITY[t.rarity]}</span>`];
   if (t.set) tags.push(`<span class="tag set">${D.SETS[t.set].name}${run && !o.static ? ' ' + (setOwned(t.set) + 1) : ''}</span>`);
-  if (own) tags.push('<span class="tag up">Poziom 2</span>');
+  for (const tg of (t.tags || [])) if (D.ELEMENTS[tg]) tags.push(`<span class="tag el" style="--ec:${D.ELEMENTS[tg].color}">${D.ELEMENTS[tg].name}</span>`);
+  if (own && own.lvl >= 2) tags.push('<span class="tag up mut">Mutacja</span>');
+  else if (own) tags.push('<span class="tag up">Poziom 2</span>');
   else if (t.type === 'skill' && run && run.skills.length >= D.RULES.maxSkills && !o.static) tags.push('<span class="tag">Zastąp slot</span>');
   const tag = o.static ? 'div' : 'button';
   const dis = o.price != null && run && run.coins < o.price ? 'disabled' : '';
@@ -174,7 +176,8 @@ function sideHTML() {
     const s = r.skills[i];
     if (!s) return '<div class="slot empty">wolny slot umiejętności</div>';
     const def = D.SKILLS[s.id], tile = D.TILES.find(t => t.skill === s.id);
-    return `<div class="slot">${art.tileIcon(tile.id)}<div><div class="sn">${i + 1}. ${esc(def.name)}${s.lvl >= 2 ? '<span class="lv">POZ. 2</span>' : ''}</div><div class="sd">${esc(def.text)}${s.lvl >= 2 ? ' (+30% mocy, -20% cooldownu)' : ''}</div></div></div>`;
+    const mu = s.lvl >= 3 && def.muts[(s.mut || 1) - 1];
+    return `<div class="slot">${art.tileIcon(tile.id)}<div><div class="sn">${i + 1}. ${esc(def.name)}${mu ? `<span class="lv mut">${esc(mu.name)}</span>` : s.lvl >= 2 ? '<span class="lv">POZ. 2</span>' : ''}</div><div class="sd">${esc(def.text)}${s.lvl >= 2 ? ' (+30% mocy, -20% cooldownu)' : ''}${mu ? ' Mutacja: ' + esc(mu.text) : ''}</div></div></div>`;
   }).join('');
   const rows = T.STAT_LABELS.map(([k, label, f]) => `<dt>${label}</dt><dd>${f ? f(S[k]) : S[k]}</dd>`).join('')
     + (S.dmg ? `<dt>Obrażenia</dt><dd>+${S.dmg}%</dd>` : '') + (S.critMult !== 150 ? `<dt>Siła trafienia krytycznego</dt><dd>×${(S.critMult / 100).toFixed(2).replace('.', ',')}</dd>` : '');
@@ -266,21 +269,35 @@ function renderRun() {
 }
 
 // ---------- akcje wyboru ----------
-async function doPick(i, slot) {
+// Kafelek umiejętności może wymagać decyzji: który slot zastąpić (pełne sloty) albo którą gałąź Mutacji wybrać (trzecia kopia).
+function needChoice(t, slot, mut, go) {
+  if (!t || t.type !== 'skill') return false;
+  const r = G.run, own = r.skills.find(s => s.id === t.skill);
+  if (own && own.lvl >= 2 && mut === undefined) { askMut(t, m => go(slot, m)); return true; }
+  if (!own && slot === undefined && r.skills.length >= D.RULES.maxSkills) { askSlot(t, s => go(s, mut)); return true; }
+  return false;
+}
+function askMut(tile, cb) {
+  const sk = D.SKILLS[tile.skill];
+  G.mutCb = cb;
+  const opts = sk.muts.map((m, k) => `<button class="slot mutopt" data-act="mutchoose" data-v="${k + 1}">${art.tileIcon(tile.id)}<div><div class="sn">${esc(m.name)}</div><div class="sd">${esc(m.text)}</div></div></button>`).join('');
+  openOverlay(`<h2>Mutacja: ${esc(sk.name)}</h2><p class="lead">Trzecia kopia zmienia umiejętność na stałe. Zachowuje moc poziomu 2 i dostaje jedną z dwóch cech. Wybierz gałąź:</p><div class="slotpick">${opts}</div>`, { narrow: true });
+}
+async function doPick(i, slot, mut) {
   const r = G.run, id = r.offer[i], t = TILE[id];
   if (!t) return;
-  if (t.type === 'skill' && slot === undefined && !r.skills.find(s => s.id === t.skill) && r.skills.length >= D.RULES.maxSkills) return askSlot(t, s => doPick(i, s));
-  const j = await act('pick', { i, slot });
+  if (needChoice(t, slot, mut, (s2, m2) => doPick(i, s2, m2))) return;
+  const j = await act('pick', { i, slot, mut });
   if (!j) return;
   snd.sfx('pick');
   if (j.crate) return showCrate(j.crate);
   render();
 }
-async function doBuy(i, slot) {
+async function doBuy(i, slot, mut) {
   const r = G.run, id = r.offer[i], t = id && TILE[id];
   if (!t) return;
-  if (t.type === 'skill' && slot === undefined && !r.skills.find(s => s.id === t.skill) && r.skills.length >= D.RULES.maxSkills) return askSlot(t, s => doBuy(i, s));
-  const j = await act('buy', { i, slot });
+  if (needChoice(t, slot, mut, (s2, m2) => doBuy(i, s2, m2))) return;
+  const j = await act('buy', { i, slot, mut });
   if (!j) return;
   snd.sfx('coin'); toast('Dokupiono: ' + t.name + ' (-' + j.price + ' Ziaren)');
   render();
@@ -350,7 +367,7 @@ function buildSkillbar() {
     const s = sks[i];
     if (!s) return `<div class="sk none">slot ${i + 1} wolny</div>`;
     const def = D.SKILLS[s.id], tile = D.TILES.find(t => t.skill === s.id);
-    return `<button class="sk" data-act="useskill" data-v="${i}" id="sk${i}"><span class="kbadge">${i + 1}</span>${art.tileIcon(tile.id)}<div class="sn">${esc(def.name)}${s.lvl >= 2 ? ' ★' : ''}</div><span class="cdv"></span><span class="cdt"></span></button>`;
+    return `<button class="sk" data-act="useskill" data-v="${i}" id="sk${i}"><span class="kbadge">${i + 1}</span>${art.tileIcon(tile.id)}<div class="sn">${esc(s.lvl >= 3 ? def.muts[(s.mut || 1) - 1].name : def.name)}${s.lvl >= 3 ? ' ★★' : s.lvl >= 2 ? ' ★' : ''}</div><span class="cdv"></span><span class="cdt"></span></button>`;
   }).join('');
   $('#skillbar').innerHTML = html;
 }
@@ -380,7 +397,8 @@ function onEvent(e) {
     case 'shield': { const u = tu(e.to); if (u) pop('tarcza', 'txt', u.x); break; }
     case 'shieldhit': { const u = tu(e.to); if (u) pop(e.d, 'txt', u.x); snd.sfx('hit'); break; }
     case 'immune': { const u = tu(e.to); if (u) pop('nietykalny', 'txt', u.x); break; }
-    case 'skill': { pop(D.SKILLS[e.id].name, 'txt', 17, 74); snd.sfx('skill'); break; }
+    case 'skill': { pop(e.mut ? D.SKILLS[e.id].muts[e.mut - 1].name : D.SKILLS[e.id].name, 'txt', 17, 74); snd.sfx('skill'); break; }
+    case 'coin': pop('+' + e.n + ' Ziarno', 'txt gold', 17, 70); snd.sfx('coin'); break;
     case 'stun': snd.sfx('stun'); break;
     case 'freeze': { const u = tu(e.uid); if (u) pop('zamrożony!', 'txt frost', u.x, 74); snd.sfx('stun'); break; }
     case 'resist': { const u = tu(e.to); if (u) pop('odporny', 'txt', u.x, 70); break; }
@@ -416,13 +434,13 @@ function updateUI(first) {
     const sh = (e.shieldHits > 0 || e.shield > 0) && !e.dead; if (sh !== !!fl.sh) { fl.sh = sh; u.fx.querySelectorAll('.shieldfx').forEach(n => n.remove()); if (sh) u.fx.insertAdjacentHTML('beforeend', '<div class="shieldfx"></div>'); }
     // efekty statusowe: ikonki ze stosami, zamrożenie barwi wroga na niebiesko
     const stk = e.dead ? '' : ['burn', 'frost', 'poison', 'bleed'].filter(k => e[k] > 0).map(k => k + e[k]).join(' ');
-    if (stk !== (fl.stk || '')) { fl.stk = stk; u.sts.innerHTML = stk ? stk.split(' ').map(x => { const k = x.replace(/d+/, ''), n = x.slice(k.length); return `<span class="st ${k}">${art.statusIcon(k)}${n}</span>`; }).join('') : ''; }
+    if (stk !== (fl.stk || '')) { fl.stk = stk; u.sts.innerHTML = stk ? stk.split(' ').map(x => { const k = x.replace(/[0-9]+/, ''), n = x.slice(k.length); return `<span class="st ${k}">${art.statusIcon(k)}${n}</span>`; }).join('') : ''; }
     const fr = tick < e.frozenUntil && !e.dead; if (fr !== !!fl.fr) { fl.fr = fr; u.spr.classList.toggle('frozen', fr); }
     const gd = !!e.immune && !e.dead; if (gd !== !!fl.gd) { fl.gd = gd; u.fx.querySelectorAll('.guardfx').forEach(n => n.remove()); if (gd) u.fx.insertAdjacentHTML('beforeend', '<div class="guardfx"></div>'); }
   }
   f.skills.forEach((s, i) => {
     const b = $('#sk' + i); if (!b) return;
-    const def = D.SKILLS[s.id], total = s.lvl >= 2 ? Math.floor(def.cd * 80 / 100) : def.cd, blocked = tick < s.blockedUntil;
+    const def = D.SKILLS[s.id], total = Math.floor((s.lvl >= 2 ? Math.floor(def.cd * 80 / 100) : def.cd) * (100 - (f.S.cdPct || 0)) / 100), blocked = tick < s.blockedUntil;
     const remain = Math.max(s.cd - tick, blocked ? s.blockedUntil - tick : 0), ready = remain <= 0;
     b.classList.toggle('ready', ready && !f.over); b.classList.toggle('blocked', blocked);
     b.querySelector('.cdv').style.transform = `scaleY(${ready ? 0 : Math.min(1, remain / total)})`;
@@ -609,13 +627,15 @@ const ACT = {
   buyoffer: b => doBuy(+b.dataset.i),
   rest: async () => { const j = await act('rest'); if (!j) return; snd.sfx('heal'); toast('Odpoczynek: +' + j.healed + ' życia (-' + j.cost + ' Ziarna)'); render(); },
   reroll: async () => { const j = await act('reroll'); if (j) { snd.sfx('reroll'); render(); } },
-  buy: async b => { const j = await act('shop', { i: +b.dataset.i }); if (j) { snd.sfx('coin'); render(); } },
+  buy: b => ACT.shopgo(+b.dataset.i),
+  shopgo: async (i, slot, mut) => { const t = TILE[G.run.pending.offer[i]]; if (needChoice(t, slot, mut, (s2, m2) => ACT.shopgo(i, s2, m2))) return;
+    const j = await act('shop', { i, slot, mut }); if (j) { snd.sfx('coin'); render(); } },
   leave: async () => { const j = await act('shop', { i: -1 }); if (j) render(); },
   bet: async b => { const j = await act('bet', { amount: +b.dataset.v }); if (!j) return; if (j.bet) { snd.sfx(j.won ? 'win' : 'lose'); toast(j.won ? `Wygrana! +${j.bet} Ziaren` : `Pudło. -${j.bet} Ziaren`, !j.won); } render(); },
-  bonuspick: async b => { const i = +b.dataset.i, t = TILE[G.run.offer[i]];
-    if (t.type === 'skill' && !G.run.skills.find(s => s.id === t.skill) && G.run.skills.length >= 3) { G.slotCb = s => ACT.bonusgo(i, s); return askSlot(t, G.slotCb); }
-    return ACT.bonusgo(i); },
-  bonusgo: async (i, slot) => { const j = await act('bonus', { i, slot }); if (j) { snd.sfx('pick'); render(); } },
+  bonuspick: b => ACT.bonusgo(+b.dataset.i),
+  bonusgo: async (i, slot, mut) => { const t = TILE[G.run.offer[i]]; if (needChoice(t, slot, mut, (s2, m2) => ACT.bonusgo(i, s2, m2))) return;
+    const j = await act('bonus', { i, slot, mut }); if (j) { snd.sfx('pick'); render(); } },
+  mutchoose: b => { const cb = G.mutCb; closeOverlay(); G.mutCb = null; if (cb) cb(+b.dataset.v); },
   slotchoose: b => { const cb = G.slotCb; closeOverlay(); G.slotCb = null; if (cb) cb(+b.dataset.v); },
   tofight: async () => {
     const j = await act('fightstart'); if (!j) return;
