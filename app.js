@@ -825,24 +825,29 @@ async function showRanking(mode) {
     return `<tr class="${x.nick === mynick ? 'me' : ''}"><td class="pos">${i + 1}</td><td>${av}${esc(x.nick)}${x.win ? ' ★' : ''}</td><td>${esc((D.CHARS[x.char] || {}).name || '')}${x.garnek ? ' · G' + x.garnek : ''}</td><td>${x.rounds}</td><td class="sc">${fmtNum(x.score)}</td></tr>`;
   }).join('')}</tbody></table>`;
 }
+// Księga: nowe wpisy (odblokowane kafelki, przepisy, reakcje) od ostatniego otwarcia dostają naklejkę „Nowy wpis!”.
+function bookSeen() { try { return new Set(JSON.parse(store.get('bulgot:bookseen') || '[]')); } catch (e) { return new Set(); } }
+function bookMark(keys) { const s = bookSeen(); for (const k of keys) s.add(k); store.set('bulgot:bookseen', JSON.stringify([...s])); }
 function showBook(tab = 'tiles') {
+  const seen = bookSeen(), fresh = k => !seen.has(k), marks = [];
   const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['react', 'Reakcje i Okólniki'], ['badges', 'Odznaki'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania']];
   let body = '';
   if (tab === 'react') {
-    const known = p.reactions || [];
+    const known = p.reactions || []; for (const k of known) marks.push('x:' + k);
     body = `<p class="lead">Dwa różne efekty na jednym wrogu łączą się w reakcję. Odkryte: ${known.length} z ${Object.keys(D.REACTIONS).length}.</p><div class="ms-grid">${Object.values(D.REACTIONS).map(R => known.includes(R.id)
-      ? `<div class="ms-row">${art.statusIcon(R.of[0])}${art.statusIcon(R.of[1])}<div><b>${esc(R.name)}</b><br><span>${esc(R.text)}</span></div></div>`
+      ? `<div class="ms-row entry ${fresh('x:' + R.id) ? 'fresh' : ''}">${fresh('x:' + R.id) ? '<span class="newtag">Nowy wpis!</span>' : ''}${art.statusIcon(R.of[0])}${art.statusIcon(R.of[1])}<div><b>${esc(R.name)}</b><br><span>${esc(R.text)}</span></div></div>`
       : `<div class="ms-row unknown">${art.statusIcon(R.of[0])}${art.statusIcon(R.of[1])}<div><b>?</b><br><span>${esc(D.STATUS[R.of[0]].name)} + ${esc(D.STATUS[R.of[1]].name)}: jeszcze nie odkryto.</span></div></div>`).join('')}</div>
       <div class="sec">Okólniki Zarządu</div><p class="lead">Każda strefa w runie ma inny okólnik, który zmienia zasady.</p><div class="ms-grid">${Object.values(D.DECREES).map(d => `<div class="ms-row">${art.decreeIcon()}<div><b>${esc(d.name)}</b><br><span>${esc(d.text)}</span></div></div>`).join('')}</div>
       <div class="sec">Wady fabryczne</div><p class="lead">Kafelek z pieczątką „Wada fabryczna” jest o 50% mocniejszy, ale po następnej walce ujawnia jedną z wad:</p><div class="ms-grid">${Object.values(D.FLAWS).map(f => `<div class="ms-row"><div><b>${esc(f.name)}</b><br><span>${esc(f.text)}</span></div></div>`).join('')}</div>
       ${p.nemesis ? `<div class="sec">Twój Nemezis</div><p class="lead">${esc(p.nemesis.name)}, cecha ${esc(D.AFFIXES[p.nemesis.affix].name)}${p.nemesis.tile ? ', ukradł ' + esc(TILE[p.nemesis.tile].name) : ''}. Pokonane Nemezis: ${p.counters.nemesisKills || 0}.</p>` : ''}`;
   } else if (tab === 'badges') {
     body = `<p class="lead">Odznaki Pracownicze dostajesz za pokonanie bossa albo elitarnego wroga (wybór 1 z 3) i w Kapliczce. Działają do końca runu.</p><div class="ms-grid">${Object.entries(D.BADGES).map(([id, b]) => `<div class="ms-row">${art.badgeIcon(id)}<div><b>${esc(b.name)}</b><br><span>${esc(b.text)}</span></div></div>`).join('')}</div>
-      <div class="sec">Cechy elitarnych wrogów</div><p class="lead">Elita ma jedną cechę (od Garnka 2: dwie). Podgląd piętra pokazuje je przed walką.</p><div class="ms-grid">${Object.values(D.AFFIXES).map(a => `<div class="ms-row"><div><b>${esc(a.name)}</b><br><span>${esc(a.text)}</span></div></div>`).join('')}</div>`;
+      <div class="sec">Cechy elitarnych wrogów</div><p class="lead">Elita ma jedną cechę (od Garnka 2: dwie). Na Garnku 0 podgląd piętra pokazuje je przed walką, wyżej dopiero walka.</p><div class="ms-grid">${Object.values(D.AFFIXES).map(a => `<div class="ms-row"><div><b>${esc(a.name)}</b><br><span>${esc(a.text)}</span></div></div>`).join('')}</div>`;
   } else if (tab === 'hatch') {
     const known = p.recipes || [];
+    for (const k of known) marks.push('r:' + k);
     const rows = D.RECIPES.map(r => known.includes(r.out)
-      ? `<div class="hatch-row">${r.of.map(c => tileCard(c, { static: true, mini: true })).join('<div class="hplus">+</div>')}<div class="hplus">=</div>${tileCard(r.out, { static: true, mini: true })}</div>`
+      ? `<div class="hatch-row entry ${fresh('r:' + r.out) ? 'fresh' : ''}">${fresh('r:' + r.out) ? '<span class="newtag">Nowy wpis!</span>' : ''}${r.of.map(c => tileCard(c, { static: true, mini: true })).join('<div class="hplus">+</div>')}<div class="hplus">=</div>${tileCard(r.out, { static: true, mini: true })}</div>`
       : '<div class="hatch-row unknown"><div class="qcard">?</div><div class="hplus">+</div><div class="qcard">?</div><div class="hplus">=</div><div class="qcard leg">?</div></div>').join('');
     const ms = Object.entries(D.MILESTONES).map(([id, m]) => `<div class="ms-row">${art.tileIcon(id)}<div><b>${D.MILESTONE_EVERY}× ${esc(TILE[id].name)} = ${esc(m.name)}</b><br><span>${esc(m.text)}</span></div></div>`).join('');
     body = `<p class="lead">Dwa pasujące przedmioty wykluwają legendarny. Odkryte przepisy: ${known.length} z ${D.RECIPES.length}. Na kartach w ofercie znacznik <b>Wylęgarnia!</b> mówi, że kafelek dokończy przepis.</p>${rows}
@@ -851,7 +856,8 @@ function showBook(tab = 'tiles') {
     const list = D.TILES.filter(t => !t.hatched && !t.hidden);
     body = `<p class="lead">Poznane: ${list.filter(t => !t.lock || p.tiles.includes(t.id)).length} z ${list.length} dostępnych kafelków.</p><div class="book-grid">${list.map((t, i) => {
       const open = !t.lock || p.tiles.includes(t.id), u = t.lock && D.UNLOCK_BY_ID[t.lock];
-      return tileCard(t.id, { static: true, mini: true, i, locked: !open, lockText: open ? '' : (u && u.text) });
+      const nw = open && t.lock && fresh('t:' + t.id); if (open && t.lock) marks.push('t:' + t.id);
+      return `<div class="entry ${nw ? 'fresh' : ''}" style="--i:${i}">${tileCard(t.id, { static: true, mini: true, i, locked: !open, lockText: open ? '' : (u && u.text) })}${nw ? '<span class="newtag">Nowy wpis!</span>' : ''}</div>`;
     }).join('')}</div>`;
   } else if (tab === 'chars') {
     body = `<div class="opts">${Object.values(D.CHARS).map(c => { const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock];
@@ -863,7 +869,9 @@ function showBook(tab = 'tiles') {
   } else {
     body = `<div class="help-list">${D.UNLOCKS.map(u => { const done = p.unlocked.includes(u.id); return `<div><b>${done ? '✓' : '○'} ${esc(unlockName(u))}</b><p>${esc(u.text)}${done ? ' (zdobyte)' : ''}</p></div>`; }).join('')}</div>`;
   }
-  openOverlay(`<h2>Księga Kurnika</h2><div class="tabs">${tabs.map(([id, n]) => `<button class="tab ${id === tab ? 'on' : ''}" data-act="booktab" data-v="${id}">${n}</button>`).join('')}</div>${body}`);
+  // księga: okładka, zakładki-przekładki, strona z wklejanymi wpisami
+  openOverlay(`<div class="booktabs tabs">${tabs.map(([id, n], i) => `<button class="tab ${id === tab ? 'on' : ''}" data-act="booktab" data-v="${id}" style="--t:${i}">${n}</button>`).join('')}</div><div class="bookpage"><h2>Księga Kurnika</h2>${body}</div>`, { cls: 'bookmodal' });
+  bookMark(marks);
 }
 // TESTOWA historia gier: ostatnie 10 runów z dziennikiem rund. Przycisk pobiera plik JSON do analizy.
 async function showHistory() {
