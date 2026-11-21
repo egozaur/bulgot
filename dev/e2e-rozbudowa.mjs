@@ -63,5 +63,25 @@ seen.size ? ok('ikonki efektów w walce: ' + [...seen].join(', ')) : fail('nie w
 for (let i = 0; i < 120 && !(await p.$('.modal')); i++) await wait(300);
 (await p.$('.modal')) ? ok('walka się skończyła') : fail('walka nie skończyła się');
 
+// 3. Zestaw Rosołowy x4 + Garnek: walka zaczyna się od Oparzenia, wybuchy nie psują interfejsu.
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
+console.log('faza przed zestawami:', (await st()).phase);
+if ((await st()).phase !== 'over') {
+  await patchRun("run.tiles = ['chochla', 'kostka-rosolowa', 'lubczyk', 'garnek-cisnieniowy', 'teczka', 'krawat', 'polisa', 'kolczatka', 'twardy-grzebien', 'twardy-grzebien']; run.phase = 'fight'; run.fight = null; run.hp = 200;");
+  await p.screenshot({ path: OUT + '/rozb-zestawy.png' });
+  await p.click('[data-act=tofight]'); await wait(1500);
+  const burn0 = await p.$$eval('.unit .sts .st.burn', n => n.length);
+  burn0 ? ok('Rosołowe x4: wrogowie płoną od startu') : fail('brak Oparzenia na starcie');
+  await p.screenshot({ path: OUT + '/rozb-walka2.png' });
+  for (let i = 0; i < 150 && !(await p.$('.modal')); i++) await wait(300);
+}
+// 4. Księga Kurnika: wszystkie kafelki z ikonami.
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
+await p.evaluate(() => { const m = document.querySelector('[data-act=menu]'); m && m.click(); }); await wait(300);
+await p.evaluate(() => document.querySelector('[data-act=book]').click()); await wait(500);
+const cards = await p.$$eval('.book-grid .tile', n => n.length);
+cards >= 40 ? ok('Księga: ' + cards + ' kafelków') : fail('Księga: ' + cards);
+await p.screenshot({ path: OUT + '/rozb-ksiega.png', fullPage: true });
+
 if (errs.length) fail('błędy strony:\n' + [...new Set(errs)].join('\n')); else ok('bez błędów w konsoli');
 await b.close();

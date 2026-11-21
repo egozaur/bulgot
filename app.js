@@ -133,12 +133,12 @@ function renderSetup() {
 }
 
 // ---------- karty kafelków ----------
-function setOwned(set) { return G.run ? G.run.tiles.filter(id => TILE[id] && TILE[id].set === set).length : 0; }
+function setOwned(set) { return G.run ? G.run.tiles.filter(id => TILE[id] && setsOf(TILE[id]).includes(set)).length : 0; }
 function tileCard(id, o = {}) {
   const t = TILE[id], i = o.i == null ? 0 : o.i, run = G.run;
-  const own = run && t.type === 'skill' ? run.skills.find(s => s.id === t.skill) : null;
+  const own = run && !o.static && t.type === 'skill' ? run.skills.find(s => s.id === t.skill) : null;
   const tags = [`<span class="tag">${D.TYPES[t.type]}</span>`, `<span class="tag rar">${D.RARITY[t.rarity]}</span>`];
-  if (t.set) tags.push(`<span class="tag set">${D.SETS[t.set].name}${run && !o.static ? ' ' + (setOwned(t.set) + 1) : ''}</span>`);
+  for (const st of setsOf(t)) tags.push(`<span class="tag set">${D.SETS[st].name}${run && !o.static ? ' ' + (setOwned(st) + 1) : ''}</span>`);
   for (const tg of (t.tags || [])) if (D.ELEMENTS[tg]) tags.push(`<span class="tag el" style="--ec:${D.ELEMENTS[tg].color}">${D.ELEMENTS[tg].name}</span>`);
   if (own && own.lvl >= 2) tags.push('<span class="tag up mut">Mutacja</span>');
   else if (own) tags.push('<span class="tag up">Poziom 2</span>');
@@ -183,7 +183,7 @@ function sideHTML() {
     + (S.dmg ? `<dt>Obrażenia</dt><dd>+${S.dmg}%</dd>` : '') + (S.critMult !== 150 ? `<dt>Siła trafienia krytycznego</dt><dd>×${(S.critMult / 100).toFixed(2).replace('.', ',')}</dd>` : '');
   const counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
   const chips = Object.entries(counts).map(([id, n]) => { const t = TILE[id]; return `<div class="chip r${t.rarity}" tabindex="0" data-tip="${esc(t.name)}\n${esc(t.text)}">${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : ''}</div>`; }).join('');
-  const sets = Object.entries(D.SETS).map(([id, st]) => { const n = setOwned(id); if (!n) return ''; const total = D.TILES.filter(t => t.set === id).length; return `<div class="setline">Zestaw ${st.name} ${n}/${total}${n >= 2 ? ': ' + st.b2 : ''}${n >= 3 ? '; ' + st.b3 : ''}</div>`; }).join('');
+  const sets = Object.entries(D.SETS).map(([id, st]) => { const n = setOwned(id); if (!n) return ''; const total = D.TILES.filter(t => t.set === id).length; return `<div class="setline">Zestaw ${st.name} ${n}/${total}${n >= 2 ? ': ' + st.b2 : ''}${n >= 3 ? '; ' + st.b3 : ''}${n >= 4 && st.b4 ? '; ' + st.b4 : ''}</div>`; }).join('');
   const pct = Math.max(0, Math.min(100, r.hp / S.maxHp * 100));
   return `<aside class="side">
     <div class="panel hero-card">${art.heroArt(r.char, r.form)}<div><div class="nm">${esc(ch.name)}</div><div class="fm">${esc(form.name)}</div>
@@ -242,7 +242,8 @@ function stageShop() {
     <div class="kron">Babcia nie bierze kart. Babcia bierze ziarno.</div><div class="cards">${cards}</div>
     <div class="actions"><button class="btn" data-act="leave">Wychodzę bez zakupu</button></div>`;
 }
-const shopPrice = t => D.RULES.prices[t.rarity];
+const shopPrice = t => { const p = D.RULES.prices[t.rarity], d = G.run && G.run.buyDisc; return d ? Math.max(1, Math.floor(p * (100 - d) / 100)) : p; };
+const setsOf = t => t.sets || (t.set ? [t.set] : []);
 function stageGamble() {
   const r = G.run, c = r.coins, q = Math.max(1, Math.floor(c / 4)), h = Math.max(1, Math.floor(c / 2));
   const bets = c > 0 ? [...new Set([1, q, h, c])].filter(x => x <= c).map(x => `<button class="btn" data-act="bet" data-v="${x}">Stawiam ${x} ${art.coinIcon()}</button>`).join('') : '<span class="hint">Nie masz czym grać.</span>';
@@ -401,6 +402,7 @@ function onEvent(e) {
     case 'coin': pop('+' + e.n + ' Ziarno', 'txt gold', 17, 70); snd.sfx('coin'); break;
     case 'stun': snd.sfx('stun'); break;
     case 'freeze': { const u = tu(e.uid); if (u) pop('zamrożony!', 'txt frost', u.x, 74); snd.sfx('stun'); break; }
+    case 'boom': { const u = tu(e.uid); if (u) pop('WYBUCH!', 'crit', u.x, 72); shake(); snd.sfx('egg'); break; }
     case 'resist': { const u = tu(e.to); if (u) pop('odporny', 'txt', u.x, 70); break; }
     case 'telegraph': snd.sfx('telegraph'); break;
     case 'egg': snd.sfx('egg'); break;

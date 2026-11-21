@@ -31,10 +31,17 @@ for (const e of Object.values(BOSSES)) { e.hp = Math.round(e.hp * BHPM); e.atk =
 function power(run) {
   const S = heroStats(loadoutOf(run));
   const crit = Math.min(1, S.crit / 100) * (S.critMult / 100 - 1);
-  const dps = S.atk * (S.aspd / 100) * (1 + crit) * (1 + S.dmg / 100) + (S.egg ? 1.2 * S.atk / (S.egg / 10) : 0) + S.bleed * 0.6;
+  const hps = S.aspd / 100;   // ciosy na sekundę
+  const burn = S.burnHit ? S.atk * 0.10 * (1 + S.burnPct / 100) * Math.min(10 + S.burnMax, hps * S.burnHit / 100 * 4) * (S.pressure ? 1.4 : 1) : 0;
+  const poison = S.poisonHit ? S.atk * 0.06 * (1 + S.poisonPct / 100) * Math.min(12, hps * S.poisonHit / 100 * 6) * 1.2 : 0;
+  const bleed = S.bleed ? (S.bleed + S.atk * 0.08) * Math.min(3 + S.bleedMax, hps * 3) : 0;
+  const frost = S.frostHit ? Math.min(1, hps * S.frostHit / 100 * 0.8) : 0;   // ułamek czasu, przez który wrogowie mają Mróz
+  const cold = 1 + frost * (S.vsCold / 100 + 0.15 + (S.shatter ? 0.25 : 0) + (S.freezePct ? 0.1 : 0));
+  const dps = (S.atk * hps * (1 + crit) * (1 + S.dmg / 100) + (S.egg ? 1.2 * S.atk / (S.egg / 10) : 0) + burn + poison + bleed) * cold + S.startBurn * S.atk * 0.05;
   const ehp = (S.maxHp * (1 + S.regen / 12)) * (1 + S.armor / 100) / (1 - Math.min(75, S.evade) / 100);
   const skills = run.skills.reduce((a, s) => a + (s.lvl >= 3 ? 0.22 : s.lvl >= 2 ? 0.16 : 0.1), 0);
-  return dps * ehp * (1 + skills) * (S.revive ? 1.1 : 1) * (1 + S.luck * 0.004);
+  const econ = 1 + (S.coinFlat + S.bossCoins / 4 + S.freeReroll * 1.5 + S.restDisc / 2) * 0.012 + (S.noSteal ? 0.02 : 0) + S.buyDisc * 0.002;
+  return dps * ehp * (1 + skills) * (S.revive ? 1.1 : 1) * (1 + S.luck * 0.004) * econ * (1 + S.frostThorns * 0.05);
 }
 function tileValue(run, id) {
   const t = TILE_BY_ID[id];
@@ -105,7 +112,7 @@ function playRun(seed) {
         let nb = 0;
         for (const o of opts) {
           if (nb >= MAXBUY) break;
-          const t0 = TILE_BY_ID[o.id], price = shopPrice(t0);
+          const t0 = TILE_BY_ID[o.id], price = shopPrice(t0, run);
           if (o.gain < BUYMIN || price > run.coins || run.offer.filter(x => x).length < 2) continue;
           let sl; if (t0.type === 'skill' && run.skills.length >= 3 && !run.skills.find(s => s.id === t0.skill)) sl = run.skills.reduce((m, s, k, a) => (s.lvl < a[m].lvl ? k : m), 0);
           if (buyOffer(run, o.k, sl, 1 + rng.int(2)).ok) nb++;
@@ -119,7 +126,7 @@ function playRun(seed) {
     } else if (run.phase === 'event') {
       if (run.pending.kind === 'shop') {
         let bi = -1, bv = power(run) * 1.02;
-        run.pending.offer.forEach((id, k) => { const t = TILE_BY_ID[id]; if (shopPrice(t) <= run.coins) { const v = tileValue(run, id); if (v > bv) { bv = v; bi = k; } } });
+        run.pending.offer.forEach((id, k) => { const t = TILE_BY_ID[id]; if (shopPrice(t, run) <= run.coins) { const v = tileValue(run, id); if (v > bv) { bv = v; bi = k; } } });
         shopBuy(run, bi, 0, 1);
       } else bet(run, 0);
     } else if (run.phase === 'bonus') {
