@@ -251,12 +251,12 @@ function sideHTML() {
 function topbarHTML() {
   const r = G.run, M = D.MODES[r.mode];
   return `<div class="topbar"><span class="brand">BULGOT</span>
-    <span class="pill">Piętro <b>${r.round}</b> / ${r.rounds}</span><span class="zone-name">${esc(T.ZONE_NAMES[r.zone])}</span><span class="spacer"></span>
+    <span class="pill">Piętro <b>${r.round}</b> / ${r.rounds}</span><span class="zone-name" title="${esc(T.ZONE_NAMES[r.zone])}">${esc(T.ZONE_NAMES[r.zone])}</span><span class="spacer"></span>
     <span class="pill" title="Ziarna: waluta na rerolle i zakupy. Odsetki po wygranej walce: +${Math.min(r.interestMax || 3, Math.floor(r.coins / D.RULES.interestPer))}">${art.coinIcon()} <b>${r.coins}</b></span>
     ${r.decree && D.DECREES[r.decree] ? `<span class="pill dec" tabindex="0" title="${esc(D.DECREES[r.decree].name + ': ' + D.DECREES[r.decree].text)}">${art.decreeIcon()} Okólnik</span>` : ''}
-    <span class="pill">${M.name}</span>${r.garnek ? `<span class="pill g">Garnek ${r.garnek} · ${D.GARNEK[r.garnek].name}</span>` : ''}
+    <span class="pill mode">${M.name}</span>${r.garnek ? `<span class="pill g" title="Temperatura Garnka ${r.garnek}: ${esc(D.GARNEK[r.garnek].name)}">Garnek ${r.garnek}<span class="gname"> · ${D.GARNEK[r.garnek].name}</span></span>` : ''}
     <span class="pill" title="Wynik na żywo">★ ${fmtNum(r.score)}</span>
-    <button class="btn small" data-act="menu">Menu</button></div>`;
+    <button class="btn small menubtn" data-act="menu" title="Menu (Esc)" aria-label="Menu">${art.menuIcon()}</button></div>`;
 }
 function stageHTML() {
   const r = G.run;
@@ -873,7 +873,7 @@ function navMove(dx, dy) {
 document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const F = G.fight, k = e.key.toLowerCase();
-  if (k === 'escape') { if (overlayOpen() && !$('#overlay').dataset.force) closeOverlay(); return; }
+  if (k === 'escape') { if (overlayOpen()) { if (!$('#overlay').dataset.force) closeOverlay(); } else if (G.screen === 'run' || (G.screen === 'fight' && G.fight && !G.fight.finishing)) { const m = $('[data-act="menu"]'); m && m.click(); } return; }
   if (ARROWS[k] && !(F && !overlayOpen())) { e.preventDefault(); navMove(...ARROWS[k]); return; }
   if (k === 'enter') { const cur = navCurrent(navItems()); if (cur) { e.preventDefault(); cur.click(); return; } }
   if (overlayOpen()) {

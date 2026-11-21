@@ -346,6 +346,25 @@ button.tile:disabled { opacity: .5; cursor: not-allowed; }
 .stats dt { line-height: 1.2; }
 
 @media (max-width: 1120px) { .tower { align-self: auto; } .floor { flex: none; height: 30px; } .run { min-height: 0; } }
+
+/* górny pasek zawsze w jednej linii (bug B-Dop.png): kompaktowe pigułki, nazwa strefy skraca się wielokropkiem, Menu jako ikona */
+.topbar { flex-wrap: nowrap; gap: 12px; padding: 8px 16px; border-radius: 18px; min-width: 0; }
+.topbar .brand { font-size: 2rem; flex: none; }
+.topbar .pill { font-size: 1.12rem; padding: .28em .85em; flex: none; }
+.topbar .zone-name { font-size: 1.4rem; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar .spacer { min-width: 0; }
+.topbar .btn.small.menubtn { flex: none; padding: .38em .55em; font-size: 1rem; }
+.menubtn .mico { width: 1.5em; height: 1.5em; }
+@media (max-width: 1360px) { .topbar .pill.g .gname { display: none; } }
+@media (max-width: 760px) { .topbar .pill.mode { display: none; } .topbar .brand { font-size: 1.4rem; } }
+/* na komputerze cała gra mieści się w oknie: strona się nie przewija, przewijają się tylko kolumny */
+@media (min-width: 1121px) {
+  .run { flex: none; height: var(--vh, 100vh); min-height: 0; grid-template-rows: auto minmax(0, 1fr); align-items: stretch; padding: 10px 18px 12px; gap: 12px; }
+  .run > .tower, .run > .stage, .run > .side { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+  .run > .stage { padding: 10px 6px 14px; }
+  .run > .side { padding-right: 4px; padding-bottom: 6px; }
+  .run > .tower { overflow: hidden; }
+}
 @media (max-width: 640px) { .topbar { padding: 10px 14px; gap: 10px; } .topbar .brand { font-size: 1.6rem; } .pill { font-size: 1rem; } .zone-name { font-size: 1.1rem; } .topbar .btn.small { font-size: 1rem; } }
 
 /* Wylęgarnia i progi */
