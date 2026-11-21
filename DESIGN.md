@@ -300,3 +300,46 @@ Bot wybiera kafelki heurystyką (siła buildu = obrażenia × wytrzymałość), 
 | Pełny, bot wybierający losowo | poniżej 1% |
 
 Postacie (pełny, Garnek 0): Pyrtek ok. 40%, Kwoka Babcia ok. 49%, Kaczor Hazardzista ok. 33%, Indor Bogdan ok. 37%. Powtórzenie: `node dev/sim-balance.mjs --mode full --n 1000 --table`.
+
+## 10. Rozbudowa (2026-11-21, noc): efekty, Mutacje, nowe przedmioty, Wylęgarnia, Odznaki
+
+Pełne listy (nazwy, liczby, opisy) są w `pl3y-server/src/games/bulgot/data.js`. Tu jest tylko projekt.
+
+### Efekty statusowe (`STATUS`)
+| Efekt | Działanie | Limit |
+|---|---|---|
+| Oparzenie | co sekundę stosy × 10% Ataku (min. 1 na stos), ignoruje pancerz i tarcze | 10 stosów (+Kostka Rosołowa) |
+| Mróz | każdy stos -8% tempa ataku wroga; 5 stosów = zamrożenie na 1,5 s (boss: połowa), przerywa szarżę | 5 (Zamrażarka: 4) |
+| Salmonella | co sekundę stosy × 6% Ataku; po śmierci nosiciela 50% stosów przechodzi na następnego wroga | 12 |
+| Krwawienie | co sekundę stosy × (moc krwawienia + 8% Ataku) | 3 (+Kolczatka, Pierzasta Burza) |
+
+Nakładanie: szansa przy zwykłym ataku (`burnHit`, `frostHit`, `poisonHit`) albo umiejętności. Wrogowie mogą mieć odporność (`resist`). Nietykalny wróg (Prezes z Ochroniarzami) nie dostaje efektów.
+Żywioły (`ELEMENTS`: Ogień, Lód, Salmonella, Krew, Jajo, Ziarno, Korpo) to oznaczenia na kartach.
+
+### Umiejętności: 14 i Mutacje
+Nowe: Rosołowy Chlust (Oparzenie na wszystkich), Lodowy Dziób, Zgniłe Jajo, Kogucia Kontra (połowa obrażeń i oddawanie), Darcie Pierza, Piaskowa Kąpiel (wrogowie pudłują), Dziobanie Premii (Ziarna za zabójstwo), Egzekucja Ostrogą.
+Trzecia kopia umiejętności = **Mutacja**: wybór 1 z 2 gałęzi (`SKILLS.*.muts`, w runie `{ id, lvl: 3, mut: 1|2 }`). Moc i cooldown jak na poziomie 2 plus efekt gałęzi. Protokół: `pick/buy/shop/bonus` przyjmują `mut`; bez niego serwer odpowiada kodem `mut` i klient pokazuje okno wyboru.
+
+### Przedmioty: 25 (zestawy 6)
+Nowe zestawy z progami 2/3/4: **Rosołowe** (Chochla, Kostka Rosołowa, Lubczyk, Garnek Ciśnieniowy), **Chłodnicze** (Kostka Lodu, Termometr, Zamrażarka, Szron na Piórach), **Korporacyjne** (Teczka, Krawat, Polisa Ubezpieczeniowa = kontra na Lisa, Premia Kwartalna). Stare zestawy dostały po jednym przedmiocie: Zepsute Jajo (Jajeczne), Mokra Pasza (Zbożowe), Kolczatka (Rambo).
+
+### Wylęgarnia (`RECIPES`) i progi (`MILESTONES`)
+8 przepisów: para przedmiotów automatycznie wykluwa legendarny przedmiot (składniki znikają, nowy ma efekty obu i premię, liczy się do obu zestawów). Wyklutych nie ma w ofertach, składniki już wyklutego też nie wracają. Odkryte przepisy są w profilu (`recipes`) i w Księdze (zakładka Wylęgarnia, nieodkryte jako „?”). Znacznik „Wylęgarnia!” na karcie mówi, że kafelek dokończy przepis.
+Progi: co 3 kopie tej samej statystyki dają nazwaną premię (np. 3× Ziarno Mocy = Kolba Mocy +15% Ataku).
+
+### Odznaki, elity, nowi wrogowie, wydarzenia
+- **Odznaki Pracownicze** (`BADGES`, 12): po wygranej z bossem albo elitą faza `badge`: wybór 1 z 3 (`choose {i}`), potem ewentualny bonus po bossie. Także w Kapliczce. Pasywne, w `run.badges`.
+- **Elity** są od Garnka 0 (pełny: piętra 4, 10, 16; szybki: 4, 8), +30% życia, +12% ataku, najwyżej z jednym pomocnikiem, z cechą (`AFFIXES`, 7). Od Garnka 2 dwie cechy, ale na wczesnych piętrach zawsze jedna. Cechy widać w podglądzie piętra.
+- **Nowi wrogowie**: Kaczka Podpalaczka (strefa I, podpala bohatera), Kurczak z Zamrażarki (strefa II, odporny na Mróz, wstaje raz, chyba że płonie), Sęp Audytor (strefa III, co 6 s zdejmuje efekty z sojuszników i dostaje tarczę).
+- **Wydarzenia**: Automat z Paszą (5 Ziaren = 2 losowe statystyki), Kontrakt z Działem HR (etat: +30% Ataku i -2 Ziarna na rundę / B2B: +15 Ziaren i -15% Życia; ukryte kafelki `umowa-etat`, `umowa-b2b`), Kapliczka Świętego Rosołu (pełne leczenie albo Odznaka).
+
+### Balans po rozbudowie (bot, 1000 runów)
+Wzrost wrogów: pełny 1,125 (życie) i 1,08 (atak), szybki 1,14 i 1,098. Strefa III w pełnym ma dodatkowo +30% życia i +12% ataku zwykłych wrogów (`MODES.full.zoneMul`). Prezes: 108 życia, 12 ataku. Garnek 5: +5% ataku wrogów i regeneracja o połowę słabsza (zamiast wyłączonej).
+| | Pełny | Szybki |
+|---|---|---|
+| Garnek 0 | 59,5% | 59,5% |
+| Garnek 1 / 2 / 3 / 4 | 53 / 50 / 42 / 37% | – / 48 / – / 34% |
+| Garnek 5 | 14% | 21% |
+| Tylko kafelki startowe (nowy gracz) | 49% | 55% |
+| Bez dokupowania | 17% | – |
+Porażki rozkładają się na elity i bossów (po 2–6%), strefa III straszy do końca, Prezes w szybkim zabija ok. 13% runów.

@@ -37,18 +37,18 @@ for (const [w, h] of [[1440, 900], [1920, 1080], [2560, 1440]]) {
 }
 
 // 2. dokupowanie na kartach
-const p = await open(1920, 1080, 'quick', { coins: 40, round: 4, tiles: [], offer: ['czujne-oko', 'jajeczny-granat', 'hazard-w-kurniku', 'opaska-rambo'] });
+const p = await open(1920, 1080, 'quick', { coins: 40, round: 3, tiles: [], offer: ['czujne-oko', 'jajeczny-granat', 'hazard-w-kurniku', 'opaska-rambo'] });
 let s = await R(p);
 ok(await p.evaluate(() => document.querySelectorAll('.slotcard').length === 4 && document.querySelectorAll('[data-act=buyoffer]').length === 3), 'trzy przyciski Dokup (Hazard to wydarzenie)');
 await p.click('[data-act=buyoffer][data-i="1"]'); await wait(500);
 s = await R(p);
-ok(s.coins === 40 - 12 && s.tiles.length === 0 && s.offer[1] === null, 'dokupiono Granat za 12 (Ziarna ' + s.coins + ')');
+ok(s.coins === 40 - 12 && s.tiles.length === 1 && s.offer[1] === null, 'dokupiono Granat za 12 (Ziarna ' + s.coins + ')');
 ok(await p.evaluate(() => !!document.querySelector('.tile.gone')), 'kupiony slot pokazuje „Dokupione”');
 await p.keyboard.down('Shift'); await p.keyboard.press('Digit1'); await p.keyboard.up('Shift'); await wait(500);
 s = await R(p); ok(s.coins === 40 - 12 - 12 && s.offer[0] === null, 'Shift+1 dokupuje Czujne Oko (Ziarna ' + s.coins + ')');
 await p.screenshot({ path: `${out}/u-po-zakupie.png` });
 await p.keyboard.press('4'); await wait(500);
-s = await R(p); ok(s.phase === 'fight' && s.tiles.length === 1 + 0 + 1, 'darmowy wybór Opaski (kafelki: ' + s.tiles.join(',') + ')');
+s = await R(p); ok(s.phase === 'fight' && s.tiles.length === 3, 'darmowy wybór Opaski (kafelki: ' + s.tiles.join(',') + ')');
 
 // 3. historia: zagraj do końca i sprawdź zapis
 await p.click('[data-act=tofight]'); await wait(800);

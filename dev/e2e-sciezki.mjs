@@ -59,6 +59,8 @@ await p.evaluate(() => { const sp = document.querySelector('[data-act=speed]'); 
 for (let i = 0; i < 100; i++) { await wait(400); if (await p.$('.modal')) break; }
 ok(await p.evaluate(() => /Boss pokonany/.test(document.querySelector('.modal h2').textContent)), 'komunikat „Boss pokonany!”');
 await p.evaluate(() => document.querySelector('.modal [data-act=close]').click()); await wait(400);
+s = await R(); ok(s.phase === 'badge' && s.pending && s.pending.offer.length === 3, 'po bossie: wybór Odznaki (3)');
+await p.keyboard.press('1'); await wait(500);
 s = await R(); ok(s.phase === 'bonus' && s.offer.length === 3, 'faza bonusowa z 3 kafelkami');
 await p.keyboard.press('1'); await wait(500);
 s = await R(); ok(s.phase === 'offer' && s.round === 7, 'po bonusie runda 7 (jest ' + s.round + ')');
