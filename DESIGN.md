@@ -80,7 +80,7 @@ Walka jest automatyczna: kurczak i wróg biją się sami, a gracz decyduje, kied
 |---|---|---|
 | Życie | 70 | Gdy spadnie do 0, przegrywasz walkę |
 | Atak | 8 | Bazowe obrażenia jednego ciosu |
-| Tempo ataku | 1,0 / s | Liczba ciosów na sekundę |
+| Szybkość ataku | 1,0 / s | Liczba ciosów na sekundę |
 | Pancerz | 0 | Zmniejsza obrażenia (wzór niżej) |
 | Szansa na trafienie krytyczne | 5% (siła ×1,5) | Szansa i siła mocniejszego ciosu |
 | Unik | 0% | Szansa, że cios nie trafi |
@@ -117,7 +117,7 @@ Przykład rundy 1: Pyrtek (70 Życia, Atak 8, 1 cios/s) kontra Szczur Pasz (19 �
 | Ziarno Mocy | +6 Atak | Zwykły |
 | Ostry Dziób | +12% obrażeń | Zwykły |
 | Twardy Grzebień | +20 maks. Życia | Zwykły |
-| Szybki Dziób | +10% tempa ataku | Zwykły |
+| Szybki Dziób | +10% szybkości ataku | Zwykły |
 | Pancerz z Pierza | +6 Pancerza | Zwykły |
 | Czujne Oko | +8% szansy na trafienie krytyczne | Rzadki |
 | Zwinne Nogi | +6% uniku | Rzadki |
@@ -131,7 +131,7 @@ Przykład rundy 1: Pyrtek (70 Życia, Atak 8, 1 cios/s) kontra Szczur Pasz (19 �
 | Kukurydziany Grad | 5 pocisków po 60% Ataku | 6,5 s | Zwykły |
 | Pianie Grozy | Ogłusza wroga na 2 s | 9 s | Rzadki |
 | Jajeczny Granat | 250% Ataku w jednym uderzeniu | 8 s | Rzadki |
-| Dziobnięcie Szału | +50% tempa ataku przez 6 s | 12 s | Rzadki |
+| Dziobnięcie Szału | +50% szybkości ataku przez 6 s | 12 s | Rzadki |
 | Unik Skrzydłem | Nietykalność przez 1,5 s | 10 s | Epicki |
 | Zagrzebanie w Sianie | Leczy 30% maks. Życia | 16 s | Epicki |
 
@@ -146,7 +146,7 @@ Przykład rundy 1: Pyrtek (70 Życia, Atak 8, 1 cios/s) kontra Szczur Pasz (19 �
 | Młocarnia | 15% szans na rozbicie 10% Pancerza wroga przy trafieniu | Zbożowe | Rzadki |
 | Siewnik | +1 Ataku na stałe po każdej wygranej rundzie | Zbożowe | Epicki |
 | Opaska Rambo | +15% obrażeń, +10% szansy na trafienie krytyczne | Rambo | Rzadki |
-| Kamizelka Kuloodporna | +15 Pancerza, -10% tempa ataku | Rambo | Zwykły |
+| Kamizelka Kuloodporna | +15 Pancerza, -10% szybkości ataku | Rambo | Zwykły |
 | Ostrogi Bojowe | Ataki krwawią: 4 obrażenia / s przez 3 s | Rambo | Rzadki |
 | Okulary Aviatory | +30% do siły trafienia krytycznego | Rambo | Epicki |
 
@@ -175,7 +175,7 @@ Każdy z trzech bossów ma własną mechanikę i fazy, a gracz ma na nie odpowie
 
 | Boss | Runda | Faza 1 | Faza 2 | Faza 3 |
 |---|---|---|---|---|
-| Brojler Zdzisław, Szef Zmiany | 6 (szybki: 5) | Co 15 s wzywa 2 Pisklaki-stażystów | Poniżej 50% Życia: Premia Motywacyjna, +30% tempa ataku | brak |
+| Brojler Zdzisław, Szef Zmiany | 6 (szybki: 5) | Co 15 s wzywa 2 Pisklaki-stażystów | Poniżej 50% Życia: Premia Motywacyjna, +30% szybkości ataku | brak |
 | Skubarka 3000 | 12 | Tarcza z pierza (25% maks. Życia), którą trzeba zbić najpierw | Poniżej 40% Życia: co 10 s fala obrażeń z telegrafem 2 s, do uniku | Co 20 s Skubanie wyłącza losowy kafelek gracza na 10 s |
 | Prezes Rosołu | 20 (szybki: 10) | Zebranie Zarządu: nietykalny, dopóki żyją dwaj Ochroniarze (Koty) | Poniżej 66%: Restrukturyzacja, blokuje jeden slot umiejętności na 8 s | Poniżej 33%: Wrzący Garnek, obrażenia rosną o 2% na sekundę, wyścig na DPS |
 
@@ -188,7 +188,7 @@ Zwykli wrogowie wchodzą pojedynczo lub w grupach po 1–3:
 | I | Pies Łańcuchowy | Wolny, bardzo dużo życia |
 | II | Mysz Magazynier | Wchodzi w roju po 3 |
 | II | Wózek Widłowy | Szarżuje (można ogłuszyć albo uniknąć) |
-| II | Bałwan z Chłodni | Każdym trafieniem spowalnia tempo ataku gracza o 20% |
+| II | Bałwan z Chłodni | Każdym trafieniem spowalnia szybkość ataku gracza o 20% |
 | III | Jajo-Sortownik | Robot z tarczą pochłaniającą pierwsze 3 ciosy |
 | III | Kot Ochroniarz | Wysoki unik i krytyk |
 | III | Księgowy Kanarek | Każdy cios zabiera 1 Ziarno |
@@ -202,9 +202,9 @@ Między runami odblokowujesz wyłącznie nowe opcje (postacie i kafelki), nigdy 
 | Postać | Styl | Bonus startowy | Odblokowanie |
 |---|---|---|---|
 | Pyrtek | Uniwersalny | Statystyki bazowe | Od startu |
-| Kwoka Babcia | Czołg | +30% Życia, -20% tempa ataku, start z umiejętnością Zagrzebanie w Sianie | Ukończ pełny run |
+| Kwoka Babcia | Czołg | +30% Życia, -20% szybkości ataku, start z umiejętnością Zagrzebanie w Sianie | Ukończ pełny run |
 | Kaczor Hazardzista | Ryzyko | +10 Ziaren, 1 darmowy reroll na rundę, więcej kafelków ryzyka w ofertach | Weź 5 kafelków ryzyka w jednym runie |
-| Indor Bogdan | Ciężkie ciosy | +60% Ataku, -30% tempa ataku, 15% szansy na trafienie krytyczne | Pokonaj Prezesa Rosołu w trybie szybkim |
+| Indor Bogdan | Ciężkie ciosy | +60% Ataku, -30% szybkości ataku, 15% szansy na trafienie krytyczne | Pokonaj Prezesa Rosołu w trybie szybkim |
 
 Dziesięć kafelków jest zablokowanych na start:
 
@@ -229,7 +229,7 @@ Trudność nazywa się Temperatura Garnka. Wygrana na poziomie N odblokowuje poz
 | 1 | Ciepły | Wrogowie mają +10% Życia |
 | 2 | Gorący | Reroll droższy o 1 Ziarno, pojawiają się elitarni wrogowie |
 | 3 | Wrzący | Leczenie po rundzie spada z 35% do 20% |
-| 4 | Kipiący | Bossowie mają +20% tempa ataku |
+| 4 | Kipiący | Bossowie mają +20% szybkości ataku |
 | 5 | Wulkan Rosołu | Wrogowie mają +15% Ataku, a regeneracja w walce jest wyłączona |
 
 Kosmetyka (czapeczki, kolory piór) jest poza wersją 1; miejsce w profilu gracza zostawiamy na później.
@@ -309,7 +309,7 @@ Pełne listy (nazwy, liczby, opisy) są w `pl3y-server/src/games/bulgot/data.js`
 | Efekt | Działanie | Limit |
 |---|---|---|
 | Oparzenie | co sekundę stosy × 10% Ataku (min. 1 na stos), ignoruje pancerz i tarcze | 10 stosów (+Kostka Rosołowa) |
-| Mróz | każdy stos -8% tempa ataku wroga; 5 stosów = zamrożenie na 1,5 s (boss: połowa), przerywa szarżę | 5 (Zamrażarka: 4) |
+| Mróz | każdy stos -8% szybkości ataku wroga; 5 stosów = zamrożenie na 1,5 s (boss: połowa), przerywa szarżę | 5 (Zamrażarka: 4) |
 | Salmonella | co sekundę stosy × 6% Ataku; po śmierci nosiciela 50% stosów przechodzi na następnego wroga | 12 |
 | Krwawienie | co sekundę stosy × (moc krwawienia + 8% Ataku) | 3 (+Kolczatka, Pierzasta Burza) |
 

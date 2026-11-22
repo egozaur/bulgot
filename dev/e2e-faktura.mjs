@@ -1,5 +1,5 @@
 // Bulgot: test faktury po walce (zamiast okna wyniku), pełnoekranowego ekranu końca z ciekawostkami, rankingu z filtrami
-// i ukrytej postaci Zjarany Kurczak (jajko „???”, odblokowanie po zdobyciu łącznie 425 Ziaren w jednym runie).
+// i ukrytej postaci Zjarany Kurczak (jajko „???”, odblokowanie po zdobyciu łącznie 420 Ziaren w jednym runie).
 // Użycie: cd C:\Users\Kurczak\tools\pt && node C:\Users\Kurczak\pl3y\bulgot\dev\e2e-faktura.mjs [katalog na zrzuty]
 import puppeteer from 'file:///C:/Users/Kurczak/tools/pt/node_modules/puppeteer-core/lib/esm/puppeteer/puppeteer-core.js';
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
@@ -114,11 +114,11 @@ await p.click('.modal-x'); await wait(300);
 await p.evaluate(() => { const c = document.querySelector('[data-act=again]'); c && c.click(); }); await wait(300);
 if (!(await p.$('[data-act=carpick]'))) { await p.evaluate(() => { const c = document.querySelector('[data-act=home]'); c && c.click(); }); await wait(300); await p.click('[data-act=new]'); await wait(300); }
 const sec = await p.evaluate(() => { const o = document.querySelector('[data-char=zjarany]'); return o ? { text: o.textContent, locked: o.classList.contains('locked') } : null; });
-ok(sec && sec.locked && /\?\?\?/.test(sec.text) && !/Zjarany|425|Ziaren/.test(sec.text), 'zablokowana postać to jajko „???”, bez nazwy i warunku: ' + (sec && sec.text.slice(0, 90)));
+ok(sec && sec.locked && /\?\?\?/.test(sec.text) && !/Zjarany|420|Ziaren/.test(sec.text), 'zablokowana postać to jajko „???”, bez nazwy i warunku: ' + (sec && sec.text.slice(0, 90)));
 ok(!(await p.evaluate(() => document.documentElement.innerHTML.includes('Zjarany'))), 'w kodzie strony nie ma nazwy ukrytej postaci');
 await p.screenshot({ path: OUT + '/jajko-sekret.png' });
 
-// ---- 6. odblokowanie po zdobyciu łącznie 425 Ziaren w jednym runie
+// ---- 6. odblokowanie po zdobyciu łącznie 420 Ziaren w jednym runie
 await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(600); const intro = await p.$('[data-act=introgo]'); if (intro) { await intro.click(); await wait(300); }
 await p.keyboard.press('1'); await wait(500);
 await patch(STRONG + " r.round = 2; r.phase = 'fight'; r.fight = {}; r.stats.earned = 424;"); await reload();

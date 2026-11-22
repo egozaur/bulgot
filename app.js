@@ -182,6 +182,7 @@ function renderSetup() {
     <div class="sec">Postać <small>← → · nowe odblokowujesz osiągnięciami</small></div>
     <div class="carousel"><button class="car-arrow" data-act="cprev" aria-label="Poprzednia postać">‹</button><div class="car-track">${cards}</div><button class="car-arrow" data-act="cnext" aria-label="Następna postać">›</button></div>
     <div class="car-dots">${ids.map((id, i) => `<i class="${i === s.cur ? 'on' : ''}"></i>`).join('')}</div>
+    ${(c => c && c.secret && !p.chars.includes(c.id) ? '<div class="codeask"><button class="btn small ghost" data-act="codeopen">🔑 Masz hasło?</button></div>' : '')(D.CHARS[ids[s.cur]])}
     <div class="start-row"><button class="btn primary big" data-act="setnext" data-primary>Dalej: palnik →</button></div>
     <div class="keyhint">Enter dalej · Esc menu</div></div>`;
 }
@@ -366,11 +367,23 @@ function zoneCompare() {
   const taken = Math.max(0.05, eDps * 100 / (100 + S.armor) * (100 - Math.min(75, S.evade || 0)) / 100 - (S.regen || 0));
   return { off: 10 / (eHp / dps), def: (S.maxHp / taken) / 20 };
 }
+// Zestawy jako ikonki pod paskami Atak/Obrona: kropki = sztuki zestawu (wypełnione = posiadane, kwadrat = próg bonusu), żółty = brakuje jednej sztuki do progu.
+const SET_ICON = { jajeczne: '🥚', zbozowe: '🌽', rambo: '💪', rosolowe: '🔥', chlodnicze: '❄️', korpo: '💼' };
+function setChipsHTML() {
+  if (!G.run) return '';
+  const chips = Object.entries(D.SETS).map(([id, st]) => {
+    const n = setOwned(id); if (!n) return '';
+    const total = Math.max(n, D.TILES.filter(t => !t.hatched && !t.hidden && setsOf(t).includes(id)).length), maxB = st.b4 ? 4 : 3, next = [2, 3, 4].find(x => x <= maxB && n < x);
+    const dots = Array.from({ length: total }, (_, i) => `<i class="${i < n ? 'on' : ''}${[2, 3, 4].includes(i + 1) && i + 1 <= maxB ? ' th' : ''}"></i>`).join('');
+    return `<div class="sch ${n >= 2 ? 'act' : ''} ${next && next - n === 1 ? 'near' : ''}" tabindex="0" data-tipk="set:${id}"><span class="sic">${SET_ICON[id] || '★'}</span><span class="snm">${esc(st.name)}</span><b>${n}/${total}</b><span class="sdots">${dots}</span></div>`;
+  }).join('');
+  return chips ? `<div class="zsets" aria-label="Zestawy">${chips}</div>` : '';
+}
 function zoneCompareHTML() {
-  const c = zoneCompare(); if (!c) return '';
+  const c = zoneCompare(); if (!c) { const z = setChipsHTML(); return z ? `<div class="zcmp">${z}</div>` : ''; }
   const bar = (k, label, v, tip) => { const lv = v < 0.75 ? 'lo' : v > 1.3 ? 'hi' : 'ok', word = { lo: 'słabo', ok: 'OK', hi: 'mocno' }[lv];
     return `<div class="zc ${lv}" tabindex="0" data-tip="${esc(tip)}">${art.statIcon(k)}<span class="zl">${label}</span><span class="zb"><i style="width:${Math.round(Math.min(1, v / 2) * 100)}%"></i><u></u></span><b>${word}</b></div>`; };
-  return `<div class="zcmp" aria-label="Porównanie z wrogami strefy">${bar('atk', 'Atak', c.off, 'Jak szybko pokonasz typową grupę wrogów tej strefy (Atak, Tempo, Kryt, Obrażenia kontra ich Życie i Pancerz).')}${bar('armor', 'Obrona', c.def, 'Jak długo wytrzymasz ciosy typowej grupy wrogów tej strefy (Życie, Pancerz, Unik, Regeneracja kontra ich Atak).')}</div>`;
+  return `<div class="zcmp" aria-label="Porównanie z wrogami strefy">${bar('atk', 'Atak', c.off, 'Jak szybko pokonasz typową grupę wrogów tej strefy (Atak, Szybkość ataku, Kryt, Obrażenia kontra ich Życie i Pancerz).')}${bar('armor', 'Obrona', c.def, 'Jak długo wytrzymasz ciosy typowej grupy wrogów tej strefy (Życie, Pancerz, Unik, Regeneracja kontra ich Atak).')}${setChipsHTML()}</div>`;
 }
 function tuckLetter(el) {
   if (!el || el.classList.contains('tucked')) return;
@@ -1242,6 +1255,18 @@ const ACT = {
   pawnmenu: () => showPawn(),
   tuck: b => tuckLetter(b.closest('.decree')),
   pawn: async b => { const id = b.dataset.v; const j = await act('pawn', { id }); if (!j) return; closeOverlay(); snd.sfx('coin'); toast(`Lis wziął ${TILE[id].name} i dał ${j.price} Ziaren. Wykup na następnym piętrze.`, false, 4200); render(); },
+  codeopen: () => {   // Hasło do ukrytej postaci: tylko tutaj, z ekranu wyboru postaci. Hasło sprawdza serwer.
+    openOverlay(`<h2>Masz hasło?</h2><p class="lead">Ktoś szepnął Ci słówko? Wpisz je, a ukryta postać wykluje się od razu.</p>
+      <input id="codein" class="codein" type="text" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Hasło" aria-label="Hasło do ukrytej postaci">
+      <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="codesend" data-primary>Odblokuj</button><button class="btn ghost" data-act="close">Wróć</button></div>`, { narrow: true, force: true });
+    const t = $('#codein'); if (t) { t.focus(); t.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ACT.codesend(); } }); }
+  },
+  codesend: async () => {
+    const t = $('#codein'), text = ((t && t.value) || '').trim(); if (!text) return toast('Wpisz hasło.', true, 2400);
+    const j = await act('code', { text }); if (!j) { if (t) { t.select(); snd.sfx('hurt'); } return; }
+    closeOverlay(); const id = (j.unlocks && j.unlocks[0] && j.unlocks[0].target) || 'zjarany';
+    G.setup.char = id; G.setup.cur = Math.max(0, charIds().indexOf(id)); render();
+  },
   redeem: async () => { const j = await act('redeem'); if (!j) return; snd.sfx('unlock'); toast(`Wykupiono: ${TILE[j.redeemed].name} (-${j.cost} Ziaren)`); render(); },
   will: async b => { const i = +b.dataset.i; const j = await act('will', { i }); if (!j) return; snd.sfx(i >= 0 ? 'unlock' : 'click'); showEnd({ ...G.lastEndJ, will: j.will || null }, true); },
   rest: async () => { const j = await act('rest'); if (!j) return; snd.sfx('heal'); toast('Odpoczynek: +' + j.healed + ' życia (-' + j.cost + ' Ziarna)'); render(); },

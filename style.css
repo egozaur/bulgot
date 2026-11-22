@@ -1258,3 +1258,23 @@ html.reduce .logo img { animation: none; }
 .console .sk .cdv { inset: -3px auto auto 50%; left: 50%; top: -3px; width: 82px; height: 82px; margin-left: -41px; border-radius: 50%; overflow: hidden; z-index: 2; }
 /* kółko przycisku to content-box: 76 + 2×4 (ramka) = 84 px, z pierścieniem 3 px = 90 px; nakładka ma dokładnie 90 px i ten sam środek */
 .console .sk .cdv { inset: -3px auto auto 50%; left: 50%; top: -3px; width: 90px; height: 90px; margin-left: -45px; }
+
+/* Zestawy pod paskami Atak/Obrona + hasło do ukrytej postaci */
+.zsets { display: grid; gap: 4px; margin-top: 4px; padding-top: 7px; border-top: 1px dashed var(--line); }
+.sch { display: grid; grid-template-columns: 20px 1fr auto auto; align-items: center; gap: 7px; font-size: .78rem; color: var(--muted); cursor: help; opacity: .8; }
+.sch .sic { font-size: .95rem; text-align: center; filter: grayscale(.7); }
+.sch .snm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sch b { font-variant-numeric: tabular-nums; }
+.sch .sdots { display: inline-flex; gap: 3px; }
+.sch .sdots i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--outline); background: #17110c; }
+.sch .sdots i.th { border-radius: 2px; }
+.sch .sdots i.on { background: #8fd1c7; border-color: #8fd1c7; }
+.sch.act { color: #8fd1c7; opacity: 1; }
+.sch.act .sic { filter: none; }
+.sch.near { opacity: 1; color: #ffd166; }
+.sch.near .sic { filter: none; animation: schPulse 1.6s ease-in-out infinite; }
+.sch.near .sdots i.on { background: #ffd166; border-color: #ffd166; }
+html.reduce .sch.near .sic { animation: none; }
+@keyframes schPulse { 50% { transform: scale(1.25); } }
+.codeask { text-align: center; margin: 4px 0 0; }
+.codein { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--outline); background: #17110c; color: inherit; font: inherit; font-size: 1.1rem; text-align: center; letter-spacing: .08em; }
