@@ -402,15 +402,15 @@ Cel aktualizacji: kafelki mają poziomy (rodziny po 3 poziomy + legendarny z bos
 ### Rodziny statystyk (`STAT_FAMILIES` w `data.js`, generują `STAT_TILES` i `STAT_FAMS`)
 | Rodzina | Poz. 1 (Zwykły) | Poz. 2 (Rzadki) | Poz. 3 (Epicki, stare id) | Poz. 4 (Legendarny, łup z bossa) |
 |---|---|---|---|---|
-| Życie | Grzebień z Taśmy +5 | Grzebień Hodowlany +12 | Grzebień Barberski +20 (`twardy-grzebien`) | Grzebień Rosołowego Króla +35 |
-| Atak | Ziarenko z Podłogi +2 | Ziarno Selekcjonowane +4 | Ziarno Mocy +6 | Ziarno Pierwszego Jajka +10 |
-| Obrażenia | Nadpiłowany Dziób +3% | Dziób Szlifowany +7% | Ostry Dziób +12% | Dziób Prezesa +20% |
-| Szybkość ataku | Dziób po Kawie +3% | Dziób po Espresso +6% | Szybki Dziób +10% | Dziób Maszynowy +18% |
-| Pancerz | Puch Zbity w Kulę +2 | Pierze Prasowane +4 | Pancerz z Pierza +6 | Zbroja Wyroczni Kurnika +10 |
-| Krytyk | Zezowate Oko +2% | Oko Kontrolera Jakości +5% | Czujne Oko +8% | Oko Cyklopa z Chłodni +14% |
-| Unik | Śliskie Nóżki +2% | Nogi Akrobaty +4% | Zwinne Nogi +6% | Cień Skrzydła +10% |
-| Regeneracja | Słoma z Wczoraj +0,5 / s | Gniazdko z Siana +1,2 / s | Ciepłe Gniazdko +2 / s | Wieczny Ogień Kuchenki +3,5 / s |
-| Szczęście | Trójlistna Koniczyna +3 | Koniczyna z Kapliczki +6 | Czterolistna Koniczyna +10 | Pięciolistna Koniczyna Zarządu +16 |
+| Życie | Grzebień z Taśmy +2 | Grzebień Hodowlany +7 | Grzebień Barberski +20 (`twardy-grzebien`) | Grzebień Rosołowego Króla +35 |
+| Atak | Ziarenko z Podłogi +1 | Ziarno Selekcjonowane +2 | Ziarno Mocy +6 | Ziarno Pierwszego Jajka +10 |
+| Obrażenia | Nadpiłowany Dziób +1% | Dziób Szlifowany +4% | Ostry Dziób +12% | Dziób Prezesa +20% |
+| Szybkość ataku | Dziób po Kawie +1% | Dziób po Espresso +3% | Szybki Dziób +10% | Dziób Maszynowy +18% |
+| Pancerz | Puch Zbity w Kulę +1 | Pierze Prasowane +2 | Pancerz z Pierza +6 | Zbroja Wyroczni Kurnika +10 |
+| Krytyk | Zezowate Oko +1% | Oko Kontrolera Jakości +3% | Czujne Oko +8% | Oko Cyklopa z Chłodni +14% |
+| Unik | Śliskie Nóżki +1% | Nogi Akrobaty +2% | Zwinne Nogi +6% | Cień Skrzydła +10% |
+| Regeneracja | Słoma z Wczoraj +0,2 / s | Gniazdko z Siana +0,7 / s | Ciepłe Gniazdko +2 / s | Wieczny Ogień Kuchenki +3,5 / s |
+| Szczęście | Trójlistna Koniczyna +1 | Koniczyna z Kapliczki +3 | Czterolistna Koniczyna +10 | Pięciolistna Koniczyna Zarządu +16 |
 
 - Każdy kafelek ma `fam` (rodzina) i `lvl` (1–4), rzadkość = poziom − 1 (Zwykły, Rzadki, Epicki, Legendarny), `repeat: true`. Poziomy 1 i 2 mają `next` (id następnego poziomu). Poziom 4 ma `boss: true`.
 - Poziom 3 zachowuje **stare id**, więc profile, Księga i testy się nie psują. Czterolistna Koniczyna dalej wymaga odblokowania `u-koniczyna` (nowe kafelki startują odblokowane).
@@ -424,10 +424,10 @@ Cel aktualizacji: kafelki mają poziomy (rodziny po 3 poziomy + legendarny z bos
 - Błędy: `phase` (zła faza), `index` (nie masz kafelka), `level` (brak `next`), `copies` (mniej niż 3). Wada fabryczna zlanej kopii znika razem z nią (`flawed` nie ma więcej wpisów niż kopii). Życie rośnie o przyrost maks. Życia jak przy zwykłym zdobyciu kafelka.
 - `view().up` = id kafelków, które da się teraz zlać (tylko w ofercie; nie zdradza niczego o przyszłości). Dziennik rundy ma `upgrades: [{from,to}]`, `stats.upgrades` liczy zlania.
 - Klient: przycisk „Zlej kafelki” (klawisz U), okno z wierszami „3× X → Y” (`showUpgrade`), dźwięk `unlock`, toast, krótka animacja chipa (`.chip.fresh`).
-- **Uwaga projektowa:** przy wartościach z tabeli zlanie jest „stratne” w surowych liczbach (3 × 5 życia > 12, 3 × 12 > 20). Zysk to próg statystyki poziomu 3, plakietka i porządek, nie moc. Jeśli chcemy, by Ulepszanie było opłacalne, trzeba zmienić proporcje (np. poziom 1 ≈ 10%, poziom 2 ≈ 33% poziomu 3).
+- **Proporcje (decyzja po etapie 1):** poziom 1 ≈ 10–15%, poziom 2 ≈ 30–35% mocy poziomu 3, więc 3 kopie ≈ następny poziom i zlewanie nie traci mocy (zysk: próg poziomu 3, porządek w panelu). Poziomy 1 i 2 to głównie „paliwo” do zlewania; pierwotna tabela (25% / 60%) czyniła zlewanie stratnym.
 
 ### Łup z bossów (faza `loot`)
-- Po pokonaniu bossa (poza ostatnim, który kończy run): Odznaka (jak dotąd) → **łup**: wybór 1 z 3 legendarnych statystyk (`RULES.lootSize`), losowanych z ziarna runu (`mix(seed, round, hash('loot'))`), najpierw takie, których jeszcze nie masz → oferta bonusowa (po bossach z `bonusAfter`) → następne piętro. W trybie szybkim 1 łup (boss 5), w pełnym 2 (bossy 6 i 12).
+- Po pokonaniu bossa (poza ostatnim, który kończy run): Odznaka (jak dotąd) → **łup z szansą `RULES.lootChance` = 15%** (`lootRoll`, losowanie z ziarna runu; bez trafienia od razu bonus albo następne piętro): wybór 1 z 3 legendarnych statystyk (`RULES.lootSize`), losowanych z ziarna runu (`mix(seed, round, hash('loot'))`), najpierw takie, których jeszcze nie masz → oferta bonusowa (po bossach z `bonusAfter`) → następne piętro. Okazji jest 1 w trybie szybkim (boss 5) i 2 w pełnym (bossy 6 i 12), więc łup trafia się w ok. 15–28% runów.
 - Wybór przez zwykłe `choose {i}` (faza `loot`, `pending.kind = 'loot'`, odpowiedź `looted`), dziennik: `log[].loot`, `stats.loot`. `view()` w fazie łupu ma pustą `offer`, a `pending.offer` to 3 id (nic o przyszłych ofertach).
 - `RUN_V = 3` (stare runy unieważniane: zmienia się przebieg po bossie i regeneracja).
 
@@ -437,5 +437,5 @@ Jedna ikona na rodzinę (`ICON_OF` w `art.js`: poziomy 1, 2 i legendarny dzielą
 ### Balans (bot, quick/full, 1000–1500 runów)
 Kafelki statystyk poziomu 1 i 2 osłabiły wczesną grę (przed zmianą: szybki 45%, pełny 48%; po samej zmianie danych: szybki 31%, pełny 14%). Skompensowano wagami rzadkości i tempem wzrostu wrogów:
 - `RARITY_WEIGHTS`: `[[45,35,20,0],[30,36,30,2],[18,34,43,5]]` (było `[[70,25,5,0],[50,35,13,2],[35,38,22,5]]`). Waga legendarnych (rarity 3) została niska, bo w ofertach jest tylko Zakazana Pasza.
-- `MODES.quick.grow`: `{hp 1.17, atk 1.113}` (było 1.18 / 1.12); `MODES.full.grow`: `{hp 1.14, atk 1.087}` (było 1.155 / 1.10).
+- Po zmniejszeniu poziomów 1–2 i łupu z szansą 15% ponowny retuning: `MODES.quick.grow` `{hp 1.135, atk 1.092}` (pierwotnie 1.18 / 1.12), `MODES.full.grow` `{hp 1.115, atk 1.072}` (pierwotnie 1.155 / 1.10). Wyniki bota: szybki Pyrtek ok. 46%, Zjarany ok. 55%, Indor ok. 59% (zostawiony), pełny Pyrtek ok. 46%.
 - Łup z bossa to potężny zastrzyk: bez niego w trybie szybkim bot wygrywa o ok. 15 punktów proc. mniej. Wyniki: patrz podsumowanie etapu w `CLAUDE.md`.

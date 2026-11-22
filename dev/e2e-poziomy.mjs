@@ -57,7 +57,9 @@ await p.screenshot({ path: `${OUT}/poziomy-po-zlaniu.png` });
 await p.mouse.move(5, 5);
 
 // 3. łup z bossa: boss w rundzie 5 (tryb szybki)
-await patchRun(`run.round = 5; run.phase = 'fight'; run.fight = {}; run.hp = 9999; run.tiles = Array(8).fill('twardy-grzebien').concat(['ziarno-mocy','ziarno-mocy','ziarno-mocy']); run.skills = []; run.flawed = []; run.offer = [];`);
+// łup wypada z szansą 15%: wybierz ziarno runu, dla którego po bossie w rundzie 5 wypada łup
+const lootSeed = await p.evaluate(async () => { const R = await import('../pl3y-server/src/games/bulgot/rules.js'); for (let sd = 1; sd < 500; sd++) if (R.lootRoll({ seed: sd, round: 5 })) return sd; });
+await patchRun(`run.seed = ${lootSeed}; run.round = 5; run.phase = 'fight'; run.fight = {}; run.hp = 9999; run.tiles = Array(8).fill('twardy-grzebien').concat(['ziarno-mocy','ziarno-mocy','ziarno-mocy']); run.skills = []; run.flawed = []; run.offer = [];`);
 const waitFor = async (sel, n = 200) => { for (let i = 0; i < n; i++) { if (await p.$(sel)) return true; await wait(150); } return false; };
 const R = () => p.evaluate(() => window.__bulgot.run);
 await p.click('[data-act=tofight]'); await wait(700); await p.evaluate(() => { const F = window.__bulgot.fight; if (F) F.speed = 3; });
