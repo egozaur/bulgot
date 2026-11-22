@@ -1252,3 +1252,9 @@ html.reduce .logo img { animation: none; }
 /* nazwa strefy w walce: pasek w walce jest wąski (szerokość areny), więc zwęża się wcześniej */
 .topbar .zone-name { overflow: visible; text-overflow: clip; }
 @container tb (max-width: 1200px) { .topbar .brand img { height: 26px; } .topbar .zone-name { font-size: 1.1rem; min-width: 0; } .topbar .pill.mode { display: none; } }
+
+/* cooldown 3: nakładka ma dokładnie wielkość całego kółka (ramka 4 px + pierścień 3 px = 82 px) i opada przez przycinanie od góry (clip-path), bez skalowania */
+.sk .cdv::before { transform: none !important; border-top: 0 !important; background: linear-gradient(rgba(255,214,130,.9) 0 2px, rgba(8,5,3,.74) 2px); clip-path: inset(calc((1 - var(--cd, 0)) * 100%) 0 0 0); }
+.console .sk .cdv { inset: -3px auto auto 50%; left: 50%; top: -3px; width: 82px; height: 82px; margin-left: -41px; border-radius: 50%; overflow: hidden; z-index: 2; }
+/* kółko przycisku to content-box: 76 + 2×4 (ramka) = 84 px, z pierścieniem 3 px = 90 px; nakładka ma dokładnie 90 px i ten sam środek */
+.console .sk .cdv { inset: -3px auto auto 50%; left: 50%; top: -3px; width: 90px; height: 90px; margin-left: -45px; }
