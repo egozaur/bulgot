@@ -170,6 +170,62 @@ export function eggArt(char, open) {
   </svg>`;
 }
 
+// ---------- Klatka schodowa (pasek pięter) ----------
+// Zygzakowate schody: podesty na przemian po lewej i po prawej, bieg schodów między nimi. Ściana zmienia kolor ze strefą.
+// Współrzędne w jednostkach interfejsu; piętro f ma podest o górnej krawędzi y(f). Tabliczki z numerami są w HTML (app.js).
+export const ST = { W: 172, FH: 76, TOP: 64, BASE: 104, LX0: 64, LX1: 94, RX0: 138, RX1: 172 };
+export function stairsGeom(n) {
+  const y = f => ST.TOP + 24 + (n - f) * ST.FH;
+  return { innerH: y(1) + ST.BASE, y, x: f => (f % 2 ? (ST.LX0 + ST.LX1) / 2 : ST.RX1 - 24) };
+}
+const ZWALL = ['#3b2c20', '#27343a', '#3e2121'], ZBRICK = ['#2f2218', '#1f2a2f', '#321a1a'];
+const hsh = (n, k) => { let h = (n * 2654435761 + k * 40503) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; return (h >>> 8) / 16777216; };
+export function stairsArt(n, zoneOf) {
+  const g = stairsGeom(n), W = ST.W, H = g.innerH, y = g.y;
+  const stops = [];
+  for (let f = n; f >= 1; f--) { const t0 = (y(f) - ST.FH * .5) / H, c = ZWALL[zoneOf(f)]; stops.push(`<stop offset="${Math.max(0, Math.min(1, t0)).toFixed(3)}" stop-color="${c}"/>`); }
+  let wall = '', stairs = '';
+  for (let f = 1; f <= n; f++) {
+    const yt = y(f) - ST.FH, z = zoneOf(f), r1 = hsh(f, 1), r2 = hsh(f, 2), r3 = hsh(f, 3);
+    // spoiny paneli ściany i detale: okno, lampa, tablica, obraz (strefa III)
+    wall += `<path d="M0 ${y(f) + 12}H${W}" stroke="${ZBRICK[z]}" stroke-width="3" opacity=".9"/>`;
+    for (let k = 0; k < 3; k++) wall += `<path d="M${(66 + hsh(f, 10 + k) * 96).toFixed(0)} ${yt + 14}v${ST.FH - 28}" stroke="${ZBRICK[z]}" stroke-width="2" opacity=".55"/>`;
+    const wx = r1 < .5 ? 100 + r2 * 38 : 70 + r2 * 20;
+    if (r3 < .5) wall += z === 2
+      ? `<rect x="${wx.toFixed(0)}" y="${yt + 18}" width="20" height="26" rx="2" fill="#7a1f1f" stroke="#ffd23f" stroke-width="3"/><path d="M${(+wx + 4).toFixed(0)} ${yt + 38}l5 -9l4 6l3 -4l3 7z" fill="#ffd23f"/>`
+      : `<rect x="${wx.toFixed(0)}" y="${yt + 18}" width="22" height="26" rx="3" fill="${z === 1 ? '#a8d5e2' : '#ffd27a'}" opacity=".85" stroke="#2b1a12" stroke-width="3"/><path d="M${(+wx + 11).toFixed(0)} ${yt + 18}v26M${wx.toFixed(0)} ${yt + 31}h22" stroke="#2b1a12" stroke-width="2"/>`;
+    else if (r3 < .75) wall += `<circle cx="${(wx + 10).toFixed(0)}" cy="${yt + 26}" r="5" fill="#ffd27a" stroke="#2b1a12" stroke-width="2.4"/><path d="M${(wx + 10).toFixed(0)} ${yt + 8}v13" stroke="#2b1a12" stroke-width="2.4"/>`;
+    else wall += `<rect x="${wx.toFixed(0)}" y="${yt + 26}" width="24" height="12" rx="2" fill="#4a3a2a" stroke="#2b1a12" stroke-width="2.4"/><path d="M${(+wx + 4).toFixed(0)} ${yt + 30}h16M${(+wx + 4).toFixed(0)} ${yt + 34}h10" stroke="#8a7a62" stroke-width="1.6"/>`;
+    // podest piętra f (lewy dla nieparzystych)
+    const left = f % 2 === 1, px0 = left ? ST.LX0 : ST.RX0, px1 = left ? ST.LX1 : ST.RX1, yl = y(f);
+    stairs += `<rect x="${px0}" y="${yl}" width="${px1 - px0}" height="11" rx="2" fill="#6b5039" stroke="#2b1a12" stroke-width="2.6"/><path d="M${px0 + 2} ${yl + 3}H${px1 - 2}" stroke="#c08a4a" stroke-width="2" stroke-linecap="round"/>`;
+    if (f < n) {
+      // bieg schodów z piętra f na f+1
+      const xs = left ? ST.LX1 : ST.RX0, xe = left ? ST.RX0 : ST.LX1, y0 = yl, y1 = y(f + 1), k = 8, dx = (xe - xs) / k, dy = (y1 - y0) / k;
+      let top = `M${xs} ${y0}`; for (let i = 0; i < k; i++) top += `V${(y0 + dy * (i + 1)).toFixed(1)}H${(xs + dx * (i + 1)).toFixed(1)}`;
+      const t = 10;
+      stairs += `<path d="${top}L${xe} ${y1 + t}L${xs} ${y0 + t}Z" fill="#5a4636" stroke="#2b1a12" stroke-width="2.6" stroke-linejoin="round"/>`;
+      let tread = ''; for (let i = 1; i <= k; i++) tread += `M${(xs + dx * (i - 1) + Math.sign(dx) * 1).toFixed(1)} ${(y0 + dy * i + 2).toFixed(1)}H${(xs + dx * i - Math.sign(dx) * 1).toFixed(1)}`;
+      stairs += `<path d="${tread}" stroke="#c08a4a" stroke-width="2" stroke-linecap="round" fill="none" opacity=".9"/>`;
+      // poręcz
+      let rail = `M${xs} ${y0 - 22}L${xe} ${y1 - 22}`, posts = ''; for (let i = 0; i <= k; i += 2) posts += `M${(xs + dx * i).toFixed(1)} ${(y0 + dy * i - 22).toFixed(1)}v22`;
+      stairs += `<path d="${posts}" stroke="#2b1a12" stroke-width="2.6" stroke-linecap="round"/><path d="${rail}" stroke="#2b1a12" stroke-width="5" stroke-linecap="round"/><path d="${rail}" stroke="#b0b8c0" stroke-width="2" stroke-linecap="round"/>`;
+    }
+  }
+  // dół: posadzka nad paleniskiem; góra: wyjście na dach z koroną
+  const yb = y(1) + 11;
+  const base = `<rect x="0" y="${yb}" width="${W}" height="${H - yb}" fill="#150d08"/><path d="M0 ${yb}H${W}" stroke="#2b1a12" stroke-width="3"/><path d="M8 ${yb + 12}h40M60 ${yb + 12}h40M112 ${yb + 12}h48" stroke="#3a2a1d" stroke-width="3" stroke-linecap="round"/>`;
+  const yt = y(n) - 62, topx = n % 2 ? ST.RX0 + 4 : ST.LX0 - 2;
+  const roof = `<rect x="${topx}" y="${yt}" width="34" height="62" rx="4" fill="#2b1a12" stroke="#ffd23f" stroke-width="3"/><path d="M${topx + 17} ${yt + 4}v54" stroke="#4a3a2a" stroke-width="2"/><path d="M${topx + 3} ${yt - 16}l6 -10l8 8l8 -8l6 10z" fill="#ffd23f" stroke="#2b1a12" stroke-width="2.4" stroke-linejoin="round"/>`;
+  return `<svg class="stairs-svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="st-wall" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${H}">${stops.join('')}</linearGradient></defs>
+    <rect width="${W}" height="${H}" fill="url(#st-wall)"/>${wall}${base}${roof}${stairs}</svg>`;
+}
+// Płomień u dołu klatki (rośnie z każdym piętrem) i języczek pod kurczakiem.
+export const flamesArt = () => `<svg class="flames" viewBox="0 0 168 110" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="fl-g" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#e4572e"/><stop offset=".6" stop-color="#ff9a2e"/><stop offset="1" stop-color="#ffd23f"/></linearGradient></defs>
+  ${[[4, 54, 62, 0], [30, 96, 46, 1], [58, 70, 70, 2], [88, 92, 52, 3], [114, 66, 64, 4], [140, 90, 48, 5]].map(([x, h, w, i]) => `<path class="ft ft${i}" d="M${x} 112 C${x - 6} ${112 - h * .5} ${x + w * .1} ${112 - h * .62} ${x + w * .22} ${112 - h} C${x + w * .34} ${112 - h * .62} ${x + w * .78} ${112 - h * .5} ${x + w} 112Z" fill="url(#fl-g)" stroke="#2b1a12" stroke-width="2.4" stroke-linejoin="round"/>`).join('')}
+  <path class="ft ft6" d="M70 112 C64 80 76 74 82 52 C90 74 104 82 98 112Z" fill="#ffe27a" opacity=".85"/></svg>`;
+export const emberArt = () => `<svg class="ember" viewBox="0 0 40 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path class="ft" d="M20 51 C6 48 4 36 12 26 C14 32 18 32 18 24 C20 14 28 12 28 2 C38 14 40 26 34 38 C32 46 28 50 20 51Z" fill="url(#fl-g)" stroke="#2b1a12" stroke-width="2.4" stroke-linejoin="round"/><path d="M20 49 C14 46 15 38 20 32 C25 38 26 46 20 49Z" fill="#ffe27a" opacity=".9"/></svg>`;
+
 // ---------- Wrogowie i bossowie (patrzą w lewo, w stronę bohatera) ----------
 const ENEMY = {
   duck: () => `

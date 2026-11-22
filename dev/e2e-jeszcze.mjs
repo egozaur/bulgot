@@ -38,7 +38,7 @@ async function patch(which, fnSrc) {
 await patch('run', `v.round = 2; v.phase = 'door'; v.offer = []; v.pending = { kind: 'door', affix: 'szybki', reward: 'rare', coins: 8 }; v.decrees = ['audyt', 'pilny', 'premia'];`);
 let s = await st();
 check(s.phase === 'door' && (await p.$$('.cards [data-act=choose]')).length === 2 && /Audyt/.test(await text('.decree')), 'ekran drzwi z dwiema kartami i okólnikiem');
-check((await text('.tower .floor.door')).length > 0, 'pasek pięter oznacza drzwi');
+check((await text('.tower .floor.door, .tower .fp.door')).length > 0, 'pasek pięter oznacza drzwi');
 await p.screenshot({ path: OUT + '/j-drzwi.png' });
 await p.keyboard.press('2'); await wait(500); s = await st();
 check(s.phase === 'offer' && s.run.door && s.run.door.risky, 'ryzykowne drzwi wybrane klawiszem 2');
@@ -86,7 +86,7 @@ await p.evaluate(() => { const c = document.querySelector('.modal [data-act=clos
 // 5. Nemezis na bieżącym piętrze
 await patch('run', `v.phase = 'offer'; v.offer = ['ziarno-mocy', 'twardy-grzebien', 'szybki-dziob', 'ostry-dziob']; v.nemesis = { enemy: 'szczur-pasz', title: 'Kierownik', given: 'Zbigniew', affix: 'szybki', tile: 'opaska-rambo', lvl: 2, round: v.round, beaten: false };`);
 check(/Nemezis/.test(await text('.preview .lab')) && /Kierownik Szczur Pasz Zbigniew/.test(await text('.preview')), 'podgląd: Nemezis z imieniem');
-check((await p.$$('.tower .floor.nem')).length === 1, 'pasek pięter oznacza Nemezis');
+check((await p.$$('.tower .floor.nem, .tower .fp.nem')).length === 1, 'pasek pięter oznacza Nemezis');
 await p.screenshot({ path: OUT + '/j-nemezis.png' });
 
 // 6. Testament po przegranej

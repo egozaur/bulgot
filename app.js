@@ -24,7 +24,7 @@ const G = {
   setup: { mode: store.get('bulgot:mode') === 'quick' ? 'quick' : 'full', char: 'pyrtek', garnek: 0 },
   speed: [1, 2, 3].includes(+store.get('bulgot:speed')) ? +store.get('bulgot:speed') : 1,
 };
-window.__bulgot = G;      // podgląd stanu w testach
+window.__bulgot = G; G.render = () => render();      // podgląd stanu i odświeżanie w testach
 
 // Skalowanie: na dużych monitorach cały interfejs rośnie (zoom), a --vh to wysokość okna w jednostkach po przeskalowaniu.
 // Na komputerze (układ 3-kolumnowy, od 1121 px) skala dopasowuje całość do okna także w dół (min. 0,62), bo ekran gry ma ok. 980 jednostek wysokości.
@@ -100,7 +100,7 @@ function render() {
     case 'noplayer': root.innerHTML = `<div class="loading" style="flex-direction:column;gap:14px;text-align:center"><span>Do gry w Bulgot potrzebny jest nick.</span><button class="btn primary" data-act="retry">Wybierz nick</button><a class="btn ghost" href="/">← PL3Y</a></div>`; break;
     case 'home': root.innerHTML = renderHome(); break;
     case 'setup': root.innerHTML = renderSetup(); break;
-    case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); break;
+    case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); fitTower(); break;
     case 'fight': return;   // arena buduje się w startFight()
   }
 }
@@ -222,6 +222,39 @@ function decreeHTML(always = false) {
   return `<div class="decree letter" data-k="${r.id}:${r.decree}"><div class="lhead">Korporacja Rosołowa S.A. · Zarząd · Okólnik nr ${r.zone + 1}</div><div class="lbody">${art.decreeIcon()}<div><b>Nowy Okólnik Zarządu: ${esc(d.name)}.</b> ${esc(d.text)}</div></div><span class="stamp" aria-hidden="true">ZATWIERDZONO<small>ZARZĄD</small></span><button class="ltuck" data-act="tuck" title="Schowaj pismo (zostaje w pigułce Okólnik na pasku)">Zwiń</button></div>`;
 }
 const decreeSub = () => { const d = G.run.decree && D.DECREES[G.run.decree]; return d ? ` · <span class="dsub" title="${esc(d.text)}">Okólnik: ${esc(d.name)}</span>` : ''; };
+// ---------- klatka schodowa (komputer): zygzakowate schody, kurczak wchodzi piętro wyżej, płomień rośnie od dołu ----------
+// Kamera przesuwa się za kurczakiem, a górne piętra toną w mgle (nie wiadomo, co jest wyżej); ściana zmienia kolor ze strefą.
+const WIDE = matchMedia('(min-width: 1121px)');
+WIDE.addEventListener('change', () => { if (G.screen === 'run' && G.run) render(); });
+addEventListener('resize', () => fitTower(false));
+function stairsHTML() {
+  const r = G.run, M = D.MODES[r.mode], n = M.rounds, g = art.stairsGeom(n), W = art.ST.W, f = r.round, f0 = G.cabFrom || 0;
+  const over = r.phase === 'over', up = !over && f0 && f0 < f;
+  let plates = '';
+  for (let k = 1; k <= n; k++) {
+    const nem = r.nemesis && !r.nemesis.beaten && r.nemesis.round === k, door = (r.doors || []).includes(k);
+    const cls = ['fp', k < f || (over && k <= r.done) ? 'done' : '', k === f && !over ? 'now' : '', M.bosses[k] ? 'boss' : '', nem ? 'nem' : '', door ? 'door' : ''].join(' ');
+    const tip = 'Piętro ' + k + (M.bosses[k] ? ': boss' : '') + (nem ? ': ' + r.nemesis.name : door ? ': Rozwidlenie Korytarza (Tylko dla personelu)' : '');
+    plates += `<div class="${cls}" style="top:${g.y(k) - 21}px" data-tip="${esc(tip)}">${M.bosses[k] || nem ? art.skullIcon() : ''}${nem ? '<i class="alarm" aria-hidden="true"></i>' : ''}<span class="fn">${k}</span>${door && !nem ? '<span class="staff" aria-hidden="true">P</span>' : ''}</div>`;
+  }
+  const heat = k => n > 1 ? Math.max(0, Math.min(1, (k - 1) / (n - 1))) : 1;
+  const face = k => (k % 2 ? 1 : -1);          // po nieparzystym piętrze (podest lewy) następny bieg idzie w prawo
+  const dx = up ? g.x(f0) - g.x(f) : 0, dy = up ? g.y(f0) - g.y(f) : 0;
+  G.cabFrom = f;
+  return `<aside class="tower stairs" aria-label="Postęp: klatka schodowa"><div class="climb-vp" style="--heat:${heat(f).toFixed(3)};--heat0:${heat(up ? f0 : f).toFixed(3)}">
+    <div class="climb" style="width:${W}px;height:${g.innerH}px" data-f="${f}" data-f0="${up ? f0 : 0}">${art.stairsArt(n, k => zoneAt(r.mode, k))}${plates}
+      <div class="cab ${up ? 'up' : ''}" style="left:${g.x(f) - 22}px;top:${g.y(f) - 43}px;--dx:${dx}px;--dy:${dy}px;--f0:${up ? -face(f) : face(f)};--f1:${face(f)}"><span class="cfire">${art.emberArt()}</span><span class="hop"><span class="face">${art.portrait(r.char, r.form)}</span></span></div>
+    </div><div class="fire">${art.flamesArt()}</div></div></aside>`;
+}
+// Ustawia kamerę (przesunięcie klatki tak, by kurczak był w ok. 62% wysokości okna) i uruchamia animację wejścia piętro wyżej.
+function fitTower(animate = true) {
+  const vp = $('.climb-vp'), cl = vp && $('.climb', vp); if (!cl || !G.run) return;
+  const H = vp.clientHeight, ih = cl.offsetHeight, g = art.stairsGeom(D.MODES[G.run.mode].rounds);
+  const cam = k => Math.max(0, Math.min(ih - H, g.y(k) - H * 0.62));
+  const f = +cl.dataset.f, f0 = +cl.dataset.f0;
+  cl.style.setProperty('--cam', cam(f).toFixed(1) + 'px'); cl.style.setProperty('--cam0', cam(f0 || f).toFixed(1) + 'px');
+  if (animate && f0 && !REDUCED.matches && !vp.classList.contains('go')) { vp.classList.add('go'); setTimeout(() => vp.classList.remove('go'), 2000); }
+}
 function towerHTML() {
   const r = G.run, M = D.MODES[r.mode];
   let rows = '';
@@ -242,11 +275,12 @@ function sideHTML() {
     if (!s) return '<div class="slot empty">wolny slot umiejętności</div>';
     const def = D.SKILLS[s.id], tile = D.TILES.find(t => t.skill === s.id);
     const mu = s.lvl >= 3 && def.muts[(s.mut || 1) - 1];
-    return `<div class="slot" data-tipk="tile:${tile.id}" tabindex="0">${art.tileIcon(tile.id)}<div><div class="sn">${i + 1}. ${esc(def.name)}${mu ? `<span class="lv mut">${esc(mu.name)}</span>` : s.lvl >= 2 ? '<span class="lv">POZ. 2</span>' : ''}</div><div class="sd">${esc(def.text)}${s.lvl >= 2 ? ' (+30% mocy, -20% cooldownu)' : ''}${mu ? ' Mutacja: ' + esc(mu.text) : ''}</div></div></div>`;
+    const mv = r.skills.length > 1 && r.phase !== 'over';   // kolejność wolno zmieniać przed walką (strzałki albo przeciągnięcie)
+    return `<div class="slot ${mv ? 'mv' : ''}" data-tipk="tile:${tile.id}" tabindex="0" ${mv ? `draggable="true" data-slot="${i}"` : ''}>${art.tileIcon(tile.id)}<div><div class="sn">${i + 1}. ${esc(def.name)}${mu ? `<span class="lv mut">${esc(mu.name)}</span>` : s.lvl >= 2 ? '<span class="lv">POZ. 2</span>' : ''}</div><div class="sd">${esc(def.text)}${s.lvl >= 2 ? ' (+30% mocy, -20% cooldownu)' : ''}${mu ? ' Mutacja: ' + esc(mu.text) : ''}</div></div>${mv ? `<div class="swp"><button class="swb" data-act="skillmove" data-v="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''} aria-label="Przesuń wyżej" title="Przesuń wyżej (zmienia klawisz)">▲</button><button class="swb" data-act="skillmove" data-v="${i}" data-d="1" ${i === r.skills.length - 1 ? 'disabled' : ''} aria-label="Przesuń niżej" title="Przesuń niżej (zmienia klawisz)">▼</button></div>` : ''}</div>`;
   }).join('');
   const srow = (k, label, val) => `<dt data-tipk="stat:${k}" tabindex="0">${art.statIcon(k)}<span>${label}</span></dt><dd data-tipk="stat:${k}">${val}</dd>`;
   const rows = T.STAT_LABELS.map(([k, label, f]) => srow(k, label, f ? f(S[k]) : S[k])).join('')
-    + (S.dmg ? srow('dmg', 'Obrażenia', `+${S.dmg}%`) : '') + (S.critMult !== 150 ? srow('critMult', 'Siła trafienia krytycznego', `×${(S.critMult / 100).toFixed(2).replace('.', ',')}`) : '');
+    + (S.dmg ? srow('dmg', 'Obrażenia', `+${S.dmg}%`) : '') + (S.critMult !== 150 ? srow('critMult', 'Siła krytyka', `×${(S.critMult / 100).toFixed(2).replace('.', ',')}`) : '');
   const counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
   const chips = Object.entries(counts).map(([id, n]) => {
     const t = TILE[id], g = t.grow ? Math.min(t.grow.max, (r.grow || {})[id] || 0) : 0, fw = (r.flawed || []).find(w => w.id === id);
@@ -259,10 +293,9 @@ function sideHTML() {
   const mss = Object.entries(D.MILESTONES).map(([id, m]) => { const n = Math.floor(r.tiles.filter(x => x === id).length / D.MILESTONE_EVERY); return n ? `<div class="setline ms">${esc(m.name)}${n > 1 ? ' ×' + n : ''}: ${esc(m.text)}</div>` : ''; }).join('');
   const pct = Math.max(0, Math.min(100, r.hp / S.maxHp * 100));
   return `<aside class="side">
-    <div class="panel hero-card">${art.heroArt(r.char, r.form)}<div><div class="nm">${esc(ch.name)}</div><div class="fm">${esc(form.name)}</div>
+    <div class="panel hero-card">${art.heroArt(r.char, r.form)}<div><div class="hero-top"><div><div class="nm">${esc(ch.name)}</div><div class="fm">${esc(form.name)}</div></div>${r.badges && r.badges.length ? `<div class="bdgs" aria-label="Odznaki (${r.badges.length})">${r.badges.map(b => `<div class="chip badge" tabindex="0" data-tipk="badge:${b}">${art.badgeIcon(b)}</div>`).join('')}</div>` : ''}</div>
       <div class="hpbar" style="margin-top:6px"><i style="width:${pct}%"></i><b><span data-ctr="hp">${r.hp}</span> / ${S.maxHp}</b></div></div></div>
     <div class="panel"><h4>Umiejętności aktywne</h4><div class="slots">${slots}</div></div>
-    ${r.badges && r.badges.length ? `<div class="panel"><h4>Odznaki (${r.badges.length})</h4><div class="chips">${r.badges.map(b => `<div class="chip badge" tabindex="0" data-tipk="badge:${b}">${art.badgeIcon(b)}</div>`).join('')}</div></div>` : ''}
     <div class="panel"><h4>Statystyki</h4>${zoneCompareHTML()}<dl class="stats">${rows}</dl></div>
     <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${sets}${mss}${pawnLine}${foxLine}</div></aside>`;
 }
@@ -367,17 +400,27 @@ function pawnBtn() {
   return `<button class="btn" data-act="pawnmenu" ${pawnable().length ? '' : 'disabled'} title="Zastaw kafelek u Lisa za pełną cenę (klawisz L)">${art.pawnIcon()} Lombard Lisa</button>`;
 }
 const pawnable = () => { const r = G.run; return [...new Set(r.tiles)].filter(id => { const t = TILE[id]; return t && t.type !== 'skill' && !t.hidden && !(r.flawed || []).some(w => w.id === id); }); };
+// Zamiana kolejności umiejętności (slot = klawisz w walce). Serwer zapisuje kolejność, więc powtórka walki się zgadza.
+async function swapSlots(a, b) {
+  const j = await act('skillorder', { a, b }); if (!j) return;
+  snd.sfx('click'); render();
+}
+document.addEventListener('dragstart', e => { const s = e.target.closest && e.target.closest('.slot[data-slot]'); if (!s) return; G.dragSlot = +s.dataset.slot; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(G.dragSlot)); } catch (x) {} s.classList.add('drag'); });
+document.addEventListener('dragover', e => { const s = e.target.closest && e.target.closest('.slot[data-slot]'); if (s && G.dragSlot != null) { e.preventDefault(); document.querySelectorAll('.slot.over').forEach(x => x !== s && x.classList.remove('over')); s.classList.add('over'); } });
+document.addEventListener('dragend', () => { G.dragSlot = null; document.querySelectorAll('.slot.drag, .slot.over').forEach(x => x.classList.remove('drag', 'over')); });
+document.addEventListener('drop', e => { const s = e.target.closest && e.target.closest('.slot[data-slot]'); if (!s || G.dragSlot == null) return; e.preventDefault(); const a = G.dragSlot, b = +s.dataset.slot; G.dragSlot = null; if (a !== b) swapSlots(a, b); });
 function showPawn() {
-  const P = D.RULES.prices, back = D.RULES.pawnBack, fox = D.RULES.pawnFox;
-  const cards = pawnable().map((id, i) => { const pr = P[TILE[id].rarity];
-    return `<div class="slotcard">${tileCard(id, { i, static: true, mini: true })}<button class="btn small buy" data-act="pawn" data-v="${id}">Zastaw za ${pr} ${art.coinIcon()}</button><div class="buynote">Wykup na następnym piętrze: ${Math.ceil(pr * back / 100)} ${art.coinIcon()}</div></div>`; }).join('');
+  const P = D.RULES.prices, back = D.RULES.pawnBack, fox = D.RULES.pawnFox, coin = art.coinIcon();
+  // kompaktowe kafelki w jednym rzędzie (pełny opis w dużej podpowiedzi po najechaniu), żeby okno nie wymagało przewijania
+  const cards = pawnable().map(id => { const t = TILE[id], pr = P[t.rarity], n = G.run.tiles.filter(x => x === id).length;
+    return `<div class="pawn-card r${t.rarity}" data-tipk="tile:${id}" tabindex="0"><span class="pi">${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : ''}</span><div class="pn">${esc(t.name)}</div><div class="pb">Wykup: <b>${Math.ceil(pr * back / 100)}</b> ${coin}</div><button class="btn small buy" data-act="pawn" data-v="${id}">Zastaw za ${pr} ${coin}</button></div>`; }).join('');
   openOverlay(`<h2>Lombard Lisa</h2>
-    <p class="lead">Lis pożycza Ci Ziarna pod zastaw kafelka. Dostajesz pieniądze od razu, ale kafelek znika z Twojej budowy i musisz go odkupić drożej.</p>
+    <p class="lead">Lis pożycza Ci Ziarna pod zastaw kafelka: pieniądze dostajesz od razu, ale kafelek znika z budowy i musisz go odkupić drożej.</p>
     <div class="pawn-how">
-      <div><b>Jak to działa</b><ol><li>Oddajesz jeden kafelek (nie umiejętność i nie kafelek z wadą). Lis daje Ci <b>pełną cenę</b> jego rzadkości.</li><li>Na <b>następnym piętrze</b> możesz go wykupić za <b>${back}%</b> tej ceny (zwykły: ${P[0]} → ${Math.ceil(P[0] * back / 100)}, rzadki: ${P[1]} → ${Math.ceil(P[1] * back / 100)}).</li><li>Nie wykupisz? Kafelek przepada na zawsze, a Lisy Windykatory są w tym runie o <b>${fox}%</b> silniejsze (za każdy przepadły zastaw).</li></ol>Lis trzyma naraz tylko jeden zastaw.</div>
-      <div><b>Kiedy warto</b><ul><li>Potrzebujesz Ziaren <b>teraz</b> (dokup dobrego kafelka, reroll), a masz kafelek, który słabo pasuje do budowy.</li><li>Wiesz, że za piętro będziesz mieć Ziarna na wykup.</li></ul><b>Kiedy nie</b><ul><li>To kluczowy kafelek zestawu albo bez niego przegrasz kolejną walkę.</li><li>Nie stać Cię będzie na wykup.</li></ul></div>
+      <div><b>Jak to działa</b><ol><li>Oddajesz jeden kafelek (nie umiejętność, nie kafelek z wadą) i dostajesz <b>pełną cenę</b> jego rzadkości.</li><li>Na <b>następnym piętrze</b> wykupisz go za <b>${back}%</b> (zwykły ${P[0]} → ${Math.ceil(P[0] * back / 100)}, rzadki ${P[1]} → ${Math.ceil(P[1] * back / 100)}).</li><li>Nie wykupisz? Przepada, a Lisy Windykatory są o <b>${fox}%</b> silniejsze (za każdy zastaw). Lis trzyma naraz jeden.</li></ol></div>
+      <div><b>Kiedy warto</b><ul><li>Potrzebujesz Ziaren <b>teraz</b> (dokup, reroll), a kafelek słabo pasuje do budowy.</li><li>Wiesz, że za piętro będziesz mieć na wykup.</li></ul><b>Kiedy nie</b><ul><li>To kluczowy kafelek zestawu, a bez niego przegrasz walkę.</li><li>Nie stać Cię będzie na wykup.</li></ul></div>
     </div>
-    <div class="cards pawn-grid">${cards}</div>`);
+    <div class="pawn-cards">${cards}</div>`, { cls: 'pawnmodal' });
 }
 function stageOffer() {
   const r = G.run, cards = r.offer.map((id, i) => id ? offerCard(id, i) : '<div class="slotcard"><div class="tile gone">Dokupione</div></div>').join('');
@@ -465,7 +508,7 @@ function speedPick() {
   return `<div class="speedpick" role="radiogroup" aria-label="Tempo walki"><span class="lab">Tempo walki</span>${[1, 2, 3].map(v => `<button class="spd${G.speed === v ? ' on' : ''}" data-act="setspeed" data-v="${v}" role="radio" aria-checked="${G.speed === v}">×${v}</button>`).join('')}<span class="note" id="spdnote">${SPEED_NOTE[G.speed]}</span></div>`;
 }
 function renderRun() {
-  return `<div class="run">${topbarHTML()}${towerHTML()}<main class="stage">${stageHTML()}</main>${sideHTML()}</div>`;
+  return `<div class="run">${topbarHTML()}${WIDE.matches ? stairsHTML() : towerHTML()}<main class="stage">${stageHTML()}</main>${sideHTML()}</div>`;
 }
 
 // ---------- akcje wyboru ----------
@@ -997,6 +1040,7 @@ const ACT = {
   ranktab: b => showRanking(b.dataset.v),
   book: () => showBook(), booktab: b => showBook(b.dataset.v),
   history: () => showHistory(),
+  skillmove: b => swapSlots(+b.dataset.v, +b.dataset.v + +b.dataset.d),
   analyze: b => showAnalyzeDialog(b.dataset.id, b.closest('tr') ? 'hist' : 'end'),
   atag: b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); },
   acancel: () => backFromAnalyze(),
