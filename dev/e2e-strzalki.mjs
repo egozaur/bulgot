@@ -15,7 +15,7 @@ await p.keyboard.press('ArrowDown'); await wait(100);
 ok((await focused()) !== ':', 'menu: strzałka zaznacza przycisk (' + await focused() + ')');
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(() => document.querySelector('[data-act=setmode][data-v=quick]').click());
-await p.click('[data-act=start]'); await wait(500);
+await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
 await p.keyboard.press('Enter'); await wait(400);   // intro: Enter = główny przycisk
 const st = () => p.evaluate(() => ({ phase: window.__bulgot.run.phase, tiles: window.__bulgot.run.tiles, offer: window.__bulgot.run.offer }));
 let s = await st(); ok(s.phase === 'offer', 'oferta po intro');

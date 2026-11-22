@@ -27,7 +27,7 @@ const STRONG = "r.tiles = Array(14).fill('ziarno-mocy').concat(Array(10).fill('t
 // ---- start runu (tryb szybki)
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(() => document.querySelector('[data-act=setmode][data-v=quick]').click());
-await p.click('[data-act=start]'); await wait(500); await p.click('[data-act=introgo]'); await wait(400);
+await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500); await p.click('[data-act=introgo]'); await wait(400);
 await p.keyboard.press('1'); await wait(500);
 
 // ---- 1. faktura po wygranej walce
@@ -112,14 +112,14 @@ await p.click('.modal-x'); await wait(300);
 
 // ---- 5. ukryta postać: jajko „???” bez nazwy i warunku
 await p.evaluate(() => { const c = document.querySelector('[data-act=again]'); c && c.click(); }); await wait(300);
-if (!(await p.$('[data-act=setchar]'))) { await p.evaluate(() => { const c = document.querySelector('[data-act=home]'); c && c.click(); }); await wait(300); await p.click('[data-act=new]'); await wait(300); }
+if (!(await p.$('[data-act=carpick]'))) { await p.evaluate(() => { const c = document.querySelector('[data-act=home]'); c && c.click(); }); await wait(300); await p.click('[data-act=new]'); await wait(300); }
 const sec = await p.evaluate(() => { const o = document.querySelector('[data-v=zjarany]'); return o ? { text: o.textContent, locked: o.classList.contains('locked') } : null; });
 ok(sec && sec.locked && /\?\?\?/.test(sec.text) && !/Zjarany|425|Ziaren/.test(sec.text), 'zablokowana postać to jajko „???”, bez nazwy i warunku: ' + (sec && sec.text.slice(0, 90)));
 ok(!(await p.evaluate(() => document.documentElement.innerHTML.includes('Zjarany'))), 'w kodzie strony nie ma nazwy ukrytej postaci');
 await p.screenshot({ path: OUT + '/jajko-sekret.png' });
 
 // ---- 6. odblokowanie po zdobyciu łącznie 425 Ziaren w jednym runie
-await p.click('[data-act=start]'); await wait(600); const intro = await p.$('[data-act=introgo]'); if (intro) { await intro.click(); await wait(300); }
+await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(600); const intro = await p.$('[data-act=introgo]'); if (intro) { await intro.click(); await wait(300); }
 await p.keyboard.press('1'); await wait(500);
 await patch(STRONG + " r.round = 2; r.phase = 'fight'; r.fight = {}; r.stats.earned = 424;"); await reload();
 await fastFight();
@@ -136,9 +136,9 @@ await patch("r.phase = 'abandon'"); // tylko żeby wymusić odświeżenie; run z
 await p.evaluate(async () => { const m = await import('/bulgot/api.js'); await m.call('abandon', {}); });
 await p.reload({ waitUntil: 'networkidle0' }); await wait(400);
 await p.click('[data-act=new]'); await wait(300);
-await p.evaluate(() => document.querySelector('[data-act=setchar][data-v=zjarany]').click()); await wait(200);
+await p.evaluate(() => document.querySelector('[data-act=carpick][data-char=zjarany]').click()); await wait(200);
 await p.screenshot({ path: OUT + '/jajko-odblokowane.png' });
-await p.click('[data-act=start]'); await wait(600); const intro2 = await p.$('[data-act=introgo]'); if (intro2) { await intro2.click(); await wait(300); }
+await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(600); const intro2 = await p.$('[data-act=introgo]'); if (intro2) { await intro2.click(); await wait(300); }
 await p.keyboard.press('1'); await wait(500);
 await p.click('[data-act=tofight]'); await wait(300);
 let smoke = false;

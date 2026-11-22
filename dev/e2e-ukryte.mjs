@@ -17,7 +17,7 @@ const patchRun = fn => p.evaluate((K, src) => { const r = JSON.parse(localStorag
 const reload = async () => { await p.reload({ waitUntil: 'load' }); await wait(700); const c = await p.$('[data-act=resume]'); if (c) { await c.click(); await wait(400); } };
 
 // 1) Garnek 0: podgląd z nazwami wrogów i szablonem
-await p.click('[data-act=new]'); await wait(200); await p.click('[data-act=start]'); await wait(500);
+await p.click('[data-act=new]'); await wait(200); await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
 const go = await p.$('[data-act=introgo]'); if (go) { await go.click(); await wait(300); }
 // piętro z szablonem: szukamy rundy 5–11 (tryb pełny), w której serwer pokazuje tpl
 let found = null;

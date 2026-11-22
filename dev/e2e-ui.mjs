@@ -16,7 +16,7 @@ async function open(w, h, mode, rp) {
   await p.reload({ waitUntil: 'networkidle0' }); await wait(300);
   await p.click('[data-act=new]'); await wait(200);
   await p.evaluate(m => document.querySelector(`[data-act=setmode][data-v=${m}]`).click(), mode);
-  await p.click('[data-act=start]'); await wait(500);
+  await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
   if (rp) {
     await p.evaluate(rp => { const k = 'bulgot:local:player:run'; const r = JSON.parse(localStorage.getItem(k)); Object.assign(r, rp); localStorage.setItem(k, JSON.stringify(r)); }, rp);
     await p.reload({ waitUntil: 'networkidle0' }); await wait(300); await p.click('[data-act=resume]'); await wait(400);

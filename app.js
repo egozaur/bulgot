@@ -144,27 +144,50 @@ function metaNotes() {
 }
 
 // ---------- przygotowanie runu ----------
+function metaChips() {
+  const p = G.profile, out = [];
+  if (p.nemesis) { const n = p.nemesis, t = n.tile && TILE[n.tile]; out.push(`<span class="meta-chip nem" tabindex="-1" data-tip="${esc('Twój Nemezis: ' + n.name + (n.lvl > 1 ? ' (awans ' + n.lvl + '.)' : '') + '\n' + (t ? 'Ukradł ci ' + t.name + '. ' : '') + 'Czeka na ciebie w następnym runie.')}">${art.skullIcon()}</span>`); }
+  if (p.will && TILE[p.will.tile]) { const ch = D.CHARS[p.will.char], multi = p.chars.length > 1; out.push(`<span class="meta-chip will" tabindex="-1" data-tip="${esc('Testament: ' + TILE[p.will.tile].name + '\nCzeka w pierwszej ofercie' + (multi ? ' następnego runu postacią inną niż ' + (ch ? ch.name : '') : ' następnego runu') + '.')}">${art.tileIcon(p.will.tile)}</span>`); }
+  return out.length ? `<div class="meta-chips">${out.join('')}</div>` : '';
+}
+const BURNERS = ['Ognisko', 'Gazówka', 'Kuchenka', 'Piec', 'Kuźnia', 'Wulkan'];
+const charIds = () => Object.keys(D.CHARS);
 function renderSetup() {
-  const p = G.profile, s = G.setup;
-  const modes = Object.entries(T.MODE_INFO).map(([id, m]) => `<button class="opt ${s.mode === id ? 'on' : ''}" data-act="setmode" data-v="${id}"><h3>${m.name}</h3><p>${m.text}</p></button>`).join('');
-  const chars = Object.values(D.CHARS).map(c => {
-    const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock], v = charView(c, open);
-    // jajko: odblokowana postać wystaje ze skorupy, zablokowana to jeszcze nie pęknięte jajo
-    return `<button class="opt char-opt egg-opt ${s.char === c.id ? 'on' : ''} ${open ? 'hatched' : 'locked'} ${v.hidden ? 'secret' : ''}" data-act="setchar" data-v="${c.id}" ${open ? '' : 'aria-disabled="true"'}><div class="egg-art">${art.eggArt(c.id, open)}</div><h3>${esc(v.name)}</h3><div class="post">Stanowisko: <b>${esc(v.style)}</b></div><p>${esc(v.text)}</p>${open ? '' : `<div class="lockmsg">🔒 Jak odblokować: ${esc(v.hidden ? '???' : u ? u.text : '')}</div>`}</button>`;
+  const p = G.profile, s = G.setup, ids = charIds();
+  if (!s.step) s.step = 1;
+  if (s.cur === undefined || s.cur < 0 || s.cur >= ids.length) s.cur = Math.max(0, ids.indexOf(s.char));
+  const m = D.MODES[s.mode], ch = D.CHARS[ids[s.cur]];
+  if (s.step === 2) {
+    const g = D.GARNEK[s.garnek], thumbs = D.GARNEK.map((gg, i) => `<button class="bthumb ${s.garnek === i ? 'on' : ''} ${i > p.garnek ? 'locked' : ''}" data-act="setgarnek" data-v="${i}" ${i > p.garnek ? 'aria-disabled="true"' : ''}><span class="bth-art">${art.burnerArt(i)}</span><b>${BURNERS[i]}</b>${i > p.garnek ? '<i class="glock">🔒</i>' : ''}</button>`).join('');
+    return `<div class="setup2 step2">
+      <div class="screen-head"><h2>Wybierz poziom palnika</h2>${metaChips()}<button class="btn small ghost" data-act="setback">← Wróć</button></div>
+      <div class="burner-stage"><button class="car-arrow" data-act="gprev" aria-label="Niższy palnik">‹</button>
+        <div class="burner-main ${s.garnek > p.garnek ? 'locked' : ''}"><div class="burner-big">${art.burnerArt(s.garnek)}</div>
+          <h3>${BURNERS[s.garnek]} <small>poziom ${s.garnek} · ${esc(g.name)}</small></h3><p>${esc(g.text)}</p>
+          <div class="gmult">Mnożnik wyniku ×${(1 + s.garnek * .25).toFixed(2).replace('.', ',')}</div></div>
+        <button class="car-arrow" data-act="gnext" aria-label="Wyższy palnik">›</button></div>
+      <div class="bthumbs">${thumbs}</div>
+      <div class="start-row"><div class="setsum">${esc(m.name)} · ${esc(ch.name)}</div><button class="btn primary big" data-act="start" data-primary>Do garnka!</button></div>
+      <div class="keyhint">← → poziom palnika · Enter start · Esc wróć</div></div>`;
+  }
+  const modes = Object.entries(T.MODE_INFO).map(([id, mi]) => `<button class="opt mode-opt ${s.mode === id ? 'on' : ''}" data-act="setmode" data-v="${id}"><h3>${mi.name}</h3><p>${mi.text}</p></button>`).join('');
+  const cards = ids.map((id, i) => {
+    const c = D.CHARS[id], open = p.chars.includes(id), u = c.lock && D.UNLOCK_BY_ID[c.lock], v = charView(c, open), o = i - s.cur;
+    return `<button class="opt char-opt egg-opt car-card ${s.cur === i ? 'on' : ''} ${open ? 'hatched' : 'locked'} ${v.hidden ? 'secret' : ''}" data-act="carpick" data-v="${i}" data-char="${id}" style="--o:${o};--a:${Math.abs(o)}" ${Math.abs(o) > 1 ? 'tabindex="-1" aria-hidden="true"' : ''}><div class="egg-art">${art.eggArt(id, open)}</div><h3>${esc(v.name)}</h3><div class="post">Stanowisko: <b>${esc(v.style)}</b></div><p>${esc(v.text)}</p>${open ? '' : `<div class="lockmsg">🔒 Jak odblokować: ${esc(v.hidden ? '???' : u ? u.text : '')}</div>`}</button>`;
   }).join('');
-  // termometr: od „Letni” do „Wulkan Rosołu”; rtęć dochodzi do wybranego poziomu
-  const gs = D.GARNEK.map((g, i) => `<button class="gbtn ${s.garnek === i ? 'on' : ''} ${i > p.garnek ? 'locked' : ''}" data-act="setgarnek" data-v="${i}" style="--gi:${i}" ${i > p.garnek ? 'aria-disabled="true"' : ''}><i class="tick"></i><span class="gn">${i}</span><span class="gl">${g.name}</span>${i > p.garnek ? '<span class="glock" aria-label="zablokowany">🔒</span>' : ''}</button>`).join('');
-  const g = D.GARNEK[s.garnek];
-  return `<div class="setup">
-    <div class="screen-head"><h2>Nowy run</h2><button class="btn small ghost" data-act="home">← Menu</button></div>
-    <div class="sec">Tryb</div><div class="opts">${modes}</div>
-    <div class="sec">Postać <small>nowe odblokowujesz osiągnięciami</small></div><div class="opts chars">${chars}</div>
-    <div class="sec">Temperatura Garnka <small>wygrana na poziomie N odblokowuje N+1 i podnosi mnożnik wyniku o 25%</small></div>
-    <div class="thermo" style="--lv:${s.garnek}"><div class="bulb"></div><div class="tube"><i class="merc"></i></div><div class="garnek-row">${gs}</div></div><div class="gtext"><b>${esc(g.name)}.</b> ${esc(g.text)}</div>
-    ${metaNotes()}
-    <div class="start-row"><button class="btn primary big" data-act="start" data-primary>Do garnka!</button></div></div>`;
+  return `<div class="setup2 step1">
+    <div class="screen-head"><h2>Nowy run</h2>${metaChips()}<button class="btn small ghost" data-act="home">← Menu</button></div>
+    <div class="sec">Tryb <small>↑ ↓</small></div><div class="opts modes">${modes}</div>
+    <div class="sec">Postać <small>← → · nowe odblokowujesz osiągnięciami</small></div>
+    <div class="carousel"><button class="car-arrow" data-act="cprev" aria-label="Poprzednia postać">‹</button><div class="car-track">${cards}</div><button class="car-arrow" data-act="cnext" aria-label="Następna postać">›</button></div>
+    <div class="car-dots">${ids.map((id, i) => `<i class="${i === s.cur ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="start-row"><button class="btn primary big" data-act="setnext" data-primary>Dalej: palnik →</button></div>
+    <div class="keyhint">Enter dalej · Esc menu</div></div>`;
 }
 
+// Karuzela postaci i wybór palnika: te same ruchy dla strzałek, kliknięć i przycisków ‹ ›.
+function carGo(i) { const n = charIds().length, s = G.setup; s.cur = Math.max(0, Math.min(n - 1, i)); const id = charIds()[s.cur]; if (G.profile.chars.includes(id)) s.char = id; render(); }
+function garGo(v) { const s = G.setup; v = Math.max(0, Math.min(D.GARNEK.length - 1, v)); s.garnek = v; if (v > G.profile.garnek) toast('Wygraj run na poziomie ' + (v - 1) + ', żeby odblokować ten palnik.'); render(); }
 // ---------- karty kafelków ----------
 function setOwned(set) { return G.run ? G.run.tiles.filter(id => TILE[id] && setsOf(TILE[id]).includes(set)).length : 0; }
 function tileCard(id, o = {}) {
@@ -304,7 +327,12 @@ function sideHTML() {
 }
 // Liczniki tablicy rozdzielczej: licznik odcinkowy wyniku i przewijanie wartości przy zmianie (zielony / czerwony błysk).
 const odoHTML = (n, len) => String(Math.max(0, n | 0)).padStart(len, '0').split('').map(d => `<i>${d}</i>`).join('');
-const REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
+// Animacje: domyślnie WŁ. niezależnie od ustawień systemu (Windows „pokaż animacje” / oszczędzanie energii wyłączały całą walkę);
+// gracz wyłącza je sam w „Dźwięk i walka” (`bulgot:anim` = '0'), klasa `html.reduce` wyłącza je w CSS.
+const animOn = () => store.get('bulgot:anim') !== '0';
+const REDUCED = { get matches() { return !animOn(); } };
+const applyAnim = () => document.documentElement.classList.toggle('reduce', !animOn());
+applyAnim();
 function rollCounters() {
   const prev = G.ctr || (G.ctr = {}), runId = G.run && G.run.id;
   if (prev._run !== runId) { for (const k of Object.keys(prev)) delete prev[k]; prev._run = runId; }
@@ -1139,6 +1167,7 @@ function showSettings() {
   openOverlay(`<h2>Dźwięk i walka</h2><div class="setrow"><span>Efekty dźwiękowe</span><button class="toggle ${snd.settings.sfx ? 'on' : ''}" data-act="tsfx">${snd.settings.sfx ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Muzyka (bulgocząca pętla)</span><button class="toggle ${snd.settings.music ? 'on' : ''}" data-act="tmusic">${snd.settings.music ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Faktura po wygranej walce (zamiast okna wyniku)</span><button class="toggle ${invoiceOn() ? 'on' : ''}" data-act="tinv">${invoiceOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
+    <div class="setrow"><span>Animacje (wyłącz, jeśli ruch Ci przeszkadza)</span><button class="toggle ${animOn() ? 'on' : ''}" data-act="tanim">${animOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Domyślna szybkość walki</span><button class="toggle on" data-act="speed2">×${G.speed}</button></div>
     <p class="hint">Wyciszenie dźwięku w lobby wycisza także tę grę.</p>`, { narrow: true });
 }
@@ -1159,11 +1188,16 @@ function confirmAbandon() {
 const ACT = {
   retry: async () => { await init(); },
   changeplayer: async () => { if (window.PL3Y && window.PL3Y.player) { await window.PL3Y.player.change(); await act('state'); render(); } },
-  new: () => { G.screen = 'setup'; render(); },
+  new: () => { G.setup.step = 1; G.screen = 'setup'; render(); },
   home: () => { closeOverlay(); stopFight(); G.fight = null; G.screen = 'home'; render(); },
   resume: () => { G.screen = 'run'; render(); },
   setmode: b => { G.setup.mode = b.dataset.v; store.set('bulgot:mode', b.dataset.v); render(); },
   setchar: b => { if (G.profile.chars.includes(b.dataset.v)) { G.setup.char = b.dataset.v; render(); } else toast('Ta postać jest zablokowana: ' + (D.CHARS[b.dataset.v].secret ? '???' : (D.UNLOCK_BY_ID[D.CHARS[b.dataset.v].lock] || {}).text)); },
+  setnext: () => { const id = charIds()[G.setup.cur]; if (!G.profile.chars.includes(id)) { const c = D.CHARS[id]; return toast('Ta postać jest zablokowana: ' + (c.secret ? '???' : (D.UNLOCK_BY_ID[c.lock] || {}).text)); } G.setup.char = id; G.setup.step = 2; if (G.setup.garnek > G.profile.garnek) G.setup.garnek = 0; render(); },
+  setback: () => { G.setup.step = 1; render(); },
+  carpick: b => carGo(+b.dataset.v),
+  cprev: () => carGo(G.setup.cur - 1), cnext: () => carGo(G.setup.cur + 1),
+  gprev: () => garGo(G.setup.garnek - 1), gnext: () => garGo(G.setup.garnek + 1),
   setgarnek: b => { const v = +b.dataset.v; if (v <= G.profile.garnek) { G.setup.garnek = v; render(); } else toast('Wygraj run na poziomie ' + (v - 1) + ', żeby odblokować ten Garnek.'); },
   start: async () => {
     const s = G.setup; if (!G.profile.chars.includes(s.char)) s.char = 'pyrtek'; if (s.garnek > G.profile.garnek) s.garnek = 0;
@@ -1224,10 +1258,11 @@ const ACT = {
   help: () => showHelp(), settings: () => showSettings(), menu: () => showMenu(),
   tsfx: b => { snd.setSfx(!snd.settings.sfx); showSettings(); },
   tmusic: b => { snd.setMusic(!snd.settings.music); showSettings(); },
+  tanim: () => { store.set('bulgot:anim', animOn() ? '0' : '1'); applyAnim(); showSettings(); },
   tinv: () => { store.set('bulgot:invoice', invoiceOn() ? '0' : '1'); dismissInvoice(true); showSettings(); },
   abandon: () => confirmAbandon(),
   'abandon-yes': async () => { closeOverlay(); stopFight(); G.fight = null; const j = await act('abandon'); if (!j) return; G.screen = 'run'; showEnd(j); },
-  again: () => { closeOverlay(); G.screen = 'setup'; render(); },
+  again: () => { closeOverlay(); G.setup.step = 1; G.screen = 'setup'; render(); },
 };
 document.addEventListener('click', e => {
   const o = $('#overlay');
@@ -1270,6 +1305,20 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const F = G.fight, k = e.key.toLowerCase();
   if (k !== 'escape' && e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;   // pisanie nie uruchamia skrótów
+  if (G.screen === 'setup' && !overlayOpen() && !e.shiftKey) {
+    const s = G.setup, ids = charIds();
+    if (k === 'escape' || k === 'backspace') { e.preventDefault(); (s.step === 2 ? ACT.setback : ACT.home)(); return; }
+    if (s.step === 2) {
+      if (k === 'arrowleft' || k === 'arrowdown') { e.preventDefault(); garGo(s.garnek - 1); return; }
+      if (k === 'arrowright' || k === 'arrowup') { e.preventDefault(); garGo(s.garnek + 1); return; }
+      if (k === 'enter') { e.preventDefault(); ACT.start(); return; }
+    } else {
+      if (k === 'arrowleft') { e.preventDefault(); carGo(s.cur - 1); return; }
+      if (k === 'arrowright') { e.preventDefault(); carGo(s.cur + 1); return; }
+      if (k === 'arrowup' || k === 'arrowdown') { e.preventDefault(); const m = Object.keys(T.MODE_INFO), i = m.indexOf(s.mode); ACT.setmode({ dataset: { v: m[(i + (k === 'arrowup' ? m.length - 1 : 1)) % m.length] } }); return; }
+      if (k === 'enter') { e.preventDefault(); ACT.setnext(); return; }
+    }
+  }
   if (k === 'escape') { if (overlayOpen()) { if (!$('#overlay').dataset.force) closeOverlay(); } else if (G.screen === 'run' || (G.screen === 'fight' && G.fight && !G.fight.finishing)) { const m = $('[data-act="menu"]'); m && m.click(); } return; }
   if (ARROWS[k] && !(F && !overlayOpen())) { e.preventDefault(); navMove(...ARROWS[k]); return; }
   if (k === 'enter') { const cur = navCurrent(navItems()); if (cur) { e.preventDefault(); cur.click(); return; } }

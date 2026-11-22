@@ -15,7 +15,7 @@ await p.setViewport({ width: 1440, height: 900 });
 await p.goto('http://localhost:8090/bulgot/?local=1', { waitUntil: 'networkidle0' });
 await p.evaluate(() => localStorage.clear()); await p.reload({ waitUntil: 'networkidle0' }); await wait(400);
 await p.click('[data-act=new]'); await wait(200);
-await p.click('[data-act=start]'); await wait(500);
+await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
 await p.click('[data-act=introgo]'); await wait(300);
 // gruby panel boczny: dużo kafelków i Odznak, żeby sprawdzić przewijanie
 await p.evaluate(() => { const r = window.__bulgot.run; r.garnek = 1; });

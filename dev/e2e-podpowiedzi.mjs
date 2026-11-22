@@ -14,7 +14,7 @@ await p.setViewport({ width: 1440, height: 900 });
 await p.goto('http://localhost:8090/bulgot/?local=1', { waitUntil: 'networkidle0' });
 await p.evaluate(() => localStorage.clear()); await p.reload({ waitUntil: 'networkidle0' }); await wait(400);
 await p.click('[data-act=new]'); await wait(200);
-await p.click('[data-act=start]'); await wait(500);
+await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
 await p.click('[data-act=introgo]'); await wait(300);
 // weź dwa kafelki (po jednym na rundę nie zdążymy), więc dopisz kafelki do stanu widoku: wybierz pierwszy kafelek i zamknij okna
 await p.keyboard.press('1'); await wait(500);

@@ -95,8 +95,8 @@ export const INVOICE = {
 };
 
 export const MODE_INFO = {
-  quick: { name: 'Szybki', rounds: 10, text: '10 pięter, dwóch bossów, ok. 10 minut. Dobry na rozgrzewkę.' },
-  full: { name: 'Pełny', rounds: 20, text: '20 pięter, trzech bossów, ok. 20 minut. Pełna saga.' },
+  quick: { name: 'Zupka Chińska', rounds: 10, text: '10 pięter, dwóch bossów, ok. 10 minut. Szybka, zalewana wrzątkiem.' },
+  full: { name: 'Bulion Babci', rounds: 20, text: '20 pięter, trzech bossów, ok. 20 minut. Gotuje się długo, smakuje najlepiej.' },
 };
 
 export const STAT_LABELS = [
@@ -129,7 +129,7 @@ export const HELP = [
   ['Dokupowanie', 'Jeden kafelek z oferty bierzesz za darmo, a pozostałe możesz dokupić za Ziarna: zwykły 6, rzadki 12, epicki 20, legendarny 30. Wydarzeń (Sklepik, Hazard, Skrzynka, Automat, Kontrakt, Kapliczka) nie da się kupić, tylko wybrać. Niewydane Ziarna dają punkty na koniec runu.'],
   ['Walka', 'Kurczak bije się sam. Ty decydujesz, kiedy użyć umiejętności: klawisze 1, 2, 3 albo kliknięcie. Dobrze wybrany moment (ogłuszenie, unik) wygrywa z bossami.'],
   ['Bossowie', 'Mają fazy i własne sztuczki. Ogłuszenie przerywa ich szarże i telegrafowane ciosy, Unik Skrzydłem pozwala je przeczekać.'],
-  ['Garnek', 'Temperatura Garnka to poziom trudności. Wygrana na poziomie N odblokowuje poziom N+1 i podnosi mnożnik wyniku o 25%.'],
+  ['Garnek', 'Poziom palnika to poziom trudności. Wygrana na poziomie N odblokowuje poziom N+1 i podnosi mnożnik wyniku o 25%.'],
   ['Odblokowania', 'Nowe postacie i kafelki odblokowujesz osiągnięciami (lista w Księdze Kurnika). Nigdy nie dają stałej przewagi w sile, tylko nowe opcje.'],
   ['Zapis', 'Run zapisuje się na serwerze po każdym ruchu. Możesz zamknąć kartę i dokończyć z dowolnego komputera.'],
 ];

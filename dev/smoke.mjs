@@ -18,7 +18,7 @@ const fail = msg => { console.error('BŁĄD:', msg); process.exitCode = 1; };
 
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(m => document.querySelector(`[data-act=setmode][data-v=${m}]`).click(), mode);
-await p.click('[data-act=start]'); await wait(500);
+await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
 await p.click('[data-act=introgo]'); await wait(300);
 if ((await st()).phase !== 'offer') fail('po starcie powinna być oferta');
 

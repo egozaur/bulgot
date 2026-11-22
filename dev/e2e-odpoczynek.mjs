@@ -14,7 +14,7 @@ await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:intr
 await p.reload({ waitUntil: 'networkidle0' }); await wait(300);
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(() => document.querySelector('[data-act=setmode][data-v=full]').click());
-await p.click('[data-act=start]'); await wait(500);
+await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
 await p.evaluate(() => { const k = 'bulgot:local:player:run'; const r = JSON.parse(localStorage.getItem(k)); Object.assign(r, { round: 5, coins: 20, hp: 20, tiles: ['ziarno-mocy', 'ostry-dziob'], offer: ['ostry-dziob', 'jajeczny-granat', 'czujne-oko', 'pianie-grozy'] }); localStorage.setItem(k, JSON.stringify(r)); });
 await p.reload({ waitUntil: 'networkidle0' }); await wait(300); await p.click('[data-act=resume]'); await wait(400);
 await p.screenshot({ path: out + '/v-oferta-odpoczynek.png' });
