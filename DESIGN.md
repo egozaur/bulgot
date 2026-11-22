@@ -497,3 +497,24 @@ Pula: 134 kafelki (6 nowych ryzyka, 6 legendarnych przedmiotów, wyklęty Dinoza
 
 ### Balans
 Szybki `grow` zmieniony na `{1.12, 1.083}` (pełny bez zmian `{1.109, 1.068}`). Bot: szybki Pyrtek 47%, Zjarany 54%, Indor 60%, Kwoka 66%, Kaczor 56%; pełny Pyrtek 47%. Legendarne mają bardzo wysoką skuteczność wśród runów, które je zdobyły (94–99%), ale to głównie efekt selekcji (dochodzą tylko runy po 60% drogi). Jeśli okażą się zbyt mocne w grze: podnieś próg 60% w `tileAvailable` albo obniż wagę rzadkości 3.
+
+
+## 16. Dziewięć nowych postaci (2026-11-22)
+
+Postaci jest 14 (`CHARS` w `data.js`), `RUN_V = 6`. Każda ma blokadę w `UNLOCKS` (kind `char`) i warunek w `profile.js` (`CHECKS`).
+
+| Postać | Styl | Efekty | Odblokowanie |
+|---|---|---|---|
+| Kurczak Barista | Szybkie ciosy | +35% szybkości ataku, -30% Życia, -10% Ataku, start: Dziobnięcie Szału | Wygraj walkę w mniej niż sekundę |
+| Gęś Księgowa | Ekonomia | +15 Ziaren, +1 Ziarno po rundzie, Odsetki do 6, -15% Ataku | Miej 200 Ziaren naraz |
+| Kurczak Lodziarz | Mróz | 20% Mrozu przy ataku, wrogowie z Mrozem -10% obrażeń, -20% szybkości ataku, start: Lodowy Dziób | Zamroź 8 wrogów w jednym runie |
+| Kura Pielęgniarka | Leczenie | +2 Regeneracji / s, leczenie po rundzie +10 pkt proc., -25% Ataku, start: Zagrzebanie | Wygraj walkę z mniej niż 10% życia |
+| Kogut Rzeźnik | Krwawienie | każdy atak krwawi, limit +1, -15% Życia, -10% Ataku, start: Darcie Pierza | Pokonaj Skubarkę 3000 |
+| Indyczka Wróżka | Szczęście | +20 Szczęścia, 1 darmowy reroll na rundę, -10% Życia | Zdobądź 3 Odznaki w jednym runie |
+| Kurczak Stażysta | Powolny start | -25% Ataku i Życia, +6% wszystkich statystyk za każde wygrane piętro (maks. +60%; `perFloor`, `loadout.floors`) | Przegraj 5 runów |
+| Kurczak Mutant | Umiejętności | -25% cooldownu, -20% Życia, losowa umiejętność na start (`randomSkill`, z ziarna runu) | Zmutuj 3 umiejętności w jednym runie |
+| Dinozaur (sekretny) | Ukryty | start z Jajkiem Dinozaura (`startTiles`), -8% Ataku i Życia | Wyklu Dinozaura (`stats.dino`) |
+
+Perliczka Strażniczka (unik z ripostą) została odłożona. Postacie rysuje wspólny szablon `HEN` w `art.js` (paleta + akcesoria); jajko Dinozaura jest sekretne jak Zjarany, ale hasło „dzioby” działa tylko dla Zjaranego (`hasCode`).
+
+Balans bota (szybki / pełny): Barista 52 / 54%, Gęś 51 / 49%, Lodziarz 55 / 59%, Pielęgniarka 58 / 63%, Rzeźnik 59 / 54%, Wróżka 58 / 60%, Stażysta 47 / 48%, Mutant 55 / 56%, Dinozaur 52 / 56%. Pierwotnie Rzeźnik (bleed 3, +2 limitu) miał 86%, a Stażysta (+4%) 24%. Uwaga: „Cała Zagroda” (`a-zagroda`) i procent ukończenia gry liczą teraz 14 postaci. Test: `dev/e2e-postacie.mjs`.

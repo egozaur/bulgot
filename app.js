@@ -187,7 +187,7 @@ function renderSetup() {
     <div class="sec">Postać <small>← → · nowe odblokowujesz osiągnięciami</small></div>
     <div class="carousel"><button class="car-arrow" data-act="cprev" aria-label="Poprzednia postać">‹</button><div class="car-track">${cards}</div><button class="car-arrow" data-act="cnext" aria-label="Następna postać">›</button></div>
     <div class="car-dots">${ids.map((id, i) => `<i class="${i === s.cur ? 'on' : ''}"></i>`).join('')}</div>
-    ${(c => c && c.secret && !p.chars.includes(c.id) ? '<div class="codeask"><button class="btn small ghost" data-act="codeopen">🔑 Masz hasło?</button></div>' : '')(D.CHARS[ids[s.cur]])}
+    ${(c => c && c.hasCode && !p.chars.includes(c.id) ? '<div class="codeask"><button class="btn small ghost" data-act="codeopen">🔑 Masz hasło?</button></div>' : '')(D.CHARS[ids[s.cur]])}
     <div class="start-row"><button class="btn primary big" data-act="setnext" data-primary>Dalej: palnik →</button></div>
     <div class="keyhint">Enter dalej · Esc menu</div></div>`;
 }

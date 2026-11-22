@@ -116,6 +116,51 @@ const ZJARANY = () => `
   <path d="M57 54 q5 4 11 1" stroke="${O}" stroke-width="2.2" ${NF} stroke-linecap="round"/>
   <g class="zsmoke"><circle cx="90" cy="38" r="4" fill="#e9e5dc" opacity=".9" ${S2}/><circle cx="95" cy="28" r="5.5" fill="#f1ede5" opacity=".85" ${S2}/><circle cx="88" cy="17" r="7.5" fill="#f6f2ea" opacity=".8" ${S2}/></g>`;
 
+
+// ---------- Nowe postacie: jeden wspólny kształt kury (jak Kogut) z paletą i akcesoriami ----------
+const HEN = (c, front = '', extra = '') => `
+  ${FEET(c.feet || '#e8902a')}
+  <path d="M26 62 q-20 -6 -15 -30 q11 7 19 19 z" fill="${c.t1}" ${S}/>
+  <path d="M27 68 q-23 2 -23 -17 q13 3 21 12 z" fill="${c.t2}" ${S}/>
+  <path d="M30 54 q-15 -15 -5 -37 q9 15 13 30 z" fill="${c.t3}" ${S}/>
+  <ellipse cx="48" cy="64" rx="24" ry="22" fill="${c.body}" ${S}/>
+  <path d="M32 62 q-2 17 17 19 q9 -10 0 -23 z" fill="${c.shade}" ${S}/>
+  ${front}
+  <circle cx="66" cy="40" r="15" fill="${c.body}" ${S}/>
+  ${c.nocomb ? '' : `<path d="M57 29 q-3 -13 6 -11 q2 -9 9 -3 q9 -2 6 8 q-4 6 -13 7 z" fill="${c.comb}" ${S}/>`}
+  ${eye(69, 38, 6.5, 1.5)}${brow(62, 31, 76, 35)}
+  <path d="M79 40 l13 4 l-13 6 z" fill="${c.beak || '#ffb02e'}" ${S}/>
+  <path d="M77 50 q5 10 -2 13 q-6 -6 -2 -13 z" fill="${c.comb}" ${S}/>
+  ${extra}`;
+const BARISTA = () => HEN({ t1: '#8d5524', t2: '#c68642', t3: '#e0a96d', body: '#f1d9b5', shade: '#d9b98a', comb: '#c0392b' },
+  `<path d="M34 60 h26 l-3 22 q-10 5 -20 0 z" fill="#2e7d32" ${S}/><rect x="40" y="67" width="12" height="8" rx="2" fill="#a5d6a7" ${S2}/>`,
+  `<rect x="78" y="55" width="11" height="10" rx="2" fill="#fff" ${S2}/><path d="M89 57 q6 0 4 5 q-1 2 -4 2" fill="none" ${S2}/><path d="M81 52 q-2 -4 1 -8 M86 52 q-2 -4 1 -8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M52 24 l-6 -3 M54 30 l-7 0" stroke="#7fd3ff" stroke-width="2" stroke-linecap="round"/>`);
+const GES = () => HEN({ t1: '#cfd8dc', t2: '#eceff1', t3: '#b0bec5', body: '#ffffff', shade: '#e3e8ee', comb: '#ffb300', nocomb: true, beak: '#ff9800' },
+  `<rect x="38" y="62" width="14" height="18" rx="2" fill="#37474f" ${S2}/><rect x="40" y="64" width="10" height="4" fill="#a5d6a7"/><path d="M41 72 h2 M45 72 h2 M41 76 h2 M45 76 h2" stroke="#cfd8dc" stroke-width="2" stroke-linecap="round"/>`,
+  `<path d="M54 29 q14 -11 30 0 l-2 6 q-13 -6 -26 0 z" fill="#2e7d32" ${S}/><circle cx="69" cy="38" r="9" fill="none" ${S2}/><path d="M60 38 l-6 -2" ${S2}/>`);
+const LODZIARZ = () => HEN({ t1: '#7fd3ff', t2: '#bfeaff', t3: '#4fc3f7', body: '#e1f3fb', shade: '#b7dff0', comb: '#4fc3f7', nocomb: true },
+  '',
+  `<path d="M56 29 l4 -13 h14 l4 13 z" fill="#fff" ${S}/><path d="M60 22 h14" stroke="#cfd8dc" stroke-width="1.6"/><path d="M30 66 l10 22 l10 -22 z" fill="#e9b872" ${S}/><circle cx="40" cy="62" r="8.5" fill="#f8bbd0" ${S}/><circle cx="40" cy="54" r="5.5" fill="#fff59d" ${S2}/><path d="M36 66 l8 0 M38 72 l4 0" stroke="#c28a45" stroke-width="1.6"/>`);
+const PIELEGNIARKA = () => HEN({ t1: '#cfd8dc', t2: '#eceff1', t3: '#b0bec5', body: '#ffffff', shade: '#e3e8ee', comb: '#e53950', nocomb: true },
+  `<path d="M38 60 q-5 15 9 17 q9 -2 6 -13" fill="none" stroke="#455a64" stroke-width="2.6" stroke-linecap="round"/><circle cx="53" cy="66" r="3.2" fill="#90a4ae" ${S2}/>`,
+  `<path d="M55 28 q10 -14 23 -2 l-1 8 q-10 -5 -21 0 z" fill="#fff" ${S}/><path d="M67 18 v9 M62.5 22.5 h9" stroke="#e53950" stroke-width="3" stroke-linecap="round"/>`);
+const RZEZNIK = () => HEN({ t1: '#5d1f17', t2: '#8e2f20', t3: '#c75b3c', body: '#a0402f', shade: '#7e2f22', comb: '#3e1a12' },
+  `<path d="M33 60 h27 l-3 24 q-10 5 -21 0 z" fill="#f5f5f5" ${S}/><circle cx="42" cy="70" r="2.6" fill="#b71c1c"/><circle cx="51" cy="77" r="3.2" fill="#b71c1c"/><circle cx="46" cy="64" r="1.8" fill="#b71c1c"/>`,
+  `<path d="M71 66 l16 -10 l5 7 l-16 11 z" fill="#cfd8dc" ${S2}/><path d="M70 70 l-6 7" stroke="#5d4037" stroke-width="4.5" stroke-linecap="round"/>`);
+const WROZKA = () => HEN({ t1: '#6a1b9a', t2: '#ab47bc', t3: '#ce93d8', body: '#c9a0e6', shade: '#a577c9', comb: '#7b1fa2', nocomb: true },
+  `<circle cx="46" cy="76" r="9.5" fill="#b3e5fc" fill-opacity=".85" ${S2}/><path d="M41 72 q3 -3 7 -1" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+  `<path d="M54 31 q12 -17 27 -3 l-2 9 q-12 -6 -23 0 z" fill="#4527a0" ${S}/><circle cx="67" cy="23" r="3.6" fill="#ffd23f" ${S2}/><path d="M89 22 l1.8 4.5 l4.5 1.8 l-4.5 1.8 l-1.8 4.5 l-1.8 -4.5 l-4.5 -1.8 l4.5 -1.8z" fill="#ffd23f" ${S2}/>`);
+const STAZYSTA = () => HEN({ t1: '#f2c94c', t2: '#ffe27a', t3: '#ffd34e', body: '#ffe27a', shade: '#f2c94c', comb: '#ff9d2e' },
+  `<path d="M55 54 l-6 26" stroke="#1e88e5" stroke-width="2.6" stroke-linecap="round"/><rect x="41" y="76" width="11" height="13" rx="1.5" fill="#fff" ${S2}/><circle cx="46.5" cy="81" r="2.2" fill="#90caf9"/>`,
+  `<circle cx="69" cy="38" r="9.5" fill="none" ${S2}/><path d="M59.5 38 l-5 -2" ${S2}/><path d="M58 56 l6 3 l-2 6 l-5 -2 z" fill="#c0392b" ${S2}/>`);
+const MUTANT = () => HEN({ t1: '#7b1fa2', t2: '#00e5ff', t3: '#76ff03', body: '#a5d66f', shade: '#7cb342', comb: '#ff4081' },
+  `<circle cx="38" cy="62" r="3.4" fill="#7b1fa2" opacity=".7"/><circle cx="52" cy="72" r="4.2" fill="#7b1fa2" opacity=".7"/><circle cx="44" cy="78" r="2.6" fill="#7b1fa2" opacity=".7"/>`,
+  `${eye(56, 44, 4.2, 1)}<circle cx="86" cy="26" r="3" fill="#76ff03" opacity=".8" ${S2}/><circle cx="92" cy="34" r="2" fill="#00e5ff" opacity=".8"/>`);
+const DINOZAUR = () => HEN({ t1: '#2e7d32', t2: '#558b2f', t3: '#9ccc65', body: '#66bb6a', shade: '#43a047', comb: '#ff7043', nocomb: true, beak: '#c8e6c9' },
+  '',
+  `<path d="M52 27 l3 -10 l5 9 z M60 24 l4 -11 l5 10 z M68 25 l5 -9 l4 9 z" fill="#ff7043" ${S2}/><path d="M33 52 l-3 -9 l7 3 z M26 60 l-6 -6 l9 0 z" fill="#ff7043" ${S2}/><path d="M80 49 l2 4 l2 -4 l2 4 l2 -4" stroke="#fff" stroke-width="2" fill="none" stroke-linejoin="round"/>`);
+const NEWBODY = { barista: BARISTA, ges: GES, lodziarz: LODZIARZ, pielegniarka: PIELEGNIARKA, rzeznik: RZEZNIK, wrozka: WROZKA, stazysta: STAZYSTA, mutant: MUTANT, dinozaur: DINOZAUR };
+
 // Akcesoria na formy postaci innych niż Pyrtek.
 const HEADS = { kwoka: [68, 40], kaczor: [66, 38], indor: [68, 40], zjarany: [66, 40] };
 const accessory = (char, form) => {
@@ -129,7 +174,7 @@ const accessory = (char, form) => {
 export function heroArt(char, form) {
   let body;
   if (char === 'pyrtek' || !char) body = ({ pyrtek: PYRTEK, kogut: KOGUT, bojowy: BOJOWY, rambo: RAMBO }[form] || PYRTEK)();
-  else body = ({ kwoka: KWOKA, kaczor: KACZOR, indor: INDOR, zjarany: ZJARANY }[char] || KOGUT)() + accessory(char, form);
+  else body = ({ kwoka: KWOKA, kaczor: KACZOR, indor: INDOR, zjarany: ZJARANY, ...NEWBODY }[char] || KOGUT)() + accessory(char, form);
   return svg(body);
 }
 export const portrait = (char, form = 'pyrtek') => heroArt(char, form);
@@ -142,7 +187,7 @@ const ZIG = [[0, 138], [20, 124], [38, 142], [58, 124], [78, 144], [100, 126], [
 const CHICK = {   // [rozmiar kurczaka w jednostkach jajka, przesunięcie x]; spód rysunku (y≈88) chowa się 12 jednostek pod brzegiem skorupy
   pyrtek: [150, 0], kwoka: [158, 0], kaczor: [150, 0], indor: [162, -4], zjarany: [154, -2],
 };
-const BODIES = { pyrtek: PYRTEK, kwoka: KWOKA, kaczor: KACZOR, indor: INDOR, zjarany: ZJARANY };
+const BODIES = { pyrtek: PYRTEK, kwoka: KWOKA, kaczor: KACZOR, indor: INDOR, zjarany: ZJARANY, ...NEWBODY };
 export function eggArt(char, open) {
   const id = 'egg-' + char;
   const zigPath = ZIG.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ');
