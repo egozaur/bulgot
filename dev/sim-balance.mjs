@@ -2,9 +2,9 @@
 // Użycie (Windows: export PATH="/c/Users/Kurczak/tools/node:$PATH"):
 //   node dev/sim-balance.mjs [--mode full|quick] [--garnek 0..5] [--n 300] [--policy smart|random] [--pool starter|all] [--char pyrtek]
 // Bot używa dokładnie tych samych funkcji co serwer (rules.js, sim.js), więc liczby są prawdziwe.
-import { choose as chooseOpt, newRun, pickTile, reroll, buyOffer, rest, shopBuy, bet, bonusPick, fightSetup, fightFinish, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
+import { choose as chooseOpt, newRun, pickTile, reroll, buyOffer, rest, shopBuy, bet, bonusPick, upgrade, upgradable, fightSetup, fightFinish, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
 import { Fight } from '../../pl3y-server/src/games/bulgot/sim.js';
-import { AFFIXES, TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, RULES } from '../../pl3y-server/src/games/bulgot/data.js';
+import { AFFIXES, RARITY_WEIGHTS, TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, RULES } from '../../pl3y-server/src/games/bulgot/data.js';
 import { makeRng, mix } from '../../pl3y-server/src/games/bulgot/rng.js';
 import { heroStats } from '../../pl3y-server/src/games/bulgot/stats.js';
 import { loadoutOf } from '../../pl3y-server/src/games/bulgot/rules.js';
@@ -16,12 +16,14 @@ const TRACE = process.argv.includes('--trace');
 const NOREST = process.argv.includes('--norest'), RESTBELOW = +arg('restbelow', 55);
 const NOBUY = process.argv.includes('--nobuy'), BUYMIN = +arg('buymin', 1.05);
 const PER = {};
+let UPG = 0, LOOT = 0;
 // Pokrętła do strojenia (nie zmieniają plików): mnożniki życia/ataku wrogów i bossów oraz tempo wzrostu na rundę.
 const HPM = +arg('hpmul', 1), ATKM = +arg('atkmul', 1), BHPM = +arg('bosshp', 1), BATKM = +arg('bossatk', 1);
 if (arg('grow')) { const [h, a] = arg('grow').split(',').map(Number); MODES[MODE].grow = { hp: h, atk: a }; }
 if (arg('heal')) RULES.healPct = +arg('heal');
 if (arg('income')) { const [a, b2] = arg('income').split(',').map(Number); RULES.coinsRound = a; RULES.coinsBoss = b2; }
 if (arg('prices')) RULES.prices = arg('prices').split(',').map(Number);
+if (arg('rw')) arg('rw').split(';').forEach((x, i) => { RARITY_WEIGHTS[i] = x.split(',').map(Number); });   // --rw '50,35,13,2;35,38,22,5;22,38,30,10'
 const MAXBUY = +arg('maxbuy', 9);
 if (arg('affix')) for (const k of Object.keys(AFFIXES)) if (k !== arg('affix')) delete AFFIXES[k];   // --affix X: elity zawsze z tą cechą
 if (arg('basehp')) CHARS.pyrtek.base.hp = +arg('basehp');
@@ -39,7 +41,7 @@ function power(run) {
   const frost = S.frostHit ? Math.min(1, hps * S.frostHit / 100 * 0.8) : 0;   // ułamek czasu, przez który wrogowie mają Mróz
   const cold = 1 + frost * (S.vsCold / 100 + 0.15 + (S.shatter ? 0.25 : 0) + (S.freezePct ? 0.1 : 0));
   const dps = (S.atk * hps * (1 + crit) * (1 + S.dmg / 100) + (S.egg ? 1.2 * S.atk / (S.egg / 10) : 0) + burn + poison + bleed) * cold + S.startBurn * S.atk * 0.05;
-  const ehp = (S.maxHp * (1 + S.regen / 12)) * (1 + S.armor / 100) / (1 - Math.min(75, S.evade) / 100);
+  const ehp = (S.maxHp * (1 + S.regen / 120)) * (1 + S.armor / 100) / (1 - Math.min(75, S.evade) / 100);
   const skills = run.skills.reduce((a, s) => a + (s.lvl >= 3 ? 0.22 : s.lvl >= 2 ? 0.16 : 0.1), 0);
   const econ = 1 + (S.coinFlat + S.bossCoins / 4 + S.freeReroll * 1.5 + S.restDisc / 2) * 0.012 + (S.noSteal ? 0.02 : 0) + S.buyDisc * 0.002;
   return dps * ehp * (1 + skills) * (S.revive ? 1.1 : 1) * (1 + S.luck * 0.004) * econ * (1 + S.frostThorns * 0.05);
@@ -103,6 +105,8 @@ function playRun(seed) {
   let guard = 0;
   while (run.phase !== 'over' && guard++ < 400) {
     if (run.phase === 'offer') {
+      // Ulepszanie: bot zlewa 3 kopie tylko wtedy, gdy siła buildu rośnie (--noupgrade wyłącza)
+      if (POLICY === 'smart' && !process.argv.includes('--noupgrade')) for (const uid of upgradable(run)) { const tr = JSON.parse(JSON.stringify(run)); upgrade(tr, uid); if (power(tr) > power(run)) { upgrade(run, uid); UPG++; } }
       // reroll, gdy oferta słaba i są Ziarna na zapas
       let i = choose(run, run.offer, rng);
       const best = tileValue(run, run.offer[i]) / power(run);
@@ -141,6 +145,8 @@ function playRun(seed) {
       let bi = 0, bv = -1;
       run.pending.offer.forEach((b, k) => { const tr = JSON.parse(JSON.stringify(run)); tr.badges.push(b); const v = power(tr) * (1 + rng.next() * 0.02); if (v > bv) { bv = v; bi = k; } });
       chooseOpt(run, bi);
+    } else if (run.phase === 'loot') {
+      let bi = 0, bv = -1; run.pending.offer.forEach((id, k) => { const v = tileValue(run, id) * (1 + rng.next() * 0.01); if (v > bv) { bv = v; bi = k; } }); chooseOpt(run, bi); LOOT++;
     } else if (run.phase === 'bonus') {
       const i = choose(run, run.offer, rng);
       const t = TILE_BY_ID[run.offer[i]];
@@ -185,6 +191,7 @@ console.log(`Wygrane: ${(wins / N * 100).toFixed(1)}%   średnio ukończonych ru
 let line = 'Porażki w rundzie: ';
 for (let r = 1; r <= rounds; r++) if (died[r]) line += `${r}:${(died[r] / N * 100).toFixed(0)}% `;
 console.log(line);
+console.log(`Ulepszeń na run: ${(UPG / N).toFixed(2)}   łupów z bossów na run: ${(LOOT / N).toFixed(2)}`);
 if (process.argv.includes('--table')) {
   console.log('Runda  walk  wygr%  śr.strata życia przy wygranej  śr.czas walki (s)  walki ≤2 s');
   for (const r of Object.keys(PER).map(Number).sort((a, b) => a - b)) { const x = PER[r]; console.log(String(r).padStart(4), String(x.n).padStart(5), (x.win / x.n * 100).toFixed(0).padStart(5) + '%', x.win ? (x.loss / x.win * 100).toFixed(0).padStart(6) + '%' : '    -', ((x.ticks / x.n) / 10).toFixed(1).padStart(8), (x.fast / x.n * 100).toFixed(0).padStart(8) + '%'); }

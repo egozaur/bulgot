@@ -525,7 +525,10 @@ export function badgeIcon(id) {
   return I(`<path d="M15 2 l5 12 h8 l5 -12" fill="#e53950" stroke="${O}" stroke-width="2" stroke-linejoin="round"/><circle cx="24" cy="26" r="15" fill="${c}" stroke="${O}" stroke-width="2.4"/><circle cx="24" cy="26" r="11.5" fill="none" stroke="#fff" stroke-width="1.2" opacity=".6"/><g transform="translate(0 2)">${g}</g>`);
 }
 
-export function tileIcon(id) { return I(ICON[id] || `<circle cx="24" cy="24" r="14" ${k('#ccc')}/>`); }
+// Rodziny statystyk: poziomy 1, 2 i legendarny dzielą ikonę poziomu 3 (poziom pokazuje plakietka na karcie).
+const ICON_OF = {"grzebien-z-tasmy":"twardy-grzebien","grzebien-hodowlany":"twardy-grzebien","grzebien-rosolowego-krola":"twardy-grzebien","ziarenko-z-podlogi":"ziarno-mocy","ziarno-selekcjonowane":"ziarno-mocy","ziarno-pierwszego-jajka":"ziarno-mocy","nadpilowany-dziob":"ostry-dziob","dziob-szlifowany":"ostry-dziob","dziob-prezesa":"ostry-dziob","dziob-po-kawie":"szybki-dziob","dziob-po-espresso":"szybki-dziob","dziob-maszynowy":"szybki-dziob","puch-zbity-w-kule":"pancerz-z-pierza","pierze-prasowane":"pancerz-z-pierza","zbroja-wyroczni-kurnika":"pancerz-z-pierza","zezowate-oko":"czujne-oko","oko-kontrolera-jakosci":"czujne-oko","oko-cyklopa-z-chlodni":"czujne-oko","slieskie-nozki":"zwinne-nogi","nogi-akrobaty":"zwinne-nogi","cien-skrzydla":"zwinne-nogi","sloma-z-wczoraj":"cieple-gniazdko","gniazdko-z-siana":"cieple-gniazdko","wieczny-ogien-kuchenki":"cieple-gniazdko","trojlistna-koniczyna":"czterolistna-koniczyna","koniczyna-z-kapliczki":"czterolistna-koniczyna","piecio-koniczyna-zarzadu":"czterolistna-koniczyna"};
+export function tileIcon(id) { return I(ICON[id] || ICON[ICON_OF[id]] || `<circle cx="24" cy="24" r="14" ${k('#ccc')}/>`); }
+export function upgradeIcon() { return I(`<path d="M24 4 L40 22 H30 V40 H18 V22 H8 Z" ${k('#7bd88f')}/><path d="M24 12 l6 7 h-4 v14 h-4 v-14 h-4z" fill="#fff" opacity=".55"/>`); }
 
 // Rozwidlenie Korytarza: zwykłe drzwi albo drzwi „Tylko dla personelu”.
 export function doorIcon(risky) {

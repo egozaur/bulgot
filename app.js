@@ -192,6 +192,8 @@ function carGo(i) { const n = charIds().length, s = G.setup; s.cur = Math.max(0,
 function garGo(v) { const s = G.setup; s.garnek = Math.max(0, Math.min(D.GARNEK.length - 1, v)); render(); }
 // ---------- karty kafelków ----------
 function setOwned(set) { return G.run ? G.run.tiles.filter(id => TILE[id] && setsOf(TILE[id]).includes(set)).length : 0; }
+// Plakietka poziomu statystyki: 1 szary, 2 papier pakowy, 3 złoty, 4 legendarna z poświatą (wyglądu karty nie zmienia).
+const lvlTag = t => t && t.lvl ? `<span class="lvl l${t.lvl}" title="Poziom ${t.lvl === 4 ? 'legendarny' : t.lvl}">${['I', 'II', 'III', '★'][t.lvl - 1]}</span>` : '';
 function tileCard(id, o = {}) {
   const t = TILE[id], i = o.i == null ? 0 : o.i, run = G.run;
   const own = run && !o.static && t.type === 'skill' ? run.skills.find(s => s.id === t.skill) : null;
@@ -205,13 +207,15 @@ function tileCard(id, o = {}) {
     const ms = D.MILESTONES[id];
     if (ms) { const n = run.tiles.filter(x => x === id).length % D.MILESTONE_EVERY; tags.push(`<span class="tag ${n === D.MILESTONE_EVERY - 1 ? 'hatch' : ''}">${n === D.MILESTONE_EVERY - 1 ? esc(ms.name) + '!' : 'Próg ' + (n + 1) + '/' + D.MILESTONE_EVERY}</span>`); }
   }
+  if (t.boss) tags.push('<span class="tag hatch">Łup z bossa</span>');
+  else if (t.next && run && !o.static) { const c = run.tiles.filter(x => x === id).length; tags.push(`<span class="tag ${c >= 2 ? 'hatch' : ''}">Zlew ${Math.min(c + 1, 3)}/3</span>`); }
   if (own && own.lvl >= 2) tags.push('<span class="tag up mut">Mutacja</span>');
   else if (own) tags.push('<span class="tag up">Poziom 2</span>');
   else if (t.type === 'skill' && run && run.skills.length >= D.RULES.maxSkills && !o.static) tags.push('<span class="tag">Zastąp slot</span>');
   const tag = o.static ? 'div' : 'button';
   const dis = o.price != null && run && run.coins < o.price ? 'disabled' : '';
   return `<${tag} class="tile r${t.rarity} ${o.static ? 'static' : ''} ${o.locked ? 'locked' : ''} ${o.mini ? 'mini' : ''}" ${o.static ? '' : `data-act="${o.act || 'pick'}" data-i="${i}"`} ${dis} style="--i:${i}" ${o.tip ? `data-tip="${esc(o.tip)}"` : ''}>
-    ${o.static || o.key === false ? '' : `<span class="key">${i + 1}</span>`}${art.tileIcon(id)}
+    ${o.static || o.key === false ? '' : `<span class="key">${i + 1}</span>`}${lvlTag(t)}${art.tileIcon(id)}
     <div class="tname">${esc(t.name)}</div><div class="ttext">${esc(t.text)}</div>
     <div class="tmeta">${tags.join('')}</div>
     ${o.price != null ? `<div class="price ${dis ? 'no' : ''}">${o.price} ${art.coinIcon()}</div>` : ''}
@@ -313,7 +317,7 @@ function sideHTML() {
   const chips = Object.entries(counts).map(([id, n]) => {
     const t = TILE[id], g = t.grow ? Math.min(t.grow.max, (r.grow || {})[id] || 0) : 0, fw = (r.flawed || []).find(w => w.id === id);
     const tip = fw ? 'Wada fabryczna (+50% efektów): ' + (fw.flaw ? D.FLAWS[fw.flaw].name + '. ' + D.FLAWS[fw.flaw].text : 'ujawni się po walce') : '';
-    return `<div class="chip r${t.rarity} ${fw ? 'flawed' : ''}" tabindex="0" data-tipk="tile:${id}" data-tipx="${esc(tip)}">${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : t.grow && g ? `<sup class="gr">+${g}</sup>` : ''}</div>`;
+    return `<div class="chip r${t.rarity} ${fw ? 'flawed' : ''} ${id === G.upFresh ? 'fresh' : ''}" tabindex="0" data-tipk="tile:${id}" data-tipx="${esc(tip)}">${lvlTag(t)}${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : t.grow && g ? `<sup class="gr">+${g}</sup>` : ''}</div>`;
   }).join('');
   const pawnLine = r.pawned ? `<div class="setline pawn">W lombardzie: ${esc(TILE[r.pawned.id].name)}${r.pawned.canRedeem ? ` (wykup za ${r.pawned.cost} Ziaren tylko na tym piętrze)` : ' (wykup na następnym piętrze)'}</div>` : '';
   const foxLine = r.foxDebt ? `<div class="setline pawn">Lisy Windykatory silniejsze o ${r.foxDebt * D.RULES.pawnFox}% (przepadłe zastawy)</div>` : '';
@@ -364,7 +368,7 @@ function zoneCompare() {
   const n = r.zone === 0 ? 1.5 : 2, eHp = avg('hp') * h * n, eArm = avg('armor'), eDps = avg('atk') * a * avg('aspd') / 100 * n * (100 - avg('evade')) / 100;
   const crit = 1 + (S.crit || 0) * ((S.critMult || 150) - 100) / 10000;
   const dps = Math.max(0.1, S.atk * (100 + (S.dmg || 0)) / 100 * S.aspd / 100 * crit * 100 / (100 + eArm));
-  const taken = Math.max(0.05, eDps * 100 / (100 + S.armor) * (100 - Math.min(75, S.evade || 0)) / 100 - (S.regen || 0));
+  const taken = Math.max(0.05, eDps * 100 / (100 + S.armor) * (100 - Math.min(75, S.evade || 0)) / 100 - (S.regen || 0) / 10);
   return { off: 10 / (eHp / dps), def: (S.maxHp / taken) / 20 };
 }
 // Zestawy jako ikonki pod paskami Atak/Obrona: kropki = sztuki zestawu (wypełnione = posiadane, kwadrat = próg bonusu), żółty = brakuje jednej sztuki do progu.
@@ -411,6 +415,7 @@ function stageHTML() {
   if (r.phase === 'offer') return stageOffer();
   if (r.phase === 'event') { const kd = r.pending.kind; return kd === 'shop' ? stageShop() : kd === 'contract' ? stageContract() : kd === 'shrine' ? stageShrine() : stageGamble(); }
   if (r.phase === 'badge') return stageBadge();
+  if (r.phase === 'loot') return stageLoot();
   if (r.phase === 'door') return stageDoor();
   if (r.phase === 'bonus') return stageBonus();
   if (r.phase === 'fight') return stagePrep();
@@ -444,6 +449,16 @@ function pawnBtn() {
   if (p) return '';
   return `<button class="btn" data-act="pawnmenu" ${pawnable().length ? '' : 'disabled'} title="Zastaw kafelek u Lisa za pełną cenę (klawisz L)">${art.pawnIcon()} Lombard Lisa</button>`;
 }
+// Ulepszanie: 3 kopie statystyki poziomu 1 lub 2 zlewają się w 1 kafelek następnego poziomu (za darmo).
+function upgradeBtn() {
+  const up = G.run.up || [];
+  return `<button class="btn ${up.length ? 'upg' : ''}" data-act="upgrademenu" ${up.length ? '' : 'disabled'} title="${up.length ? 'Zlej 3 takie same kafelki w jeden wyższego poziomu (klawisz U)' : 'Potrzebujesz 3 takich samych statystyk poziomu 1 lub 2 (zlewają się w wyższy poziom)'}">${art.upgradeIcon()} Zlej kafelki${up.length ? ` (${up.length})` : ''}</button>`;
+}
+function showUpgrade() {
+  const rows = (G.run.up || []).map(id => { const t = TILE[id], nx = TILE[t.next], n = G.run.tiles.filter(x => x === id).length;
+    return `<button class="upg-row" data-act="upgrade" data-v="${id}"><span class="upg-from r${t.rarity}" data-tipk="tile:${id}"><span class="pi">${lvlTag(t)}${art.tileIcon(id)}</span><b>3×</b> ${esc(t.name)}${n > 3 ? ` <small>(masz ${n})</small>` : ''}</span><span class="upg-arrow">→</span><span class="upg-to r${nx.rarity}" data-tipk="tile:${nx.id}"><span class="pi">${lvlTag(nx)}${art.tileIcon(nx.id)}</span>${esc(nx.name)}<small>${esc(nx.text)}</small></span></button>`; }).join('');
+  openOverlay(`<h2>Zlewanie kafelków</h2><p class="lead">Trzy takie same statystyki poziomu 1 lub 2 zlewasz za darmo w jedną następnego poziomu. Kosztem są trzy kafelki, nie Ziarna.</p><div class="upg-list">${rows || '<p class="hint">Nie masz trzech takich samych kafelków do zlania.</p>'}</div>`, { cls: 'upgmodal' });
+}
 const pawnable = () => { const r = G.run; return [...new Set(r.tiles)].filter(id => { const t = TILE[id]; return t && t.type !== 'skill' && !t.hidden && !(r.flawed || []).some(w => w.id === id); }); };
 // Zamiana kolejności umiejętności (slot = klawisz w walce). Serwer zapisuje kolejność, więc powtórka walki się zgadza.
 async function swapSlots(a, b) {
@@ -474,8 +489,8 @@ function stageOffer() {
   return `<div class="stage-title"><h2>Piętro ${r.round}${r.boss ? ' · BOSS' : ''}</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${r.elite ? ' · elitarny wróg' : ''}${decreeSub()}</div></div>
     <div class="kron">${esc(r.nemesisRound ? T.pickLine(T.NEMESIS_LINES, r.round) : floorKron())}</div>${decreeHTML()}${previewHTML()}
     <div class="cards">${cards}</div>
-    <div class="actions"><button class="btn" data-act="reroll" ${r.coins < cost ? 'disabled' : ''}>Reroll ${free ? '(za darmo)' : `za ${cost} ${art.coinIcon()}`}</button>${restBtn()}${pawnBtn()}</div>${lost}
-    <div class="hint">Jeden kafelek bierzesz za darmo (klawisze 1–${r.offer.length}), pozostałe możesz dokupić (Shift + cyfra). R przelosowuje ofertę, L otwiera Lombard. Strzałki i Enter też działają.</div>`;
+    <div class="actions"><button class="btn" data-act="reroll" ${r.coins < cost ? 'disabled' : ''}>Reroll ${free ? '(za darmo)' : `za ${cost} ${art.coinIcon()}`}</button>${restBtn()}${pawnBtn()}${upgradeBtn()}</div>${lost}
+    <div class="hint">Jeden kafelek bierzesz za darmo (klawisze 1–${r.offer.length}), pozostałe możesz dokupić (Shift + cyfra). R przelosowuje ofertę, L otwiera Lombard, U zlewa kafelki. Strzałki i Enter też działają.</div>`;
 }
 function stageDoor() {
   const r = G.run, P = r.pending, a = D.AFFIXES[P.affix];
@@ -510,6 +525,11 @@ function stageBadge() {
   const r = G.run, cards = r.pending.offer.map((b, i) => choiceCard(i, art.badgeIcon(b), D.BADGES[b].name, D.BADGES[b].text, '<div class="tmeta"><span class="tag up">Odznaka</span></div>')).join('');
   return `<div class="stage-title"><h2>Odznaka Pracownicza</h2><div class="sub">Nagroda za ${r.boss ? 'pokonanie bossa' : 'elitarnego wroga'}. Działa do końca runu i nie zajmuje miejsca.</div></div>
     <div class="kron">Dział Kadr z niechęcią przyznaje wyróżnienie. Wybierz jedno.</div><div class="cards">${cards}</div>`;
+}
+function stageLoot() {
+  const r = G.run, cards = r.pending.offer.map((id, i) => tileCard(id, { i, act: 'choose' })).join('');
+  return `<div class="stage-title"><h2>Łup z bossa</h2><div class="sub">Z pokonanego bossa wypadły trzy legendarne rzeczy. Weź jedną.</div></div>
+    <div class="kron">Zarząd sprząta po bossie. Resztki wciąż są warte więcej niż twoja pensja.</div><div class="cards">${cards}</div>`;
 }
 function stageContract() {
   const cards = [
@@ -1165,13 +1185,13 @@ function showBook(tab = 'tiles', turn = false) {
       : '<div class="hatch-row unknown"><div class="qcard">?</div><div class="hplus">+</div><div class="qcard">?</div><div class="hplus">=</div><div class="qcard leg">?</div></div>').join('');
     const ms = Object.entries(D.MILESTONES).map(([id, m]) => `<div class="ms-row">${art.tileIcon(id)}<div><b>${D.MILESTONE_EVERY}× ${esc(TILE[id].name)} = ${esc(m.name)}</b><br><span>${esc(m.text)}</span></div></div>`).join('');
     body = `<p class="lead">Dwa pasujące przedmioty wykluwają legendarny. Odkryte przepisy: ${known.length} z ${D.RECIPES.length}. Na kartach w ofercie znacznik <b>Wylęgarnia!</b> mówi, że kafelek dokończy przepis.</p>${rows}
-      <div class="sec">Progi statystyk</div><p class="lead">Każde ${D.MILESTONE_EVERY} kopie tej samej statystyki dają dodatkową premię.</p><div class="ms-grid">${ms}</div>`;
+      <div class="sec">Progi statystyk</div><p class="lead">Każde ${D.MILESTONE_EVERY} kopie tej samej statystyki poziomu 3 (złota plakietka III) dają dodatkową premię.</p><div class="ms-grid">${ms}</div>`;
   } else if (tab === 'tiles') {
     const list = D.TILES.filter(t => !t.hatched && !t.hidden);
-    body = `<p class="lead">Poznane: ${list.filter(t => !t.lock || p.tiles.includes(t.id)).length} z ${list.length} dostępnych kafelków.</p><div class="book-grid">${list.map((t, i) => {
-      const open = !t.lock || p.tiles.includes(t.id), u = t.lock && D.UNLOCK_BY_ID[t.lock];
+    body = `<p class="lead">Poznane: ${list.filter(t => t.boss ? (p.seen || []).includes(t.id) : (!t.lock || p.tiles.includes(t.id))).length} z ${list.length} kafelków. Statystyki mają cztery poziomy (plakietka I, II, III, ★): trzy takie same kafelki poziomu 1 lub 2 zlejesz za darmo w wyższy poziom, a legendarne (★) wypadają tylko z bossów.</p><div class="book-grid">${list.map((t, i) => {
+      const open = t.boss ? (p.seen || []).includes(t.id) : (!t.lock || p.tiles.includes(t.id)), u = t.lock && D.UNLOCK_BY_ID[t.lock];
       const nw = open && t.lock && fresh('t:' + t.id); if (open && t.lock) marks.push('t:' + t.id);
-      return `<div class="entry ${nw ? 'fresh' : ''}" style="--i:${i}">${tileCard(t.id, { static: true, mini: true, i, locked: !open, lockText: open ? '' : (u && u.text) })}${nw ? '<span class="newtag">Nowy wpis!</span>' : ''}</div>`;
+      return `<div class="entry ${nw ? 'fresh' : ''}" style="--i:${i}">${tileCard(t.id, { static: true, mini: true, i, locked: !open, lockText: open ? '' : t.boss ? 'Łup z bossa: pokonaj bossa i wybierz go z trzech' : (u && u.text) })}${nw ? '<span class="newtag">Nowy wpis!</span>' : ''}</div>`;
     }).join('')}</div>`;
   } else if (tab === 'chars') {
     body = `<div class="opts">${Object.values(D.CHARS).map(c => { const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock], v = charView(c, open);
@@ -1253,6 +1273,8 @@ const ACT = {
   pick: b => doPick(+b.dataset.i),
   buyoffer: b => doBuy(+b.dataset.i),
   pawnmenu: () => showPawn(),
+  upgrademenu: () => showUpgrade(),
+  upgrade: async b => { const id = b.dataset.v; const j = await act('upgrade', { id }); if (!j) return; closeOverlay(); snd.sfx('unlock'); G.upFresh = j.upgraded.to; toast(`Zlano 3× ${TILE[id].name} w ${TILE[j.upgraded.to].name}!`, false, 3600); render(); setTimeout(() => { G.upFresh = null; document.querySelectorAll('.chip.fresh').forEach(e => e.classList.remove('fresh')); }, 1800); },
   tuck: b => tuckLetter(b.closest('.decree')),
   pawn: async b => { const id = b.dataset.v; const j = await act('pawn', { id }); if (!j) return; closeOverlay(); snd.sfx('coin'); toast(`Lis wziął ${TILE[id].name} i dał ${j.price} Ziaren. Wykup na następnym piętrze.`, false, 4200); render(); },
   codeopen: () => {   // Hasło do ukrytej postaci: tylko tutaj, z ekranu wyboru postaci. Hasło sprawdza serwer.
@@ -1277,7 +1299,7 @@ const ACT = {
   leave: async () => { const j = await act('shop', { i: -1 }); if (j) render(); },
   bet: async b => { const j = await act('bet', { amount: +b.dataset.v }); if (!j) return; if (j.bet) { snd.sfx(j.won ? 'win' : 'lose'); toast(j.won ? `Wygrana! +${j.bet} Ziaren` : `Pudło. -${j.bet} Ziaren`, !j.won); } render(); },
   bonuspick: b => ACT.bonusgo(+b.dataset.i),
-  choose: async b => { const j = await act('choose', { i: +b.dataset.i }); if (j) { snd.sfx('pick'); render(); } },
+  choose: async b => { const j = await act('choose', { i: +b.dataset.i }); if (j) { snd.sfx(j.looted ? 'unlock' : 'pick'); if (j.looted) toast(`Łup: ${TILE[j.looted].name}!`, false, 3200); render(); } },
   bonusgo: async (i, slot, mut) => { const t = TILE[G.run.offer[i]]; if (needChoice(t, slot, mut, (s2, m2) => ACT.bonusgo(i, s2, m2))) return;
     const j = await act('bonus', { i, slot, mut }); if (j) { snd.sfx('pick'); render(); } },
   mutchoose: b => { const cb = G.mutCb; closeOverlay(); G.mutCb = null; if (cb) cb(+b.dataset.v); },
@@ -1399,8 +1421,9 @@ document.addEventListener('keydown', e => {
   if (G.screen === 'run' && r) {
     const dg = /^Digit([1-5])$/.exec(e.code);
     if (r.phase === 'offer' && dg && e.shiftKey) { const b = $(`.cards [data-act=buyoffer][data-i="${+dg[1] - 1}"]`); if (b && !b.disabled) b.click(); }
-    else if ((r.phase === 'badge' || r.phase === 'door' || (r.phase === 'event' && r.pending && (r.pending.kind === 'contract' || r.pending.kind === 'shrine'))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
+    else if ((r.phase === 'badge' || r.phase === 'loot' || r.phase === 'door' || (r.phase === 'event' && r.pending && (r.pending.kind === 'contract' || r.pending.kind === 'shrine'))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && ['1', '2', '3', '4', '5'].includes(k)) { const b = $(`.cards [data-act=pick][data-i="${+k - 1}"]`); if (b) b.click(); }
+    else if (r.phase === 'offer' && k === 'u') { const b = $('[data-act="upgrademenu"]'); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'offer' && k === 'l') { const b = $('[data-act="pawnmenu"], [data-act="redeem"]'); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'fight' && k === 'f') ACT.speed();
     else if ((r.phase === 'offer' || r.phase === 'fight') && k === 'o') { const b = $('[data-act="rest"]'); if (b && !b.disabled) b.click(); }

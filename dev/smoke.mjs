@@ -39,7 +39,7 @@ for (let r = 0; r < rounds; r++) {
     await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; }); await wait(400);
   }
   s = await st(); if (s.phase === 'bonus') { await p.keyboard.press('1'); await wait(400); }
-  s = await st(); if (s.phase === 'door' || s.phase === 'badge') { await p.keyboard.press('1'); await wait(400); }   // Rozwidlenie Korytarza: zwykłe drzwi
+  s = await st(); if (s.phase === 'door' || s.phase === 'badge' || s.phase === 'loot') { await p.keyboard.press('1'); await wait(400); }   // Rozwidlenie Korytarza: zwykłe drzwi
 }
 console.log('stan końcowy:', JSON.stringify(await st()));
 if (errs.length) { fail('błędy strony:\n' + [...new Set(errs)].join('\n')); } else console.log('OK: bez błędów w konsoli');

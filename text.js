@@ -99,15 +99,19 @@ export const MODE_INFO = {
   full: { name: 'Bulion Babci', rounds: 20, text: '20 pięter, trzech bossów, ok. 20 minut. Gotuje się długo, smakuje najlepiej.' },
 };
 
+// Regeneracja jest liczona w dziesiątych częściach Życia na sekundę (10 = 1 / s).
+export const fmtRegen = v => String(Math.round(v) / 10).replace('.', ',');
+
 export const STAT_LABELS = [
   ['maxHp', 'Życie'], ['atk', 'Atak'], ['aspd', 'Szybkość ataku', v => (v / 100).toFixed(2).replace('.', ',') + ' / s'], ['armor', 'Pancerz'],
-  ['crit', 'Kurza Fortuna', v => v + '%'], ['evade', 'Unik', v => v + '%'], ['regen', 'Regeneracja', v => v + ' / s'], ['luck', 'Szczęście'],
+  ['crit', 'Kurza Fortuna', v => v + '%'], ['evade', 'Unik', v => v + '%'], ['regen', 'Regeneracja', v => fmtRegen(v) + ' / s'], ['luck', 'Szczęście'],
 ];
 
 export const HELP = [
   ['Cel', 'Wejdź na szczyt fabryki rosołu: pokonaj wszystkie piętra i Prezesa Rosołu. W trybie szybkim to 10 pięter, w pełnym 20.'],
   ['Jedna runda', 'Wybierasz jeden z czterech kafelków, potem następuje walka. Po wygranej dostajesz Ziarna i odzyskujesz część życia.'],
   ['Kafelki', 'Statystyki, umiejętności aktywne, przedmioty z synergią i ryzykowne wydarzenia. Przedmioty z jednego zestawu (Jajeczne, Zbożowe, Rambo, Rosołowe, Chłodnicze, Korporacyjne) dają bonusy od 2, 3 i 4 sztuk.'],
+  ['Poziomy statystyk', 'Każda statystyka ma trzy poziomy zwykłe (plakietka I, II, III) i legendarny (★). Trzy takie same kafelki poziomu 1 lub 2 zlejesz za darmo w jeden wyższego poziomu (przycisk „Zlej kafelki”, klawisz U). Legendarne statystyki wypadają tylko z bossów: po każdym bossie (poza Prezesem) wybierasz 1 z 3.'],
   ['Efekty', 'Oparzenie i Salmonella zadają obrażenia co sekundę i kumulują się (Salmonella przechodzi na kolejnego wroga po śmierci nosiciela). Mróz spowalnia, a 5 stosów zamraża wroga. Krwawienie kumuluje się do 3 stosów. Ikonki ze stosami widać nad paskiem życia wroga.'],
   ['Mutacje', 'Druga kopia umiejętności daje poziom 2 (+30% mocy, krótszy cooldown). Trzecia kopia to Mutacja: wybierasz jedną z dwóch gałęzi, która na stałe zmienia działanie umiejętności.'],
   ['Wylęgarnia', 'Niektóre pary przedmiotów wykluwają legendarny przedmiot (znacznik „Wylęgarnia!” na karcie). Każde 3 kopie tej samej statystyki dają dodatkową premię (np. 3× Ziarno Mocy = Kolba Mocy). Odkryte przepisy są w Księdze Kurnika.'],

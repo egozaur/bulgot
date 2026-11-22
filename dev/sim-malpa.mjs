@@ -50,6 +50,7 @@ function monkeyRun(mode, garnek, seed) {
       else bet(run, rng.int(run.coins + 1));
     } else if (run.phase === 'door') chooseOpt(run, rng.int(2));
     else if (run.phase === 'badge') chooseOpt(run, rng.int(run.pending.offer.length));
+    else if (run.phase === 'loot') chooseOpt(run, rng.int(run.pending.offer.length));
     else if (run.phase === 'bonus') {
       const i = rng.int(run.offer.length), t = TILE_BY_ID[run.offer[i]];
       const res = bonusPick(run, i, t && t.type === 'skill' && run.skills.length >= 3 ? rng.int(3) : undefined, 1 + rng.int(2));

@@ -393,3 +393,49 @@ Same szablony prawie nie ruszyły wyniku (pełny 61%, szybki 56%). Właściciel 
 - Zamrożenie klatki po Reakcji i wejście bossa wstrzymują tylko obraz (`F.stopUntil`): zegar walki nie liczy, więc powtórka na serwerze się zgadza.
 - Paski porównania (Atak / Obrona: słabo / OK / mocno) liczą typowego wroga strefy z jawnych danych (`zoneCompare` w `app.js`), bez składu piętra.
 - Wszystkie nowe animacje to CSS/SVG; `prefers-reduced-motion` wyłącza liczniki, paralaksę, pióra i światła alarmowe.
+
+
+## 13. Poziomy kafelków, Ulepszanie i łup z bossów (2026-11-22, etap 1 z 3)
+
+Cel aktualizacji: kafelki mają poziomy (rodziny po 3 poziomy + legendarny z bossów + Ulepszanie), a pula rośnie z 60 do ok. 120. **Etap 1** dotyczy statystyk (+18 kafelków: 9 rodzin × (2 nowe zwykłe + legendarny) = 27 nowych, stare 9 zostają); etapy 2 (przedmioty i umiejętności) i 3 (ryzyko i legendarne przedmioty) są jeszcze przed nami.
+
+### Rodziny statystyk (`STAT_FAMILIES` w `data.js`, generują `STAT_TILES` i `STAT_FAMS`)
+| Rodzina | Poz. 1 (Zwykły) | Poz. 2 (Rzadki) | Poz. 3 (Epicki, stare id) | Poz. 4 (Legendarny, łup z bossa) |
+|---|---|---|---|---|
+| Życie | Grzebień z Taśmy +5 | Grzebień Hodowlany +12 | Grzebień Barberski +20 (`twardy-grzebien`) | Grzebień Rosołowego Króla +35 |
+| Atak | Ziarenko z Podłogi +2 | Ziarno Selekcjonowane +4 | Ziarno Mocy +6 | Ziarno Pierwszego Jajka +10 |
+| Obrażenia | Nadpiłowany Dziób +3% | Dziób Szlifowany +7% | Ostry Dziób +12% | Dziób Prezesa +20% |
+| Szybkość ataku | Dziób po Kawie +3% | Dziób po Espresso +6% | Szybki Dziób +10% | Dziób Maszynowy +18% |
+| Pancerz | Puch Zbity w Kulę +2 | Pierze Prasowane +4 | Pancerz z Pierza +6 | Zbroja Wyroczni Kurnika +10 |
+| Krytyk | Zezowate Oko +2% | Oko Kontrolera Jakości +5% | Czujne Oko +8% | Oko Cyklopa z Chłodni +14% |
+| Unik | Śliskie Nóżki +2% | Nogi Akrobaty +4% | Zwinne Nogi +6% | Cień Skrzydła +10% |
+| Regeneracja | Słoma z Wczoraj +0,5 / s | Gniazdko z Siana +1,2 / s | Ciepłe Gniazdko +2 / s | Wieczny Ogień Kuchenki +3,5 / s |
+| Szczęście | Trójlistna Koniczyna +3 | Koniczyna z Kapliczki +6 | Czterolistna Koniczyna +10 | Pięciolistna Koniczyna Zarządu +16 |
+
+- Każdy kafelek ma `fam` (rodzina) i `lvl` (1–4), rzadkość = poziom − 1 (Zwykły, Rzadki, Epicki, Legendarny), `repeat: true`. Poziomy 1 i 2 mają `next` (id następnego poziomu). Poziom 4 ma `boss: true`.
+- Poziom 3 zachowuje **stare id**, więc profile, Księga i testy się nie psują. Czterolistna Koniczyna dalej wymaga odblokowania `u-koniczyna` (nowe kafelki startują odblokowane).
+- Legendarne (`boss`): nigdy w ofertach, rerollach, bonusie, Sklepiku, Automacie ani w puli startowej (`tileAvailable` zwraca `false`, `STARTER_TILES` je pomija). Moc 150–180% poziomu 3.
+- Progi statystyk (`MILESTONES`, 3 kopie = premia) dotyczą kafelków **poziomu 3** (stare id); Ulepszanie jest drogą do progu.
+- **Regeneracja jest liczona w dziesiątych częściach Życia na sekundę** (`stats.regen`: 10 = 1 / s). Silnik (`sim.js`) kumuluje ułamki (`regAcc`), więc 0,5 / s daje 1 Życia co 2 s. Wszystkie stare wartości regeneracji w danych (Ciepłe Gniazdko, Zjarany, Karta Multisport, próg Kurza Drzemka) przeliczono ×10; klient pokazuje `T.fmtRegen`.
+- Automat z Paszą wypluwa statystyki tylko poziomu 3; Tajemnicza Skrzynka losuje epickie spoza statystyk (inaczej 9 nowych epików statystyk rozwodniłoby ją).
+
+### Ulepszanie (akcja `upgrade {id}`)
+- 3 kopie tego samego kafelka poziomu 1 lub 2 zlewają się w 1 kafelek następnego poziomu rodziny, za darmo. Tylko w fazie `offer` (obok Lombardu), więc powtórka walki jest bez zmian. Poziom 3 → legendarny to **nie** ulepszanie.
+- Błędy: `phase` (zła faza), `index` (nie masz kafelka), `level` (brak `next`), `copies` (mniej niż 3). Wada fabryczna zlanej kopii znika razem z nią (`flawed` nie ma więcej wpisów niż kopii). Życie rośnie o przyrost maks. Życia jak przy zwykłym zdobyciu kafelka.
+- `view().up` = id kafelków, które da się teraz zlać (tylko w ofercie; nie zdradza niczego o przyszłości). Dziennik rundy ma `upgrades: [{from,to}]`, `stats.upgrades` liczy zlania.
+- Klient: przycisk „Zlej kafelki” (klawisz U), okno z wierszami „3× X → Y” (`showUpgrade`), dźwięk `unlock`, toast, krótka animacja chipa (`.chip.fresh`).
+- **Uwaga projektowa:** przy wartościach z tabeli zlanie jest „stratne” w surowych liczbach (3 × 5 życia > 12, 3 × 12 > 20). Zysk to próg statystyki poziomu 3, plakietka i porządek, nie moc. Jeśli chcemy, by Ulepszanie było opłacalne, trzeba zmienić proporcje (np. poziom 1 ≈ 10%, poziom 2 ≈ 33% poziomu 3).
+
+### Łup z bossów (faza `loot`)
+- Po pokonaniu bossa (poza ostatnim, który kończy run): Odznaka (jak dotąd) → **łup**: wybór 1 z 3 legendarnych statystyk (`RULES.lootSize`), losowanych z ziarna runu (`mix(seed, round, hash('loot'))`), najpierw takie, których jeszcze nie masz → oferta bonusowa (po bossach z `bonusAfter`) → następne piętro. W trybie szybkim 1 łup (boss 5), w pełnym 2 (bossy 6 i 12).
+- Wybór przez zwykłe `choose {i}` (faza `loot`, `pending.kind = 'loot'`, odpowiedź `looted`), dziennik: `log[].loot`, `stats.loot`. `view()` w fazie łupu ma pustą `offer`, a `pending.offer` to 3 id (nic o przyszłych ofertach).
+- `RUN_V = 3` (stare runy unieważniane: zmienia się przebieg po bossie i regeneracja).
+
+### Grafika
+Jedna ikona na rodzinę (`ICON_OF` w `art.js`: poziomy 1, 2 i legendarny dzielą ikonę poziomu 3). Plakietka poziomu `.lvl` (`lvlTag` w `app.js`): I szary, II papier pakowy, III złoty, ★ legendarna z poświatą; na kartach (róg), w chipach panelu, w oknie zlewania. Wyglądu karty `.tile` nie zmieniono. Księga Kurnika: legendarne są zablokowane do pierwszego zdobycia („Łup z bossa”), podpowiedź (`tip.js`) pokazuje poziom i co się zleje.
+
+### Balans (bot, quick/full, 1000–1500 runów)
+Kafelki statystyk poziomu 1 i 2 osłabiły wczesną grę (przed zmianą: szybki 45%, pełny 48%; po samej zmianie danych: szybki 31%, pełny 14%). Skompensowano wagami rzadkości i tempem wzrostu wrogów:
+- `RARITY_WEIGHTS`: `[[45,35,20,0],[30,36,30,2],[18,34,43,5]]` (było `[[70,25,5,0],[50,35,13,2],[35,38,22,5]]`). Waga legendarnych (rarity 3) została niska, bo w ofertach jest tylko Zakazana Pasza.
+- `MODES.quick.grow`: `{hp 1.17, atk 1.113}` (było 1.18 / 1.12); `MODES.full.grow`: `{hp 1.14, atk 1.087}` (było 1.155 / 1.10).
+- Łup z bossa to potężny zastrzyk: bez niego w trybie szybkim bot wygrywa o ok. 15 punktów proc. mniej. Wyniki: patrz podsumowanie etapu w `CLAUDE.md`.

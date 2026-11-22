@@ -1278,3 +1278,21 @@ html.reduce .sch.near .sic { animation: none; }
 @keyframes schPulse { 50% { transform: scale(1.25); } }
 .codeask { text-align: center; margin: 4px 0 0; }
 .codein { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--outline); background: #17110c; color: inherit; font: inherit; font-size: 1.1rem; text-align: center; letter-spacing: .08em; }
+
+/* poziomy statystyk: plakietka (I szary, II papier pakowy, III złoty, ★ legendarna z poświatą); wyglądu karty nie zmienia */
+.lvl { position: absolute; top: 6px; right: 8px; min-width: 22px; padding: 3px 6px; border-radius: 8px; font: 800 11px/1 var(--mono); letter-spacing: .04em; text-align: center; color: #2b1a12; background: #b9b2a5; border: 2px solid var(--outline); z-index: 2; pointer-events: none; }
+.lvl.l2 { background: #c9a26b; } .lvl.l3 { background: #ffd23f; } .lvl.l4 { background: linear-gradient(135deg, #fff3b0, #ffb347); box-shadow: 0 0 10px 2px rgba(255,210,63,.8); animation: lvlglow 2.2s ease-in-out infinite; }
+@keyframes lvlglow { 50% { box-shadow: 0 0 16px 4px rgba(255,210,63,.95); } }
+.chip .lvl { top: -5px; right: -5px; min-width: 0; padding: 1px 3px; font-size: 8px; border-width: 1.5px; border-radius: 6px; }
+.upg-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.upg-row { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 10px 14px; border-radius: 14px; background: var(--panel2); border: 3px solid var(--line); color: var(--ink); cursor: pointer; font: inherit; text-align: left; }
+.upg-row:hover, .upg-row:focus-visible { border-color: #7bd88f; box-shadow: 0 0 16px rgba(123,216,143,.45); }
+.upg-from, .upg-to { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; font-weight: 700; flex-wrap: wrap; }
+.upg-to small, .upg-from small { flex-basis: 100%; font-weight: 400; color: var(--muted); }
+.upg-row .pi { position: relative; width: 48px; height: 48px; display: grid; place-items: center; flex: none; }
+.upg-row .pi .lvl { top: -4px; right: -6px; }
+.upg-arrow { font: 800 1.6rem/1 var(--display); color: #7bd88f; }
+.btn.upg { border-color: #7bd88f; box-shadow: 0 0 12px rgba(123,216,143,.4); }
+.btn .ico { width: 1.2em; height: 1.2em; vertical-align: -0.2em; }
+.chip.fresh { animation: chipfresh 1.6s ease-out; }
+@keyframes chipfresh { 0% { transform: scale(1.6); box-shadow: 0 0 22px 6px rgba(123,216,143,.95); } 100% { transform: scale(1); } }

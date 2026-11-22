@@ -36,6 +36,11 @@ function tileTip(id, extra) {
   }
   const n = r ? r.tiles.filter(x => x === id).length : 0;
   if (n) info += `<div class="tp-line">Masz: <b>×${n}</b>${t.repeat === false ? '' : ''}</div>`;
+  if (t.type === 'stat' && t.lvl) {
+    const nx = t.next && TILE[t.next];
+    info += t.boss ? '<div class="tp-line hatch">Legendarny łup z bossa: wybierasz 1 z 3 po pokonaniu bossa. Nie wypada w ofertach.</div>'
+      : `<div class="tp-line">Poziom <b>${t.lvl} / 3</b>${nx ? ` · <b>3× ${esc(t.name)}</b> zlewa się w <b>${esc(nx.name)}</b> (przycisk „Zlej kafelki”, za darmo)` : ' · najwyższy poziom zwykły'}</div>`;
+  }
   if (t.grow && r) info += `<div class="tp-line">Licznik: <b>${Math.min(t.grow.max, (r.grow || {})[id] || 0)} / ${t.grow.max}</b></div>`;
   const sets = setsOf(t).map(sid => setBonuses(sid, owned(sid))).join('');
   const rc = D.RECIPES && D.RECIPES.find(x => x.of.includes(id));
@@ -78,7 +83,7 @@ function statTip(k) {
       ex = each('Szansa: ', S.crit + '%') + each('Krytyczny cios zadaje: ', critHit) + each('Średnio dzięki krytykom: ', '+' + Math.round(S.crit * (cm - 100) / 100) + '% obrażeń zwykłych ataków'); break;
     case 'critMult': title = 'Moc Fortuny'; body = 'O ile mocniejszy jest cios krytyczny. Bazowo ×1,50, czyli 150% zwykłego ciosu.'; ex = each('Twój krytyk: ', '×' + pl((cm / 100).toFixed(2))) + each('Zwykły cios / krytyczny: ', `${base} / ${critHit}`); break;
     case 'evade': title = 'Unik'; body = 'Szansa, że cios wroga w ogóle Cię nie trafi (zero obrażeń). Maksymalnie 75%.'; ex = each('Szansa uniku: ', S.evade + '%'); break;
-    case 'regen': title = 'Regeneracja'; body = 'Tyle Życia odzyskujesz co sekundę w czasie walki.'; ex = each('Teraz: ', S.regen + ' / s'); break;
+    case 'regen': title = 'Regeneracja'; body = 'Tyle Życia odzyskujesz co sekundę w czasie walki.'; ex = each('Teraz: ', pl(String(Math.round(S.regen) / 10)) + ' / s'); break;
     case 'luck': title = 'Szczęście'; body = 'Wpływa na to, jakie kafelki trafiają do ofert: im więcej Szczęścia, tym częściej pojawiają się rzadsze (rzadkie, epickie, legendarne).'; ex = each('Szczęście: ', S.luck); break;
     case 'dmg': title = 'Obrażenia'; body = 'Procentowa premia do wszystkich obrażeń, które zadajesz: zwykłych ataków i umiejętności. Dodaje się do Ataku jako mnożnik.'; ex = each('Premia: ', '+' + dmg + '%'); break;
     default: return '';
