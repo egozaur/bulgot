@@ -103,7 +103,7 @@ function render() {
     case 'noplayer': root.innerHTML = `<div class="loading" style="flex-direction:column;gap:14px;text-align:center"><span>Do gry w Bulgot potrzebny jest nick.</span><button class="btn primary" data-act="retry">Wybierz nick</button><a class="btn ghost" href="/">← PL3Y</a></div>`; break;
     case 'home': root.innerHTML = renderHome(); break;
     case 'setup': root.innerHTML = renderSetup(); break;
-    case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); fitTower(); break;
+    case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); fitTower(); fitBoard(); break;
     case 'fight': return;   // arena buduje się w startFight()
   }
 }
@@ -306,7 +306,7 @@ function sideHTML() {
   }).join('');
   const srow = (k, label, val) => `<dt data-tipk="stat:${k}" tabindex="0">${art.statIcon(k)}<span>${label}</span></dt><dd data-tipk="stat:${k}">${val}</dd>`;
   const rows = T.STAT_LABELS.map(([k, label, f]) => srow(k, label, f ? f(S[k]) : S[k])).join('')
-    + (S.dmg ? srow('dmg', 'Obrażenia', `+${S.dmg}%`) : '') + (S.critMult !== 150 ? srow('critMult', 'Siła krytyka', `×${(S.critMult / 100).toFixed(2).replace('.', ',')}`) : '');
+    + (S.dmg ? srow('dmg', 'Obrażenia', `+${S.dmg}%`) : '') + (S.critMult !== 150 ? srow('critMult', 'Moc Fortuny', `×${(S.critMult / 100).toFixed(2).replace('.', ',')}`) : '');
   const counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
   const chips = Object.entries(counts).map(([id, n]) => {
     const t = TILE[id], g = t.grow ? Math.min(t.grow.max, (r.grow || {})[id] || 0) : 0, fw = (r.flawed || []).find(w => w.id === id);
@@ -531,7 +531,7 @@ function stagePrep() {
     <div class="kron">${esc(r.nemesisRound ? T.pickLine(T.NEMESIS_LINES, r.round + 1) : floorKron())}</div>${decreeHTML()}${previewHTML()}
     <div class="actions">${restBtn()}<button class="btn primary big" data-act="tofight" data-primary>Do walki!</button></div>
     ${speedPick()}
-    <div class="hint">W walce użyjesz umiejętności klawiszami 1, 2, 3. P robi pauzę, F zmienia tempo. O to odpoczynek.</div>`;
+    <div class="hint">W walce użyjesz umiejętności klawiszami 1, 2, 3. P robi pauzę, F zmienia tempo. O to odpoczynek.<br><b>Okno Gdakania:</b> kolejna umiejętność w ciągu 1,5 s bije mocniej (2. +20%, 3. +50%), a trzy różne pod rząd ogłuszają wrogów na 1 s.</div>`;
 }
 // Tempo walki: wybór przed walką (zapamiętywany), w walce mały przycisk ×N i klawisz F.
 const SPEED_NOTE = { 1: 'Spokojnie: pełny czas na serie umiejętności.', 2: 'Szybciej: walka i Okno Gdakania trwają o połowę krócej.', 3: 'Najszybciej: walka leci trzy razy szybciej, Okno Gdakania też. Trudniej o serie.' };
@@ -607,7 +607,7 @@ function startFight(setup) {
           <div class="box timer" id="timer"><span id="tt">0:00</span><div class="tb"><i id="tbi" style="width:0"></i><u></u></div></div>
           <div class="ctl"><button data-act="speed" id="speedbtn" title="Tempo walki (F): ${SPEED_NOTE[F.speed]}">×${F.speed}</button><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button></div></div>
         <div id="units"></div><div id="fxl"></div></div>
-      <div class="console"><div class="gdak" id="gdak" title="Okno Gdakania: użyj kolejnej umiejętności, zanim pasek się wyczerpie (2. w serii +20%, 3. +50%, trzy różne = Popłoch)"><span class="gl">OKNO GDAKANIA</span><div class="gbar"><i id="gdaki"></i></div><b id="gdakn">–</b></div><div class="skillbar" id="skillbar"></div></div>
+      <div class="console"><div class="gdak" id="gdak" data-tip="Okno Gdakania&#10;Użyj kolejnej umiejętności w ciągu 1,5 s po poprzedniej. 2. w serii zadaje +20% obrażeń, 3. +50%. Trzy różne umiejętności pod rząd to Pełna Kurza Seria: dodatkowo ogłuszenie wrogów na 1 s. Przy tempie ×3 okno trwa trzy razy krócej."><span class="gl">OKNO GDAKANIA</span><div class="gbar"><i id="gdaki"></i></div><b id="gdakn">–</b></div><div class="skillbar" id="skillbar"></div></div>
       <div class="kron" id="kline">${esc(boss ? T.BOSS_INTRO[boss.boss].quote : floorKron())}</div>
     </main></div>`;
   F.arena = $('#arena');
@@ -763,8 +763,7 @@ function updateUI(first) {
     const def = D.SKILLS[s.id], total = Math.floor((s.lvl >= 2 ? Math.floor(def.cd * 80 / 100) : def.cd) * (100 - (f.S.cdPct || 0)) / 100), blocked = tick < s.blockedUntil;
     const remain = Math.max(s.cd - tick, blocked ? s.blockedUntil - tick : 0), ready = remain <= 0;
     b.classList.toggle('ready', ready && !f.over); b.classList.toggle('blocked', blocked);
-    b.querySelector('.cdv').style.transform = `scaleY(${ready ? 0 : Math.min(1, remain / total)})`;
-    b.querySelector('.cdt').textContent = ready ? '' : (remain / 10).toFixed(1).replace('.', ',');
+    b.querySelector('.cdv').style.setProperty('--cd', ready ? 0 : Math.min(1, remain / total).toFixed(3));
   });
   const secs = Math.floor(tick / 10);
   $('#tt').textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
@@ -885,13 +884,16 @@ function boardHTML() {
   const slips = list.map(e => {
     const d = slipData(e.r) || {}, flag = d.imp && !d.seen, pend = INV.pending === e.r, pop = G.boardPop === e.r;
     const tip = `Piętro ${e.r}${e.boss ? ' (boss)' : ''}: faktura\nCzas walki ${secStr(e.ticks)} s, obrażenia ${fmtNum(e.dealt)}, wypłata +${e.reward} Ziaren${flag ? '\nZawiera ważną uwagę, otwórz ją!' : ''}\nKliknij, żeby otworzyć.`;
-    return `<button class="slip ${e.boss ? 'boss' : ''} ${flag ? 'flag' : ''} ${pend ? 'pending' : ''} ${pop ? 'pop' : ''}" data-act="slip" data-f="${e.r}" data-tip="${esc(tip)}" style="--rot:${e.r * 37 % 9 - 4}deg;--dy:${e.r * 53 % 7 - 3}px" aria-label="Faktura za piętro ${e.r}"><i class="pin"></i><b>${e.r}</b><span class="sl"></span><span class="sl s2"></span>${flag ? '<em>!</em>' : ''}</button>`;
+    return `<button class="slip ${e.boss ? 'boss' : ''} ${flag ? 'flag' : ''} ${pend ? 'pending' : ''} ${pop ? 'pop' : ''}" data-act="slip" data-f="${e.r}" data-tip="${esc(tip)}" style="--rot:${e.r * 37 % 9 - 4}deg;--dy:${e.r * 53 % 7 - 3}px" aria-label="Faktura za piętro ${e.r}"><i class="pin"></i><small>${e.boss ? "NOTA" : "FAKTURA"}</small><b>${e.r}</b><span class="sl"></span><span class="sl s2"></span><span class="sl"></span><u>+${e.reward}</u>${flag ? '<em>!</em>' : ''}</button>`;
   }).join('');
   G.boardPop = 0;
-  return `<section class="board" aria-label="Tablica Zarządu"><div class="board-head"><span class="board-title">Tablica Zarządu</span><span class="board-count">${list.length ? 'faktury: ' + list.length : ''}</span></div>
-    <div class="slips">${slips || '<span class="board-empty">Tu zawisną faktury za pokonane piętra</span>'}</div></section>`;
+  return `<section class="board" aria-label="Tablica Zarządu">
+    <div class="slips">${slips || '<span class="board-empty">Tu zawisną faktury za pokonane piętra</span>'}</div><div class="board-side"><span class="board-title">Tablica Zarządu</span><span class="board-count">i faktury${list.length ? `<b>${list.length}</b>` : ""}</span></div></section>`;
 }
-const refreshBoard = () => { const b = $('.board'); if (b) b.outerHTML = boardHTML(); };
+const refreshBoard = () => { const b = $('.board'); if (b) { b.outerHTML = boardHTML(); fitBoard(); } };
+// Faktury na Tablicy nakładają się tak, żeby zawsze mieściły się w szerokości (bez przewijania poziomego).
+function fitBoard() { const s = $('.slips'); if (!s) return; const k = s.querySelectorAll(".slip"), w = 70, W = s.getBoundingClientRect().width / uiScale() - 12; if (k.length < 2 || W <= 0) return; const step = Math.min(w - 8, Math.max(12, (W - w) / (k.length - 1))); s.style.setProperty('--ov', (w - step).toFixed(1) + 'px'); }
+addEventListener('resize', () => fitBoard());
 function showSlip(f) {
   const d = slipData(f); if (!d) return;
   if (d.imp && !d.seen) {
@@ -961,8 +963,8 @@ function showInvoice(j, floor) {
   const st = $('.stage'), rc = st && st.getBoundingClientRect();
   if (rc && rc.width > 0) { el.style.left = (rc.left + rc.width / 2) + 'px'; el.style.top = Math.max(10, rc.top + 2) + 'px'; el.style.maxWidth = Math.max(260, rc.width - 20) + 'px'; }
   INV.el = el; INV.ham = ham; INV.floor = d.f; INV.t0 = performance.now();
-  const later = (ms, fn) => INV.timers.push(setTimeout(fn, ms)), hold = d.imp ? 3400 : 500;
-  if (REDUCED.matches) { $('.inv-nail', el).style.setProperty('--sink', '34px'); $('.inv-nail', el).classList.add('on'); ham.remove(); INV.ham = null; later(2200 + (d.imp ? 3000 : 0), () => flyToBoard(false)); return; }
+  const later = (ms, fn) => INV.timers.push(setTimeout(fn, ms)), hold = (d.imp ? 3400 : 500) + 1000;
+  if (REDUCED.matches) { $('.inv-nail', el).style.setProperty('--sink', '34px'); $('.inv-nail', el).classList.add('on'); ham.remove(); INV.ham = null; later(3200 + (d.imp ? 3000 : 0), () => flyToBoard(false)); return; }
   later(760, () => $('.inv-nail', el).classList.add('on'));
   [1000, 1280, 1560].forEach((ms, i) => later(ms, () => strike(i + 1)));
   later(1900, () => ham.classList.add('away'));

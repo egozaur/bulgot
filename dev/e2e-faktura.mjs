@@ -113,7 +113,7 @@ await p.click('.modal-x'); await wait(300);
 // ---- 5. ukryta postać: jajko „???” bez nazwy i warunku
 await p.evaluate(() => { const c = document.querySelector('[data-act=again]'); c && c.click(); }); await wait(300);
 if (!(await p.$('[data-act=carpick]'))) { await p.evaluate(() => { const c = document.querySelector('[data-act=home]'); c && c.click(); }); await wait(300); await p.click('[data-act=new]'); await wait(300); }
-const sec = await p.evaluate(() => { const o = document.querySelector('[data-v=zjarany]'); return o ? { text: o.textContent, locked: o.classList.contains('locked') } : null; });
+const sec = await p.evaluate(() => { const o = document.querySelector('[data-char=zjarany]'); return o ? { text: o.textContent, locked: o.classList.contains('locked') } : null; });
 ok(sec && sec.locked && /\?\?\?/.test(sec.text) && !/Zjarany|425|Ziaren/.test(sec.text), 'zablokowana postać to jajko „???”, bez nazwy i warunku: ' + (sec && sec.text.slice(0, 90)));
 ok(!(await p.evaluate(() => document.documentElement.innerHTML.includes('Zjarany'))), 'w kodzie strony nie ma nazwy ukrytej postaci');
 await p.screenshot({ path: OUT + '/jajko-sekret.png' });

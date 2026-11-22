@@ -101,7 +101,7 @@ export const MODE_INFO = {
 
 export const STAT_LABELS = [
   ['maxHp', 'Życie'], ['atk', 'Atak'], ['aspd', 'Tempo ataku', v => (v / 100).toFixed(2).replace('.', ',') + ' / s'], ['armor', 'Pancerz'],
-  ['crit', 'Szansa na krytyk', v => v + '%'], ['evade', 'Unik', v => v + '%'], ['regen', 'Regeneracja', v => v + ' / s'], ['luck', 'Szczęście'],
+  ['crit', 'Kurza Fortuna', v => v + '%'], ['evade', 'Unik', v => v + '%'], ['regen', 'Regeneracja', v => v + ' / s'], ['luck', 'Szczęście'],
 ];
 
 export const HELP = [

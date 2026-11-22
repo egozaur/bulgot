@@ -1109,3 +1109,43 @@ html.reduce .bflame, html.reduce .bsteam, html.reduce .bspark { animation: none;
 .setup2 .burner-big { height: 360px; width: min(440px, 100%); }
 .setup2 .bthumb .bth-art { width: 84px; height: 70px; }
 @media (max-width: 700px) { .setup2 .car-card { width: 230px; transform: translate(calc(-50% + var(--o) * 250px), -50%) scale(calc(1 - var(--a) * .18)); } .setup2 .car-card .egg-art { width: 130px; height: 142px; } .setup2 .burner-big { height: 200px; } .setup2 .bthumb .bth-art { width: 48px; height: 40px; } }
+
+/* cooldown umiejętności: ciemna „woda” w całym kółku opada od góry (jak picie ze słoika), bez liczby sekund */
+.sk .cdv { background: none !important; overflow: hidden; transform: none !important; }
+.sk .cdv::before { content: ''; position: absolute; inset: 0; background: rgba(8,5,3,.72); transform-origin: bottom; transform: scaleY(var(--cd, 0)); border-top: 2px solid rgba(255,210,120,.55); }
+.sk .cdt { display: none !important; }
+
+/* Tablica Zarządu: korek z dużymi, nachodzącymi na siebie fakturami; podpis po prawej; bez przewijania */
+.board { display: flex; align-items: stretch; gap: 10px; padding: 8px 10px 8px 12px; overflow: hidden; }
+.slips { flex: 1; min-width: 0; min-height: 132px; padding: 14px 4px 4px; overflow: hidden; align-items: flex-end; }
+.board-side { flex: none; width: 92px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 4px; padding-left: 10px; border-left: 2px dashed rgba(59,36,16,.45); font: 700 11px/1.25 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #3b2410; text-shadow: 0 1px 0 rgba(255,226,170,.45); }
+.board-side .board-title { font-size: 12px; }
+.board-side .board-count { display: flex; flex-direction: column; align-items: center; opacity: .85; }
+.board-side .board-count b { font: 400 1.7rem/1 var(--display); color: #7a1f10; }
+.slip { width: 84px; height: 116px; padding: 12px 6px 0; margin-left: calc(-1 * var(--ov, 30px)); }
+.slip small { display: block; font: 700 8px/1 var(--mono); letter-spacing: .12em; color: #5a6aa0; }
+.slip.boss small { color: #9a3a28; }
+.slip b { font-size: 2.2rem; margin-top: 4px; }
+.slip .sl { margin: 6px 4px 0; }
+.slip u { position: absolute; left: 0; right: 0; bottom: 6px; text-decoration: none; font: 700 12px/1 var(--mono); color: #2f7a3a; }
+.slip.boss u { color: #7a1f10; }
+.slip:hover, .slip:focus-visible { transform: translateY(-9px) rotate(0deg) scale(1.06); z-index: 5; }
+.slips .board-empty { align-self: center; }
+.slips { min-height: 104px; padding: 12px 4px 2px; }
+.slip { width: 70px; height: 92px; padding: 9px 5px 0; }
+.slip b { font-size: 1.8rem; margin-top: 2px; } .slip .sl { margin: 4px 4px 0; } .slip u { bottom: 4px; font-size: 11px; }
+.board-side { width: 84px; }
+
+/* środkowa kolumna na komputerze: wszystko (z Tablicą Zarządu) mieści się w oknie bez przewijania */
+@media (min-width: 1121px) {
+  .run > .stage { padding: 4px 6px 6px; gap: 7px; }
+  .stage-title h2 { font-size: 1.55rem; line-height: 1.05; } .stage-title .sub { font-size: .85rem; }
+  .kron { font-size: .92rem; padding: 0 10px; min-height: 0; }
+  .decree.letter { padding: 6px 16px 8px; } .decree.letter .lhead { margin-bottom: 3px; padding-bottom: 3px; } .decree.letter .lbody { font-size: .85rem; }
+  .preview { padding: 4px 8px; gap: 6px; }
+  .preview .pv .fig { width: 50px; height: 50px; } .preview .pv.boss .fig { width: 72px; height: 72px; } .preview .pv { font-size: .68rem; }
+  .preview .glass { padding: 4px 14px 3px; }
+  .cards { gap: 12px; }
+  .stage > .hint { font-size: .78rem; margin: 0; }
+  .slips { min-height: 98px; } .slip { height: 86px; } .slip small { font-size: 7px; } .slip b { font-size: 1.6rem; }
+}

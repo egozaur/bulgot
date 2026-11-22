@@ -196,7 +196,7 @@ export function stairsGeom(n) {
   const y = f => ST.TOP + 24 + (n - f) * ST.FH;
   return { innerH: y(1) + ST.BASE, y, x: f => (f % 2 ? (ST.LX0 + ST.LX1) / 2 : ST.RX1 - 24) };
 }
-const ZWALL = ['#3b2c20', '#27343a', '#3e2121'], ZBRICK = ['#2f2218', '#1f2a2f', '#321a1a'];
+const ZWALL = ['#2c2723', '#222a31', '#321c1c'], ZBRICK = ['#1b1814', '#161c22', '#241313'];
 const hsh = (n, k) => { let h = (n * 2654435761 + k * 40503) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; return (h >>> 8) / 16777216; };
 export function stairsArt(n, zoneOf) {
   const g = stairsGeom(n), W = ST.W, H = g.innerH, y = g.y;
@@ -216,18 +216,18 @@ export function stairsArt(n, zoneOf) {
     else wall += `<rect x="${wx.toFixed(0)}" y="${yt + 26}" width="24" height="12" rx="2" fill="#4a3a2a" stroke="#2b1a12" stroke-width="2.4"/><path d="M${(+wx + 4).toFixed(0)} ${yt + 30}h16M${(+wx + 4).toFixed(0)} ${yt + 34}h10" stroke="#8a7a62" stroke-width="1.6"/>`;
     // podest piętra f (lewy dla nieparzystych)
     const left = f % 2 === 1, px0 = left ? ST.LX0 : ST.RX0, px1 = left ? ST.LX1 : ST.RX1, yl = y(f);
-    stairs += `<rect x="${px0}" y="${yl}" width="${px1 - px0}" height="11" rx="2" fill="#6b5039" stroke="#2b1a12" stroke-width="2.6"/><path d="M${px0 + 2} ${yl + 3}H${px1 - 2}" stroke="#c08a4a" stroke-width="2" stroke-linecap="round"/>`;
+    stairs += `<rect x="${px0 + 2}" y="${yl + 10}" width="${px1 - px0}" height="8" fill="#000" opacity=".3"/><rect x="${px0}" y="${yl}" width="${px1 - px0}" height="12" rx="2" fill="#5b636c" stroke="#12161a" stroke-width="2.6"/><path d="M${px0 + 2} ${yl + 3}H${px1 - 2}" stroke="#c3cbd2" stroke-width="2.4" stroke-linecap="round"/>${[0.18, 0.5, 0.82].map(q => `<circle cx="${(px0 + (px1 - px0) * q).toFixed(1)}" cy="${yl + 8}" r="1.4" fill="#12161a"/>`).join('')}`;
     if (f < n) {
       // bieg schodów z piętra f na f+1
       const xs = left ? ST.LX1 : ST.RX0, xe = left ? ST.RX0 : ST.LX1, y0 = yl, y1 = y(f + 1), k = 8, dx = (xe - xs) / k, dy = (y1 - y0) / k;
       let top = `M${xs} ${y0}`; for (let i = 0; i < k; i++) top += `V${(y0 + dy * (i + 1)).toFixed(1)}H${(xs + dx * (i + 1)).toFixed(1)}`;
       const t = 10;
-      stairs += `<path d="${top}L${xe} ${y1 + t}L${xs} ${y0 + t}Z" fill="#5a4636" stroke="#2b1a12" stroke-width="2.6" stroke-linejoin="round"/>`;
+      stairs += `<path d="${top}L${xe} ${y1 + t}L${xs} ${y0 + t}Z" fill="#3a4048" stroke="#12161a" stroke-width="2.6" stroke-linejoin="round"/><path d="M${xs} ${y0 + t}L${xe} ${y1 + t}" stroke="#0c0f12" stroke-width="4" stroke-linecap="round"/>`;
       let tread = ''; for (let i = 1; i <= k; i++) tread += `M${(xs + dx * (i - 1) + Math.sign(dx) * 1).toFixed(1)} ${(y0 + dy * i + 2).toFixed(1)}H${(xs + dx * i - Math.sign(dx) * 1).toFixed(1)}`;
-      stairs += `<path d="${tread}" stroke="#c08a4a" stroke-width="2" stroke-linecap="round" fill="none" opacity=".9"/>`;
+      stairs += `<path d="${tread}" stroke="#b4bdc5" stroke-width="2.6" stroke-linecap="round" fill="none"/>`;
       // poręcz
       let rail = `M${xs} ${y0 - 22}L${xe} ${y1 - 22}`, posts = ''; for (let i = 0; i <= k; i += 2) posts += `M${(xs + dx * i).toFixed(1)} ${(y0 + dy * i - 22).toFixed(1)}v22`;
-      stairs += `<path d="${posts}" stroke="#2b1a12" stroke-width="2.6" stroke-linecap="round"/><path d="${rail}" stroke="#2b1a12" stroke-width="5" stroke-linecap="round"/><path d="${rail}" stroke="#b0b8c0" stroke-width="2" stroke-linecap="round"/>`;
+      stairs += `<path d="${posts}" stroke="#0c0f12" stroke-width="2.6" stroke-linecap="round"/><path d="${rail}" stroke="#0c0f12" stroke-width="5" stroke-linecap="round"/><path d="${rail}" stroke="#d3dae0" stroke-width="2" stroke-linecap="round"/>`;
     }
   }
   // dół: posadzka nad paleniskiem; góra: wyjście na dach z koroną

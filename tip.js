@@ -74,9 +74,9 @@ function statTip(k) {
       ex = each('Uderzenie co: ', pl((100 / S.aspd).toFixed(2)) + ' s') + each('Zwykłe ataki: ', '≈ ' + pl((dps).toFixed(1)) + ' obrażeń / s (bez krytyków i pancerza)'); break;
     case 'armor': title = 'Pancerz'; body = 'Zmniejsza obrażenia każdego ciosu, który dostajesz: cios × 100 / (100 + Pancerz). Działa na każdy cios z osobna, więc najlepiej chroni przed wieloma słabymi uderzeniami.';
       ex = each('Przy Twoim pancerzu ciosy są słabsze o: ', Math.round(S.armor / (100 + S.armor) * 100) + '%'); break;
-    case 'crit': title = 'Szansa na trafienie krytyczne'; body = `Szansa, że zwykły atak jest krytyczny i zadaje ×${pl((cm / 100).toFixed(2))} obrażeń (Siła trafienia krytycznego). Krytyki dotyczą zwykłych ataków; umiejętności same z siebie nie trafiają krytycznie.`;
+    case 'crit': title = 'Kurza Fortuna'; body = `Kurza Fortuna to szansa, że zwykły atak jest krytyczny (trafienie krytyczne) i zadaje ×${pl((cm / 100).toFixed(2))} obrażeń (Moc Fortuny). Krytyki dotyczą zwykłych ataków; umiejętności same z siebie nie trafiają krytycznie.`;
       ex = each('Szansa: ', S.crit + '%') + each('Krytyczny cios zadaje: ', critHit) + each('Średnio dzięki krytykom: ', '+' + Math.round(S.crit * (cm - 100) / 100) + '% obrażeń zwykłych ataków'); break;
-    case 'critMult': title = 'Siła trafienia krytycznego'; body = 'O ile mocniejszy jest cios krytyczny. Bazowo ×1,50, czyli 150% zwykłego ciosu.'; ex = each('Twój krytyk: ', '×' + pl((cm / 100).toFixed(2))) + each('Zwykły cios / krytyczny: ', `${base} / ${critHit}`); break;
+    case 'critMult': title = 'Moc Fortuny'; body = 'O ile mocniejszy jest cios krytyczny. Bazowo ×1,50, czyli 150% zwykłego ciosu.'; ex = each('Twój krytyk: ', '×' + pl((cm / 100).toFixed(2))) + each('Zwykły cios / krytyczny: ', `${base} / ${critHit}`); break;
     case 'evade': title = 'Unik'; body = 'Szansa, że cios wroga w ogóle Cię nie trafi (zero obrażeń). Maksymalnie 75%.'; ex = each('Szansa uniku: ', S.evade + '%'); break;
     case 'regen': title = 'Regeneracja'; body = 'Tyle Życia odzyskujesz co sekundę w czasie walki.'; ex = each('Teraz: ', S.regen + ' / s'); break;
     case 'luck': title = 'Szczęście'; body = 'Wpływa na to, jakie kafelki trafiają do ofert: im więcej Szczęścia, tym częściej pojawiają się rzadsze (rzadkie, epickie, legendarne).'; ex = each('Szczęście: ', S.luck); break;

@@ -39,7 +39,7 @@ await p.mouse.move(5, 5);
 await p.screenshot({ path: `${OUT}/panel-odznaki.png` });
 
 // 2. etykieta krytyka w jednej linii
-const crit = await p.evaluate(() => { const dt = [...document.querySelectorAll('.stats dt')].find(d => /krytyk/i.test(d.textContent)); const r = dt.getBoundingClientRect(); const s = dt.querySelector('span'); const lh = parseFloat(getComputedStyle(s).lineHeight) || 20; return { text: dt.textContent.trim(), h: Math.round(r.height), lines: Math.round(s.getBoundingClientRect().height / lh) }; });
+const crit = await p.evaluate(() => { const dt = [...document.querySelectorAll('.stats dt')].find(d => /Fortun/i.test(d.textContent)); const r = dt.getBoundingClientRect(); const s = dt.querySelector('span'); const lh = parseFloat(getComputedStyle(s).lineHeight) || 20; return { text: dt.textContent.trim(), h: Math.round(r.height), lines: Math.round(s.getBoundingClientRect().height / lh) }; });
 if (crit.lines > 1) fail('etykieta krytyka w więcej niż jednej linii: ' + JSON.stringify(crit)); else ok('krytyk w jednej linii: ' + crit.text);
 
 // 3. zamiana kolejności umiejętności
