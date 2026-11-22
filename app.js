@@ -125,7 +125,7 @@ function renderHome() {
   <div class="home-in">
     <div class="me-badge" ${LOCAL ? '' : 'data-act="changeplayer" style="cursor:pointer"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>
     ${art.towerArt(G.profile.garnek || 0)}
-    <h1 class="logo" aria-label="Bulgot">${[...'BULGOT'].map((c, i) => `<span style="--i:${i}">${c}</span>`).join('')}</h1>
+    <h1 class="logo" aria-label="Bulgot"><img src="logo.png?v=1" alt="Bulgot"></h1>
     <div class="tagline">${esc(T.TAGLINE)}</div>
     <div class="home-actions">
       ${run ? `<div class="resume">Trwa run: <b>${esc(D.MODES[run.mode].name)}</b>, piętro ${run.round}/${run.rounds}, ${run.coins} ${art.coinIcon()} Ziaren</div>
@@ -165,10 +165,10 @@ function renderSetup() {
       <div class="burner-stage"><button class="car-arrow" data-act="gprev" aria-label="Niższy palnik">‹</button>
         <div class="burner-main ${s.garnek > p.garnek ? 'locked' : ''}"><div class="burner-big">${art.burnerArt(s.garnek)}</div>
           <h3>${BURNERS[s.garnek]} <small>poziom ${s.garnek} · ${esc(g.name)}</small></h3><p>${esc(g.text)}</p>
-          <div class="gmult">Mnożnik wyniku ×${(1 + s.garnek * .25).toFixed(2).replace('.', ',')}</div></div>
+          <div class="gmult">Mnożnik wyniku ×${(1 + s.garnek * .25).toFixed(2).replace('.', ',')}</div>${s.garnek > p.garnek ? `<div class="glockmsg">🔒 Zablokowany: wygraj run na poziomie ${s.garnek - 1}</div>` : ''}</div>
         <button class="car-arrow" data-act="gnext" aria-label="Wyższy palnik">›</button></div>
       <div class="bthumbs">${thumbs}</div>
-      <div class="start-row"><div class="setsum">${esc(m.name)} · ${esc(ch.name)}</div><button class="btn primary big" data-act="start" data-primary>Do garnka!</button></div>
+      <div class="start-row"><div class="setsum">${esc(m.name)} · ${esc(ch.name)}</div><button class="btn primary big" data-act="start" data-primary ${s.garnek > p.garnek ? "disabled" : ""}>Do garnka!</button></div>
       <div class="keyhint">← → poziom palnika · Enter start · Esc wróć</div></div>`;
   }
   const modes = Object.entries(T.MODE_INFO).map(([id, mi]) => `<button class="opt mode-opt ${s.mode === id ? 'on' : ''}" data-act="setmode" data-v="${id}"><h3>${mi.name}</h3><p>${mi.text}</p></button>`).join('');
@@ -188,7 +188,7 @@ function renderSetup() {
 
 // Karuzela postaci i wybór palnika: te same ruchy dla strzałek, kliknięć i przycisków ‹ ›.
 function carGo(i) { const n = charIds().length, s = G.setup; s.cur = Math.max(0, Math.min(n - 1, i)); const id = charIds()[s.cur]; if (G.profile.chars.includes(id)) s.char = id; render(); }
-function garGo(v) { const s = G.setup; v = Math.max(0, Math.min(D.GARNEK.length - 1, v)); s.garnek = v; if (v > G.profile.garnek) toast('Wygraj run na poziomie ' + (v - 1) + ', żeby odblokować ten palnik.'); render(); }
+function garGo(v) { const s = G.setup; s.garnek = Math.max(0, Math.min(D.GARNEK.length - 1, v)); render(); }
 // ---------- karty kafelków ----------
 function setOwned(set) { return G.run ? G.run.tiles.filter(id => TILE[id] && setsOf(TILE[id]).includes(set)).length : 0; }
 function tileCard(id, o = {}) {
@@ -385,7 +385,7 @@ function armLetter() {
 }
 function topbarHTML() {
   const r = G.run, M = D.MODES[r.mode];
-  return `<div class="topbar dash"><span class="brand">BULGOT</span>
+  return `<div class="topbar dash"><span class="brand" aria-label="Bulgot"><img src="logo-napis.png?v=2" alt="Bulgot"></span>
     <span class="disp lift" title="Piętro ${r.round} z ${r.rounds}" aria-label="Piętro ${r.round} z ${r.rounds}"><i class="arr" aria-hidden="true">▲</i><b>${String(r.round).padStart(2, '0')}</b><small>/${r.rounds}</small></span><span class="zone-name" title="${esc(T.ZONE_NAMES[r.zone])}">${esc(T.ZONE_NAMES[r.zone])}</span><span class="spacer"></span>
     <span class="disp coins" title="Ziarna: waluta na rerolle i zakupy. Odsetki po wygranej walce: +${Math.min(r.interestMax || 3, Math.floor(r.coins / D.RULES.interestPer))}">${art.coinIcon()}<b data-ctr="coins">${r.coins}</b></span>
     ${r.decree && D.DECREES[r.decree] ? `<span class="pill dec" tabindex="0" title="${esc(D.DECREES[r.decree].name + ': ' + D.DECREES[r.decree].text)}">${art.decreeIcon()} Okólnik</span>` : ''}
@@ -960,12 +960,13 @@ function showInvoice(j, floor) {
   el.innerHTML = invoiceInner(d) + `<div class="inv-nail">${art.nailArt()}</div>`;
   const ham = document.createElement('div'); ham.className = 'inv-hammer'; ham.innerHTML = art.hammerArt(); ham.setAttribute('aria-hidden', 'true');
   $('#invoice').append(el, ham);
+  for (const n of d.notes.filter(x => x.imp)) toast(n.text, false, 6500);   // ważne uwagi jako powiadomienie (faktura z boku jest zwięzła)
   // położenie: nad środkową kolumną (nie zasłania schodów po lewej ani panelu po prawej)
   const st = $('.stage'), rc = st && st.getBoundingClientRect();
-  if (rc && rc.width > 0) { el.style.left = (rc.left + rc.width / 2) + 'px'; el.style.top = Math.max(10, rc.top + 2) + 'px'; el.style.maxWidth = Math.max(260, rc.width - 20) + 'px'; }
+  if (rc && rc.width > 0) { const iw = 270; el.style.width = iw + 'px'; el.style.left = (rc.left + 8 + iw * uiScale() / 2) + 'px'; el.style.top = Math.max(10, rc.top + 2) + 'px'; el.style.maxWidth = 'none'; }
   INV.el = el; INV.ham = ham; INV.floor = d.f; INV.t0 = performance.now();
-  const later = (ms, fn) => INV.timers.push(setTimeout(fn, ms)), hold = (d.imp ? 3400 : 500) + 1000;
-  if (REDUCED.matches) { $('.inv-nail', el).style.setProperty('--sink', '34px'); $('.inv-nail', el).classList.add('on'); ham.remove(); INV.ham = null; later(3200 + (d.imp ? 3000 : 0), () => flyToBoard(false)); return; }
+  const later = (ms, fn) => INV.timers.push(setTimeout(fn, ms)), hold = 1500;
+  if (REDUCED.matches) { $('.inv-nail', el).style.setProperty('--sink', '34px'); $('.inv-nail', el).classList.add('on'); ham.remove(); INV.ham = null; later(3200, () => flyToBoard(false)); return; }
   later(760, () => $('.inv-nail', el).classList.add('on'));
   [1000, 1280, 1560].forEach((ms, i) => later(ms, () => strike(i + 1)));
   later(1900, () => ham.classList.add('away'));
@@ -1125,7 +1126,7 @@ function bookFit() {
   const pv = $('[data-act=bookprev]'), nx = $('[data-act=booknext]'); if (pv) pv.disabled = G.bookPage <= 0; if (nx) nx.disabled = G.bookPage >= pages - 1;
 }
 const bookGo = d => { G.bookPage = (G.bookPage || 0) + d; bookFit(); };
-function showBook(tab = 'tiles') {
+function showBook(tab = 'tiles', turn = false) {
   const seen = bookSeen(), fresh = k => !seen.has(k), marks = [];
   const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['react', 'Reakcje i Okólniki'], ['badges', 'Odznaki'], ['ach', 'Osiągnięcia'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania']];
   let body = '';
@@ -1170,7 +1171,7 @@ function showBook(tab = 'tiles') {
     body = `<div class="help-list">${D.UNLOCKS.map(u => { const done = p.unlocked.includes(u.id), sec = u.secret && !done; return `<div><b>${done ? '✓' : '○'} ${esc(sec ? '???' : unlockName(u))}</b><p>${esc(sec ? '???' : u.text)}${done ? ' (zdobyte)' : ''}</p></div>`; }).join('')}</div>`;
   }
   // księga: okładka, zakładki-przekładki, strona z wklejanymi wpisami
-  openOverlay(`<div class="bookpage"><h2>Księga Kurnika</h2><div class="bookview"><div class="bookflow">${body}</div></div><div class="bookpager"><button class="btn small ghost" data-act="bookprev" aria-label="Poprzednia strona">‹ Wstecz</button><span class="bookno"></span><button class="btn small ghost" data-act="booknext" aria-label="Następna strona">Dalej ›</button></div></div><div class="booktabs tabs">${tabs.map(([id, n], i) => `<button class="tab ${id === tab ? 'on' : ''}" data-act="booktab" data-v="${id}" style="--t:${i}">${n}</button>`).join('')}</div>`, { cls: 'bookmodal' });
+  openOverlay(`<div class="bookpage${turn ? ' turn' : ''}"><h2>Księga Kurnika</h2><div class="bookview"><div class="bookflow">${body}</div></div><div class="bookpager"><button class="btn small ghost" data-act="bookprev" aria-label="Poprzednia strona">‹ Wstecz</button><span class="bookno"></span><button class="btn small ghost" data-act="booknext" aria-label="Następna strona">Dalej ›</button></div></div><div class="booktabs tabs">${tabs.map(([id, n], i) => `<button class="tab ${id === tab ? 'on' : ''}" data-act="booktab" data-v="${id}" style="--t:${i}">${n}</button>`).join('')}</div>`, { cls: 'bookmodal' });
   bookMark(marks);
   G.bookPage = 0; bookFit(); requestAnimationFrame(() => bookFit()); setTimeout(() => bookFit(), 250);
 }
@@ -1228,9 +1229,9 @@ const ACT = {
   carpick: b => carGo(+b.dataset.v),
   cprev: () => carGo(G.setup.cur - 1), cnext: () => carGo(G.setup.cur + 1),
   gprev: () => garGo(G.setup.garnek - 1), gnext: () => garGo(G.setup.garnek + 1),
-  setgarnek: b => { const v = +b.dataset.v; if (v <= G.profile.garnek) { G.setup.garnek = v; render(); } else toast('Wygraj run na poziomie ' + (v - 1) + ', żeby odblokować ten Garnek.'); },
+  setgarnek: b => garGo(+b.dataset.v),
   start: async () => {
-    const s = G.setup; if (!G.profile.chars.includes(s.char)) s.char = 'pyrtek'; if (s.garnek > G.profile.garnek) s.garnek = 0;
+    const s = G.setup; if (!G.profile.chars.includes(s.char)) s.char = 'pyrtek'; if (s.garnek > G.profile.garnek) return;
     const j = await act('start', { mode: s.mode, char: s.char, garnek: s.garnek }); if (!j) return;
     snd.sfx('bulgot'); G.screen = 'run'; render();
     if (!store.get('bulgot:intro')) showIntro();
@@ -1276,7 +1277,7 @@ const ACT = {
   rkcharset: b => { RK.char = b.dataset.v; showRanking(RK.mode, true); },
   rkgset: b => { RK.garnek = b.dataset.v; showRanking(RK.mode, true); },
   profile: () => showProfile(), achbook: () => { closeOverlay(); showBook('ach'); },
-  book: () => showBook(), booktab: b => showBook(b.dataset.v),
+  book: () => showBook(), booktab: b => showBook(b.dataset.v, true),
   history: () => showHistory(),
   skillmove: b => swapSlots(+b.dataset.v, +b.dataset.v + +b.dataset.d),
   analyze: b => showAnalyzeDialog(b.dataset.id, b.closest('tr') ? 'hist' : 'end'),
@@ -1353,7 +1354,7 @@ document.addEventListener('keydown', e => {
   if (k === 'escape') { if (overlayOpen()) { if (!$('#overlay').dataset.force) closeOverlay(); } else if (G.screen === 'run' || (G.screen === 'fight' && G.fight && !G.fight.finishing)) { const m = $('[data-act="menu"]'); m && m.click(); } return; }
   if (overlayOpen() && $('#overlay .bookmodal') && !e.shiftKey) {
     if (k === 'arrowleft' || k === 'arrowright') { e.preventDefault(); bookGo(k === 'arrowright' ? 1 : -1); return; }
-    if (k === 'arrowup' || k === 'arrowdown') { e.preventDefault(); const ts = [...document.querySelectorAll('#overlay .booktabs .tab')], i = ts.findIndex(t => t.classList.contains('on')), n = ts[(i + (k === 'arrowdown' ? 1 : ts.length - 1)) % ts.length]; if (n) showBook(n.dataset.v); return; }
+    if (k === 'arrowup' || k === 'arrowdown') { e.preventDefault(); const ts = [...document.querySelectorAll('#overlay .booktabs .tab')], i = ts.findIndex(t => t.classList.contains('on')), n = ts[(i + (k === 'arrowdown' ? 1 : ts.length - 1)) % ts.length]; if (n) showBook(n.dataset.v, true); return; }
   }
   if (!overlayOpen() && (G.screen === 'run' || G.screen === 'fight') && (k === 'k' || k === 'h') && !(G.screen === 'fight' && G.fight && !G.fight.finishing && false)) { e.preventDefault(); (k === 'k' ? showBook : showHelp)(); return; }
   if (ARROWS[k] && !(F && !overlayOpen())) { e.preventDefault(); navMove(...ARROWS[k]); return; }

@@ -1195,3 +1195,42 @@ html.reduce .bookflow { transition: none; }
 .prof-parts { display: grid; gap: 8px; }
 .prof-part { position: relative; display: flex; justify-content: space-between; gap: 10px; padding: 6px 10px 9px; border-radius: 8px; background: rgba(255,255,255,.05); font-size: .9rem; }
 .prof-part i { position: absolute; left: 8px; right: 8px; bottom: 3px; height: 4px; border-radius: 2px; background: #2d231a; overflow: hidden; } .prof-part i::after { content: ''; position: absolute; inset: 0; width: var(--w); background: var(--amber); }
+
+/* karuzela: najechanie nie może nadpisywać pozycji karty (stary .opt:hover zjeżdżał kartę w prawy dolny róg i wywoływał telepanie) */
+.setup2 .car-card:hover:not(.locked), .setup2 .car-card:focus-visible { transform: translate(calc(-50% + var(--o) * 330px), -50%) scale(calc(1 - var(--a) * .18)); }
+.setup2 .car-card:hover:not(.locked) .egg-art { transform: translateY(-4px); }
+.setup2 .car-card .egg-art { transition: transform .15s ease-out; }
+@media (max-width: 700px) { .setup2 .car-card:hover:not(.locked), .setup2 .car-card:focus-visible { transform: translate(calc(-50% + var(--o) * 250px), -50%) scale(calc(1 - var(--a) * .18)); } }
+.glockmsg { margin-top: 4px; color: #f0b38a; font-weight: 700; }
+.setup2 .start-row .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Księga: przygaszony pergamin, zmiana zakładki jako przewrócenie strony (bez „wrzucania” wpisów) */
+.bookpage { background: linear-gradient(90deg, rgba(0,0,0,.22), transparent 3%), linear-gradient(#d8ceb5, #c7bb9a); box-shadow: inset 0 0 34px rgba(90,60,25,.32); }
+.bookpage .ms-row, .bookpage .ach-row, .bookpage .hatch-row { background: rgba(255,255,255,.22); border-color: #b6a67c; }
+.bookpage .ach-row.got { background: rgba(240,200,100,.35); border-color: #b0842a; }
+.bookpage .lead, .bookpage p { color: #3e2c1e; }
+.bookflow .entry, .bookflow .book-grid .entry { animation: none !important; }
+.bookflow .entry.fresh { animation: discover 1.6s .5s ease-out 2 !important; }
+.bookpage.turn { transform-origin: left center; animation: pageturn .55s cubic-bezier(.3,.7,.3,1) both; }
+@keyframes pageturn { 0% { transform: perspective(1600px) rotateY(-80deg); filter: brightness(.55); } 60% { filter: brightness(.9); } 100% { transform: perspective(1600px) rotateY(0); filter: none; } }
+html.reduce .bookpage.turn { animation: none; }
+
+/* podpis Tablicy: szary panel po prawej, kontrastowy względem korka */
+.board-side { margin: -8px -10px -8px 0; padding: 8px 10px; width: 96px; border-left: 3px solid #1d1008; border-radius: 0 8px 8px 0; background: linear-gradient(#5a5f66, #3c4046); color: #eef1f3; text-shadow: 0 1px 0 rgba(0,0,0,.6); box-shadow: inset 0 0 12px rgba(0,0,0,.35); }
+.board-side .board-count b { color: #ffd23f; }
+
+/* nowe logo (PNG z przezroczystym tłem) */
+.logo { font-size: 0; line-height: 0; text-shadow: none; }
+.logo img { display: block; width: min(520px, 70vw); height: auto; margin: 0 auto; filter: drop-shadow(0 6px 0 rgba(0,0,0,.35)) drop-shadow(0 0 28px rgba(255,170,60,.28)); animation: logofloat 4s ease-in-out infinite alternate; }
+@keyframes logofloat { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+html.reduce .logo img { animation: none; }
+.topbar .brand img, .brand img { display: block; height: 30px; width: auto; }
+.topbar .brand { display: inline-flex; align-items: center; line-height: 0; }
+
+/* faktura z boku (obok schodów): zwięzła, żeby nie zasłaniać kart wyboru */
+.inv { padding: 16px 14px 14px; }
+.inv .inv-who, .inv .inv-notes { display: none; }
+.inv-title b { font-size: 1.2rem; } .inv-row { padding: 3px 2px 3px; font-size: .8rem; } .inv-row span { font-size: 10px; } .inv-row b { font-size: 1.05rem; }
+.inv-foot { margin-top: 5px; font-size: .72rem; line-height: 1.25; }
+.inv-stamp { right: 8px; bottom: 8px; padding: 3px 7px; font-size: .85rem; }
+.inv .inv-foot i { display: none; }

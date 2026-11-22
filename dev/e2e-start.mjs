@@ -20,6 +20,15 @@ for (const [w, h] of [[1920, 925], [1366, 650], [1280, 720], [390, 800]]) {
   let n = await noScroll(); ok(n.fits && n.doc, `${w}x${h} krok 1 mieści się bez przewijania ${JSON.stringify(n)}`);
   await p.screenshot({ path: `${OUT}/start1-${w}.png` });
   if (w === 1920) {
+    // najechanie na kartę postaci nie może jej przesuwać ani wprawiać w drgania
+    const cr = () => p.evaluate(() => { const r = document.querySelector('.car-card.on').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top)]; });
+    const before = await cr();
+    await p.mouse.move(before[0] + 60, before[1] + 80); await wait(400);
+    const samples = []; for (let i = 0; i < 6; i++) { await wait(100); samples.push(await cr()); }
+    ok(samples.every(s => Math.abs(s[0] - before[0]) <= 1 && Math.abs(s[1] - before[1]) <= 1), 'najechanie nie przesuwa karty postaci ' + JSON.stringify([before, samples[0], samples[5]]));
+    await p.mouse.move(5, 5);
+  }
+  if (w === 1920) {
     await p.keyboard.press('ArrowDown'); await wait(100);
     ok(await p.evaluate(() => document.querySelector('.mode-opt.on h3').textContent) === 'Zupka Chińska', '↓ przełącza tryb');
     await p.keyboard.press('ArrowRight'); await wait(400);
