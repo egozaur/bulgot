@@ -99,8 +99,25 @@ const INDOR = () => `
   <path d="M79 42 l11 3 l-11 5 z" fill="#ffb02e" ${S}/>
   <path d="M78 50 q8 8 0 17 q-8 -4 -5 -17 z" fill="#c0392b" ${S}/>`;
 
+// Zjarany Kurczak: przypieczony na złoto, z półprzymkniętymi, zaczerwienionymi oczami, osmalonym grzebieniem i obłoczkiem dymu przy dziobie.
+const ZJARANY = () => `
+  ${FEET('#d98324')}
+  <path d="M25 66 q-15 -3 -13 -19 q11 1 19 11 z" fill="#7a4a1f" ${S}/>
+  <ellipse cx="48" cy="64" rx="27" ry="23" fill="#c98a43" ${S}/>
+  <path d="M31 62 q-3 17 17 20 q10 -11 0 -24 z" fill="#a8672a" ${S}/>
+  <path d="M40 54 q4 -3 8 0 M52 70 q4 -3 8 0" stroke="#5b3516" stroke-width="2.4" stroke-linecap="round" ${NF} opacity=".6"/>
+  <circle cx="66" cy="40" r="15" fill="#d9a35a" ${S}/>
+  <path d="M57 28 q-4 -12 5 -10 q2 -9 9 -2 q9 -1 5 8 q-5 6 -12 6 z" fill="#8f2a1a" ${S}/>
+  <path d="M60 22 q2 -3 4 0 M70 20 q2 -2 4 1" stroke="${O}" stroke-width="2" stroke-linecap="round" ${NF} opacity=".5"/>
+  <circle cx="69" cy="40" r="6.8" fill="#f8dcd6" ${S2}/><circle cx="70.5" cy="42" r="3" fill="#b01c1c"/><circle cx="71.4" cy="41" r="1" fill="#fff"/>
+  <path d="M62.2 40 a6.8 6.8 0 0 1 13.6 0 z" fill="#d9a35a" ${S2}/>
+  ${brow(60, 31, 77, 33)}
+  <path d="M79 44 l13 4 l-13 6 z" fill="#ffb02e" ${S}/>
+  <path d="M57 54 q5 4 11 1" stroke="${O}" stroke-width="2.2" ${NF} stroke-linecap="round"/>
+  <g class="zsmoke"><circle cx="90" cy="38" r="4" fill="#e9e5dc" opacity=".9" ${S2}/><circle cx="95" cy="28" r="5.5" fill="#f1ede5" opacity=".85" ${S2}/><circle cx="88" cy="17" r="7.5" fill="#f6f2ea" opacity=".8" ${S2}/></g>`;
+
 // Akcesoria na formy postaci innych niż Pyrtek.
-const HEADS = { kwoka: [68, 40], kaczor: [66, 38], indor: [68, 40] };
+const HEADS = { kwoka: [68, 40], kaczor: [66, 38], indor: [68, 40], zjarany: [66, 40] };
 const accessory = (char, form) => {
   const [hx, hy] = HEADS[char] || [66, 40];
   let a = '';
@@ -112,7 +129,7 @@ const accessory = (char, form) => {
 export function heroArt(char, form) {
   let body;
   if (char === 'pyrtek' || !char) body = ({ pyrtek: PYRTEK, kogut: KOGUT, bojowy: BOJOWY, rambo: RAMBO }[form] || PYRTEK)();
-  else body = ({ kwoka: KWOKA, kaczor: KACZOR, indor: INDOR }[char] || KOGUT)() + accessory(char, form);
+  else body = ({ kwoka: KWOKA, kaczor: KACZOR, indor: INDOR, zjarany: ZJARANY }[char] || KOGUT)() + accessory(char, form);
   return svg(body);
 }
 export const portrait = (char, form = 'pyrtek') => heroArt(char, form);
@@ -123,9 +140,9 @@ const EGG = 'M100 10 C152 10 184 92 184 142 C184 188 148 208 100 208 C52 208 16 
 const RIM = 132;   // wysokość brzegu skorupy
 const ZIG = [[0, 138], [20, 124], [38, 142], [58, 124], [78, 144], [100, 126], [122, 144], [142, 124], [162, 142], [180, 124], [200, 138]];
 const CHICK = {   // [rozmiar kurczaka w jednostkach jajka, przesunięcie x]; spód rysunku (y≈88) chowa się 12 jednostek pod brzegiem skorupy
-  pyrtek: [150, 0], kwoka: [158, 0], kaczor: [150, 0], indor: [162, -4],
+  pyrtek: [150, 0], kwoka: [158, 0], kaczor: [150, 0], indor: [162, -4], zjarany: [154, -2],
 };
-const BODIES = { pyrtek: PYRTEK, kwoka: KWOKA, kaczor: KACZOR, indor: INDOR };
+const BODIES = { pyrtek: PYRTEK, kwoka: KWOKA, kaczor: KACZOR, indor: INDOR, zjarany: ZJARANY };
 export function eggArt(char, open) {
   const id = 'egg-' + char;
   const zigPath = ZIG.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ');
@@ -138,6 +155,7 @@ export function eggArt(char, open) {
       <path d="${EGG}" fill="url(#${id}-g)" ${S}/>
       ${speck('#6f6b63')}
       <path d="M58 60 q10 -26 30 -34" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none" opacity=".45"/>
+      ${char === 'zjarany' ? `<g class="wisps"><circle class="w1" cx="86" cy="10" r="9" fill="#e9e5dc" opacity=".0"/><circle class="w2" cx="104" cy="6" r="11" fill="#f1ede5" opacity=".0"/><circle class="w3" cx="94" cy="2" r="8" fill="#e9e5dc" opacity=".0"/></g>` : ''}
       <g transform="translate(100 134)"><rect x="-17" y="-2" width="34" height="28" rx="6" fill="#4a463f" ${S2}/><path d="M-10 -2 v-9 a10 10 0 0 1 20 0 v9" fill="none" stroke="#4a463f" stroke-width="6" stroke-linecap="round"/><circle cx="0" cy="10" r="4" fill="#d6d3cc"/><rect x="-1.6" y="11" width="3.2" height="9" rx="1.5" fill="#d6d3cc"/></g>
     </svg>`;
   }

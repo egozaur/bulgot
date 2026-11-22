@@ -53,13 +53,13 @@ export async function call(path, body = {}) {
   return http(A, 'POST', '/api/bg/' + path, { pt: pl.pt, ...body });
 }
 
-export async function ranks(mode) {
+export async function ranks(mode, query = '') {
   if (LOCAL) {
     const { ranks: r } = await localInit();
-    const res = await r.fetch(new Request('https://bg/list?mode=' + mode));
+    const res = await r.fetch(new Request('https://bg/list?mode=' + mode + (query ? '&' + query : '')));
     return { status: res.status, j: await res.json() };
   }
-  return http(P3(), 'GET', '/api/bg/ranks?mode=' + encodeURIComponent(mode));
+  return http(P3(), 'GET', '/api/bg/ranks?mode=' + encodeURIComponent(mode) + (query ? '&' + query : ''));
 }
 
 async function http(A, method, path, body) {

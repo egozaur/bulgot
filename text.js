@@ -70,6 +70,30 @@ export const END_WIN = {
 };
 export const END_LOSE = { title: 'ROSÓŁ' };
 
+// Ukryta postać (Zjarany Kurczak): jajko nie zdradza ani nazwy, ani warunku odblokowania.
+export const SECRET_CHAR_TEXT = 'Z tego jajka coś się dymi. Ponoć wystarczy zebrać w jednym biegu naprawdę wiele… czegoś.';
+
+// Faktura po wygranej walce (spada na ekran zamiast okna wyniku).
+export const INVOICE = {
+  company: 'Korporacja Rosołowa S.A.', nip: 'NIP 000-PIÓ-RKO',
+  title: 'FAKTURA VAT', bossTitle: 'NOTA OBCIĄŻENIOWA',
+  stamp: 'ZAPŁACONO', bossStamp: 'PREZES\nPODPISAŁ',
+  footers: [
+    'Do zapłaty: 0 zł. Dziękujemy za współpracę.',
+    'Termin płatności: wczoraj. Odsetki: rosół.',
+    'Reklamacji nie uwzględniamy. Rosołu też.',
+    'Wystawiono bez podpisu, bo kurczak nie miał ręki.',
+    'Prosimy o wpłatę Ziaren na konto garnka.',
+    'Oryginał trafia do rosołu, kopia do kurnika.',
+    'Zapłata nastąpiła dziobem. Dziękujemy.',
+  ],
+  bossFooters: [
+    'Zarząd przyjmuje wyrazy współczucia i zażalenia na piśmie.',
+    'Pozycja „boss” została skreślona z cennika.',
+    'Premia kwartalna ponownie nie została wypłacona.',
+  ],
+};
+
 export const MODE_INFO = {
   quick: { name: 'Szybki', rounds: 10, text: '10 pięter, dwóch bossów, ok. 10 minut. Dobry na rozgrzewkę.' },
   full: { name: 'Pełny', rounds: 20, text: '20 pięter, trzech bossów, ok. 20 minut. Pełna saga.' },

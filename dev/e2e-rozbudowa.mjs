@@ -57,15 +57,15 @@ for (let i = 0; i < 40; i++) {
   const k = await p.$$eval('.unit .sts .st', n => n.map(x => x.className));
   k.forEach(c => seen.add(c));
   if (i === 4) await p.screenshot({ path: OUT + '/rozb-walka.png' });
-  if (await p.$('.modal')) break;
+  if (await p.$('.inv, .modal')) break;
 }
 seen.size ? ok('ikonki efektów w walce: ' + [...seen].join(', ')) : fail('nie widać ikonek efektów');
 await p.evaluate(() => { const F = window.__bulgot.fight; if (F) F.speed = 3; });
-for (let i = 0; i < 400 && !(await p.$('.modal')); i++) await wait(300);
-(await p.$('.modal')) ? ok('walka się skończyła') : fail('walka nie skończyła się');
+for (let i = 0; i < 400 && !(await p.$('.inv, .modal')); i++) await wait(300);
+(await p.$('.inv, .modal')) ? ok('walka się skończyła') : fail('walka nie skończyła się');
 
 // 3. Zestaw Rosołowy x4 + Garnek: walka zaczyna się od Oparzenia, wybuchy nie psują interfejsu.
-await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; }); await wait(300);
 console.log('faza przed zestawami:', (await st()).phase);
 if ((await st()).phase !== 'over') {
   await patchRun("run.tiles = ['chochla', 'kostka-rosolowa', 'lubczyk', 'garnek-cisnieniowy', 'teczka', 'krawat', 'polisa', 'kolczatka', 'twardy-grzebien', 'twardy-grzebien', 'twardy-grzebien', 'ziarno-mocy', 'ziarno-mocy', 'ziarno-mocy', 'pancerz-z-pierza', 'pancerz-z-pierza']; run.round = 6; run.phase = 'fight'; run.fight = null; run.hp = 400;");
@@ -74,10 +74,10 @@ if ((await st()).phase !== 'over') {
   const burn0 = await p.$$eval('.unit .sts .st.burn', n => n.length);
   burn0 ? ok('Rosołowe x4: wrogowie płoną od startu') : fail('brak Oparzenia na starcie');
   await p.screenshot({ path: OUT + '/rozb-walka2.png' });
-  for (let i = 0; i < 150 && !(await p.$('.modal')); i++) await wait(300);
+  for (let i = 0; i < 150 && !(await p.$('.inv, .modal')); i++) await wait(300);
 }
 // 3b. Wylęgarnia: składnik w ofercie ma znacznik, wybór wykluwa przedmiot i pokazuje okno.
-await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; }); await wait(300);
 if ((await st()).phase !== 'over') {
   await patchRun("run.tiles = ['tykajace-jajo', 'ziarno-mocy', 'ziarno-mocy']; run.offer = ['kostka-rosolowa', 'ziarno-mocy', 'twardy-grzebien', 'szybki-dziob']; run.phase = 'offer'; run.hp = 100;");
   const hz = await p.$$eval('.tag.hatch', n => n.map(x => x.textContent));
@@ -88,7 +88,7 @@ if ((await st()).phase !== 'over') {
   await p.screenshot({ path: OUT + '/rozb-wylegarnia.png' });
 }
 // 3c. Odznaka po bossie, Kontrakt z HR, Kapliczka, podgląd elity.
-await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; }); await wait(300);
 if ((await st()).phase !== 'over') {
   await patchRun("run.phase = 'badge'; run.offer = []; run.pending = { kind: 'badge', offer: ['awans', 'parasol-ochronny', 'klucz-do-serwerowni'], bonus: false }; run.hp = 100;");
   const bc = await p.$$eval('[data-act=choose]', n => n.length);
@@ -114,7 +114,7 @@ if ((await st()).phase !== 'over') {
   await p.screenshot({ path: OUT + '/rozb-elita.png' });
 }
 // 4. Księga Kurnika: wszystkie kafelki z ikonami.
-await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; }); await wait(300);
 await p.evaluate(() => { const m = document.querySelector('[data-act=menu]'); m && m.click(); }); await wait(300);
 await p.evaluate(() => document.querySelector('[data-act=book]').click()); await wait(500);
 const cards = await p.$$eval('.book-grid .tile', n => n.length);

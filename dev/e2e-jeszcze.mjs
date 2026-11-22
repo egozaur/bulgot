@@ -76,12 +76,12 @@ for (let i = 0; i < 25 && !(seria && react); i++) {
 }
 check(seria, 'banner Pełnej Kurzej Serii');
 check(react, 'napis reakcji nad wrogiem');
-for (let i = 0; i < 300 && !(await p.$('.modal')); i++) await wait(100);
+for (let i = 0; i < 300 && !(await p.$('.inv, .modal')); i++) await wait(100);
 await p.screenshot({ path: OUT + '/j-wynik.png' });
-const res = await text('.modal');
-check(/Pełne Kurze Serie|reakcje/.test(res), 'wynik walki pokazuje serie i reakcje');
+const res = await text('.inv, .modal');
+check(/Pełne Kurze Serie|[Rr]eakcje/.test(res), 'wynik walki pokazuje serie i reakcje');
 check(/Wada ujawniona/.test(res) || (await st()).phase === 'over', 'wynik walki ujawnia wadę');
-await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(300);
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; }); await wait(300);
 
 // 5. Nemezis na bieżącym piętrze
 await patch('run', `v.phase = 'offer'; v.offer = ['ziarno-mocy', 'twardy-grzebien', 'szybki-dziob', 'ostry-dziob']; v.nemesis = { enemy: 'szczur-pasz', title: 'Kierownik', given: 'Zbigniew', affix: 'szybki', tile: 'opaska-rambo', lvl: 2, round: v.round, beaten: false };`);

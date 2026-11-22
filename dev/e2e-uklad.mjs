@@ -43,7 +43,7 @@ for (const [w, h] of SIZES) {
 // walka
 await p.setViewport({ width: 1440, height: 900 });
 await p.keyboard.press('1'); await wait(400);
-await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); });
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; });
 const tof = await p.$('[data-act=tofight]');
 if (tof) {
   for (const [w, h] of SIZES) {

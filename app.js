@@ -7,6 +7,7 @@ import * as art from './art.js';
 import * as T from './text.js';
 import * as snd from './audio.js';
 import { initTip } from './tip.js';
+import { failFacts, pickFacts, winFacts } from './fakty.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -44,12 +45,12 @@ function toast(msg, err = false, ms = 2800) {
   $('#toasts').prepend(d); setTimeout(() => d.remove(), ms);
 }
 function openOverlay(html, { narrow = false, force = false, cls = '' } = {}) {
-  const o = $('#overlay'); o.hidden = false; o.dataset.force = force ? '1' : '';
+  const o = $('#overlay'); o.hidden = false; o.dataset.force = force ? '1' : ''; o.classList.toggle('full', cls.includes('endfull'));   // ekran końca zajmuje cały ekran
   const F = G.fight; if (F && !F.paused && !F.finishing) { F.paused = true; F.autoPaused = true; }   // okno zatrzymuje walkę
   o.innerHTML = `<div class="modal ${narrow ? 'narrow' : ''} ${cls}" role="dialog" aria-modal="true">${force ? '' : '<button class="btn small ghost modal-x" data-act="close" aria-label="Zamknij">Zamknij ✕</button>'}${html}</div>`;
 }
 function closeOverlay() {
-  const o = $('#overlay'); o.hidden = true; o.innerHTML = ''; o.dataset.force = '';
+  const o = $('#overlay'); o.hidden = true; o.innerHTML = ''; o.dataset.force = ''; o.classList.remove('full');
   const F = G.fight; if (F && F.autoPaused) { F.autoPaused = false; F.paused = false; }
 }
 const overlayOpen = () => !$('#overlay').hidden;
@@ -81,6 +82,8 @@ function recipeFor(id) {
   return D.RECIPES.find(x => x.of.includes(id) && !r.tiles.includes(x.out) && x.of.every(c => c === id || r.tiles.includes(c))) || null;
 }
 const unlockName = u => u.kind === 'char' ? D.CHARS[u.target].name : TILE[u.target].name;
+// Ukryte postacie (Zjarany Kurczak) nie zdradzają nazwy, stanowiska ani warunku, dopóki gracz ich nie odblokuje.
+const charView = (c, open) => c.secret && !open ? { hidden: true, name: '???', style: '???', text: T.SECRET_CHAR_TEXT } : { hidden: false, name: c.name, style: c.style, text: c.text };
 
 // ---------- start ----------
 async function init() {
@@ -145,9 +148,9 @@ function renderSetup() {
   const p = G.profile, s = G.setup;
   const modes = Object.entries(T.MODE_INFO).map(([id, m]) => `<button class="opt ${s.mode === id ? 'on' : ''}" data-act="setmode" data-v="${id}"><h3>${m.name}</h3><p>${m.text}</p></button>`).join('');
   const chars = Object.values(D.CHARS).map(c => {
-    const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock];
+    const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock], v = charView(c, open);
     // jajko: odblokowana postać wystaje ze skorupy, zablokowana to jeszcze nie pęknięte jajo
-    return `<button class="opt char-opt egg-opt ${s.char === c.id ? 'on' : ''} ${open ? 'hatched' : 'locked'}" data-act="setchar" data-v="${c.id}" ${open ? '' : 'aria-disabled="true"'}><div class="egg-art">${art.eggArt(c.id, open)}</div><h3>${esc(c.name)}</h3><div class="post">Stanowisko: <b>${esc(c.style)}</b></div><p>${esc(c.text)}</p>${open ? '' : `<div class="lockmsg">🔒 Jak odblokować: ${esc(u ? u.text : '')}</div>`}</button>`;
+    return `<button class="opt char-opt egg-opt ${s.char === c.id ? 'on' : ''} ${open ? 'hatched' : 'locked'} ${v.hidden ? 'secret' : ''}" data-act="setchar" data-v="${c.id}" ${open ? '' : 'aria-disabled="true"'}><div class="egg-art">${art.eggArt(c.id, open)}</div><h3>${esc(v.name)}</h3><div class="post">Stanowisko: <b>${esc(v.style)}</b></div><p>${esc(v.text)}</p>${open ? '' : `<div class="lockmsg">🔒 Jak odblokować: ${esc(v.hidden ? '???' : u ? u.text : '')}</div>`}</button>`;
   }).join('');
   // termometr: od „Letni” do „Wulkan Rosołu”; rtęć dochodzi do wybranego poziomu
   const gs = D.GARNEK.map((g, i) => `<button class="gbtn ${s.garnek === i ? 'on' : ''} ${i > p.garnek ? 'locked' : ''}" data-act="setgarnek" data-v="${i}" style="--gi:${i}" ${i > p.garnek ? 'aria-disabled="true"' : ''}><i class="tick"></i><span class="gn">${i}</span><span class="gl">${g.name}</span>${i > p.garnek ? '<span class="glock" aria-label="zablokowany">🔒</span>' : ''}</button>`).join('');
@@ -681,6 +684,7 @@ function onEvent(e) {
     case 'resist': { const u = tu(e.to); if (u) pop('odporny', 'txt', u.x, 70); break; }
     case 'telegraph': snd.sfx('telegraph'); break;
     case 'egg': snd.sfx('egg'); break;
+    case 'smoke': { pop('Chmura Dymu', 'txt', 17, 74); snd.sfx('heal'); const ar = F.arena; if (ar && !REDUCED.matches) { ar.classList.remove('smoked'); void ar.offsetWidth; ar.classList.add('smoked'); setTimeout(() => ar.classList.remove('smoked'), 1300); } break; }
     case 'okrzyk': banner('Ostatni Okrzyk!', 'Chwila nietykalności', false); break;
     case 'revive': banner('Gniazdo Zapasowe!', 'Kurczak wstaje z kolan', false); snd.sfx('heal'); break;
     case 'fury': banner('FURIA!', 'Wrogowie wpadają w szał', true); snd.sfx('fury'); F.arena.classList.add('furious'); if (!F.arena.querySelector('.beacons')) F.arena.insertAdjacentHTML('beforeend', '<div class="beacons" aria-hidden="true"><i></i><i></i></div>'); break;
@@ -780,43 +784,80 @@ async function finishFight() {
   const res = j.result;
   if (res.win !== local.win) toast('Serwer rozliczył walkę inaczej niż Twoja przeglądarka. Obowiązuje wynik serwera.', true, 5000);
   if (G.run.phase === 'over') { G.screen = 'run'; return showEnd(j); }
-  G.screen = 'run'; render(); showResult(j, F.setup.round);
+  G.screen = 'run'; render(); showInvoice(j, F.setup.round);
 }
 function retryOverlay() {
   return new Promise(res => { G.retryCb = res; openOverlay('<h2>Brak połączenia</h2><p class="lead">Nie udało się rozliczyć walki z serwerem. Twój run jest bezpieczny, spróbuj ponownie.</p><div class="actions"><button class="btn primary" data-act="retry-fight" data-primary>Spróbuj jeszcze raz</button></div>', { narrow: true, force: true }); });
 }
 
-function showResult(j, floor) {
-  const r = j.result, run = G.run, boss = j.boss;
-  const line = boss ? T.BOSS_WIN_LINES[boss] : T.pickLine(T.WIN_LINES, run.round);
-  const un = takeUnlocks();
-  // karta pracy: rubryki wypełniają się po kolei, na końcu pieczątka
-  openOverlay(`<h2>${boss ? 'Boss pokonany!' : 'Piętro zdobyte!'}</h2><p class="lead">${esc(line)}</p>
-    <div class="jobcard"><div class="jhead"><span>Karta pracy</span><span>Pracownik: ${esc(D.CHARS[run.char].name)}</span><span>Piętro ${floor || run.round}</span></div>
-    <div class="res-grid"><div class="res-cell" style="--d:0"><span>czas walki</span><b>${(r.ticks / 10).toFixed(1).replace('.', ',')} s</b></div>
-    <div class="res-cell" style="--d:1"><span>zadane obrażenia</span><b>${fmtNum(r.dealt)}</b></div>
-    <div class="res-cell" style="--d:2"><span>wypłata ${art.coinIcon()}</span><b>+${j.reward} Ziaren</b></div>
-    <div class="res-cell" style="--d:3"><span>życie po leczeniu</span><b>${run.hp}/${run.maxHp}</b></div></div>
-    <div class="jstamp ${boss ? 'boss' : ''}" aria-hidden="true">${boss ? 'BOSS<br>POKONANY' : 'PIĘTRO<br>ZALICZONE'}</div></div>
-    ${r.stolen ? `<p class="hint">Złodzieje ukradli ci ${r.stolen} Ziaren.</p>` : ''}${r.usedRevive ? '<p class="hint">Gniazdo Zapasowe zostało zużyte.</p>' : ''}${resultExtras(j)}${unlocksHTML(un)}
-    <div class="actions" style="margin-top:12px"><button class="btn primary big" data-act="close" data-primary>${j.bonus ? 'Wybierz nagrodę' : 'Dalej'}</button></div>`, { narrow: true, force: true });
+// ---------- faktura po wygranej walce ----------
+// Zamiast okna wyniku spada faktura od Korporacji Rosołowej: leży na środkowej kolumnie (nie zasłania schodów z kurczakiem), nie blokuje gry
+// (klik i klawisze przechodzą przez nią, a pierwsza akcja gracza chowa ją), a po chwili leci do licznika Ziaren. Opcja w ustawieniach.
+const invoiceOn = () => store.get('bulgot:invoice') !== '0';
+const INV = { el: null, t0: 0, timers: [] };
+function dismissInvoice(fast) {
+  const el = INV.el; INV.timers.forEach(clearTimeout); INV.timers = [];
+  if (!el) return;
+  INV.el = null;
+  if (!el.isConnected) return;
+  if (REDUCED.matches || fast) { el.classList.add('quick'); setTimeout(() => el.remove(), 260); return; }
+  const c = $('.disp.coins'), r = el.getBoundingClientRect(), t = c ? c.getBoundingClientRect() : null;   // leci do licznika Ziaren
+  if (t) { el.style.setProperty('--fx', (t.left + t.width / 2 - (r.left + r.width / 2)) + 'px'); el.style.setProperty('--fy', (t.top + t.height / 2 - (r.top + r.height / 2)) + 'px'); }
+  el.classList.add('out'); setTimeout(() => el.remove(), 750);
 }
-// Dopiski do wyniku walki: Odsetki, drzwi, serie, reakcje, kafelki rosnące, ujawnione wady, Nemezis.
-function resultExtras(j) {
-  const r = j.result || {}, out = [];
-  if (j.nemesis) out.push(`<div class="unlock-box"><b>Sprawiedliwości stało się zadość!</b><div class="hint" style="text-align:left">Nemezis pokonany. Dostajesz Odznakę Sprawiedliwość Kurnika${j.nemesis.tile ? ' i odzyskujesz: ' + esc(TILE[j.nemesis.tile].name) : ''}.</div></div>`);
-  const coins = [];
-  if (j.interest) coins.push(`Odsetki w Spiżarni: +${j.interest}`);
-  if (j.doorCoins) coins.push(`łup zza drzwi: +${j.doorCoins}`);
-  if (coins.length) out.push(`<p class="hint">${coins.join(' · ')} ${art.coinIcon()}</p>`);
-  const fx = [];
-  if (r.chains) fx.push(`Pełne Kurze Serie: ${r.chains}`);
-  if (r.reactions) fx.push(`reakcje: ${r.reactions} (${(r.reactSeen || []).map(k => D.REACTIONS[k] ? D.REACTIONS[k].name : k).join(', ')})`);
-  if (fx.length) out.push(`<p class="hint">${esc(fx.join(' · '))}</p>`);
-  if (j.grew && j.grew.length) out.push(`<p class="hint">Urosło: ${j.grew.map(id => esc(TILE[id].name) + ' (' + Math.min(TILE[id].grow.max, (G.run.grow || {})[id] || 0) + '/' + TILE[id].grow.max + ')').join(', ')}</p>`);
-  if (j.revealed && j.revealed.length) out.push(j.revealed.map(w => `<div class="unlock-box flawbox"><b>Wada ujawniona: ${esc(TILE[w.id].name)} · ${esc(D.FLAWS[w.flaw].name)}</b><div class="hint" style="text-align:left">${esc(D.FLAWS[w.flaw].text)} Działa od teraz. Wylęgarnia usuwa wadę razem ze składnikiem.</div></div>`).join(''));
-  return out.join('');
+// Wiersze i uwagi faktury: ważne uwagi (Nemezis, wada, odblokowania) wydłużają czas jej wiszenia.
+function invoiceData(j, floor) {
+  const r = j.result || {}, run = G.run, boss = j.boss, un = takeUnlocks();
+  const base = j.reward - (j.interest || 0) - (j.doorCoins || 0), rows = [];
+  const secs = (r.ticks / 10).toFixed(1).replace('.', ',');
+  rows.push([`${boss ? 'Pokonanie bossa' : 'Pokonanie piętra ' + (floor || run.round)} (czas walki ${secs} s)`, boss ? 'boss' : 'zaliczone']);
+  rows.push(['Zadane obrażenia', fmtNum(r.dealt)]);
+  rows.push(['Wypłata za piętro', `+${base} ${art.coinIcon()}`]);
+  if (j.interest) rows.push(['Odsetki w Spiżarni', `+${j.interest} ${art.coinIcon()}`]);
+  if (j.doorCoins) rows.push(['Premia za ryzykowne drzwi', `+${j.doorCoins} ${art.coinIcon()}`]);
+  rows.push(['Leczenie (życie po leczeniu)', `${run.hp}/${run.maxHp}`]);
+  const notes = [];   // { text, imp }
+  if (j.nemesis) notes.push({ text: `Sprawiedliwości stało się zadość! Nemezis pokonany: Odznaka Sprawiedliwość Kurnika${j.nemesis.tile ? ' i odzyskany kafelek ' + TILE[j.nemesis.tile].name : ''}.`, imp: true });
+  for (const w of (j.revealed || [])) notes.push({ text: `Wada ujawniona: ${TILE[w.id].name}, ${D.FLAWS[w.flaw].name}. ${D.FLAWS[w.flaw].text}`, imp: true });
+  for (const u of un) notes.push({ text: `Odblokowano ${u.kind === 'char' ? 'postać' : 'kafelek'}: ${unlockName(u)}. ${u.text}`, imp: true });
+  if (r.stolen) notes.push({ text: `Złodzieje ukradli ci ${r.stolen} Ziaren.` });
+  if (r.usedRevive) notes.push({ text: 'Gniazdo Zapasowe zostało zużyte.' });
+  if (r.chains) notes.push({ text: `Pełne Kurze Serie: ${r.chains}` });
+  if (r.reactions) notes.push({ text: `Reakcje: ${r.reactions} (${(r.reactSeen || []).map(k => D.REACTIONS[k] ? D.REACTIONS[k].name : k).join(', ')})` });
+  if (j.grew && j.grew.length) notes.push({ text: 'Urosło: ' + j.grew.map(id => TILE[id].name + ' (' + Math.min(TILE[id].grow.max, (run.grow || {})[id] || 0) + '/' + TILE[id].grow.max + ')').join(', ') });
+  return { rows, notes, boss, imp: notes.some(n => n.imp), line: boss ? T.BOSS_WIN_LINES[boss] : T.pickLine(T.WIN_LINES, run.round) };
 }
+function showInvoice(j, floor) {
+  const run = G.run, d = invoiceData(j, floor), I = T.INVOICE;
+  dismissInvoice(true);
+  if (!invoiceOn()) {   // bez faktury: krótka informacja, a ważne uwagi jako powiadomienia
+    toast(`${d.boss ? 'Boss pokonany' : 'Piętro ' + (floor || run.round) + ' zdobyte'}: +${j.reward} Ziaren`);
+    for (const n of d.notes.filter(x => x.imp)) toast(n.text, false, 6000);
+    return;
+  }
+  const foot = d.boss ? T.pickLine(I.bossFooters, run.round) : T.pickLine(I.footers, run.round);
+  const stamp = d.boss ? I.bossStamp : I.stamp;
+  const el = document.createElement('div');
+  el.className = 'inv' + (d.boss ? ' boss' : '');
+  el.setAttribute('role', 'status');
+  el.innerHTML = `<div class="inv-head"><b>${esc(I.company)}</b><span>${esc(I.nip)}</span></div>
+    <div class="inv-title"><b>${d.boss ? I.bossTitle : I.title}</b><span>nr BG/${esc(String(run.id).slice(-4))}/${String(floor || run.round).padStart(2, '0')}</span></div>
+    <div class="inv-who">Nabywca: <b>${esc(D.CHARS[run.char].name)}</b>, ${esc(T.ZONE_NAMES[run.zone])}</div>
+    <div class="inv-rows">${d.rows.map(([a, b], i) => `<div class="inv-row" style="--d:${i}"><span>${esc(a)}</span><b>${b}</b></div>`).join('')}</div>
+    ${d.notes.length ? `<div class="inv-notes">${d.notes.map(n => `<div class="${n.imp ? 'imp' : ''}">${esc(n.text)}</div>`).join('')}</div>` : ''}
+    <div class="inv-foot">${esc(d.line)}<br><i>${esc(foot)}</i></div>
+    <div class="inv-stamp ${d.boss ? 'boss' : ''}" aria-hidden="true">${esc(stamp).replace('\n', '<br>')}</div>`;
+  $('#invoice').appendChild(el);
+  // położenie: nad środkową kolumną (nie zasłania wieży ze schodami po lewej ani panelu po prawej)
+  const st = $('.stage'), rc = st && st.getBoundingClientRect();
+  if (rc && rc.width > 0) { el.style.left = (rc.left + rc.width / 2) + 'px'; el.style.top = Math.max(10, rc.top + 2) + 'px'; el.style.maxWidth = Math.max(260, rc.width - 20) + 'px'; }
+  snd.sfx('unlock');
+  INV.el = el; INV.t0 = performance.now();
+  const hold = (REDUCED.matches ? 2200 : 3200) + d.rows.length * 120 + (d.imp ? 3600 : 0);
+  INV.timers.push(setTimeout(() => dismissInvoice(false), hold));
+}
+// Pierwsza akcja gracza (klik, klawisz) chowa fakturę, ale dopiero po chwili, żeby nie zniknęła przypadkiem.
+for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, () => { if (INV.el && performance.now() - INV.t0 > 700) dismissInvoice(true); }, true);
 function takeUnlocks() { const u = G.unlocks; G.unlocks = []; return u; }
 function unlocksHTML(list) {
   if (!list.length) return '';
@@ -865,17 +906,41 @@ async function sendAnalysis(withNote) {
   backFromAnalyze();
 }
 function backFromAnalyze() { const f = G.ana && G.ana.from; if (f === 'hist') showHistory(); else if (G.lastEndJ) showEnd(G.lastEndJ, true); else closeOverlay(); }
+// Kontekst ciekawostek na ekranie końca (przegrana: dane z ostatniej walki, wygrana: ogólne).
+function endFacts(j, win) {
+  const r = G.run, M = D.MODES[r.mode], res = j.result || (G.lastEndJ && G.lastEndJ.result) || null, seed = parseInt(String(r.id).slice(-6), 10) || 0;
+  if (win) { store.set('bulgot:lastlose', 'null'); return winFacts({ mode: r.mode, garnek: r.garnek, seed }); }
+  const k = r.killer, kd = k && (D.ENEMIES[k.enemy] || D.BOSSES[k.enemy]);
+  const boss = M.bosses[r.round] ? D.BOSSES[M.bosses[r.round]] : null;
+  // seria porażek na tym samym piętrze (zapamiętana w przeglądarce, liczona raz na run)
+  if (!G.streakOf || G.streakOf.id !== r.id) {
+    let last = null; try { last = JSON.parse(store.get('bulgot:lastlose') || 'null'); } catch (e) {}
+    const n = last && last.mode === r.mode && last.round === r.round && last.garnek === r.garnek ? last.count + 1 : 1;
+    store.set('bulgot:lastlose', JSON.stringify({ mode: r.mode, round: r.round, garnek: r.garnek, count: n })); G.streakOf = { id: r.id, n };
+  }
+  const streak = G.streakOf.n;
+  const sets = Object.entries(D.SETS).map(([id, st]) => ({ id, name: st.name, n: setOwned(id) })).filter(x => x.n === 1);
+  return failFacts({
+    mode: r.mode, modeName: M.name, rounds: M.rounds, round: r.round, garnek: r.garnek, garnekName: D.GARNEK[r.garnek].name, seed,
+    result: res, abandoned: !res && r.ended === 'lose', coins: r.coins, hasSkills: r.skills.length > 0, boss: !!boss, bossName: boss ? boss.name : '',
+    killerName: kd ? kd.name : '', nemesis: !!(k && k.nemesis), setHint: sets.length ? sets[0].name : '', streak, runs: G.profile.counters.runs,
+  });
+}
 function showEnd(j, quiet = false) {
   const r = G.run, e = j.end || (G.lastEndJ && G.lastEndJ.end) || {}, win = r.ended === 'win', un = takeUnlocks();
   const mult = (100 + D.RULES.garnekScore * r.garnek) / 100;
-  G.lastEnd = e; G.lastEndJ = j;
+  G.lastEnd = e; G.lastEndJ = j.result || !G.lastEndJ ? j : { ...j, result: G.lastEndJ.result };
+  dismissInvoice(true);
   if (!quiet) { snd.sfx(win ? 'win' : 'lose'); if (!win) snd.sfx('bulgot'); }
   const lines = win ? T.END_WIN.lines : [T.pickLine(T.LOSE_LINES, r.done)];
   const feathers = win ? [8, 18, 27, 36, 45, 55, 63, 72, 81, 90].map((x, i) => `<i style="left:${x}%;--r:${(i * 67) % 360}deg;--dl:${(i * 0.17).toFixed(2)}s;--dx:${(i % 2 ? 1 : -1) * (10 + i * 3)}px"></i>`).join('') : '';
   const scene = `<div class="endscene ${win ? 'win' : 'lose'}" aria-hidden="true"><div class="es-steam"><i></i><i></i><i></i></div><div class="es-clip"><div class="es-hero">${art.portrait(r.char, r.form)}</div></div><div class="es-pot">${art.potArt(win)}</div>${win ? `<div class="es-confetti">${feathers}</div>` : ''}</div>`;
-  openOverlay(`${scene}<h2 class="end-title ${win ? '' : 'lose'}">${win ? T.END_WIN.title : T.END_LOSE.title}</h2>
+  const facts = pickFacts(endFacts(G.lastEndJ, win));
+  // pełny ekran: po lewej scena, tytuł i ciekawostki; po prawej rachunek, rekordy, odblokowania i przyciski
+  openOverlay(`<div class="endwrap ${win ? 'win' : 'lose'}"><div class="end-left">${scene}<h2 class="end-title ${win ? '' : 'lose'}">${win ? T.END_WIN.title : T.END_LOSE.title}</h2>
     ${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}
-    <table class="scoretable"><tr><td>Ukończone piętra (${r.done} × ${D.RULES.scoreRound})</td><td>${fmtNum(r.done * D.RULES.scoreRound)}</td></tr>
+    ${facts.length ? `<div class="facts">${facts.map((f, i) => `<div class="fact ${i ? 'second' : ''}" style="--i:${i}"><span class="fk">${i ? 'I jeszcze' : 'Ciekawostka'}</span>${esc(f.text)}</div>`).join('')}</div>` : ''}</div>
+    <div class="end-right"><table class="scoretable"><tr><td>Ukończone piętra (${r.done} × ${D.RULES.scoreRound})</td><td>${fmtNum(r.done * D.RULES.scoreRound)}</td></tr>
       <tr><td>Ziarna w kieszeni (${r.coins} × ${D.RULES.scoreCoin})</td><td>${fmtNum(r.coins * D.RULES.scoreCoin)}</td></tr>
       <tr><td>Premia za szybkość walk</td><td>${fmtNum(r.timeBonus)}</td></tr>
       ${r.garnek ? `<tr><td>Mnożnik Garnka ${r.garnek} (${D.GARNEK[r.garnek].name})</td><td>×${mult.toFixed(2).replace('.', ',')}</td></tr>` : ''}
@@ -884,23 +949,40 @@ function showEnd(j, quiet = false) {
     ${e.rank ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}
     ${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano Temperaturę Garnka ${G.profile.garnek}: ${esc(D.GARNEK[G.profile.garnek].name)}</b></div>` : ''}${unlocksHTML(un)}${endMeta(j)}
     <div class="analyze" id="analyzebox">${analyzeHTML(r.id, !!(G.sentRuns && G.sentRuns[r.id]))}</div>
-    <div class="actions" style="margin-top:14px"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div>`, { force: true });
+    <div class="actions" style="margin-top:14px"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>`, { force: true, cls: 'endfull' });
   G.screen = 'home'; render();
   countUp($('#endscore'), quiet);
 }
 
 // ---------- okna: ranking, księga, pomoc, ustawienia, menu ----------
-async function showRanking(mode) {
+// Ranking: jeden ogólny (punkty) albo przefiltrowany po postaci, poziomie Garnka i graczu. Klik w nick, postać lub Garnek w tabeli ustawia filtr.
+const RK = { mode: null, char: '', garnek: '', nick: '' };
+async function showRanking(mode, keep) {
   mode = mode || G.setup.mode;
-  openOverlay(`<h2>Ranking</h2><div class="tabs">${['quick', 'full'].map(m => `<button class="tab ${m === mode ? 'on' : ''}" data-act="ranktab" data-v="${m}">${D.MODES[m].name}</button>`).join('')}</div><div id="rk" class="lead">Ładowanie…</div>`);
-  const { j } = await apiRanks(mode);
-  const box = $('#rk'); if (!box) return;
+  if (!keep) Object.assign(RK, { char: '', garnek: '', nick: '' });
+  RK.mode = mode;
+  const chars = Object.values(D.CHARS).filter(c => !c.secret || G.profile.chars.includes(c.id));
+  const maxG = Math.max(G.profile.garnek | 0, 0);
+  const sel = (id, label, opts, val) => `<label class="rkf"><span>${label}</span><select id="${id}" >${opts.map(([v, n]) => `<option value="${esc(v)}" ${String(v) === String(val) ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`;
+  openOverlay(`<h2>Ranking</h2><div class="tabs">${['quick', 'full'].map(m => `<button class="tab ${m === mode ? 'on' : ''}" data-act="ranktab" data-v="${m}">${D.MODES[m].name}</button>`).join('')}</div>
+    <div class="rkbar">${sel('rk-char', 'Postać', [['', 'Wszystkie'], ...chars.map(c => [c.id, c.name])], RK.char)}${sel('rk-garnek', 'Poziom trudności', [['', 'Wszystkie'], ...D.GARNEK.map((g, i) => [i, 'Garnek ' + i + ' · ' + g.name]).slice(0, Math.max(maxG, +RK.garnek || 0) + 1)], RK.garnek)}
+      <label class="rkf"><span>Gracz</span><input id="rk-nick" type="text" maxlength="16" placeholder="dowolny nick" value="${esc(RK.nick)}" autocomplete="off"></label>
+      <button class="btn small" data-act="rkme" title="Pokaż tylko moje wyniki">Tylko ja</button><button class="btn small ghost" data-act="rkclear" ${RK.char || RK.garnek !== '' || RK.nick ? '' : 'disabled'}>Wyczyść filtry</button></div>
+    <div id="rk" class="lead">Ładowanie…</div>`);
+  const q = new URLSearchParams(); if (RK.char) q.set('char', RK.char); if (RK.garnek !== '') q.set('garnek', RK.garnek); if (RK.nick.trim()) q.set('nick', RK.nick.trim());
+  const myMode = mode, { j } = await apiRanks(mode, q.toString());
+  const box = $('#rk'); if (!box || RK.mode !== myMode) return;
   if (!j || !j.list) { box.textContent = (j && j.err) || 'Nie udało się pobrać rankingu.'; return; }
-  if (!j.list.length) { box.textContent = 'Nikt jeszcze nie wszedł na szczyt. Bądź pierwszy.'; return; }
-  const me = playerNow(), mynick = me ? me.nick : '';
-  box.className = ''; box.innerHTML = `<table class="rank-list"><thead><tr><th></th><th>Gracz</th><th>Postać</th><th>Piętra</th><th style="text-align:right">Wynik</th></tr></thead><tbody>${j.list.map((x, i) => {
+  const me = playerNow(), mynick = me ? me.nick : '', filtered = RK.char || RK.garnek !== '' || RK.nick.trim();
+  if (!j.list.length) { box.textContent = filtered ? 'Brak wyników dla tych filtrów. Spróbuj szerzej.' : 'Nikt jeszcze nie wszedł na szczyt. Bądź pierwszy.'; return; }
+  const myPos = j.list.findIndex(x => x.nick === mynick);
+  const what = [RK.char ? (D.CHARS[RK.char] || {}).name : 'wszystkie postacie', RK.garnek !== '' ? 'Garnek ' + RK.garnek : 'wszystkie poziomy', RK.nick.trim() ? 'gracz: ' + RK.nick.trim() : 'wszyscy gracze'].join(' · ');
+  const youLine = !mynick ? '' : RK.nick.trim() ? '' : myPos >= 0 ? `Twoje miejsce: <b>#${myPos + 1}</b> z ${j.total}${myPos > 0 ? `. Do #${myPos} brakuje ${fmtNum(j.list[myPos - 1].score - j.list[myPos].score)} pkt.` : '. Jesteś na szczycie tej listy!'}` : `Nie ma cię w pierwszej setce tej listy (${j.total} graczy).`;
+  box.className = ''; box.innerHTML = `<div class="rkinfo"><span>${esc(what)}</span>${youLine ? `<span class="rkyou">${youLine}</span>` : ''}</div>
+    <table class="rank-list"><thead><tr><th></th><th>Gracz</th><th>Postać</th><th>Garnek</th><th>Piętra</th><th style="text-align:right">Wynik</th></tr></thead><tbody>${j.list.map((x, i) => {
     const av = x.avatar && !LOCAL ? `<span class="av"><img src="${esc(avatarUrl(x.avatar))}" alt="" onerror="this.remove()"></span>` : `<span class="av">${esc((x.nick || '?')[0].toUpperCase())}</span>`;
-    return `<tr class="${x.nick === mynick ? 'me' : ''}"><td class="pos">${i + 1}</td><td>${av}${esc(x.nick)}${x.win ? ' ★' : ''}</td><td>${esc((D.CHARS[x.char] || {}).name || '')}${x.garnek ? ' · G' + x.garnek : ''}</td><td>${x.rounds}</td><td class="sc">${fmtNum(x.score)}</td></tr>`;
+    const cn = (D.CHARS[x.char] || {}).name || '';
+    return `<tr class="${x.nick === mynick ? 'me' : ''} ${i < 3 ? 'top' + (i + 1) : ''}"><td class="pos">${i + 1}</td><td><button class="lnk" data-act="rknickset" data-v="${esc(x.nick)}" title="Pokaż wyniki tego gracza">${av}${esc(x.nick)}</button>${x.win ? ' ★' : ''}</td><td><button class="lnk" data-act="rkcharset" data-v="${esc(x.char)}" title="Filtruj po tej postaci">${esc(cn)}</button></td><td><button class="lnk" data-act="rkgset" data-v="${x.garnek | 0}" title="Filtruj po tym poziomie">G${x.garnek | 0}</button></td><td>${x.rounds}</td><td class="sc">${fmtNum(x.score)}</td></tr>`;
   }).join('')}</tbody></table>`;
 }
 // Księga: nowe wpisy (odblokowane kafelki, przepisy, reakcje) od ostatniego otwarcia dostają naklejkę „Nowy wpis!”.
@@ -938,14 +1020,14 @@ function showBook(tab = 'tiles') {
       return `<div class="entry ${nw ? 'fresh' : ''}" style="--i:${i}">${tileCard(t.id, { static: true, mini: true, i, locked: !open, lockText: open ? '' : (u && u.text) })}${nw ? '<span class="newtag">Nowy wpis!</span>' : ''}</div>`;
     }).join('')}</div>`;
   } else if (tab === 'chars') {
-    body = `<div class="opts">${Object.values(D.CHARS).map(c => { const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock];
-      return `<div class="opt char-opt ${open ? '' : 'locked'}">${art.portrait(c.id)}<div><h3>${esc(c.name)}</h3><p>${esc(c.style)}. ${esc(c.text)}</p>${open ? '' : `<div class="lockmsg">Zablokowana: ${esc(u ? u.text : '')}</div>`}</div></div>`; }).join('')}</div>
+    body = `<div class="opts">${Object.values(D.CHARS).map(c => { const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock], v = charView(c, open);
+      return `<div class="opt char-opt ${open ? '' : 'locked'}">${v.hidden ? art.eggArt(c.id, false) : art.portrait(c.id)}<div><h3>${esc(v.name)}</h3><p>${esc(v.style)}. ${esc(v.text)}</p>${open ? '' : `<div class="lockmsg">Zablokowana: ${esc(v.hidden ? '???' : u ? u.text : '')}</div>`}</div></div>`; }).join('')}</div>
       <div class="sec">Formy kurczaka</div><div class="opts">${D.FORMS.map(f => `<div class="opt char-opt">${art.heroArt('pyrtek', f.id)}<div><h3>${f.name}</h3><p>Od ${Math.round(f.from * 100)}% runu.</p></div></div>`).join('')}</div>`;
   } else if (tab === 'foes') {
     const all = [...Object.values(D.ENEMIES), ...Object.values(D.BOSSES)];
     body = `<div class="opts">${all.map(d => `<div class="opt char-opt">${art.enemyArt(d.art)}<div><h3>${esc(d.name)}</h3><p>${d.title ? esc(d.title) + '. ' : ''}${esc(d.text)}</p><p style="color:var(--faint)">${d.zone != null && !d.minion ? 'Strefa ' + D.ZONES[d.zone].tag : d.minion ? 'Przywoływany przez bossa' : 'Boss'}</p></div></div>`).join('')}</div>`;
   } else {
-    body = `<div class="help-list">${D.UNLOCKS.map(u => { const done = p.unlocked.includes(u.id); return `<div><b>${done ? '✓' : '○'} ${esc(unlockName(u))}</b><p>${esc(u.text)}${done ? ' (zdobyte)' : ''}</p></div>`; }).join('')}</div>`;
+    body = `<div class="help-list">${D.UNLOCKS.map(u => { const done = p.unlocked.includes(u.id), sec = u.secret && !done; return `<div><b>${done ? '✓' : '○'} ${esc(sec ? '???' : unlockName(u))}</b><p>${esc(sec ? '???' : u.text)}${done ? ' (zdobyte)' : ''}</p></div>`; }).join('')}</div>`;
   }
   // księga: okładka, zakładki-przekładki, strona z wklejanymi wpisami
   openOverlay(`<div class="booktabs tabs">${tabs.map(([id, n], i) => `<button class="tab ${id === tab ? 'on' : ''}" data-act="booktab" data-v="${id}" style="--t:${i}">${n}</button>`).join('')}</div><div class="bookpage"><h2>Księga Kurnika</h2>${body}</div>`, { cls: 'bookmodal' });
@@ -972,6 +1054,7 @@ function showHelp() {
 function showSettings() {
   openOverlay(`<h2>Dźwięk i walka</h2><div class="setrow"><span>Efekty dźwiękowe</span><button class="toggle ${snd.settings.sfx ? 'on' : ''}" data-act="tsfx">${snd.settings.sfx ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Muzyka (bulgocząca pętla)</span><button class="toggle ${snd.settings.music ? 'on' : ''}" data-act="tmusic">${snd.settings.music ? 'WŁ.' : 'WYŁ.'}</button></div>
+    <div class="setrow"><span>Faktura po wygranej walce (zamiast okna wyniku)</span><button class="toggle ${invoiceOn() ? 'on' : ''}" data-act="tinv">${invoiceOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Domyślna szybkość walki</span><button class="toggle on" data-act="speed2">×${G.speed}</button></div>
     <p class="hint">Wyciszenie dźwięku w lobby wycisza także tę grę.</p>`, { narrow: true });
 }
@@ -996,7 +1079,7 @@ const ACT = {
   home: () => { closeOverlay(); stopFight(); G.fight = null; G.screen = 'home'; render(); },
   resume: () => { G.screen = 'run'; render(); },
   setmode: b => { G.setup.mode = b.dataset.v; store.set('bulgot:mode', b.dataset.v); render(); },
-  setchar: b => { if (G.profile.chars.includes(b.dataset.v)) { G.setup.char = b.dataset.v; render(); } else toast('Ta postać jest zablokowana: ' + (D.UNLOCK_BY_ID[D.CHARS[b.dataset.v].lock] || {}).text); },
+  setchar: b => { if (G.profile.chars.includes(b.dataset.v)) { G.setup.char = b.dataset.v; render(); } else toast('Ta postać jest zablokowana: ' + (D.CHARS[b.dataset.v].secret ? '???' : (D.UNLOCK_BY_ID[D.CHARS[b.dataset.v].lock] || {}).text)); },
   setgarnek: b => { const v = +b.dataset.v; if (v <= G.profile.garnek) { G.setup.garnek = v; render(); } else toast('Wygraj run na poziomie ' + (v - 1) + ', żeby odblokować ten Garnek.'); },
   start: async () => {
     const s = G.setup; if (!G.profile.chars.includes(s.char)) s.char = 'pyrtek'; if (s.garnek > G.profile.garnek) s.garnek = 0;
@@ -1037,7 +1120,12 @@ const ACT = {
   'retry-fight': () => { closeOverlay(); const cb = G.retryCb; G.retryCb = null; if (cb) cb(); },
   close: () => { closeOverlay(); if (G.screen === 'run' && G.run && G.run.phase === 'bonus') render(); },
   ranking: () => showRanking(G.run ? G.run.mode : G.setup.mode),
-  ranktab: b => showRanking(b.dataset.v),
+  ranktab: b => showRanking(b.dataset.v, true),
+  rkme: () => { const me = playerNow(); if (me) { RK.nick = me.nick; showRanking(RK.mode, true); } },
+  rkclear: () => { Object.assign(RK, { char: '', garnek: '', nick: '' }); showRanking(RK.mode, true); },
+  rknickset: b => { RK.nick = b.dataset.v; showRanking(RK.mode, true); },
+  rkcharset: b => { RK.char = b.dataset.v; showRanking(RK.mode, true); },
+  rkgset: b => { RK.garnek = b.dataset.v; showRanking(RK.mode, true); },
   book: () => showBook(), booktab: b => showBook(b.dataset.v),
   history: () => showHistory(),
   skillmove: b => swapSlots(+b.dataset.v, +b.dataset.v + +b.dataset.d),
@@ -1051,6 +1139,7 @@ const ACT = {
   help: () => showHelp(), settings: () => showSettings(), menu: () => showMenu(),
   tsfx: b => { snd.setSfx(!snd.settings.sfx); showSettings(); },
   tmusic: b => { snd.setMusic(!snd.settings.music); showSettings(); },
+  tinv: () => { store.set('bulgot:invoice', invoiceOn() ? '0' : '1'); dismissInvoice(true); showSettings(); },
   abandon: () => confirmAbandon(),
   'abandon-yes': async () => { closeOverlay(); stopFight(); G.fight = null; const j = await act('abandon'); if (!j) return; G.screen = 'run'; showEnd(j); },
   again: () => { closeOverlay(); G.screen = 'setup'; render(); },
@@ -1064,6 +1153,8 @@ document.addEventListener('click', e => {
   const fn = ACT[b.dataset.act];
   if (fn) { if (!['pick', 'buy', 'reroll', 'useskill', 'bet'].includes(b.dataset.act)) snd.sfx('click'); fn(b, e); }
 });
+// Filtry rankingu: zmiana listy, poziomu Garnka albo nicka odświeża tabelę.
+document.addEventListener('change', e => { const t = e.target; if (!t || !t.id || !t.id.startsWith('rk-')) return; if (t.id === 'rk-char') RK.char = t.value; else if (t.id === 'rk-garnek') RK.garnek = t.value; else if (t.id === 'rk-nick') RK.nick = t.value.trim(); showRanking(RK.mode, true); });
 // ---------- sterowanie strzałkami ----------
 // Strzałki przesuwają zaznaczenie do najbliższego przycisku w danym kierunku (karty, Dokup, Reroll, okna), Enter zatwierdza zaznaczony.
 const ARROWS = { arrowleft: [-1, 0], arrowright: [1, 0], arrowup: [0, -1], arrowdown: [0, 1] };

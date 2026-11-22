@@ -18,7 +18,7 @@ await p.click('[data-act=start]'); await wait(500);
 await p.click('[data-act=introgo]'); await wait(300);
 // weź dwa kafelki (po jednym na rundę nie zdążymy), więc dopisz kafelki do stanu widoku: wybierz pierwszy kafelek i zamknij okna
 await p.keyboard.press('1'); await wait(500);
-await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); });
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; });
 await wait(300);
 
 const check = async (sel, name, size) => {

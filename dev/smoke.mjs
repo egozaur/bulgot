@@ -27,16 +27,16 @@ for (let r = 0; r < rounds; r++) {
   if (s.screen !== 'run') break;
   if (s.phase === 'offer') { await p.keyboard.press('1'); await wait(400); s = await st(); }
   if (s.phase === 'event') { await p.evaluate(() => (document.querySelector('[data-act=leave]') || document.querySelector('[data-act=bet][data-v="0"]')).click()); await wait(300); s = await st(); }
-  await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); });
+  await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; });
   if (s.phase === 'fight') {
     await p.click('[data-act=tofight]'); await wait(1200);
     await p.keyboard.press('1'); await p.keyboard.press('2'); await p.keyboard.press('3');
     await p.evaluate(() => { const sp = document.querySelector('[data-act=speed]'); sp.click(); sp.click(); });
     let done = false;
-    for (let i = 0; i < 150 && !done; i++) { await wait(400); done = !!(await p.$('.modal')); }
+    for (let i = 0; i < 150 && !done; i++) { await wait(400); done = !!(await p.$('.inv, .modal')); }
     if (!done) fail('walka ' + (r + 1) + ' nie skończyła się w czasie');
     if (await p.evaluate(() => window.__bulgot.run.phase === 'over')) break;
-    await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); }); await wait(400);
+    await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; }); await wait(400);
   }
   s = await st(); if (s.phase === 'bonus') { await p.keyboard.press('1'); await wait(400); }
   s = await st(); if (s.phase === 'door' || s.phase === 'badge') { await p.keyboard.press('1'); await wait(400); }   // Rozwidlenie Korytarza: zwykłe drzwi

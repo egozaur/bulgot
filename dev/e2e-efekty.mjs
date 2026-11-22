@@ -20,7 +20,7 @@ await p.evaluate(K => { const r = JSON.parse(localStorage.getItem(K)); r.round =
 await p.reload({ waitUntil: 'load' }); await wait(600);
 const rs = await p.$('[data-act=resume]'); if (rs) { await rs.click(); await wait(400); }
 await p.keyboard.press('1'); await wait(500);
-await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); });
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; });
 await p.click('[data-act=tofight]'); await wait(1500);
 // statusy na wrogach
 await p.evaluate(() => { const F = window.__bulgot.fight, t = F.f.tick + 300, E = F.f.enemies; const set = (e, k, n) => { if (e) { e[k] = n; e[k + 'T'] = t; } }; set(E[0], 'burn', 3); set(E[0], 'bleed', 2); set(E[1] || E[0], 'frost', 2); set(E[2] || E[0], 'poison', 3); });
@@ -56,7 +56,7 @@ await wait(1500);
 await p.evaluate(K => { const r = JSON.parse(localStorage.getItem(K)); r.round = 6; r.phase = 'fight'; r.fight = null; r.hp = 400; localStorage.setItem(K, JSON.stringify(r)); }, K);
 await p.reload({ waitUntil: 'load' }); await wait(600);
 const rs2 = await p.$('[data-act=resume]'); if (rs2) { await rs2.click(); await wait(400); }
-await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); });
+await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; });
 const tf = await p.$('[data-act=tofight]'); if (tf) { await tf.click(); await wait(900); }
 const cine = await p.evaluate(() => ({ on: !!document.querySelector('.cine'), txt: document.querySelector('.cine')?.innerText || '', tick: window.__bulgot.fight && window.__bulgot.fight.f.tick }));
 check(cine.on && /Brojler/.test(cine.txt), 'wejście bossa: plansza z imieniem');
