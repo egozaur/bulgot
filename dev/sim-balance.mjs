@@ -154,7 +154,7 @@ function playRun(seed) {
       const before = { hp: run.hp, coins: run.coins };
       const out = fightFinish(run, botInputs(setup));
       const S0 = statsOf(run);
-      const row = (PER[setup.round] = PER[setup.round] || { n: 0, win: 0, loss: 0 });
+      const row = (PER[setup.round] = PER[setup.round] || { n: 0, win: 0, loss: 0, ticks: 0, fast: 0 }); row.ticks += out.result.ticks; if (out.result.ticks <= 20) row.fast++;
       row.n++; if (out.result.win) { row.win++; row.loss += Math.max(0, before.hp - out.result.hp) / S0.maxHp; }
       if (TRACE) {
         const S = statsOf(run);
@@ -186,8 +186,8 @@ let line = 'Porażki w rundzie: ';
 for (let r = 1; r <= rounds; r++) if (died[r]) line += `${r}:${(died[r] / N * 100).toFixed(0)}% `;
 console.log(line);
 if (process.argv.includes('--table')) {
-  console.log('Runda  walk  wygr%  śr.strata życia przy wygranej');
-  for (const r of Object.keys(PER).map(Number).sort((a, b) => a - b)) { const x = PER[r]; console.log(String(r).padStart(4), String(x.n).padStart(5), (x.win / x.n * 100).toFixed(0).padStart(5) + '%', x.win ? (x.loss / x.win * 100).toFixed(0).padStart(6) + '%' : '    -'); }
+  console.log('Runda  walk  wygr%  śr.strata życia przy wygranej  śr.czas walki (s)  walki ≤2 s');
+  for (const r of Object.keys(PER).map(Number).sort((a, b) => a - b)) { const x = PER[r]; console.log(String(r).padStart(4), String(x.n).padStart(5), (x.win / x.n * 100).toFixed(0).padStart(5) + '%', x.win ? (x.loss / x.win * 100).toFixed(0).padStart(6) + '%' : '    -', ((x.ticks / x.n) / 10).toFixed(1).padStart(8), (x.fast / x.n * 100).toFixed(0).padStart(8) + '%'); }
 }
 
 if (process.argv.includes('--tilestats')) {

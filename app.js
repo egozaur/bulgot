@@ -6,6 +6,7 @@ import { Fight, MAX_TICKS, FURY_FROM } from './shared/sim.js';
 import * as art from './art.js';
 import * as T from './text.js';
 import * as snd from './audio.js';
+import { initTip } from './tip.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -26,11 +27,16 @@ const G = {
 window.__bulgot = G;      // podgląd stanu w testach
 
 // Skalowanie: na dużych monitorach cały interfejs rośnie (zoom), a --vh to wysokość okna w jednostkach po przeskalowaniu.
+// Na komputerze (układ 3-kolumnowy, od 1121 px) skala dopasowuje całość do okna także w dół (min. 0,62), bo ekran gry ma ok. 980 jednostek wysokości.
+// Na wąskich ekranach (układ jednokolumnowy, przewijany) skala nie schodzi poniżej 1.
+const DESIGN_H = 980;
 function applyScale() {
-  const w = innerWidth, h = innerHeight, sc = Math.max(1, Math.min(w / 1440, h / 860, 2.2)), root = document.documentElement;
+  const w = innerWidth, h = innerHeight, root = document.documentElement;
+  const sc = w >= 1121 ? Math.max(0.62, Math.min(w / 1440, h / DESIGN_H, 2.2)) : Math.max(1, Math.min(w / 1440, h / 860, 2.2));
   root.style.setProperty('--s', sc.toFixed(3)); root.style.setProperty('--vh', (h / sc).toFixed(1) + 'px');
 }
 applyScale(); addEventListener('resize', applyScale);
+initTip({ run: () => G.run });
 
 // ---------- drobne narzędzia UI ----------
 function toast(msg, err = false, ms = 2800) {
@@ -140,9 +146,8 @@ function renderSetup() {
   const modes = Object.entries(T.MODE_INFO).map(([id, m]) => `<button class="opt ${s.mode === id ? 'on' : ''}" data-act="setmode" data-v="${id}"><h3>${m.name}</h3><p>${m.text}</p></button>`).join('');
   const chars = Object.values(D.CHARS).map(c => {
     const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock];
-    // legitymacja pracownicza: zdjęcie, stanowisko, kod kreskowy, pieczątka ZABLOKOWANY
-    const no = String([...c.id].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 99991, 7)).padStart(5, '0');
-    return `<button class="opt char-opt idcard ${s.char === c.id ? 'on' : ''} ${open ? '' : 'locked'}" data-act="setchar" data-v="${c.id}" ${open ? '' : 'aria-disabled="true"'}><div class="idhead">Legitymacja pracownicza · K.R. S.A.</div><div class="idbody"><div class="photo">${art.portrait(c.id, 'pyrtek')}</div><div class="idf"><h3>${esc(c.name)}</h3><div class="post">Stanowisko: <b>${esc(c.style)}</b></div><p>${esc(c.text)}</p></div></div><div class="idfoot">${art.barcode(c.id)}<span>Nr ${no}</span></div>${open ? '' : `<span class="idstamp" aria-hidden="true">ZABLOKOWANY</span><div class="lockmsg">Jak odblokować: ${esc(u ? u.text : '')}</div>`}</button>`;
+    // jajko: odblokowana postać wystaje ze skorupy, zablokowana to jeszcze nie pęknięte jajo
+    return `<button class="opt char-opt egg-opt ${s.char === c.id ? 'on' : ''} ${open ? 'hatched' : 'locked'}" data-act="setchar" data-v="${c.id}" ${open ? '' : 'aria-disabled="true"'}><div class="egg-art">${art.eggArt(c.id, open)}</div><h3>${esc(c.name)}</h3><div class="post">Stanowisko: <b>${esc(c.style)}</b></div><p>${esc(c.text)}</p>${open ? '' : `<div class="lockmsg">🔒 Jak odblokować: ${esc(u ? u.text : '')}</div>`}</button>`;
   }).join('');
   // termometr: od „Letni” do „Wulkan Rosołu”; rtęć dochodzi do wybranego poziomu
   const gs = D.GARNEK.map((g, i) => `<button class="gbtn ${s.garnek === i ? 'on' : ''} ${i > p.garnek ? 'locked' : ''}" data-act="setgarnek" data-v="${i}" style="--gi:${i}" ${i > p.garnek ? 'aria-disabled="true"' : ''}><i class="tick"></i><span class="gn">${i}</span><span class="gl">${g.name}</span>${i > p.garnek ? '<span class="glock" aria-label="zablokowany">🔒</span>' : ''}</button>`).join('');
@@ -237,29 +242,27 @@ function sideHTML() {
     if (!s) return '<div class="slot empty">wolny slot umiejętności</div>';
     const def = D.SKILLS[s.id], tile = D.TILES.find(t => t.skill === s.id);
     const mu = s.lvl >= 3 && def.muts[(s.mut || 1) - 1];
-    return `<div class="slot">${art.tileIcon(tile.id)}<div><div class="sn">${i + 1}. ${esc(def.name)}${mu ? `<span class="lv mut">${esc(mu.name)}</span>` : s.lvl >= 2 ? '<span class="lv">POZ. 2</span>' : ''}</div><div class="sd">${esc(def.text)}${s.lvl >= 2 ? ' (+30% mocy, -20% cooldownu)' : ''}${mu ? ' Mutacja: ' + esc(mu.text) : ''}</div></div></div>`;
+    return `<div class="slot" data-tipk="tile:${tile.id}" tabindex="0">${art.tileIcon(tile.id)}<div><div class="sn">${i + 1}. ${esc(def.name)}${mu ? `<span class="lv mut">${esc(mu.name)}</span>` : s.lvl >= 2 ? '<span class="lv">POZ. 2</span>' : ''}</div><div class="sd">${esc(def.text)}${s.lvl >= 2 ? ' (+30% mocy, -20% cooldownu)' : ''}${mu ? ' Mutacja: ' + esc(mu.text) : ''}</div></div></div>`;
   }).join('');
-  const srow = (k, label, val) => `<dt>${art.statIcon(k)}<span>${label}</span></dt><dd>${val}</dd>`;
+  const srow = (k, label, val) => `<dt data-tipk="stat:${k}" tabindex="0">${art.statIcon(k)}<span>${label}</span></dt><dd data-tipk="stat:${k}">${val}</dd>`;
   const rows = T.STAT_LABELS.map(([k, label, f]) => srow(k, label, f ? f(S[k]) : S[k])).join('')
     + (S.dmg ? srow('dmg', 'Obrażenia', `+${S.dmg}%`) : '') + (S.critMult !== 150 ? srow('critMult', 'Siła trafienia krytycznego', `×${(S.critMult / 100).toFixed(2).replace('.', ',')}`) : '');
   const counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
   const chips = Object.entries(counts).map(([id, n]) => {
     const t = TILE[id], g = t.grow ? Math.min(t.grow.max, (r.grow || {})[id] || 0) : 0, fw = (r.flawed || []).find(w => w.id === id);
-    let tip = t.name + '\n' + t.text;
-    if (t.grow) tip += '\nLicznik: ' + g + ' / ' + t.grow.max;
-    if (fw) tip += '\nWada fabryczna (+50% efektów): ' + (fw.flaw ? D.FLAWS[fw.flaw].name + '. ' + D.FLAWS[fw.flaw].text : 'ujawni się po walce');
-    return `<div class="chip r${t.rarity} ${fw ? 'flawed' : ''}" tabindex="0" data-tip="${esc(tip)}">${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : t.grow && g ? `<sup class="gr">+${g}</sup>` : ''}</div>`;
+    const tip = fw ? 'Wada fabryczna (+50% efektów): ' + (fw.flaw ? D.FLAWS[fw.flaw].name + '. ' + D.FLAWS[fw.flaw].text : 'ujawni się po walce') : '';
+    return `<div class="chip r${t.rarity} ${fw ? 'flawed' : ''}" tabindex="0" data-tipk="tile:${id}" data-tipx="${esc(tip)}">${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : t.grow && g ? `<sup class="gr">+${g}</sup>` : ''}</div>`;
   }).join('');
   const pawnLine = r.pawned ? `<div class="setline pawn">W lombardzie: ${esc(TILE[r.pawned.id].name)}${r.pawned.canRedeem ? ` (wykup za ${r.pawned.cost} Ziaren tylko na tym piętrze)` : ' (wykup na następnym piętrze)'}</div>` : '';
   const foxLine = r.foxDebt ? `<div class="setline pawn">Lisy Windykatory silniejsze o ${r.foxDebt * D.RULES.pawnFox}% (przepadłe zastawy)</div>` : '';
-  const sets = Object.entries(D.SETS).map(([id, st]) => { const n = setOwned(id); if (!n) return ''; const total = D.TILES.filter(t => t.set === id).length; return `<div class="setline">Zestaw ${st.name} ${n}/${total}${n >= 2 ? ': ' + st.b2 : ''}${n >= 3 ? '; ' + st.b3 : ''}${n >= 4 && st.b4 ? '; ' + st.b4 : ''}</div>`; }).join('');
+  const sets = Object.entries(D.SETS).map(([id, st]) => { const n = setOwned(id); if (!n) return ''; const total = D.TILES.filter(t => t.set === id).length; return `<div class="setline" data-tipk="set:${id}" tabindex="0">Zestaw ${st.name} ${n}/${total}${n >= 2 ? ': ' + st.b2 : ''}${n >= 3 ? '; ' + st.b3 : ''}${n >= 4 && st.b4 ? '; ' + st.b4 : ''}</div>`; }).join('');
   const mss = Object.entries(D.MILESTONES).map(([id, m]) => { const n = Math.floor(r.tiles.filter(x => x === id).length / D.MILESTONE_EVERY); return n ? `<div class="setline ms">${esc(m.name)}${n > 1 ? ' ×' + n : ''}: ${esc(m.text)}</div>` : ''; }).join('');
   const pct = Math.max(0, Math.min(100, r.hp / S.maxHp * 100));
   return `<aside class="side">
     <div class="panel hero-card">${art.heroArt(r.char, r.form)}<div><div class="nm">${esc(ch.name)}</div><div class="fm">${esc(form.name)}</div>
       <div class="hpbar" style="margin-top:6px"><i style="width:${pct}%"></i><b><span data-ctr="hp">${r.hp}</span> / ${S.maxHp}</b></div></div></div>
     <div class="panel"><h4>Umiejętności aktywne</h4><div class="slots">${slots}</div></div>
-    ${r.badges && r.badges.length ? `<div class="panel"><h4>Odznaki (${r.badges.length})</h4><div class="chips">${r.badges.map(b => `<div class="chip badge" tabindex="0" data-tip="${esc(D.BADGES[b].name)}\n${esc(D.BADGES[b].text)}">${art.badgeIcon(b)}</div>`).join('')}</div></div>` : ''}
+    ${r.badges && r.badges.length ? `<div class="panel"><h4>Odznaki (${r.badges.length})</h4><div class="chips">${r.badges.map(b => `<div class="chip badge" tabindex="0" data-tipk="badge:${b}">${art.badgeIcon(b)}</div>`).join('')}</div></div>` : ''}
     <div class="panel"><h4>Statystyki</h4>${zoneCompareHTML()}<dl class="stats">${rows}</dl></div>
     <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${sets}${mss}${pawnLine}${foxLine}</div></aside>`;
 }
@@ -365,8 +368,16 @@ function pawnBtn() {
 }
 const pawnable = () => { const r = G.run; return [...new Set(r.tiles)].filter(id => { const t = TILE[id]; return t && t.type !== 'skill' && !t.hidden && !(r.flawed || []).some(w => w.id === id); }); };
 function showPawn() {
-  const r = G.run, cards = pawnable().map((id, i) => `<div class="slotcard">${tileCard(id, { i, static: true, mini: true })}<button class="btn small buy" data-act="pawn" data-v="${id}">Zastaw za ${D.RULES.prices[TILE[id].rarity]} ${art.coinIcon()}</button></div>`).join('');
-  openOverlay(`<h2>Lombard Lisa</h2><p class="lead">Lis da ci od ręki pełną cenę kafelka. Wykupisz go tylko na <b>następnym piętrze</b> za ${D.RULES.pawnBack}% ceny. Jeśli nie wykupisz, kafelek przepada, a Lisy Windykatory w tym runie są o ${D.RULES.pawnFox}% silniejsze.</p><div class="cards pawn-grid">${cards}</div>`);
+  const P = D.RULES.prices, back = D.RULES.pawnBack, fox = D.RULES.pawnFox;
+  const cards = pawnable().map((id, i) => { const pr = P[TILE[id].rarity];
+    return `<div class="slotcard">${tileCard(id, { i, static: true, mini: true })}<button class="btn small buy" data-act="pawn" data-v="${id}">Zastaw za ${pr} ${art.coinIcon()}</button><div class="buynote">Wykup na następnym piętrze: ${Math.ceil(pr * back / 100)} ${art.coinIcon()}</div></div>`; }).join('');
+  openOverlay(`<h2>Lombard Lisa</h2>
+    <p class="lead">Lis pożycza Ci Ziarna pod zastaw kafelka. Dostajesz pieniądze od razu, ale kafelek znika z Twojej budowy i musisz go odkupić drożej.</p>
+    <div class="pawn-how">
+      <div><b>Jak to działa</b><ol><li>Oddajesz jeden kafelek (nie umiejętność i nie kafelek z wadą). Lis daje Ci <b>pełną cenę</b> jego rzadkości.</li><li>Na <b>następnym piętrze</b> możesz go wykupić za <b>${back}%</b> tej ceny (zwykły: ${P[0]} → ${Math.ceil(P[0] * back / 100)}, rzadki: ${P[1]} → ${Math.ceil(P[1] * back / 100)}).</li><li>Nie wykupisz? Kafelek przepada na zawsze, a Lisy Windykatory są w tym runie o <b>${fox}%</b> silniejsze (za każdy przepadły zastaw).</li></ol>Lis trzyma naraz tylko jeden zastaw.</div>
+      <div><b>Kiedy warto</b><ul><li>Potrzebujesz Ziaren <b>teraz</b> (dokup dobrego kafelka, reroll), a masz kafelek, który słabo pasuje do budowy.</li><li>Wiesz, że za piętro będziesz mieć Ziarna na wykup.</li></ul><b>Kiedy nie</b><ul><li>To kluczowy kafelek zestawu albo bez niego przegrasz kolejną walkę.</li><li>Nie stać Cię będzie na wykup.</li></ul></div>
+    </div>
+    <div class="cards pawn-grid">${cards}</div>`);
 }
 function stageOffer() {
   const r = G.run, cards = r.offer.map((id, i) => id ? offerCard(id, i) : '<div class="slotcard"><div class="tile gone">Dokupione</div></div>').join('');
@@ -788,6 +799,29 @@ function countUp(el, quiet) {
   const step = now => { if (!el.isConnected) return; const q = Math.min(1, (now - t0) / dur); el.textContent = fmtNum(Math.round(to * (1 - Math.pow(1 - q, 3)))); if (q < 1) requestAnimationFrame(step); else el.classList.add('done'); };
   el.textContent = '0'; setTimeout(() => requestAnimationFrame(step), 700);
 }
+// „Wyślij do analizy”: kopia zakończonego runu (z dziennikiem rund) trafia na serwer, skąd ją odbiera autor gry do strojenia balansu.
+const ANALYZE_TAGS = [['za-latwo', 'Za łatwo'], ['za-trudno', 'Za trudno'], ['nudne', 'Nudne'], ['blad', 'Błąd w grze'], ['niejasne', 'Niejasne zasady'], ['super', 'Super zabawa']];
+const analyzeHTML = (id, sent) => sent
+  ? '<div class="analyze-ok">✓ Wysłano do analizy. Dziękuję, to naprawdę pomaga w strojeniu gry!</div>'
+  : `<div class="analyze-row"><button class="btn" data-act="analyze" data-id="${esc(id)}">Wyślij do analizy</button></div><div class="hint">Wyślemy przebieg tej gry (wybory, wrogów, statystyki), żeby zbadać balans. Bez danych osobowych.</div>`;
+// Okno przed wysłaniem: pytanie o komentarz (co poszło za łatwo, źle itd.), który trafia do pliku partii razem z jej przebiegiem.
+function showAnalyzeDialog(id, from) {
+  G.ana = { id, from };
+  openOverlay(`<h2>Wyślij do analizy</h2>
+    <p class="lead">Chcesz dodać komentarz? Napisz, co poszło za łatwo, za trudno albo źle. Trafi do pliku razem z przebiegiem tej gry.</p>
+    <div class="atags">${ANALYZE_TAGS.map(([v, n]) => `<button class="atag" data-act="atag" data-v="${v}" aria-pressed="false">${n}</button>`).join('')}</div>
+    <textarea id="anote" class="anote" rows="4" maxlength="300" placeholder="Twój komentarz (opcjonalnie), np. „walki kończą się w 2 sekundy, bo trzy umiejętności zabijają wszystko”" aria-label="Komentarz do analizy"></textarea>
+    <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="asend" data-primary>Wyślij</button><button class="btn" data-act="asend0">Wyślij bez komentarza</button><button class="btn ghost" data-act="acancel">Wróć</button></div>`, { narrow: true, force: true });
+  const t = $('#anote'); if (t) t.focus();
+}
+async function sendAnalysis(withNote) {
+  const a = G.ana; if (!a) return;
+  const note = withNote ? (($('#anote') || {}).value || '').trim() : '', tags = withNote ? [...document.querySelectorAll('.atag.on')].map(x => x.dataset.v) : [];
+  const j = await act('analysis', { id: a.id, note, tags }); if (!j) return;
+  (G.sentRuns || (G.sentRuns = {}))[a.id] = true; snd.sfx('unlock'); toast('Wysłano do analizy. Dziękuję!');
+  backFromAnalyze();
+}
+function backFromAnalyze() { const f = G.ana && G.ana.from; if (f === 'hist') showHistory(); else if (G.lastEndJ) showEnd(G.lastEndJ, true); else closeOverlay(); }
 function showEnd(j, quiet = false) {
   const r = G.run, e = j.end || (G.lastEndJ && G.lastEndJ.end) || {}, win = r.ended === 'win', un = takeUnlocks();
   const mult = (100 + D.RULES.garnekScore * r.garnek) / 100;
@@ -806,6 +840,7 @@ function showEnd(j, quiet = false) {
     ${e.newBest ? '<p class="lead" style="color:var(--gold)"><b>Nowy rekord życiowy w tym trybie!</b></p>' : ''}
     ${e.rank ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}
     ${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano Temperaturę Garnka ${G.profile.garnek}: ${esc(D.GARNEK[G.profile.garnek].name)}</b></div>` : ''}${unlocksHTML(un)}${endMeta(j)}
+    <div class="analyze" id="analyzebox">${analyzeHTML(r.id, !!(G.sentRuns && G.sentRuns[r.id]))}</div>
     <div class="actions" style="margin-top:14px"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div>`, { force: true });
   G.screen = 'home'; render();
   countUp($('#endscore'), quiet);
@@ -882,10 +917,10 @@ async function showHistory() {
   const rows = last.map(h => {
     const lastLog = h.log && h.log[h.log.length - 1], killer = h.outcome === 'lose' && !h.abandoned && lastLog ? lastLog.enemies.map(e => e.n).join(', ') : '';
     const res = h.outcome === 'win' ? '<b style="color:var(--green)">WYGRANA</b>' : h.abandoned ? 'porzucony' : '<b style="color:#ff8a6a">porażka</b>';
-    return `<tr><td>${when(h.ended)}</td><td>${esc(D.MODES[h.mode].name)}${h.garnek ? ' · G' + h.garnek : ''}</td><td>${esc((D.CHARS[h.char] || {}).name || h.char)}</td><td>${res}</td><td>${h.floorsDone}/${D.MODES[h.mode].rounds}</td><td class="sc">${fmtNum(h.score)}</td><td>${esc(killer)}</td></tr>`;
+    return `<tr><td>${when(h.ended)}</td><td>${esc(D.MODES[h.mode].name)}${h.garnek ? ' · G' + h.garnek : ''}</td><td>${esc((D.CHARS[h.char] || {}).name || h.char)}</td><td>${res}</td><td>${h.floorsDone}/${D.MODES[h.mode].rounds}</td><td class="sc">${fmtNum(h.score)}</td><td>${esc(killer)}</td><td>${h.sent ? '<span class="sent">✓ wysłano</span>' : `<button class="btn small" data-act="analyze" data-id="${esc(h.id)}">Wyślij</button>`}</td></tr>`;
   }).join('');
   openOverlay(`<h2>Historia gier (test)</h2><p class="lead">Ostatnie ${last.length} runów zapisuje się automatycznie, z dziennikiem każdej rundy. Po testach napisz, żeby ją przeanalizować.</p>
-    ${rows ? `<table class="rank-list"><thead><tr><th>Kiedy</th><th>Tryb</th><th>Postać</th><th>Wynik</th><th>Piętra</th><th style="text-align:right">Punkty</th><th>Pokonał go</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="lead">Brak zakończonych runów. Zagraj i wróć tutaj.</p>'}
+    ${rows ? `<table class="rank-list"><thead><tr><th>Kiedy</th><th>Tryb</th><th>Postać</th><th>Wynik</th><th>Piętra</th><th style="text-align:right">Punkty</th><th>Pokonał go</th><th>Analiza</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="lead">Brak zakończonych runów. Zagraj i wróć tutaj.</p>'}
     <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="histdl" ${rows ? '' : 'disabled'}>Pobierz JSON (ostatnie 10)</button><button class="btn" data-act="histcopy" ${rows ? '' : 'disabled'}>Skopiuj JSON</button></div>`);
 }
 function showHelp() {
@@ -962,6 +997,11 @@ const ACT = {
   ranktab: b => showRanking(b.dataset.v),
   book: () => showBook(), booktab: b => showBook(b.dataset.v),
   history: () => showHistory(),
+  analyze: b => showAnalyzeDialog(b.dataset.id, b.closest('tr') ? 'hist' : 'end'),
+  atag: b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); },
+  acancel: () => backFromAnalyze(),
+  asend: async () => sendAnalysis(true),
+  asend0: async () => sendAnalysis(false),
   histdl: () => { const blob = new Blob([JSON.stringify(G.hist || [], null, 1)], { type: 'application/json' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bulgot-historia.json'; document.body.appendChild(a); a.click(); a.remove(); toast('Pobrano bulgot-historia.json'); },
   histcopy: async () => { try { await navigator.clipboard.writeText(JSON.stringify(G.hist || [], null, 1)); toast('Skopiowano historię do schowka'); } catch (e) { toast('Nie udało się skopiować. Użyj przycisku Pobierz.', true); } },
   help: () => showHelp(), settings: () => showSettings(), menu: () => showMenu(),
@@ -1009,6 +1049,7 @@ function navMove(dx, dy) {
 document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const F = G.fight, k = e.key.toLowerCase();
+  if (k !== 'escape' && e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;   // pisanie nie uruchamia skrótów
   if (k === 'escape') { if (overlayOpen()) { if (!$('#overlay').dataset.force) closeOverlay(); } else if (G.screen === 'run' || (G.screen === 'fight' && G.fight && !G.fight.finishing)) { const m = $('[data-act="menu"]'); m && m.click(); } return; }
   if (ARROWS[k] && !(F && !overlayOpen())) { e.preventDefault(); navMove(...ARROWS[k]); return; }
   if (k === 'enter') { const cur = navCurrent(navItems()); if (cur) { e.preventDefault(); cur.click(); return; } }

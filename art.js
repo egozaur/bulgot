@@ -117,6 +117,59 @@ export function heroArt(char, form) {
 }
 export const portrait = (char, form = 'pyrtek') => heroArt(char, form);
 
+// ---------- Wybór postaci: jajka ----------
+// Odblokowana postać to skorupa z postrzępionym brzegiem, z której wystaje kurczak; zablokowana to jeszcze nie pęknięte, szare jajo.
+const EGG = 'M100 10 C152 10 184 92 184 142 C184 188 148 208 100 208 C52 208 16 188 16 142 C16 92 48 10 100 10 Z';
+const RIM = 132;   // wysokość brzegu skorupy
+const ZIG = [[0, 138], [20, 124], [38, 142], [58, 124], [78, 144], [100, 126], [122, 144], [142, 124], [162, 142], [180, 124], [200, 138]];
+const CHICK = {   // [rozmiar kurczaka w jednostkach jajka, przesunięcie x]; spód rysunku (y≈88) chowa się 12 jednostek pod brzegiem skorupy
+  pyrtek: [150, 0], kwoka: [158, 0], kaczor: [150, 0], indor: [162, -4],
+};
+const BODIES = { pyrtek: PYRTEK, kwoka: KWOKA, kaczor: KACZOR, indor: INDOR };
+export function eggArt(char, open) {
+  const id = 'egg-' + char;
+  const zigPath = ZIG.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ');
+  const below = zigPath + ' L200 230 L0 230 Z';
+  const speck = (c) => [[52, 150, 5], [78, 176, 4], [128, 164, 6], [150, 140, 4], [104, 190, 3.5], [40, 172, 3], [160, 176, 3.5], [118, 142, 3]].map(([x, y, r]) => `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * .75}" fill="${c}" opacity=".55"/>`).join('');
+  if (!open) {
+    return `<svg class="egg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs><linearGradient id="${id}-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d6d3cc"/><stop offset="1" stop-color="#8f8b82"/></linearGradient></defs>
+      <ellipse cx="100" cy="212" rx="62" ry="7" fill="#000" opacity=".35"/>
+      <path d="${EGG}" fill="url(#${id}-g)" ${S}/>
+      ${speck('#6f6b63')}
+      <path d="M58 60 q10 -26 30 -34" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none" opacity=".45"/>
+      <g transform="translate(100 134)"><rect x="-17" y="-2" width="34" height="28" rx="6" fill="#4a463f" ${S2}/><path d="M-10 -2 v-9 a10 10 0 0 1 20 0 v9" fill="none" stroke="#4a463f" stroke-width="6" stroke-linecap="round"/><circle cx="0" cy="10" r="4" fill="#d6d3cc"/><rect x="-1.6" y="11" width="3.2" height="9" rx="1.5" fill="#d6d3cc"/></g>
+    </svg>`;
+  }
+  const [size, dx] = CHICK[char] || CHICK.pyrtek, sc = size / 100, x0 = 100 - 50 * sc + dx, y0 = RIM + 12 - 88 * sc;
+  const indor = char === 'indor';
+  // Indor: czerwone, zbyt duże pióra wystające zza skorupy i czerwony pas na jajku
+  const feathers = indor ? `
+    <path d="M40 124 q-40 -16 -30 -66 q22 12 40 50 z" fill="#c0392b" ${S}/>
+    <path d="M60 112 q-34 -40 -8 -98 q20 26 30 86 z" fill="#8e1b12" ${S}/>
+    <path d="M154 124 q42 -12 32 -62 q-24 10 -42 48 z" fill="#e4572e" ${S}/>
+    <path d="M132 110 q26 -42 6 -96 q-22 24 -26 82 z" fill="#c0392b" ${S}/>` : '';
+  const band = indor ? `<path d="M0 162 q100 22 200 0 v14 q-100 22 -200 0 z" fill="#c0392b" opacity=".9"/><path d="M0 162 q100 22 200 0" stroke="${O}" stroke-width="2.4" fill="none"/><path d="M0 176 q100 22 200 0" stroke="${O}" stroke-width="2.4" fill="none"/>` : '';
+  return `<svg class="egg open ${indor ? 'power' : ''}" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <clipPath id="${id}-below"><path d="${below}"/></clipPath>
+      <clipPath id="${id}-egg"><path d="${EGG}"/></clipPath>
+      <linearGradient id="${id}-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff8e4"/><stop offset="1" stop-color="#e5cf9c"/></linearGradient>
+    </defs>
+    <ellipse cx="100" cy="212" rx="62" ry="7" fill="#000" opacity=".35"/>
+    <ellipse cx="100" cy="${RIM + 2}" rx="68" ry="15" fill="#b99c63" ${S2}/>
+    ${feathers}
+    <svg x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${size}" height="${size}" viewBox="0 0 100 100">${BODIES[char]()}</svg>
+    <g clip-path="url(#${id}-below)">
+      <path d="${EGG}" fill="url(#${id}-g)" ${S}/>
+      <g clip-path="url(#${id}-egg)">${speck('#c9a96b')}${band}</g>
+      <path d="M40 158 q4 24 24 32" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity=".55"/>
+    </g>
+    <path d="${zigPath}" fill="none" ${S}/>
+    <path d="M22 126 l-14 -10 l4 16 z M178 126 l16 -12 l-6 18 z" fill="#fff8e4" ${S2}/>
+  </svg>`;
+}
+
 // ---------- Wrogowie i bossowie (patrzą w lewo, w stronę bohatera) ----------
 const ENEMY = {
   duck: () => `
@@ -474,7 +527,7 @@ export function towerArt(heat = 0) {
 
 export const coinIcon = (cls = 'coin') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 C19 7 20 15 12 22 C4 15 5 7 12 2z" fill="#ffc933" stroke="#2b1a12" stroke-width="2" stroke-linejoin="round"/><path d="M12 7 C14 10 14 14 12 17" stroke="#fff3b0" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
 // Sylwetka nieznanego wroga (ukryty podgląd od Garnka 1): ten sam kształt dla każdego, żeby nic nie zdradzał.
-export const mysteryArt = () => svg(`<ellipse cx="50" cy="95" rx="26" ry="4" fill="rgba(0,0,0,.35)"/><path d="M26 92 q-4 -30 8 -46 q-8 -22 16 -28 q24 6 16 28 q12 16 8 46z" fill="#3a2d22" ${S}/><text x="50" y="70" text-anchor="middle" font-family="Lilita One, Impact, sans-serif" font-size="34" fill="#ffd166" stroke="${O}" stroke-width="2" paint-order="stroke">?</text>`, '0 0 100 100', 'fig enemy-fig mystery');
+export const mysteryArt = () => svg(`<ellipse cx="50" cy="95" rx="26" ry="4" fill="rgba(0,0,0,.35)"/><path d="M26 92 q-4 -30 8 -46 q-8 -22 16 -28 q24 6 16 28 q12 16 8 46z" fill="#3a2d22" ${S}/><text x="50" y="70" text-anchor="middle" font-family="Baloo 2, Impact, sans-serif" font-weight="800" font-size="34" fill="#ffd166" stroke="${O}" stroke-width="2" paint-order="stroke">?</text>`, '0 0 100 100', 'fig enemy-fig mystery');
 // Pęknięcie lodu (Reakcja Kruchość).
 export const crackArt = () => `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 50 L20 18 M50 50 L82 22 M50 50 L88 62 M50 50 L58 92 M50 50 L14 70 M34 34 L22 44 M68 36 L78 44 M66 58 L74 76 M40 62 L28 82" stroke="#e8f8ff" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M50 50 L20 18 M50 50 L82 22 M50 50 L88 62 M50 50 L58 92 M50 50 L14 70" stroke="#4aa3df" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="50" cy="50" r="7" fill="#fff"/></svg>`;
 // Garnek z rosołem (ekran końca): przy porażce kurczak wpada do środka, przy wygranej stoi na garnku Prezesa.
@@ -487,7 +540,7 @@ export const potArt = (prezes = false) => svg(`
   <ellipse cx="100" cy="46" rx="74" ry="13" fill="${prezes ? '#e0a100' : '#b4472a'}" ${S}/>
   <ellipse cx="100" cy="46" rx="62" ry="8" fill="#f4b860" stroke="${O}" stroke-width="2"/>
   <circle cx="78" cy="45" r="3" fill="#ffe08a"/><circle cx="118" cy="47" r="2.4" fill="#ffe08a"/><circle cx="102" cy="44" r="1.8" fill="#fff3b0"/>
-  ${prezes ? `<rect x="78" y="70" width="44" height="16" rx="3" fill="#fff3d6" ${S2}/><text x="100" y="82" text-anchor="middle" font-family="Lilita One, Impact, sans-serif" font-size="11" fill="${O}">PREZES</text>` : ''}`, '0 0 200 120', 'pot-art');
+  ${prezes ? `<rect x="78" y="70" width="44" height="16" rx="3" fill="#fff3d6" ${S2}/><text x="100" y="82" text-anchor="middle" font-family="Baloo 2, Impact, sans-serif" font-weight="800" font-size="11" fill="${O}">PREZES</text>` : ''}`, '0 0 200 120', 'pot-art');
 // Kod kreskowy legitymacji (paski wyliczone z identyfikatora postaci, zawsze takie same).
 export function barcode(id) {
   let h = 7, x = 0, bars = '';
