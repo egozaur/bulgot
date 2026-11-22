@@ -1234,3 +1234,21 @@ html.reduce .logo img { animation: none; }
 .inv-foot { margin-top: 5px; font-size: .72rem; line-height: 1.25; }
 .inv-stamp { right: 8px; bottom: 8px; padding: 3px 7px; font-size: .85rem; }
 .inv .inv-foot i { display: none; }
+
+/* górny pasek: nazwa strefy ma pierwszeństwo, reszta się zwęża (przy wąskim pasku Okólnik tylko jako ikona) */
+.topbar.dash { container: tb / inline-size; }
+.topbar .brand, .topbar .disp, .topbar .pill, .topbar .btn { flex: none; }
+.topbar .zone-name { flex: 1 1 0; min-width: 120px; }
+.topbar .pill.g .gname { display: none; }
+@container tb (max-width: 1060px) { .pill.dec .lbl { display: none; } .topbar .pill { padding-left: .7em; padding-right: .7em; } .topbar .btn.small { padding: .4em .8em; } }
+@container tb (max-width: 900px) { .topbar .pill.mode { display: none; } }
+/* banery w walce wyżej, żeby nie zasłaniały pasków wrogów */
+.banner { top: 12%; } .banner b { font-size: clamp(1.4rem, 3vw, 2.4rem); } .banner small { font-size: .9rem; }
+@container tb (max-width: 1200px) { .pill.dec .lbl { display: none; } .topbar .pill { padding-left: .6em; padding-right: .6em; font-size: .95rem; } .topbar .btn.small { padding: .35em .7em; } .topbar .zone-name { font-size: 1.2rem; min-width: 150px; } .topbar .disp.odo { transform: scale(.9); transform-origin: right center; } }
+@container tb (max-width: 1000px) { .topbar .pill.mode { display: none; } }
+
+/* cooldown: stara reguła `inset: auto` (po left/top) kasowała pozycję cienia, więc „woda” była przesunięta względem kółka; teraz dokładnie na środku przycisku */
+.console .sk .cdv { inset: 4px auto auto 50%; left: 50%; top: 4px; width: 68px; height: 68px; margin-left: -34px; border-radius: 50%; }
+/* nazwa strefy w walce: pasek w walce jest wąski (szerokość areny), więc zwęża się wcześniej */
+.topbar .zone-name { overflow: visible; text-overflow: clip; }
+@container tb (max-width: 1200px) { .topbar .brand img { height: 26px; } .topbar .zone-name { font-size: 1.1rem; min-width: 0; } .topbar .pill.mode { display: none; } }

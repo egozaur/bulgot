@@ -388,8 +388,8 @@ function topbarHTML() {
   return `<div class="topbar dash"><span class="brand" aria-label="Bulgot"><img src="logo-napis.png?v=2" alt="Bulgot"></span>
     <span class="disp lift" title="Piętro ${r.round} z ${r.rounds}" aria-label="Piętro ${r.round} z ${r.rounds}"><i class="arr" aria-hidden="true">▲</i><b>${String(r.round).padStart(2, '0')}</b><small>/${r.rounds}</small></span><span class="zone-name" title="${esc(T.ZONE_NAMES[r.zone])}">${esc(T.ZONE_NAMES[r.zone])}</span><span class="spacer"></span>
     <span class="disp coins" title="Ziarna: waluta na rerolle i zakupy. Odsetki po wygranej walce: +${Math.min(r.interestMax || 3, Math.floor(r.coins / D.RULES.interestPer))}">${art.coinIcon()}<b data-ctr="coins">${r.coins}</b></span>
-    ${r.decree && D.DECREES[r.decree] ? `<span class="pill dec" tabindex="0" title="${esc(D.DECREES[r.decree].name + ': ' + D.DECREES[r.decree].text)}">${art.decreeIcon()} Okólnik</span>` : ''}
-    <span class="pill mode">${M.name}</span>${r.garnek ? `<span class="pill g" title="Temperatura Garnka ${r.garnek}: ${esc(D.GARNEK[r.garnek].name)}">Garnek ${r.garnek}<span class="gname"> · ${D.GARNEK[r.garnek].name}</span></span>` : ''}
+    ${r.decree && D.DECREES[r.decree] ? `<span class="pill dec" tabindex="0" title="${esc(D.DECREES[r.decree].name + ': ' + D.DECREES[r.decree].text)}">${art.decreeIcon()}<span class="lbl"> Okólnik</span></span>` : ''}
+    <span class="pill mode">${M.name}</span>${r.garnek ? `<span class="pill g" title="Palnik ${r.garnek} (${BURNERS[r.garnek]}): ${esc(D.GARNEK[r.garnek].name)}">Palnik ${r.garnek}</span>` : ''}
     <span class="disp odo" title="Wynik na żywo" aria-label="Wynik ${r.score}"><b data-ctr="score" data-odo="6">${odoHTML(r.score, 6)}</b></span>
     <button class="btn small menubtn" data-act="book" title="Księga Kurnika (K)" aria-label="Księga Kurnika">${art.bookIcon()}</button><button class="btn small menubtn" data-act="help" title="Jak grać (H)" aria-label="Jak grać">${art.helpIcon()}</button><button class="btn small menubtn" data-act="menu" title="Menu (Esc)" aria-label="Menu">${art.menuIcon()}</button></div>`;
 }
