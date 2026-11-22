@@ -439,3 +439,34 @@ Kafelki statystyk poziomu 1 i 2 osłabiły wczesną grę (przed zmianą: szybki 
 - `RARITY_WEIGHTS`: `[[45,35,20,0],[30,36,30,2],[18,34,43,5]]` (było `[[70,25,5,0],[50,35,13,2],[35,38,22,5]]`). Waga legendarnych (rarity 3) została niska, bo w ofertach jest tylko Zakazana Pasza.
 - Po zmniejszeniu poziomów 1–2 i łupu z szansą 15% ponowny retuning: `MODES.quick.grow` `{hp 1.135, atk 1.092}` (pierwotnie 1.18 / 1.12), `MODES.full.grow` `{hp 1.115, atk 1.072}` (pierwotnie 1.155 / 1.10). Wyniki bota: szybki Pyrtek ok. 46%, Zjarany ok. 55%, Indor ok. 59% (zostawiony), pełny Pyrtek ok. 46%.
 - Łup z bossa to potężny zastrzyk: bez niego w trybie szybkim bot wygrywa o ok. 15 punktów proc. mniej. Wyniki: patrz podsumowanie etapu w `CLAUDE.md`.
+
+
+## 14. Etap 2: nowe przedmioty i umiejętności (2026-11-22)
+
+Pula: 121 kafelków (24 umiejętności, 50 przedmiotów, 27+9 statystyk, ryzyko bez zmian). `RUN_V = 4`.
+
+### +14 przedmiotów (zestawy mają teraz 6–7 sztuk, próg 4 jest osiągalny)
+| Zestaw | Nowe | Efekt |
+|---|---|---|
+| Rosołowe (7) | Wywar Dnia | gdy płonący wróg ginie, połowa jego stosów Oparzenia przechodzi na następnego (`burnSpread`) |
+| | Tłusta Pokrywka | +1 Pancerza za każdy stos Oparzenia na wrogach, maks. +12 (`burnArmor`) |
+| | Szczypta Soli | +20% obrażeń zadawanych wrogom z Oparzeniem (`vsBurn`) |
+| Chłodnicze (6) | Lodowa Spódnica | wrogowie z Mrozem lub zamrożeni zadają o 30% mniej obrażeń (`frostWeak`) |
+| | Szron Poranny | pierwszy cios walki nakłada 5 stosów Mrozu (`firstFrost`) |
+| Jajeczne (6) | Jajko Niespodzianka | co 9 s wybuch 130% Ataku i losowy skutek: 3 stosy Oparzenia, Mrozu, Salmonelli, Krwawienia albo leczenie 8% (`surprise`) |
+| | Kura Nioska | +1 Ziarno po wygranej za każdy przedmiot Jajeczny, maks. +4 (w `stats.js`) |
+| Zbożowe (7) | Kombajn Zbożowy | 20% szans, że zwykły atak uderza też pozostałych za 40% (`cleave`) |
+| | Spichlerz | +12 maks. Życia, +20% Ziaren z nagród (jedyny „liczbowy”) |
+| | Strach na Wróble | wrogowie zaczynają ogłuszeni na 1,5 s, bossowie na 0,8 s (`scare`) |
+| Rambo (7) | Karabin Maszynowy | 15% szans na podwójne uderzenie (`double`) |
+| | Apteczka Polowa | raz na walkę, poniżej 50% Życia, leczy 25% (`medkit`) |
+| Korporacyjne (6) | Służbowy Samochód | Odpoczynek za darmo (`restDisc 4`), leczenie po wygranej +10 pkt proc. |
+| | Open Space | każda użyta umiejętność ma 12% szans na natychmiastowy reset cooldownu (`skillReset`, limit 60%) |
+
+### +10 umiejętności (każda ma 2 Mutacje)
+Ogień: **Wrzątek z Kotła** (podwaja Oparzenie na celu i +3; Wrzątek Hurtowy, Gotowanie na Wolnym Ogniu), **Podpałka** (6 s: każdy atak nakłada Oparzenie; Pochodnia, Długi Knot). Lód: **Mroźny Powiew** (3 stosy Mrozu na wszystkich; Zamieć, Szron na Piórach), **Sopel w Plecy** (110%, ×3 w wroga z Mrozem; Odłamki, Lodowa Seria). Trucizna: **Zakwas Babci Kwoki** (podwaja Salmonellę; Burzliwa Fermentacja, Zakwas Mamy). Krew: **Wyrywanie Pazurów** (100%, 3 Krwawienia, leczenie za stosy; Krwawy Taniec, Wampirze Pazury). Jajo: **Jajeczny Wir** (3 jaja po 70%; Jajecznica, Dziesiątka). Ziarno: **Garść Ziarna** (5 s +30% obrażeń i leczenie 10%; Wiadro Ziarna, Biesiada). Korpo: **Zwolnienie Dyscyplinarne** (130%, wróg poniżej 25% Życia, nie boss, odchodzi, +1 Ziarno; Odprawa, Restrukturyzacja). Styl obronny: **Kurze Pogotowie** (4 s leczenia 8% / s; Pełne Pogotowie, Dyżur Nocny).
+
+Wszystkie efekty są w `sim.js` (nowe pola `igniteUntil`, `dmgUntil`, `hotUntil`, `ffDone`, `medUsed`, `nextSurprise`), statystyki w `stats.js`. Ikony: 24 nowe wpisy w `ICON` (`art.js`), kontrola wzrokowa i pełność: `dev/e2e-ikony.mjs`. Bot (`sim-balance.mjs`) zna nowe umiejętności i przybliża wartość nowych efektów w `power()`.
+
+### Balans (bot)
+Rozcieńczenie puli obniżyło wyniki (szybki 39%, pełny 38%), więc `grow` znów w dół: szybki `{1.125, 1.086}`, pełny `{1.109, 1.068}`. Wyniki: szybki Pyrtek 47%, Zjarany 53%, Indor 57%, Kwoka 65%, Kaczor 53%; pełny Pyrtek 46%. Statystyki kafelków (1500 runów pełnych): żaden nowy kafelek nie odstaje rażąco (przedmioty 58–80% wygranych wśród runów, które je miały, umiejętności 42–54%); najczęściej wybierany jest Karabin Maszynowy (70%).

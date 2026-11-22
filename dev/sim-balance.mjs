@@ -44,7 +44,9 @@ function power(run) {
   const ehp = (S.maxHp * (1 + S.regen / 120)) * (1 + S.armor / 100) / (1 - Math.min(75, S.evade) / 100);
   const skills = run.skills.reduce((a, s) => a + (s.lvl >= 3 ? 0.22 : s.lvl >= 2 ? 0.16 : 0.1), 0);
   const econ = 1 + (S.coinFlat + S.bossCoins / 4 + S.freeReroll * 1.5 + S.restDisc / 2) * 0.012 + (S.noSteal ? 0.02 : 0) + S.buyDisc * 0.002;
-  return dps * ehp * (1 + skills) * (S.revive ? 1.1 : 1) * (1 + S.luck * 0.004) * econ * (1 + S.frostThorns * 0.05);
+  // Etap 2: nowe efekty przedmiotów (przybliżone mnożniki)
+  const extra = (1 + S.double / 100) * (1 + S.cleave * 0.004) * (1 + (S.vsBurn ? S.vsBurn / 100 * 0.5 : 0)) * (1 + (S.burnSpread ? 0.05 : 0)) * (1 + (S.burnArmor ? 0.05 : 0)) * (1 + (S.frostWeak ? S.frostWeak / 100 * 0.25 : 0)) * (1 + (S.firstFrost ? 0.03 : 0)) * (1 + (S.surprise ? 0.07 : 0)) * (1 + (S.scare ? 0.06 : 0)) * (1 + (S.medkit ? 0.07 : 0)) * (1 + S.skillReset * 0.004);
+  return extra * dps * ehp * (1 + skills) * (S.revive ? 1.1 : 1) * (1 + S.luck * 0.004) * econ * (1 + S.frostThorns * 0.05);
 }
 function tileValue(run, id) {
   const t = TILE_BY_ID[id];
@@ -83,6 +85,8 @@ function botInputs(setup) {
       const windup = alive.some(e => e.windup);
       let use = false;
       switch (s.id) {
+        case 'wrzatek': case 'podpalka': case 'powiew': case 'sopel': case 'zakwas': case 'pazury': case 'wir': case 'garsc': case 'zwolnienie': use = alive.length > 0; break;
+        case 'pogotowie': use = f.hp * 100 < f.S.maxHp * 65; break;
         case 'grad': case 'granat': case 'dziobniecie': case 'chlust': case 'lodowy': case 'zgnile': case 'darcie': case 'premia': case 'egzekucja': use = alive.length > 0; break;
         case 'kontra': case 'kapiel': use = windup || f.hp * 100 < f.S.maxHp * 70; break;
         case 'pianie': use = windup || alive.length >= 2 || alive.some(e => e.boss); break;
