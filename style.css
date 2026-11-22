@@ -1174,3 +1174,24 @@ html.reduce .bookflow { transition: none; }
 .bookflow .book-grid { display: block; text-align: left; font-size: 0; }
 .bookflow .book-grid .entry { display: inline-block; vertical-align: top; margin: 12px 8px 4px 0; font-size: 1rem; width: 168px; }
 .bookflow .lead { margin-top: 0; }
+
+/* osiągnięcia i profil */
+.medal { width: 40px; height: 46px; flex: none; filter: drop-shadow(0 2px 0 rgba(0,0,0,.3)); }
+.medal.locked { opacity: .7; }
+.ach-list { display: grid; gap: 6px; }
+.ach-row { display: flex; align-items: center; gap: 10px; padding: 5px 10px; border-radius: 10px; background: rgba(255,255,255,.4); border: 1px solid #d6c59c; break-inside: avoid; color: #2b1a12; }
+.ach-row b { display: block; font-family: var(--display); font-size: 1rem; }
+.ach-row span { font-size: .84rem; color: #5a4030; }
+.ach-row.lock b, .ach-row.lock span { opacity: .6; }
+.ach-row.got { border-color: #c79a2a; background: rgba(255,226,140,.45); }
+.modal .ach-row { background: rgba(255,255,255,.06); border-color: var(--line); color: var(--ink); } .modal .ach-row span { color: var(--muted); } .modal .ach-row.got { border-color: var(--gold); background: rgba(255,210,63,.1); }
+.bookpage .ach-row { background: rgba(255,255,255,.4); border-color: #d6c59c; color: #2b1a12; } .bookpage .ach-row span { color: #5a4030; } .bookpage .ach-row.got { border-color: #c79a2a; background: rgba(255,226,140,.45); }
+.ach-new { margin-top: 8px; display: grid; gap: 6px; }
+.prof-top { display: flex; gap: 22px; align-items: center; margin: 8px 0 12px; }
+.prof-ring { --p: 0; flex: none; width: 124px; height: 124px; border-radius: 50%; display: grid; place-items: center; align-content: center; background: conic-gradient(var(--amber) calc(var(--p) * 1%), #3a2b1c 0); position: relative; }
+.prof-ring::before { content: ''; position: absolute; inset: 11px; border-radius: 50%; background: var(--panel); }
+.prof-ring b, .prof-ring small { position: relative; z-index: 1; } .prof-ring b { font: 400 2rem/1 var(--display); color: var(--amber); } .prof-ring small { font-size: .7rem; color: var(--muted); }
+.prof-stats { display: grid; gap: 4px; color: var(--muted); } .prof-stats b { color: var(--ink); }
+.prof-parts { display: grid; gap: 8px; }
+.prof-part { position: relative; display: flex; justify-content: space-between; gap: 10px; padding: 6px 10px 9px; border-radius: 8px; background: rgba(255,255,255,.05); font-size: .9rem; }
+.prof-part i { position: absolute; left: 8px; right: 8px; bottom: 3px; height: 4px; border-radius: 2px; background: #2d231a; overflow: hidden; } .prof-part i::after { content: ''; position: absolute; inset: 0; width: var(--w); background: var(--amber); }

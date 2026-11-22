@@ -660,5 +660,8 @@ export function burnerArt(lv = 0) {
   ][Math.max(0, Math.min(5, lv | 0))];
   return `<svg class="burner-art b${lv}" viewBox="0 0 200 170" aria-hidden="true">${body()}</svg>`;
 }
+// Medal osiągnięcia: kolor wg grupy, symbol w środku; zgaszony, gdy jeszcze nie zdobyty.
+const MEDAL = { win: '#f0b429', style: '#4db6ff', fight: '#ef6a4a', coll: '#7bd88f', meta: '#c792ea' };
+export const medal = (g, sym, locked = false) => `<svg class="medal${locked ? ' locked' : ''}" viewBox="0 0 48 56" aria-hidden="true"><path d="M14 2 L24 22 L34 2 Z" fill="${locked ? '#555' : '#b4472a'}" stroke="#2b1a12" stroke-width="2.4" stroke-linejoin="round"/><circle cx="24" cy="32" r="17" fill="${locked ? '#3a3631' : MEDAL[g] || '#f0b429'}" stroke="#2b1a12" stroke-width="3"/><circle cx="24" cy="32" r="12" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.6"/><text x="24" y="38.5" text-anchor="middle" font-size="17" font-weight="700" fill="${locked ? '#7a746a' : '#2b1a12'}" font-family="Baloo 2, sans-serif">${sym}</text></svg>`;
 export const bookIcon = (cls = 'mico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5 q5 -2 9 1 q4 -3 9 -1 v14 q-5 -2 -9 1 q-4 -3 -9 -1z M12 6 v14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 export const helpIcon = (cls = 'mico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M9 9.5 q0 -3 3 -3 q3 0 3 2.6 q0 1.6 -2 2.6 q-1 .6 -1 1.8 M12 17.2 v.2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`;

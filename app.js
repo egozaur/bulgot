@@ -66,6 +66,7 @@ async function act(path, body) {
     if (!j || j.err) { toast((j && j.err) || 'Coś poszło nie tak. Spróbuj jeszcze raz.', true, 3600); if (j && 'run' in j && G.screen !== 'fight') render(); return null; }
     if (j.voided) toast('Gra dostała aktualizację zasad, więc poprzedni run został unieważniony. Zacznij nowy!', false, 6000);
     if (j.hatched && j.hatched.length) setTimeout(() => showHatched(j.hatched), 80);
+    if (j.ach && j.ach.length) { for (const a of j.ach) { (G.ach = G.ach || []).push(a); toast('Osiągnięcie: ' + a.name, false, 4600); } snd.sfx('unlock'); }
     if (j.unlocks && j.unlocks.length) { for (const u of j.unlocks) { G.unlocks.push(u); toast('Odblokowano: ' + unlockName(u), false, 4200); } snd.sfx('unlock'); }
     return j;
   } finally { G.busy = false; document.body.classList.remove('busy'); }
@@ -130,7 +131,7 @@ function renderHome() {
       ${run ? `<div class="resume">Trwa run: <b>${esc(D.MODES[run.mode].name)}</b>, piętro ${run.round}/${run.rounds}, ${run.coins} ${art.coinIcon()} Ziaren</div>
         <button class="btn primary big" data-act="resume" data-primary>Kontynuuj</button><button class="btn small ghost" data-act="abandon">Porzuć run</button>`
       : `<button class="btn primary big" data-act="new" data-primary>Graj</button>`}
-      <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk</button><button class="btn ghost" data-act="history">Historia (test)</button></div>
+      <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="profile">Profil</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk</button><button class="btn ghost" data-act="history">Historia (test)</button></div>
       ${bestLine ? `<div class="best">Najlepsze wyniki. ${bestLine}</div>` : ''}
       ${metaNotes()}
     </div></div></div>`;
@@ -972,6 +973,11 @@ function showInvoice(j, floor) {
 }
 // Pierwsza akcja gracza (klik, klawisz) skraca animację i wysyła fakturę na tablicę, ale dopiero po chwili, żeby nie zniknęła przypadkiem.
 for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, () => { if (INV.el && performance.now() - INV.t0 > 700) dismissInvoice(true); }, true);
+function takeAch() { const a = G.ach || []; G.ach = []; return a; }
+function achHTML(list) {
+  if (!list.length) return '';
+  return `<div class="ach-new"><div class="sec">Nowe osiągnięcia</div>${list.map(a => `<div class="ach-row got">${art.medal(a.g, a.s)}<div><b>${esc(a.name)}</b><span>${esc(a.text)}</span></div></div>`).join('')}</div>`;
+}
 function takeUnlocks() { const u = G.unlocks; G.unlocks = []; return u; }
 function unlocksHTML(list) {
   if (!list.length) return '';
@@ -1061,7 +1067,7 @@ function showEnd(j, quiet = false) {
       <tr class="total"><td>Wynik</td><td id="endscore" data-v="${r.score}">${fmtNum(r.score)}</td></tr></table>
     ${e.newBest ? '<p class="lead" style="color:var(--gold)"><b>Nowy rekord życiowy w tym trybie!</b></p>' : ''}
     ${e.rank ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}
-    ${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano Temperaturę Garnka ${G.profile.garnek}: ${esc(D.GARNEK[G.profile.garnek].name)}</b></div>` : ''}${unlocksHTML(un)}${endMeta(j)}
+    ${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano poziom palnika ${G.profile.garnek}: ${esc(BURNERS[G.profile.garnek])} (${esc(D.GARNEK[G.profile.garnek].name)})</b></div>` : ''}${unlocksHTML(un)}${achHTML(takeAch())}${endMeta(j)}
     <div class="analyze" id="analyzebox">${analyzeHTML(r.id, !!(G.sentRuns && G.sentRuns[r.id]))}</div></div>
     <div class="actions end-actions"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>`, { force: true, cls: 'endfull' });
   G.screen = 'home'; render();
@@ -1100,6 +1106,13 @@ async function showRanking(mode, keep) {
   }).join('')}</tbody></table>`;
 }
 // Księga: nowe wpisy (odblokowane kafelki, przepisy, reakcje) od ostatniego otwarcia dostają naklejkę „Nowy wpis!”.
+function showProfile() {
+  const p = G.profile, c = p.completion || { pct: 0, parts: [] }, pl = playerNow(), have = new Set(p.ach || []);
+  const parts = c.parts.map(x => `<div class="prof-part"><span>${esc(x.name)}</span><b>${x.done}/${x.total}</b><i style="--w:${Math.min(100, x.done / x.total * 100).toFixed(1)}%"></i></div>`).join('');
+  const recent = (p.ach || []).slice(-6).reverse().map(id => D.ACH_BY_ID[id]).filter(Boolean).map(a => `<div class="ach-row got">${art.medal(a.g, a.s)}<div><b>${esc(a.name)}</b><span>${esc(a.text)}</span></div></div>`).join('');
+  const cn = p.counters || {};
+  openOverlay(`<h2>Profil: ${esc(pl ? pl.nick : '')}</h2><div class="prof-top"><div class="prof-ring" style="--p:${c.pct}"><b>${c.pct}%</b><small>ukończenia gry</small></div><div class="prof-stats"><div>Runy: <b>${cn.runs || 0}</b></div><div>Wygrane: <b>${cn.wins || 0}</b></div><div>Pokonani Nemezis: <b>${cn.nemesisKills || 0}</b></div><div>Osiągnięcia: <b>${have.size}/${D.ACHIEVEMENTS.length}</b></div><div>Najwyższy palnik: <b>${BURNERS[p.garnek || 0]}</b></div></div></div><div class="prof-parts">${parts}</div>${recent ? `<div class="sec">Ostatnie osiągnięcia</div><div class="ach-list">${recent}</div>` : ''}<div class="actions"><button class="btn primary" data-act="achbook">Wszystkie osiągnięcia</button></div>`, { narrow: true });
+}
 function bookSeen() { try { return new Set(JSON.parse(store.get('bulgot:bookseen') || '[]')); } catch (e) { return new Set(); } }
 function bookMark(keys) { const s = bookSeen(); for (const k of keys) s.add(k); store.set('bulgot:bookseen', JSON.stringify([...s])); }
 // Księga jako rozkładówka: treść płynie w dwóch kolumnach poziomo, strony przewija się ←/→ (bez przewijania w dół).
@@ -1114,7 +1127,7 @@ function bookFit() {
 const bookGo = d => { G.bookPage = (G.bookPage || 0) + d; bookFit(); };
 function showBook(tab = 'tiles') {
   const seen = bookSeen(), fresh = k => !seen.has(k), marks = [];
-  const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['react', 'Reakcje i Okólniki'], ['badges', 'Odznaki'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania']];
+  const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['react', 'Reakcje i Okólniki'], ['badges', 'Odznaki'], ['ach', 'Osiągnięcia'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania']];
   let body = '';
   if (tab === 'react') {
     const known = p.reactions || []; for (const k of known) marks.push('x:' + k);
@@ -1124,6 +1137,9 @@ function showBook(tab = 'tiles') {
       <div class="sec">Okólniki Zarządu</div><p class="lead">Każda strefa w runie ma inny okólnik, który zmienia zasady.</p><div class="ms-grid">${Object.values(D.DECREES).map(d => `<div class="ms-row">${art.decreeIcon()}<div><b>${esc(d.name)}</b><br><span>${esc(d.text)}</span></div></div>`).join('')}</div>
       <div class="sec">Wady fabryczne</div><p class="lead">Kafelek z pieczątką „Wada fabryczna” jest o 50% mocniejszy, ale po następnej walce ujawnia jedną z wad:</p><div class="ms-grid">${Object.values(D.FLAWS).map(f => `<div class="ms-row"><div><b>${esc(f.name)}</b><br><span>${esc(f.text)}</span></div></div>`).join('')}</div>
       ${p.nemesis ? `<div class="sec">Twój Nemezis</div><p class="lead">${esc(p.nemesis.name)}, cecha ${esc(D.AFFIXES[p.nemesis.affix].name)}${p.nemesis.tile ? ', ukradł ' + esc(TILE[p.nemesis.tile].name) : ''}. Pokonane Nemezis: ${p.counters.nemesisKills || 0}.</p>` : ''}`;
+  } else if (tab === 'ach') {
+    const have = new Set(p.ach || []);
+    body = `<p class="lead">Zdobyte: ${have.size} z ${D.ACHIEVEMENTS.length}.</p>` + Object.entries(D.ACH_GROUPS).map(([gid, g]) => `<div class="sec">${esc(g.name)}</div><div class="ach-list">${D.ACHIEVEMENTS.filter(a => a.g === gid).map(a => { const got = have.has(a.id), hide = a.secret && !got; return `<div class="ach-row ${got ? 'got' : 'lock'}">${art.medal(a.g, hide ? '?' : a.s, !got)}<div><b>${esc(hide ? '???' : a.name)}</b><span>${esc(hide ? 'Ukryte osiągnięcie.' : a.text)}</span></div></div>`; }).join('')}</div>`).join('');
   } else if (tab === 'badges') {
     body = `<p class="lead">Odznaki Pracownicze dostajesz za pokonanie bossa albo elitarnego wroga (wybór 1 z 3) i w Kapliczce. Działają do końca runu.</p><div class="ms-grid">${Object.entries(D.BADGES).map(([id, b]) => `<div class="ms-row">${art.badgeIcon(id)}<div><b>${esc(b.name)}</b><br><span>${esc(b.text)}</span></div></div>`).join('')}</div>
       <div class="sec">Cechy elitarnych wrogów</div><p class="lead">Elita ma jedną cechę (od Garnka 2: dwie). Na Garnku 0 podgląd piętra pokazuje je przed walką, wyżej dopiero walka.</p><div class="ms-grid">${Object.values(D.AFFIXES).map(a => `<div class="ms-row"><div><b>${esc(a.name)}</b><br><span>${esc(a.text)}</span></div></div>`).join('')}</div>`;
@@ -1259,6 +1275,7 @@ const ACT = {
   rknickset: b => { RK.nick = b.dataset.v; showRanking(RK.mode, true); },
   rkcharset: b => { RK.char = b.dataset.v; showRanking(RK.mode, true); },
   rkgset: b => { RK.garnek = b.dataset.v; showRanking(RK.mode, true); },
+  profile: () => showProfile(), achbook: () => { closeOverlay(); showBook('ach'); },
   book: () => showBook(), booktab: b => showBook(b.dataset.v),
   history: () => showHistory(),
   skillmove: b => swapSlots(+b.dataset.v, +b.dataset.v + +b.dataset.d),
