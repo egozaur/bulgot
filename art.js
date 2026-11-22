@@ -623,3 +623,18 @@ export function barcode(id) {
 }
 export const menuIcon = (cls = 'mico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6 h16 M4 12 h16 M4 18 h16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
 export const skullIcon =(cls = 'skull') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 C5 2 3 8 5 12 l1 4 h12 l1 -4 C21 8 19 2 12 2z" fill="#f1e9d6" stroke="#2b1a12" stroke-width="1.8" stroke-linejoin="round"/><circle cx="9" cy="10" r="2.4" fill="#2b1a12"/><circle cx="15" cy="10" r="2.4" fill="#2b1a12"/><path d="M9 17 v4 M12 17 v4 M15 17 v4" stroke="#2b1a12" stroke-width="1.8"/></svg>`;
+
+// ---------- Tablica Zarządu: młotek i gwóźdź do przybijania faktur ----------
+// Młotek rysowany pionowo (głowica u góry, rączka w dół); obraca się wokół końca rączki (60,112).
+export const hammerArt = () => `<svg class="hammer-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <rect x="53" y="38" width="14" height="76" rx="6" fill="#a0692e" ${S}/>
+  <path d="M55 60 h10 M55 76 h10 M55 92 h10" stroke="${O}" stroke-width="1.6" stroke-linecap="round" opacity=".45"/>
+  <path d="M20 14 h62 q10 0 18 8 q-8 6 -14 6 l-4 14 h-62 q-6 0 -6 -6 v-16 q0 -6 6 -6 z" fill="#aab4bf" ${S}/>
+  <path d="M20 14 h8 v28 h-8 q-6 0 -6 -6 v-16 q0 -6 6 -6 z" fill="#7d8793" ${S2}/>
+  <path d="M34 20 h40" stroke="#e8edf2" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+</svg>`;
+export const nailArt = () => `<svg class="nail-svg" viewBox="0 0 16 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M6.6 5 h2.8 v31 l-1.4 3 l-1.4 -3 z" fill="#aab4bf" ${S2}/>
+  <ellipse cx="8" cy="4" rx="7" ry="3.2" fill="#d8dee4" ${S2}/>
+  <path d="M4 3.4 h4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>
+</svg>`;

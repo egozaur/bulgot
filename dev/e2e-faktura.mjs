@@ -46,6 +46,20 @@ ok(inv.overlayHidden, 'nie ma okna wyniku (overlay ukryty)');
 ok(inv.left >= inv.towerRight - 4 && inv.right <= inv.sideLeft + 4, `faktura leży nad środkową kolumną, nie zasłania schodów (${inv.left}..${inv.right} przy wieży do ${inv.towerRight}, panelu od ${inv.sideLeft})`);
 ok((await R()).phase === 'offer' || (await R()).phase === 'badge' || (await R()).phase === 'bonus', 'gra idzie dalej od razu (faza: ' + (await R()).phase + ')');
 await p.screenshot({ path: OUT + '/faktura-spada.png' });
+// młotek przybija fakturę gwoździem, potem faktura ląduje jako karteczka na Tablicy Zarządu
+ok(await p.evaluate(() => !!document.querySelector('#invoice .inv-hammer') && !!document.querySelector('#invoice .inv-nail')), 'jest młotek i gwóźdź');
+let gone = false; for (let i = 0; i < 80 && !gone; i++) { await wait(150); gone = await p.evaluate(() => !document.querySelector('#invoice .inv')); }
+ok(gone, 'faktura po animacji znika z ekranu (leci na tablicę)');
+const bd = await p.evaluate(() => { const s = document.querySelector('.board .slip[data-f="2"]'); const b = document.querySelector('.board').getBoundingClientRect(), r = s && s.getBoundingClientRect(); return { slips: document.querySelectorAll('.board .slip').length, pending: !!(s && s.classList.contains('pending')), vis: !!(s && getComputedStyle(s).visibility !== 'hidden'), inBoard: !!(r && r.top >= b.top - 14 && r.bottom <= b.bottom + 14 && r.left >= b.left && r.right <= b.right), boardBottom: Math.round(b.bottom), vh: innerHeight }; });
+console.log('tablica:', JSON.stringify(bd));
+ok(bd.slips === 1 && !bd.pending && bd.vis && bd.inBoard && bd.boardBottom <= bd.vh, 'karteczka wisi na Tablicy Zarządu i jest widoczna');
+await p.screenshot({ path: OUT + '/tablica.png' });
+await p.click('.board .slip[data-f="2"]'); await wait(400);
+ok(await p.evaluate(() => !!document.querySelector('.modal .inv.static') && /FAKTURA VAT/.test(document.querySelector('.modal .inv-title').textContent)), 'klik w karteczkę otwiera fakturę');
+await p.screenshot({ path: OUT + '/faktura-z-tablicy.png' });
+await p.click('.modal [data-act=close]'); await wait(300);
+await reload();
+ok(await p.evaluate(() => document.querySelectorAll('.board .slip').length === 1), 'po odświeżeniu strony karteczka nadal wisi na tablicy');
 // klik w kafelek przechodzi przez fakturę i chowa ją
 const ph = (await R()).phase;
 if (ph === 'offer') { await p.click('.cards [data-i="0"]'); await wait(900); ok(!(await p.$('#invoice .inv:not(.quick):not(.out)')), 'pierwsza akcja gracza chowa fakturę'); }
@@ -62,7 +76,7 @@ ok(none && !(await p.$('#invoice .inv')), 'z wyłączoną fakturą jest tylko kr
 await p.evaluate(() => localStorage.removeItem('bulgot:invoice'));
 
 // ---- 3. porażka: pełny ekran, ciekawostki
-await patch("r.phase = 'fight'; r.fight = {}; r.round = 2; r.hp = 1; r.tiles = []; r.skills = [];"); await reload();
+await patch("r.phase = 'fight'; r.fight = {}; r.round = 2; r.hp = 1; r.tiles = ['ziarno-mocy','twardy-grzebien','szybki-dziob','ostry-dziob']; r.skills = [];"); await reload();
 await fastFight();
 ok(await waitFor('.modal.endfull', 300), 'ekran końca działa na pełnym ekranie');
 await wait(1800);
@@ -71,6 +85,14 @@ console.log('koniec:', JSON.stringify(end));
 ok(Math.abs(end.w - end.vw) <= 2 && Math.abs(end.h - end.vh) <= 2 && end.full, `ekran końca wypełnia okno (${end.w}×${end.h} z ${end.vw}×${end.vh})`);
 ok(end.facts.length >= 1 && /małp|piętr|walk|Zabrakło|umiejętn/i.test(end.facts.join(' ')), 'ciekawostki przy odpadaniu: ' + end.facts.map(f => f.replace(/^Ciekawostka|^I jeszcze/, '')).join(' | '));
 await p.screenshot({ path: OUT + '/koniec-pelny.png' });
+for (const [w, h] of [[1920, 1080], [1366, 650], [1280, 720]]) {
+  await p.setViewport({ width: w, height: h }); await wait(400);
+  const fit = await p.evaluate(() => { const q = s => { const e = document.querySelector(s); return e && e.getBoundingClientRect(); }; const a = q('.end-actions'), f = q('.fact'), t = q('.end-title'); return { actionsBottom: a && Math.round(a.bottom), factBottom: f && Math.round(f.bottom), titleBottom: t && Math.round(t.bottom), vh: innerHeight, scrollY: document.querySelector('.modal.endfull').scrollTop, will: document.querySelectorAll('.will-grid .tile').length }; });
+  console.log('koniec ' + w + 'x' + h + ':', JSON.stringify(fit));
+  ok(fit.actionsBottom <= fit.vh && fit.factBottom <= fit.vh && fit.titleBottom <= fit.vh, 'ekran końca mieści się w oknie ' + w + 'x' + h + ' (przyciski, ciekawostki i tytuł widoczne, Testament: ' + fit.will + ' kafelki)');
+  await p.screenshot({ path: OUT + '/koniec-' + w + 'x' + h + '.png' });
+}
+await p.setViewport({ width: 1920, height: 925 }); await wait(300);
 
 // ---- 4. ranking z filtrami
 await p.click('.modal [data-act=ranking]'); await wait(700);

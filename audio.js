@@ -62,6 +62,7 @@ const SFX = {
   fury: () => { for (let i = 0; i < 4; i++) tone(180 + i * 30, 0.12, { type: 'square', vol: 0.12, delay: i * 0.1 }); },
   win: () => { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 0.22, { type: 'triangle', vol: 0.2, delay: i * 0.11 })); },
   lose: () => { [392, 330, 262, 196, 147].forEach((f, i) => tone(f, 0.3, { type: 'sawtooth', vol: 0.15, delay: i * 0.18, slide: -20 })); bubble(8, 0.5); },
+  tink: () => { tone(1760, 0.07, { type: 'triangle', vol: 0.1 }); tone(2349, 0.12, { type: 'triangle', vol: 0.07, delay: 0.05 }); },
   unlock: () => { [659, 880, 1175, 1568].forEach((f, i) => tone(f, 0.18, { type: 'square', vol: 0.1, delay: i * 0.08 })); },
   bulgot: () => bubble(10),
   egg: () => { tone(900, 0.06, { type: 'square', vol: 0.1 }); noise(0.2, { vol: 0.18, freq: 500, slide: -300 }); },

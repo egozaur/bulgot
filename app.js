@@ -511,7 +511,7 @@ function speedPick() {
   return `<div class="speedpick" role="radiogroup" aria-label="Tempo walki"><span class="lab">Tempo walki</span>${[1, 2, 3].map(v => `<button class="spd${G.speed === v ? ' on' : ''}" data-act="setspeed" data-v="${v}" role="radio" aria-checked="${G.speed === v}">×${v}</button>`).join('')}<span class="note" id="spdnote">${SPEED_NOTE[G.speed]}</span></div>`;
 }
 function renderRun() {
-  return `<div class="run">${topbarHTML()}${WIDE.matches ? stairsHTML() : towerHTML()}<main class="stage">${stageHTML()}</main>${sideHTML()}</div>`;
+  return `<div class="run">${topbarHTML()}${WIDE.matches ? stairsHTML() : towerHTML()}<main class="stage">${stageHTML()}${boardHTML()}</main>${sideHTML()}</div>`;
 }
 
 // ---------- akcje wyboru ----------
@@ -784,37 +784,58 @@ async function finishFight() {
   const res = j.result;
   if (res.win !== local.win) toast('Serwer rozliczył walkę inaczej niż Twoja przeglądarka. Obowiązuje wynik serwera.', true, 5000);
   if (G.run.phase === 'over') { G.screen = 'run'; return showEnd(j); }
-  G.screen = 'run'; render(); showInvoice(j, F.setup.round);
+  G.screen = 'run'; INV.pending = invoiceOn() ? F.setup.round : 0; render(); showInvoice(j, F.setup.round);
 }
 function retryOverlay() {
   return new Promise(res => { G.retryCb = res; openOverlay('<h2>Brak połączenia</h2><p class="lead">Nie udało się rozliczyć walki z serwerem. Twój run jest bezpieczny, spróbuj ponownie.</p><div class="actions"><button class="btn primary" data-act="retry-fight" data-primary>Spróbuj jeszcze raz</button></div>', { narrow: true, force: true }); });
 }
 
-// ---------- faktura po wygranej walce ----------
-// Zamiast okna wyniku spada faktura od Korporacji Rosołowej: leży na środkowej kolumnie (nie zasłania schodów z kurczakiem), nie blokuje gry
-// (klik i klawisze przechodzą przez nią, a pierwsza akcja gracza chowa ją), a po chwili leci do licznika Ziaren. Opcja w ustawieniach.
+// ---------- faktura i Tablica Zarządu ----------
+// Po wygranej walce faktura Korporacji Rosołowej spada na ekran, młotek przybija ją gwoździem, po czym leci na Tablicę Zarządu
+// (korek na dole środkowej kolumny) i zostaje tam jako karteczka do końca runu. Klik w karteczkę otwiera fakturę.
+// Faktura nie blokuje gry (klik i klawisze przechodzą przez nią), a pierwsza akcja gracza skraca animację. Opcja w ustawieniach.
 const invoiceOn = () => store.get('bulgot:invoice') !== '0';
-const INV = { el: null, t0: 0, timers: [] };
-function dismissInvoice(fast) {
-  const el = INV.el; INV.timers.forEach(clearTimeout); INV.timers = [];
-  if (!el) return;
-  INV.el = null;
-  if (!el.isConnected) return;
-  if (REDUCED.matches || fast) { el.classList.add('quick'); setTimeout(() => el.remove(), 260); return; }
-  const c = $('.disp.coins'), r = el.getBoundingClientRect(), t = c ? c.getBoundingClientRect() : null;   // leci do licznika Ziaren
-  if (t) { el.style.setProperty('--fx', (t.left + t.width / 2 - (r.left + r.width / 2)) + 'px'); el.style.setProperty('--fy', (t.top + t.height / 2 - (r.top + r.height / 2)) + 'px'); }
-  el.classList.add('out'); setTimeout(() => el.remove(), 750);
+const INV = { el: null, ham: null, t0: 0, timers: [], floor: 0, pending: 0 };
+const COIN = '¤';                                   // w zapisanych pozycjach znacznik ikony Ziarna
+const coinHTML = s => String(s).replace(/¤/g, art.coinIcon());
+const boardKey = id => 'bulgot:inv:' + id;
+// Pełne dane faktur trzymamy w przeglądarce (klucz: id runu, ostatnie 3 runy); serwer w view().board oddaje tylko liczby, z których
+// da się odtworzyć uproszczoną fakturę (po odświeżeniu strony albo na innym komputerze).
+function boardCache() { try { return JSON.parse(store.get(boardKey(G.run.id)) || '{}'); } catch (e) { return {}; } }
+function boardPut(f, d) {
+  const c = boardCache(); c[f] = d; store.set(boardKey(G.run.id), JSON.stringify(c));
+  let ids = []; try { ids = JSON.parse(store.get('bulgot:invruns') || '[]'); } catch (e) {}
+  if (!ids.includes(G.run.id)) { ids.push(G.run.id); while (ids.length > 3) { try { localStorage.removeItem(boardKey(ids.shift())); } catch (e) {} } store.set('bulgot:invruns', JSON.stringify(ids)); }
 }
-// Wiersze i uwagi faktury: ważne uwagi (Nemezis, wada, odblokowania) wydłużają czas jej wiszenia.
+const secStr = ticks => (ticks / 10).toFixed(1).replace('.', ',');
+function slipData(f) {
+  const c = boardCache()[f]; if (c) return c;
+  const e = ((G.run && G.run.board) || []).find(x => x.r === f); if (!e) return null;
+  const I = T.INVOICE;
+  return { f, boss: e.boss, who: D.CHARS[G.run.char].name, zone: T.ZONE_NAMES[D.MODES[G.run.mode] ? Math.min(2, Math.floor((f - 1) * 3 / D.MODES[G.run.mode].rounds)) : 0], imp: false, seen: true, notes: [],
+    rows: [[`${e.boss ? 'Pokonanie bossa' : 'Pokonanie piętra ' + f} (czas walki ${secStr(e.ticks)} s)`, e.boss ? 'boss' : 'zaliczone'], ['Zadane obrażenia', fmtNum(e.dealt)], ['Wypłata (razem z odsetkami)', `+${e.reward} ${COIN}`]],
+    line: e.boss ? '' : T.pickLine(T.WIN_LINES, f), foot: T.pickLine(e.boss ? I.bossFooters : I.footers, f), stamp: e.boss ? I.bossStamp : I.stamp };
+}
+// Treść faktury (do animacji i do okna po kliknięciu karteczki).
+function invoiceInner(d) {
+  const I = T.INVOICE;
+  return `<div class="inv-head"><b>${esc(I.company)}</b><span>${esc(I.nip)}</span></div>
+    <div class="inv-title"><b>${d.boss ? I.bossTitle : I.title}</b><span>nr BG/${esc(String(G.run.id).slice(-4))}/${String(d.f).padStart(2, '0')}</span></div>
+    <div class="inv-who">Nabywca: <b>${esc(d.who)}</b>, ${esc(d.zone)}</div>
+    <div class="inv-rows">${d.rows.map(([a, b], i) => `<div class="inv-row" style="--d:${i}"><span>${esc(a)}</span><b>${coinHTML(esc(b))}</b></div>`).join('')}</div>
+    ${d.notes.length ? `<div class="inv-notes">${d.notes.map(n => `<div class="${n.imp ? 'imp' : ''}">${esc(n.text)}</div>`).join('')}</div>` : ''}
+    <div class="inv-foot">${esc(d.line)}${d.line ? '<br>' : ''}<i>${esc(d.foot)}</i></div>
+    <div class="inv-stamp ${d.boss ? 'boss' : ''}" aria-hidden="true">${esc(d.stamp).replace('\n', '<br>')}</div>`;
+}
+// Wiersze i uwagi faktury po wygranej walce: ważne uwagi (Nemezis, wada, odblokowania) zapalają na karteczce czerwony wykrzyknik.
 function invoiceData(j, floor) {
-  const r = j.result || {}, run = G.run, boss = j.boss, un = takeUnlocks();
+  const r = j.result || {}, run = G.run, boss = j.boss, un = takeUnlocks(), I = T.INVOICE, f = floor || run.round;
   const base = j.reward - (j.interest || 0) - (j.doorCoins || 0), rows = [];
-  const secs = (r.ticks / 10).toFixed(1).replace('.', ',');
-  rows.push([`${boss ? 'Pokonanie bossa' : 'Pokonanie piętra ' + (floor || run.round)} (czas walki ${secs} s)`, boss ? 'boss' : 'zaliczone']);
+  rows.push([`${boss ? 'Pokonanie bossa' : 'Pokonanie piętra ' + f} (czas walki ${secStr(r.ticks)} s)`, boss ? 'boss' : 'zaliczone']);
   rows.push(['Zadane obrażenia', fmtNum(r.dealt)]);
-  rows.push(['Wypłata za piętro', `+${base} ${art.coinIcon()}`]);
-  if (j.interest) rows.push(['Odsetki w Spiżarni', `+${j.interest} ${art.coinIcon()}`]);
-  if (j.doorCoins) rows.push(['Premia za ryzykowne drzwi', `+${j.doorCoins} ${art.coinIcon()}`]);
+  rows.push(['Wypłata za piętro', `+${base} ${COIN}`]);
+  if (j.interest) rows.push(['Odsetki w Spiżarni', `+${j.interest} ${COIN}`]);
+  if (j.doorCoins) rows.push(['Premia za ryzykowne drzwi', `+${j.doorCoins} ${COIN}`]);
   rows.push(['Leczenie (życie po leczeniu)', `${run.hp}/${run.maxHp}`]);
   const notes = [];   // { text, imp }
   if (j.nemesis) notes.push({ text: `Sprawiedliwości stało się zadość! Nemezis pokonany: Odznaka Sprawiedliwość Kurnika${j.nemesis.tile ? ' i odzyskany kafelek ' + TILE[j.nemesis.tile].name : ''}.`, imp: true });
@@ -825,38 +846,101 @@ function invoiceData(j, floor) {
   if (r.chains) notes.push({ text: `Pełne Kurze Serie: ${r.chains}` });
   if (r.reactions) notes.push({ text: `Reakcje: ${r.reactions} (${(r.reactSeen || []).map(k => D.REACTIONS[k] ? D.REACTIONS[k].name : k).join(', ')})` });
   if (j.grew && j.grew.length) notes.push({ text: 'Urosło: ' + j.grew.map(id => TILE[id].name + ' (' + Math.min(TILE[id].grow.max, (run.grow || {})[id] || 0) + '/' + TILE[id].grow.max + ')').join(', ') });
-  return { rows, notes, boss, imp: notes.some(n => n.imp), line: boss ? T.BOSS_WIN_LINES[boss] : T.pickLine(T.WIN_LINES, run.round) };
+  return { f, boss: !!boss, who: D.CHARS[run.char].name, zone: T.ZONE_NAMES[run.zone], rows, notes, imp: notes.some(n => n.imp), seen: false,
+    line: boss ? T.BOSS_WIN_LINES[boss] : T.pickLine(T.WIN_LINES, run.round), foot: T.pickLine(boss ? I.bossFooters : I.footers, run.round), stamp: boss ? I.bossStamp : I.stamp };
+}
+
+// ---------- Tablica Zarządu (korek z przybitymi fakturami za pokonane piętra, do końca runu) ----------
+function boardHTML() {
+  const r = G.run; if (!r) return '';
+  const list = (r.board || []).slice().sort((a, b) => a.r - b.r);
+  const slips = list.map(e => {
+    const d = slipData(e.r) || {}, flag = d.imp && !d.seen, pend = INV.pending === e.r, pop = G.boardPop === e.r;
+    const tip = `Piętro ${e.r}${e.boss ? ' (boss)' : ''}: faktura\nCzas walki ${secStr(e.ticks)} s, obrażenia ${fmtNum(e.dealt)}, wypłata +${e.reward} Ziaren${flag ? '\nZawiera ważną uwagę, otwórz ją!' : ''}\nKliknij, żeby otworzyć.`;
+    return `<button class="slip ${e.boss ? 'boss' : ''} ${flag ? 'flag' : ''} ${pend ? 'pending' : ''} ${pop ? 'pop' : ''}" data-act="slip" data-f="${e.r}" data-tip="${esc(tip)}" style="--rot:${e.r * 37 % 9 - 4}deg;--dy:${e.r * 53 % 7 - 3}px" aria-label="Faktura za piętro ${e.r}"><i class="pin"></i><b>${e.r}</b><span class="sl"></span><span class="sl s2"></span>${flag ? '<em>!</em>' : ''}</button>`;
+  }).join('');
+  G.boardPop = 0;
+  return `<section class="board" aria-label="Tablica Zarządu"><div class="board-head"><span class="board-title">Tablica Zarządu</span><span class="board-count">${list.length ? 'faktury: ' + list.length : ''}</span></div>
+    <div class="slips">${slips || '<span class="board-empty">Tu zawisną faktury za pokonane piętra</span>'}</div></section>`;
+}
+const refreshBoard = () => { const b = $('.board'); if (b) b.outerHTML = boardHTML(); };
+function showSlip(f) {
+  const d = slipData(f); if (!d) return;
+  if (d.imp && !d.seen) {
+    d.seen = true; if (boardCache()[f]) boardPut(f, d);
+    const s = $(`.slip[data-f="${f}"]`); if (s) { s.classList.remove('flag'); const em = $('em', s); if (em) em.remove(); }
+  }
+  openOverlay(`<div class="inv static ${d.boss ? 'boss' : ''}">${invoiceInner(d)}</div><div class="actions" style="margin-top:14px"><button class="btn primary" data-act="close" data-primary>Zamknij</button></div>`, { narrow: true });
+}
+// Karteczka ląduje na tablicy: iskra przy pinezce i lekkie drgnięcie korka.
+function landSlip(floor) {
+  if (INV.pending === floor) INV.pending = 0;
+  const s = $(`.slip[data-f="${floor}"]`);
+  if (!s) return;
+  s.classList.remove('pending'); s.classList.add('land'); snd.sfx('tink');
+  const b = $('.board'); if (b && !REDUCED.matches) { b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); }
+}
+const uiScale = () => +getComputedStyle(document.documentElement).getPropertyValue('--s') || 1;
+// Faktura leci na swoje miejsce na tablicy (fast = gracz nie chciał czekać).
+function flyToBoard(fast) {
+  const el = INV.el, ham = INV.ham, floor = INV.floor; if (!el) return;
+  INV.timers.forEach(clearTimeout); INV.timers = []; INV.el = null; INV.ham = null;
+  if (ham) { ham.classList.add('away'); setTimeout(() => ham.remove(), 260); }
+  const nail = $('.inv-nail', el); if (nail) { nail.classList.add('on'); nail.style.setProperty('--sink', '34px'); }
+  const done = () => { el.remove(); landSlip(floor); };
+  const slip = $(`.slip[data-f="${floor}"]`);
+  if (!el.isConnected) return done();
+  if (!slip || REDUCED.matches) { el.classList.add('quick'); setTimeout(done, 260); return; }
+  const sc = uiScale(), r = el.getBoundingClientRect(), s = slip.getBoundingClientRect(), k = s.width / r.width;
+  const rot = getComputedStyle(slip).getPropertyValue('--rot').trim() || '0deg';
+  const dx = s.left + s.width / 2 - (r.left + r.width / 2), dy = s.top + s.height / 2 - (r.top + r.height * k / 2);   // skalowanie wokół górnej krawędzi
+  el.style.animation = 'none'; el.style.transform = 'translateY(0) rotate(-1.2deg)';
+  const an = el.animate([{ transform: 'translateY(0) rotate(-1.2deg)', opacity: 1 }, { transform: `translate(${dx / sc}px, ${dy / sc}px) scale(${k}) rotate(${rot})`, opacity: .96 }],
+    { duration: fast ? 380 : 650, easing: 'cubic-bezier(.55, 0, .35, 1)', fill: 'forwards' });
+  an.onfinish = done;
+}
+const dismissInvoice = fast => { if (INV.el) flyToBoard(fast); };
+// Jedno uderzenie młotka: ustawia młotek nad główką gwoździa, po chwili gwóźdź zagłębia się w papier, a kartka drga.
+function strike(n) {
+  const el = INV.el, ham = INV.ham; if (!el || !ham) return;
+  const nail = $('.inv-nail', el), nr = nail.getBoundingClientRect(), sc = uiScale();
+  // punkt uderzenia młotka (po obrocie o -35°) leży 69,7 w lewo i 36,6 w górę od końca rączki
+  ham.style.left = (nr.left + nr.width / 2 + 69.7 * sc - 60) + 'px'; ham.style.top = (nr.top + 3 * sc + 36.6 * sc - 112) + 'px';
+  ham.classList.add('on'); ham.classList.remove('hit'); void ham.offsetWidth; ham.classList.add('hit');
+  INV.timers.push(setTimeout(() => {
+    if (!INV.el) return;
+    nail.style.setProperty('--sink', [11, 22, 34][n - 1] + 'px'); snd.sfx(n < 3 ? 'hit' : 'crit');
+    el.animate([{ translate: '-50% 0' }, { translate: '-50% 4px' }, { translate: '-50% 0' }], { duration: 130 });
+  }, 170));
 }
 function showInvoice(j, floor) {
-  const run = G.run, d = invoiceData(j, floor), I = T.INVOICE;
+  const run = G.run, d = invoiceData(j, floor);
   dismissInvoice(true);
-  if (!invoiceOn()) {   // bez faktury: krótka informacja, a ważne uwagi jako powiadomienia
-    toast(`${d.boss ? 'Boss pokonany' : 'Piętro ' + (floor || run.round) + ' zdobyte'}: +${j.reward} Ziaren`);
+  boardPut(d.f, d);
+  if (!invoiceOn()) {   // bez animacji: karteczka po prostu pojawia się na tablicy, ważne uwagi jako powiadomienia
+    INV.pending = 0; G.boardPop = d.f; refreshBoard();
+    toast(`${d.boss ? 'Boss pokonany' : 'Piętro ' + d.f + ' zdobyte'}: +${j.reward} Ziaren`);
     for (const n of d.notes.filter(x => x.imp)) toast(n.text, false, 6000);
     return;
   }
-  const foot = d.boss ? T.pickLine(I.bossFooters, run.round) : T.pickLine(I.footers, run.round);
-  const stamp = d.boss ? I.bossStamp : I.stamp;
+  refreshBoard();                                    // karteczka jest już na tablicy, ale ukryta (pending), dopóki faktura do niej nie doleci
   const el = document.createElement('div');
-  el.className = 'inv' + (d.boss ? ' boss' : '');
-  el.setAttribute('role', 'status');
-  el.innerHTML = `<div class="inv-head"><b>${esc(I.company)}</b><span>${esc(I.nip)}</span></div>
-    <div class="inv-title"><b>${d.boss ? I.bossTitle : I.title}</b><span>nr BG/${esc(String(run.id).slice(-4))}/${String(floor || run.round).padStart(2, '0')}</span></div>
-    <div class="inv-who">Nabywca: <b>${esc(D.CHARS[run.char].name)}</b>, ${esc(T.ZONE_NAMES[run.zone])}</div>
-    <div class="inv-rows">${d.rows.map(([a, b], i) => `<div class="inv-row" style="--d:${i}"><span>${esc(a)}</span><b>${b}</b></div>`).join('')}</div>
-    ${d.notes.length ? `<div class="inv-notes">${d.notes.map(n => `<div class="${n.imp ? 'imp' : ''}">${esc(n.text)}</div>`).join('')}</div>` : ''}
-    <div class="inv-foot">${esc(d.line)}<br><i>${esc(foot)}</i></div>
-    <div class="inv-stamp ${d.boss ? 'boss' : ''}" aria-hidden="true">${esc(stamp).replace('\n', '<br>')}</div>`;
-  $('#invoice').appendChild(el);
-  // położenie: nad środkową kolumną (nie zasłania wieży ze schodami po lewej ani panelu po prawej)
+  el.className = 'inv' + (d.boss ? ' boss' : ''); el.setAttribute('role', 'status');
+  el.innerHTML = invoiceInner(d) + `<div class="inv-nail">${art.nailArt()}</div>`;
+  const ham = document.createElement('div'); ham.className = 'inv-hammer'; ham.innerHTML = art.hammerArt(); ham.setAttribute('aria-hidden', 'true');
+  $('#invoice').append(el, ham);
+  // położenie: nad środkową kolumną (nie zasłania schodów po lewej ani panelu po prawej)
   const st = $('.stage'), rc = st && st.getBoundingClientRect();
   if (rc && rc.width > 0) { el.style.left = (rc.left + rc.width / 2) + 'px'; el.style.top = Math.max(10, rc.top + 2) + 'px'; el.style.maxWidth = Math.max(260, rc.width - 20) + 'px'; }
-  snd.sfx('unlock');
-  INV.el = el; INV.t0 = performance.now();
-  const hold = (REDUCED.matches ? 2200 : 3200) + d.rows.length * 120 + (d.imp ? 3600 : 0);
-  INV.timers.push(setTimeout(() => dismissInvoice(false), hold));
+  INV.el = el; INV.ham = ham; INV.floor = d.f; INV.t0 = performance.now();
+  const later = (ms, fn) => INV.timers.push(setTimeout(fn, ms)), hold = d.imp ? 3400 : 500;
+  if (REDUCED.matches) { $('.inv-nail', el).style.setProperty('--sink', '34px'); $('.inv-nail', el).classList.add('on'); ham.remove(); INV.ham = null; later(2200 + (d.imp ? 3000 : 0), () => flyToBoard(false)); return; }
+  later(760, () => $('.inv-nail', el).classList.add('on'));
+  [1000, 1280, 1560].forEach((ms, i) => later(ms, () => strike(i + 1)));
+  later(1900, () => ham.classList.add('away'));
+  later(1950 + hold, () => flyToBoard(false));
 }
-// Pierwsza akcja gracza (klik, klawisz) chowa fakturę, ale dopiero po chwili, żeby nie zniknęła przypadkiem.
+// Pierwsza akcja gracza (klik, klawisz) skraca animację i wysyła fakturę na tablicę, ale dopiero po chwili, żeby nie zniknęła przypadkiem.
 for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, () => { if (INV.el && performance.now() - INV.t0 > 700) dismissInvoice(true); }, true);
 function takeUnlocks() { const u = G.unlocks; G.unlocks = []; return u; }
 function unlocksHTML(list) {
@@ -940,7 +1024,7 @@ function showEnd(j, quiet = false) {
   openOverlay(`<div class="endwrap ${win ? 'win' : 'lose'}"><div class="end-left">${scene}<h2 class="end-title ${win ? '' : 'lose'}">${win ? T.END_WIN.title : T.END_LOSE.title}</h2>
     ${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}
     ${facts.length ? `<div class="facts">${facts.map((f, i) => `<div class="fact ${i ? 'second' : ''}" style="--i:${i}"><span class="fk">${i ? 'I jeszcze' : 'Ciekawostka'}</span>${esc(f.text)}</div>`).join('')}</div>` : ''}</div>
-    <div class="end-right"><table class="scoretable"><tr><td>Ukończone piętra (${r.done} × ${D.RULES.scoreRound})</td><td>${fmtNum(r.done * D.RULES.scoreRound)}</td></tr>
+    <div class="end-right"><div class="end-scroll"><table class="scoretable"><tr><td>Ukończone piętra (${r.done} × ${D.RULES.scoreRound})</td><td>${fmtNum(r.done * D.RULES.scoreRound)}</td></tr>
       <tr><td>Ziarna w kieszeni (${r.coins} × ${D.RULES.scoreCoin})</td><td>${fmtNum(r.coins * D.RULES.scoreCoin)}</td></tr>
       <tr><td>Premia za szybkość walk</td><td>${fmtNum(r.timeBonus)}</td></tr>
       ${r.garnek ? `<tr><td>Mnożnik Garnka ${r.garnek} (${D.GARNEK[r.garnek].name})</td><td>×${mult.toFixed(2).replace('.', ',')}</td></tr>` : ''}
@@ -948,8 +1032,8 @@ function showEnd(j, quiet = false) {
     ${e.newBest ? '<p class="lead" style="color:var(--gold)"><b>Nowy rekord życiowy w tym trybie!</b></p>' : ''}
     ${e.rank ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}
     ${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano Temperaturę Garnka ${G.profile.garnek}: ${esc(D.GARNEK[G.profile.garnek].name)}</b></div>` : ''}${unlocksHTML(un)}${endMeta(j)}
-    <div class="analyze" id="analyzebox">${analyzeHTML(r.id, !!(G.sentRuns && G.sentRuns[r.id]))}</div>
-    <div class="actions" style="margin-top:14px"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>`, { force: true, cls: 'endfull' });
+    <div class="analyze" id="analyzebox">${analyzeHTML(r.id, !!(G.sentRuns && G.sentRuns[r.id]))}</div></div>
+    <div class="actions end-actions"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>`, { force: true, cls: 'endfull' });
   G.screen = 'home'; render();
   countUp($('#endscore'), quiet);
 }
@@ -1120,6 +1204,7 @@ const ACT = {
   'retry-fight': () => { closeOverlay(); const cb = G.retryCb; G.retryCb = null; if (cb) cb(); },
   close: () => { closeOverlay(); if (G.screen === 'run' && G.run && G.run.phase === 'bonus') render(); },
   ranking: () => showRanking(G.run ? G.run.mode : G.setup.mode),
+  slip: b => showSlip(+b.dataset.f),
   ranktab: b => showRanking(b.dataset.v, true),
   rkme: () => { const me = playerNow(); if (me) { RK.nick = me.nick; showRanking(RK.mode, true); } },
   rkclear: () => { Object.assign(RK, { char: '', garnek: '', nick: '' }); showRanking(RK.mode, true); },
