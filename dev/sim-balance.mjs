@@ -9,12 +9,15 @@ import { makeRng, mix } from '../../pl3y-server/src/games/bulgot/rng.js';
 import { heroStats } from '../../pl3y-server/src/games/bulgot/stats.js';
 import { loadoutOf } from '../../pl3y-server/src/games/bulgot/rules.js';
 
+import { power } from './lib-power.mjs';
+
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i >= 0 ? process.argv[i + 1] : d; };
 const MODE = arg('mode', 'full'), GARNEK = +arg('garnek', 0), N = +arg('n', 300), POLICY = arg('policy', 'smart'), POOL = arg('pool', 'all'), CHAR = arg('char', 'pyrtek');
 const SEED0 = +arg('seed', 1);
 const TRACE = process.argv.includes('--trace');
 const NOREST = process.argv.includes('--norest'), RESTBELOW = +arg('restbelow', 55);
 const NOBUY = process.argv.includes('--nobuy'), BUYMIN = +arg('buymin', 1.05);
+const GRANT = arg('grant') ? [arg('grant').split('@')[0], +arg('grant').split('@')[1] || 1] : null;
 const PER = {};
 let UPG = 0, LOOT = 0;
 // Pokrętła do strojenia (nie zmieniają plików): mnożniki życia/ataku wrogów i bossów oraz tempo wzrostu na rundę.
@@ -31,25 +34,18 @@ for (const e of Object.values(ENEMIES)) { e.hp = Math.round(e.hp * HPM); e.atk =
 for (const e of Object.values(BOSSES)) { e.hp = Math.round(e.hp * BHPM); e.atk = Math.max(1, Math.round(e.atk * BATKM)); }
 
 // ---------- ocena kafelka: siła buildu = obrażenia na sekundę × wytrzymałość ----------
-function power(run) {
-  const S = heroStats(loadoutOf(run));
-  const crit = Math.min(1, S.crit / 100) * (S.critMult / 100 - 1);
-  const hps = S.aspd / 100;   // ciosy na sekundę
-  const burn = S.burnHit ? S.atk * 0.10 * (1 + S.burnPct / 100) * Math.min(10 + S.burnMax, hps * S.burnHit / 100 * 4) * (S.pressure ? 1.4 : 1) : 0;
-  const poison = S.poisonHit ? S.atk * 0.06 * (1 + S.poisonPct / 100) * Math.min(12, hps * S.poisonHit / 100 * 6) * 1.2 : 0;
-  const bleed = S.bleed ? (S.bleed + S.atk * 0.08) * Math.min(3 + S.bleedMax, hps * 3) : 0;
-  const frost = S.frostHit ? Math.min(1, hps * S.frostHit / 100 * 0.8) : 0;   // ułamek czasu, przez który wrogowie mają Mróz
-  const cold = 1 + frost * (S.vsCold / 100 + 0.15 + (S.shatter ? 0.25 : 0) + (S.freezePct ? 0.1 : 0));
-  const dps = (S.atk * hps * (1 + crit) * (1 + S.dmg / 100) + (S.egg ? 1.2 * S.atk / (S.egg / 10) : 0) + burn + poison + bleed) * cold + S.startBurn * S.atk * 0.05;
-  const ehp = (S.maxHp * (1 + S.regen / 120)) * (1 + S.armor / 100) / (1 - Math.min(75, S.evade) / 100);
-  const skills = run.skills.reduce((a, s) => a + (s.lvl >= 3 ? 0.22 : s.lvl >= 2 ? 0.16 : 0.1), 0);
-  const econ = 1 + (S.coinFlat + S.bossCoins / 4 + S.freeReroll * 1.5 + S.restDisc / 2) * 0.012 + (S.noSteal ? 0.02 : 0) + S.buyDisc * 0.002;
-  // Etap 2: nowe efekty przedmiotów (przybliżone mnożniki)
-  const extra = (1 + S.double / 100) * (1 + S.cleave * 0.004) * (1 + (S.vsBurn ? S.vsBurn / 100 * 0.5 : 0)) * (1 + (S.burnSpread ? 0.05 : 0)) * (1 + (S.burnArmor ? 0.05 : 0)) * (1 + (S.frostWeak ? S.frostWeak / 100 * 0.25 : 0)) * (1 + (S.firstFrost ? 0.03 : 0)) * (1 + (S.surprise ? 0.07 : 0)) * (1 + (S.scare ? 0.06 : 0)) * (1 + (S.medkit ? 0.07 : 0)) * (1 + S.skillReset * 0.004);
-  const legend = (1 + S.allStatus * 0.1) * (1 + (S.alphaCd ? 0.05 : 0)) * (S.planB ? 1.12 : 1) * (1 + (S.skillCrit ? 0.06 : 0)) * (1 + S.bigInterest * 0.0008);
-  return legend * extra * dps * ehp * (1 + skills) * (S.revive ? 1.1 : 1) * (1 + S.luck * 0.004) * econ * (1 + S.frostThorns * 0.05);
-}
+// Archetypy buildów (--arch X): bot mocno woli kafelki pasujące do stylu, żeby porównać style gry między sobą na tym samym poziomie trudności.
+const ARCH = { burn: t => (t.tags || []).includes('ogien') || (t.fx || []).some(f => /burn|pressure|eggBurn/.test(f.k)), frost: t => (t.tags || []).includes('lod') || (t.fx || []).some(f => /frost|freeze|shatter/.test(f.k)),
+  poison: t => (t.tags || []).includes('trucizna') || (t.fx || []).some(f => /poison|spread/.test(f.k)), bleed: t => (t.tags || []).includes('krew') || (t.fx || []).some(f => /bleed/.test(f.k)),
+  stats: t => t.type === 'stat', skills: t => t.type === 'skill', items: t => t.type === 'item', econ: t => (t.tags || []).includes('korpo') || (t.fx || []).some(f => /coin|interest|bossCoins|buyDisc/.test(f.k)),
+  crit: t => (t.fx || []).some(f => /^crit|critMult|skillCrit/.test(f.k)), tank: t => (t.fx || []).some(f => /^(armor|hpFlat|hpPct|evade|regen|healBonus)$/.test(f.k)) };
+const ARCHF = ARCH[arg('arch', '')];
+const PREFER = new Set((arg('prefer', '') || '').split(',').filter(Boolean));   // --prefer id1,id2: bot bierze te kafelki w pierwszej kolejności (test siły pojedynczych kafelków)
 function tileValue(run, id) {
+  const v = tileValueRaw(run, id);
+  return PREFER.has(id) ? v * 4 : ARCHF && ARCHF(TILE_BY_ID[id]) ? v * 1.35 : v;
+}
+function tileValueRaw(run, id) {
   const t = TILE_BY_ID[id];
   const base = power(run);
   const trial = JSON.parse(JSON.stringify(run));
@@ -110,6 +106,9 @@ function playRun(seed) {
   const run = r.run;
   let guard = 0;
   while (run.phase !== 'over' && guard++ < 400) {
+    if (run.phase === 'offer' && GRANT && !run.granted && run.round >= GRANT[1]) {   // --grant id@runda: dostajesz kafelek za darmo (czysty pomiar siły, bez błędu przeżywalności)
+      run.granted = true; const hb = statsOf(run).maxHp; for (const gid of GRANT[0].split('+')) run.tiles.push(gid); const ha = statsOf(run).maxHp; if (ha > hb) run.hp += ha - hb;
+    }
     if (run.phase === 'offer') {
       // Ulepszanie: bot zlewa 3 kopie tylko wtedy, gdy siła buildu rośnie (--noupgrade wyłącza)
       if (POLICY === 'smart' && !process.argv.includes('--noupgrade')) for (const uid of upgradable(run)) { const tr = JSON.parse(JSON.stringify(run)); upgrade(tr, uid); if (power(tr) > power(run)) { upgrade(run, uid); UPG++; } }

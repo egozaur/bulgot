@@ -26,30 +26,30 @@ async function patchRun(src) {
 const click = async sel => { await p.evaluate(s => { const e = document.querySelector(s); if (e) e.click(); }, sel); await wait(450); };
 
 // 1. plakietki poziomów na kartach oferty
-await patchRun(`run.round = 3; run.phase = 'offer'; run.coins = 20; run.hp = 50; run.offer = ['ziarenko-z-podlogi', 'ziarno-selekcjonowane', 'ziarno-mocy', 'czujne-oko']; run.tiles = ['grzebien-z-tasmy', 'grzebien-z-tasmy', 'slieskie-nozki']; run.flawAt = -1;`);
+await patchRun(`run.round = 3; run.phase = 'offer'; run.coins = 20; run.hp = 50; run.offer = ['ziarenko-z-podlogi', 'ziarno-selekcjonowane', 'ziarno-mocy', 'czujne-oko']; run.tiles = ['grzebien-z-tasmy', 'slieskie-nozki']; run.flawAt = -1;`);
 const lv = await p.evaluate(() => [...document.querySelectorAll('.cards .tile')].map(t => (t.querySelector('.lvl') || {}).textContent || ''));
 if (lv.join() !== 'I,II,III,III') fail('plakietki poziomów w ofercie: ' + lv.join()); else ok('plakietki poziomów na kartach: ' + lv.join(' '));
 const regen = await p.evaluate(() => [...document.querySelectorAll('.cards .tile .ttext')].map(t => t.textContent).join(' | '));
 ok('opisy: ' + regen);
 await p.screenshot({ path: `${OUT}/poziomy-oferta.png` });
 
-// 2. przycisk Ulepszanie: wyłączony przy 2 kopiach, włączony przy 3
+// 2. przycisk Ulepszanie: wyłączony przy 1 kopii, włączony przy 2
 const dis0 = await p.evaluate(() => { const b = document.querySelector('[data-act=upgrademenu]'); return b ? b.disabled : null; });
-if (dis0 !== true) fail('przycisk „Zlej kafelki” powinien być wyłączony (są 2 kopie): ' + dis0); else ok('przycisk Zlej kafelki wyłączony przy 2 kopiach');
-await patchRun(`run.tiles = ['grzebien-z-tasmy', 'grzebien-z-tasmy', 'grzebien-z-tasmy', 'slieskie-nozki', 'slieskie-nozki', 'slieskie-nozki', 'slieskie-nozki'];`);
+if (dis0 !== true) fail('przycisk „Zlej kafelki” powinien być wyłączony (jest 1 kopia): ' + dis0); else ok('przycisk Zlej kafelki wyłączony przy 1 kopii');
+await patchRun(`run.tiles = ['grzebien-z-tasmy', 'grzebien-z-tasmy', 'slieskie-nozki', 'slieskie-nozki', 'slieskie-nozki'];`);
 const dis1 = await p.evaluate(() => { const b = document.querySelector('[data-act=upgrademenu]'); return b ? b.disabled : null; });
-if (dis1 !== false) fail('przycisk „Zlej kafelki” powinien być włączony: ' + dis1); else ok('przycisk Zlej kafelki włączony przy 3 kopiach');
+if (dis1 !== false) fail('przycisk „Zlej kafelki” powinien być włączony: ' + dis1); else ok('przycisk Zlej kafelki włączony przy 2 kopiach');
 await p.keyboard.press('u'); await wait(400);
 const rows = await p.evaluate(() => [...document.querySelectorAll('.upg-row')].map(r => r.textContent.replace(/\s+/g, ' ').trim()));
-if (rows.length !== 2 || !/3× Grzebień z Taśmy.*Grzebień Hodowlany/.test(rows[0])) fail('okno zlewania: ' + JSON.stringify(rows)); else ok('okno zlewania (klawisz U): ' + rows.join(' // '));
+if (rows.length !== 2 || !/2× Grzebień z Taśmy.*Grzebień Hodowlany/.test(rows[0])) fail('okno zlewania: ' + JSON.stringify(rows)); else ok('okno zlewania (klawisz U): ' + rows.join(' // '));
 const fit = await p.evaluate(() => { const m = document.querySelector('.modal'); const r = m.getBoundingClientRect(); return { ok: m.scrollHeight <= m.clientHeight + 2, h: Math.round(r.height), top: Math.round(r.top) }; });
 if (!fit.ok) fail('okno zlewania wymaga przewijania: ' + JSON.stringify(fit)); else ok('okno zlewania mieści się: ' + JSON.stringify(fit));
 await p.screenshot({ path: `${OUT}/poziomy-zlewanie.png` });
 await click('.upg-row[data-v="grzebien-z-tasmy"]'); await wait(500);
 const st = await p.evaluate(() => { const k = Object.keys(localStorage).find(x => x.endsWith(':run')); const r = JSON.parse(localStorage.getItem(k)); return r.tiles.join(); });
-if (st !== 'slieskie-nozki,slieskie-nozki,slieskie-nozki,slieskie-nozki,grzebien-hodowlany') fail('stan po zlaniu: ' + st); else ok('po zlaniu: ' + st);
+if (st !== 'slieskie-nozki,slieskie-nozki,slieskie-nozki,grzebien-hodowlany') fail('stan po zlaniu: ' + st); else ok('po zlaniu: ' + st);
 const toast = await p.evaluate(() => (document.querySelector('.toast') || {}).textContent || '');
-if (!/Zlano 3× Grzebień z Taśmy w Grzebień Hodowlany/.test(toast)) fail('toast: ' + toast); else ok('toast: ' + toast);
+if (!/Zlano 2× Grzebień z Taśmy w Grzebień Hodowlany/.test(toast)) fail('toast: ' + toast); else ok('toast: ' + toast);
 const chip = await p.evaluate(() => [...document.querySelectorAll('.chips .chip')].map(c => (c.querySelector('.lvl') || {}).textContent + (c.querySelector('sup') ? c.querySelector('sup').textContent : '')).join(' '));
 ok('chipy w panelu (poziom, liczba): ' + chip);
 await p.screenshot({ path: `${OUT}/poziomy-po-zlaniu.png` });

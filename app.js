@@ -213,7 +213,7 @@ function tileCard(id, o = {}) {
     if (ms) { const n = run.tiles.filter(x => x === id).length % D.MILESTONE_EVERY; tags.push(`<span class="tag ${n === D.MILESTONE_EVERY - 1 ? 'hatch' : ''}">${n === D.MILESTONE_EVERY - 1 ? esc(ms.name) + '!' : 'Próg ' + (n + 1) + '/' + D.MILESTONE_EVERY}</span>`); }
   }
   if (t.boss) tags.push('<span class="tag hatch">Łup z bossa</span>');
-  else if (t.next && run && !o.static) { const c = run.tiles.filter(x => x === id).length; tags.push(`<span class="tag ${c >= 2 ? 'hatch' : ''}">Zlew ${Math.min(c + 1, 3)}/3</span>`); }
+  else if (t.next && run && !o.static) { const c = run.tiles.filter(x => x === id).length; tags.push(`<span class="tag ${c >= D.RULES.upgradeCost - 1 ? 'hatch' : ''}">Zlew ${Math.min(c + 1, D.RULES.upgradeCost)}/${D.RULES.upgradeCost}</span>`); }
   if (own && own.lvl >= 2) tags.push('<span class="tag up mut">Mutacja</span>');
   else if (own) tags.push('<span class="tag up">Poziom 2</span>');
   else if (t.type === 'skill' && run && run.skills.length >= D.RULES.maxSkills && !o.static) tags.push('<span class="tag">Zastąp slot</span>');
@@ -369,7 +369,8 @@ function zoneCompare() {
   let h = 1, a = 1; for (let i = 1; i < r.round; i++) { h *= M.grow.hp; a *= M.grow.atk; }
   if (r.round <= M.early.rounds) { h *= M.early.hp / 100; a *= M.early.atk / 100; }
   const zm = M.zoneMul && M.zoneMul[r.zone]; if (zm) { h *= zm.hp / 100; a *= zm.atk / 100; }
-  h *= (100 + (gm.enemyHp || 0)) / 100; a *= (100 + (gm.enemyAtk || 0)) / 100;
+  const rp = D.garnekRamp(r.mode, r.round) / 100;
+  h *= (100 + Math.floor((gm.enemyHp || 0) * rp)) / 100; a *= (100 + Math.floor((gm.enemyAtk || 0) * rp)) / 100;
   const n = r.zone === 0 ? 1.5 : 2, eHp = avg('hp') * h * n, eArm = avg('armor'), eDps = avg('atk') * a * avg('aspd') / 100 * n * (100 - avg('evade')) / 100;
   const crit = 1 + (S.crit || 0) * ((S.critMult || 150) - 100) / 10000;
   const dps = Math.max(0.1, S.atk * (100 + (S.dmg || 0)) / 100 * S.aspd / 100 * crit * 100 / (100 + eArm));
@@ -457,12 +458,12 @@ function pawnBtn() {
 // Ulepszanie: 3 kopie statystyki poziomu 1 lub 2 zlewają się w 1 kafelek następnego poziomu (za darmo).
 function upgradeBtn() {
   const up = G.run.up || [];
-  return `<button class="btn ${up.length ? 'upg' : ''}" data-act="upgrademenu" ${up.length ? '' : 'disabled'} title="${up.length ? 'Zlej 3 takie same kafelki w jeden wyższego poziomu (klawisz U)' : 'Potrzebujesz 3 takich samych statystyk poziomu 1 lub 2 (zlewają się w wyższy poziom)'}">${art.upgradeIcon()} Zlej kafelki${up.length ? ` (${up.length})` : ''}</button>`;
+  return `<button class="btn ${up.length ? 'upg' : ''}" data-act="upgrademenu" ${up.length ? '' : 'disabled'} title="${up.length ? 'Zlej ${D.RULES.upgradeCost} takie same kafelki w jeden wyższego poziomu (klawisz U)' : 'Potrzebujesz 3 takich samych statystyk poziomu 1 lub 2 (zlewają się w wyższy poziom)'}">${art.upgradeIcon()} Zlej kafelki${up.length ? ` (${up.length})` : ''}</button>`;
 }
 function showUpgrade() {
   const rows = (G.run.up || []).map(id => { const t = TILE[id], nx = TILE[t.next], n = G.run.tiles.filter(x => x === id).length;
-    return `<button class="upg-row" data-act="upgrade" data-v="${id}"><span class="upg-from r${t.rarity}" data-tipk="tile:${id}"><span class="pi">${lvlTag(t)}${art.tileIcon(id)}</span><b>3×</b> ${esc(t.name)}${n > 3 ? ` <small>(masz ${n})</small>` : ''}</span><span class="upg-arrow">→</span><span class="upg-to r${nx.rarity}" data-tipk="tile:${nx.id}"><span class="pi">${lvlTag(nx)}${art.tileIcon(nx.id)}</span>${esc(nx.name)}<small>${esc(nx.text)}</small></span></button>`; }).join('');
-  openOverlay(`<h2>Zlewanie kafelków</h2><p class="lead">Trzy takie same statystyki poziomu 1 lub 2 zlewasz za darmo w jedną następnego poziomu. Kosztem są trzy kafelki, nie Ziarna.</p><div class="upg-list">${rows || '<p class="hint">Nie masz trzech takich samych kafelków do zlania.</p>'}</div>`, { cls: 'upgmodal' });
+    return `<button class="upg-row" data-act="upgrade" data-v="${id}"><span class="upg-from r${t.rarity}" data-tipk="tile:${id}"><span class="pi">${lvlTag(t)}${art.tileIcon(id)}</span><b>${D.RULES.upgradeCost}×</b> ${esc(t.name)}${n > D.RULES.upgradeCost ? ` <small>(masz ${n})</small>` : ''}</span><span class="upg-arrow">→</span><span class="upg-to r${nx.rarity}" data-tipk="tile:${nx.id}"><span class="pi">${lvlTag(nx)}${art.tileIcon(nx.id)}</span>${esc(nx.name)}<small>${esc(nx.text)}</small></span></button>`; }).join('');
+  openOverlay(`<h2>Zlewanie kafelków</h2><p class="lead">Dwie takie same statystyki poziomu 1 lub 2 zlewasz za darmo w jedną następnego poziomu. Kosztem są dwa kafelki, nie Ziarna.</p><div class="upg-list">${rows || '<p class="hint">Nie masz trzech takich samych kafelków do zlania.</p>'}</div>`, { cls: 'upgmodal' });
 }
 const pawnable = () => { const r = G.run; return [...new Set(r.tiles)].filter(id => { const t = TILE[id]; return t && t.type !== 'skill' && !t.hidden && !t.noPawn && !(r.flawed || []).some(w => w.id === id); }); };
 // Zamiana kolejności umiejętności (slot = klawisz w walce). Serwer zapisuje kolejność, więc powtórka walki się zgadza.
@@ -1193,7 +1194,7 @@ function showBook(tab = 'tiles', turn = false) {
       <div class="sec">Progi statystyk</div><p class="lead">Każde ${D.MILESTONE_EVERY} kopie tej samej statystyki poziomu 3 (złota plakietka III) dają dodatkową premię.</p><div class="ms-grid">${ms}</div>`;
   } else if (tab === 'tiles') {
     const list = D.TILES.filter(t => !t.hatched && !t.hidden);
-    body = `<p class="lead">Poznane: ${list.filter(t => t.boss ? (p.seen || []).includes(t.id) : (!t.lock || p.tiles.includes(t.id))).length} z ${list.length} kafelków. Statystyki mają cztery poziomy (plakietka I, II, III, ★): trzy takie same kafelki poziomu 1 lub 2 zlejesz za darmo w wyższy poziom, a legendarne (★) wypadają tylko z bossów.</p><div class="book-grid">${list.map((t, i) => {
+    body = `<p class="lead">Poznane: ${list.filter(t => t.boss ? (p.seen || []).includes(t.id) : (!t.lock || p.tiles.includes(t.id))).length} z ${list.length} kafelków. Statystyki mają cztery poziomy (plakietka I, II, III, ★): dwa takie same kafelki poziomu 1 lub 2 zlejesz za darmo w wyższy poziom, a legendarne (★) wypadają tylko z bossów.</p><div class="book-grid">${list.map((t, i) => {
       const open = t.boss ? (p.seen || []).includes(t.id) : (!t.lock || p.tiles.includes(t.id)), u = t.lock && D.UNLOCK_BY_ID[t.lock];
       const nw = open && t.lock && fresh('t:' + t.id); if (open && t.lock) marks.push('t:' + t.id);
       return `<div class="entry ${nw ? 'fresh' : ''}" style="--i:${i}">${tileCard(t.id, { static: true, mini: true, i, locked: !open, lockText: open ? '' : t.boss ? 'Łup z bossa: pokonaj bossa i wybierz go z trzech' : (u && u.text) })}${nw ? '<span class="newtag">Nowy wpis!</span>' : ''}</div>`;
@@ -1279,7 +1280,7 @@ const ACT = {
   buyoffer: b => doBuy(+b.dataset.i),
   pawnmenu: () => showPawn(),
   upgrademenu: () => showUpgrade(),
-  upgrade: async b => { const id = b.dataset.v; const j = await act('upgrade', { id }); if (!j) return; closeOverlay(); snd.sfx('unlock'); G.upFresh = j.upgraded.to; toast(`Zlano 3× ${TILE[id].name} w ${TILE[j.upgraded.to].name}!`, false, 3600); render(); setTimeout(() => { G.upFresh = null; document.querySelectorAll('.chip.fresh').forEach(e => e.classList.remove('fresh')); }, 1800); },
+  upgrade: async b => { const id = b.dataset.v; const j = await act('upgrade', { id }); if (!j) return; closeOverlay(); snd.sfx('unlock'); G.upFresh = j.upgraded.to; toast(`Zlano ${D.RULES.upgradeCost}× ${TILE[id].name} w ${TILE[j.upgraded.to].name}!`, false, 3600); render(); setTimeout(() => { G.upFresh = null; document.querySelectorAll('.chip.fresh').forEach(e => e.classList.remove('fresh')); }, 1800); },
   tuck: b => tuckLetter(b.closest('.decree')),
   pawn: async b => { const id = b.dataset.v; const j = await act('pawn', { id }); if (!j) return; closeOverlay(); snd.sfx('coin'); toast(`Lis wziął ${TILE[id].name} i dał ${j.price} Ziaren. Wykup na następnym piętrze.`, false, 4200); render(); },
   codeopen: () => {   // Hasło do ukrytej postaci: tylko tutaj, z ekranu wyboru postaci. Hasło sprawdza serwer.

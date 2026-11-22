@@ -39,7 +39,7 @@ function tileTip(id, extra) {
   if (t.type === 'stat' && t.lvl) {
     const nx = t.next && TILE[t.next];
     info += t.boss ? '<div class="tp-line hatch">Legendarny łup z bossa: wybierasz 1 z 3 po pokonaniu bossa. Nie wypada w ofertach.</div>'
-      : `<div class="tp-line">Poziom <b>${t.lvl} / 3</b>${nx ? ` · <b>3× ${esc(t.name)}</b> zlewa się w <b>${esc(nx.name)}</b> (przycisk „Zlej kafelki”, za darmo)` : ' · najwyższy poziom zwykły'}</div>`;
+      : `<div class="tp-line">Poziom <b>${t.lvl} / 3</b>${nx ? ` · <b>${D.RULES.upgradeCost}× ${esc(t.name)}</b> zlewa się w <b>${esc(nx.name)}</b> (przycisk „Zlej kafelki”, za darmo)` : ' · najwyższy poziom zwykły'}</div>`;
   }
   if (t.grow && r) info += `<div class="tp-line">Licznik: <b>${Math.min(t.grow.max, (r.grow || {})[id] || 0)} / ${t.grow.max}</b></div>`;
   const sets = setsOf(t).map(sid => setBonuses(sid, owned(sid))).join('');

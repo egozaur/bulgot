@@ -518,3 +518,48 @@ Postaci jest 14 (`CHARS` w `data.js`), `RUN_V = 6`. Każda ma blokadę w `UNLOCK
 Perliczka Strażniczka (unik z ripostą) została odłożona. Postacie rysuje wspólny szablon `HEN` w `art.js` (paleta + akcesoria); jajko Dinozaura jest sekretne jak Zjarany, ale hasło „dzioby” działa tylko dla Zjaranego (`hasCode`).
 
 Balans bota (szybki / pełny): Barista 52 / 54%, Gęś 51 / 49%, Lodziarz 55 / 59%, Pielęgniarka 58 / 63%, Rzeźnik 59 / 54%, Wróżka 58 / 60%, Stażysta 47 / 48%, Mutant 55 / 56%, Dinozaur 52 / 56%. Pierwotnie Rzeźnik (bleed 3, +2 limitu) miał 86%, a Stażysta (+4%) 24%. Uwaga: „Cała Zagroda” (`a-zagroda`) i procent ukończenia gry liczą teraz 14 postaci. Test: `dev/e2e-postacie.mjs`.
+
+
+## 17. Wielki balans: wartości kart, Ulepszanie za 2, trudne palniki (2026-11-22)
+
+Powód: poziomy 1–2 statystyk były znikome (np. +1% obrażeń), a rodziny kart bardzo nierówne. Narzędzia: `dev/analiza-kart.mjs` (ile % siły buildu dodaje karta na różnych etapach runu), `sim-balance.mjs --grant id[+id]@runda` (kafelek za darmo w danej rundzie, czysty pomiar siły bez błędu przeżywalności), `--arch burn|frost|poison|bleed|stats|skills|items|econ|crit|tank` (bot faworyzuje styl), `--prefer id`, wspólna `dev/lib-power.mjs`.
+
+### Statystyki: nowe wartości (poz. 1 / 2 / 3 / legendarny)
+Cel: dwie kopie poziomu 3 dają podobny wzrost siły (ok. +10–17 pkt proc. wygranych na palniku 2) w każdej rodzinie; poziom 1 ≈ 30%, poziom 2 ≈ 60% poziomu 3.
+| Rodzina | wartości |
+|---|---|
+| Życie | +4 / +8 / +14 / +24 |
+| Atak | **+7% / +14% / +22% / +38% Ataku** (dawniej płaskie +1/+2/+6; Atak jest teraz procentowy, a `heroStats` zaokrągla go `Math.round`) |
+| Obrażenia | 6 / 12 / 20 / 34% |
+| Szybkość ataku | 7 / 13 / 22 / 38% |
+| Pancerz | 3 / 6 / 10 / 17 |
+| Krytyk | 8 / 15 / 26 / 44% |
+| Unik | 3 / 6 / 10 / 17% |
+| Regeneracja | 0,3 / 0,5 / 0,9 / 1,5 na sekundę |
+| Szczęście | 6 / 12 / 20 / 34 |
+Ulepszanie kosztuje teraz **2 kopie** (`RULES.upgradeCost`), więc zlanie 2 → 1 nie traci mocy na poziomie 1 → 2. Indor ma +55% Ataku (było 60%), bo zaokrąglenie Ataku dałoby mu +1.
+
+### Kafelki wyrównane pomiarem (`--grant`, wygrane pkt proc. na palniku 2)
+Plan B 15% Życia i 1,5 s (było 30% / 3 s, +20 pkt), Zakazana Pasza +12% wszystkiego (było +25%), Apteczka Polowa 10% (było 25%), Karabin Maszynowy 10% (było 15%), Dinozaur +30% po 4 piętrach (było +60% po 5; Jajko Dinozaura nie wykluwało się w trybie szybkim), Złoty Rosołek +50% obrażeń Oparzenia i Salmonelli, Dziób Mistrza +20% krytyka i +25% mocy krytyka, Akcje Zarządu +20% Ziaren z nagród, Open Space 25% (było 12%). Postacie: Kwoka +20% Życia i −25% szybkości ataku (było +30% / −20%), Pielęgniarka +1,2 / s i +8 pkt leczenia, Stażysta +5% za piętro (maks. +35%).
+
+### Palniki (poziomy trudności)
+Premie dla wrogów rosną z piętrem (`garnekRamp`: 40% wartości na 1. piętrze, 100% na ostatnim), dzięki czemu wyższe palniki nie zabijają w pierwszej walce, tylko dociskają coraz mocniej.
+| Palnik | Efekt (skumulowany) |
+|---|---|
+| 1 Ciepły | wrogowie +10% Życia |
+| 2 Gorący | +7% Ataku, reroll +1 Ziarno, elity 2 cechy |
+| 3 Wrzący | leczenie po rundzie 35% → 25%, +3% Życia wrogów |
+| 4 Kipiący | bossowie +20% szybkości ataku i +15% Życia |
+| 5 Wulkan Rosołu | +8% Życia i +8% Ataku wrogów więcej, bossowie +10% Życia więcej, −1 Ziarno po wygranej, regeneracja o połowę słabsza |
+`MODES.*.grow`: szybki 1.088 / 1.058, pełny 1.087 / 1.052. `RUN_V = 7`.
+
+### Wyniki bota (Pyrtek, 1000 runów)
+| Palnik | Tryb pełny | Tryb szybki |
+|---|---|---|
+| 0 | 42% | 44% |
+| 1 | 36% | 37% |
+| 2 | 30% | 30% |
+| 3 | 20% | 21% |
+| 4 | 13% | 15% |
+| 5 | 2,8% | 3,0% |
+Postacie w szybkim: palnik 0 od 44% (Pyrtek, Wróżka) do 60% (Indor, Lodziarz, Gęś, Pielęgniarka), palnik 5 od 2,6% (Zjarany) do 9% (Kwoka). Bot gra rozsądnie, ale człowiek bez ogrania zwykle wygrywa mniej; jeśli zbyt trudno, zacznij od obniżenia `grow`.

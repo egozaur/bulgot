@@ -26,7 +26,7 @@ for (let r = 0; r < rounds; r++) {
   let s = await st();
   if (s.screen !== 'run') break;
   if (s.phase === 'offer') { await p.keyboard.press('1'); await wait(400); s = await st(); }
-  if (s.phase === 'event') { await p.evaluate(() => (document.querySelector('[data-act=leave]') || document.querySelector('[data-act=bet][data-v="0"]')).click()); await wait(300); s = await st(); }
+  if (s.phase === 'event') { await p.evaluate(() => (document.querySelector('[data-act=leave]') || document.querySelector('[data-act=bet][data-v="0"]') || document.querySelector('[data-act=choose][data-i="2"]')).click()); await wait(300); s = await st(); }
   await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; });
   if (s.phase === 'fight') {
     await p.click('[data-act=tofight]'); await wait(1200);
