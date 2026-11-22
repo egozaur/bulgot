@@ -66,6 +66,7 @@ async function act(path, body) {
     if (!j || j.err) { toast((j && j.err) || 'Coś poszło nie tak. Spróbuj jeszcze raz.', true, 3600); if (j && 'run' in j && G.screen !== 'fight') render(); return null; }
     if (j.voided) toast('Gra dostała aktualizację zasad, więc poprzedni run został unieważniony. Zacznij nowy!', false, 6000);
     if (j.hatched && j.hatched.length) setTimeout(() => showHatched(j.hatched), 80);
+    if (j.dino) setTimeout(showDino, 80);
     if (j.ach && j.ach.length) { for (const a of j.ach) { (G.ach = G.ach || []).push(a); toast('Osiągnięcie: ' + a.name, false, 4600); } snd.sfx('unlock'); }
     if (j.unlocks && j.unlocks.length) { for (const u of j.unlocks) { G.unlocks.push(u); toast('Odblokowano: ' + unlockName(u), false, 4200); } snd.sfx('unlock'); }
     return j;
@@ -76,6 +77,10 @@ function showHatched(ids) {
   const rows = ids.map(id => { const r = D.RECIPES.find(x => x.out === id); return `<div class="hatch-row">${r.of.map(c => tileCard(c, { static: true, mini: true })).join('<div class="hplus">+</div>')}<div class="hplus">=</div>${tileCard(id, { static: true, mini: true })}</div>`; }).join('');
   snd.sfx('unlock');
   openOverlay(`<h2>Wylęgarnia!</h2><p class="lead">Dwa przedmioty zlepiły się w gnieździe i wykluło się coś legendarnego. Nowy przedmiot ma efekty obu i liczy się do ich zestawów.</p>${rows}<div class="actions" style="margin-top:14px"><button class="btn primary" data-act="close" data-primary>Wspaniale</button></div>`, { narrow: false });
+}
+function showDino() {
+  snd.sfx('unlock');
+  openOverlay(`<h2>Wykluło się!</h2><p class="lead">Jajko Dinozaura pękło po pięciu piętrach. Ptaki to przecież dinozaury, a ten jest wyjątkowo zły.</p><div class="hatch-row">${tileCard('jajko-dinozaura', { static: true, mini: true })}<div class="hplus">=</div>${tileCard('dinozaur', { static: true, mini: true })}</div><div class="actions" style="margin-top:14px"><button class="btn primary" data-act="close" data-primary>Świetnie</button></div>`);
 }
 // Przepis, który dany kafelek by dokończył (masz już drugi składnik).
 function recipeFor(id) {
@@ -459,7 +464,7 @@ function showUpgrade() {
     return `<button class="upg-row" data-act="upgrade" data-v="${id}"><span class="upg-from r${t.rarity}" data-tipk="tile:${id}"><span class="pi">${lvlTag(t)}${art.tileIcon(id)}</span><b>3×</b> ${esc(t.name)}${n > 3 ? ` <small>(masz ${n})</small>` : ''}</span><span class="upg-arrow">→</span><span class="upg-to r${nx.rarity}" data-tipk="tile:${nx.id}"><span class="pi">${lvlTag(nx)}${art.tileIcon(nx.id)}</span>${esc(nx.name)}<small>${esc(nx.text)}</small></span></button>`; }).join('');
   openOverlay(`<h2>Zlewanie kafelków</h2><p class="lead">Trzy takie same statystyki poziomu 1 lub 2 zlewasz za darmo w jedną następnego poziomu. Kosztem są trzy kafelki, nie Ziarna.</p><div class="upg-list">${rows || '<p class="hint">Nie masz trzech takich samych kafelków do zlania.</p>'}</div>`, { cls: 'upgmodal' });
 }
-const pawnable = () => { const r = G.run; return [...new Set(r.tiles)].filter(id => { const t = TILE[id]; return t && t.type !== 'skill' && !t.hidden && !(r.flawed || []).some(w => w.id === id); }); };
+const pawnable = () => { const r = G.run; return [...new Set(r.tiles)].filter(id => { const t = TILE[id]; return t && t.type !== 'skill' && !t.hidden && !t.noPawn && !(r.flawed || []).some(w => w.id === id); }); };
 // Zamiana kolejności umiejętności (slot = klawisz w walce). Serwer zapisuje kolejność, więc powtórka walki się zgadza.
 async function swapSlots(a, b) {
   const j = await act('skillorder', { a, b }); if (!j) return;

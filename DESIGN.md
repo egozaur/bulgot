@@ -470,3 +470,30 @@ Wszystkie efekty są w `sim.js` (nowe pola `igniteUntil`, `dmgUntil`, `hotUntil`
 
 ### Balans (bot)
 Rozcieńczenie puli obniżyło wyniki (szybki 39%, pełny 38%), więc `grow` znów w dół: szybki `{1.125, 1.086}`, pełny `{1.109, 1.068}`. Wyniki: szybki Pyrtek 47%, Zjarany 53%, Indor 57%, Kwoka 65%, Kaczor 53%; pełny Pyrtek 46%. Statystyki kafelków (1500 runów pełnych): żaden nowy kafelek nie odstaje rażąco (przedmioty 58–80% wygranych wśród runów, które je miały, umiejętności 42–54%); najczęściej wybierany jest Karabin Maszynowy (70%).
+
+
+## 15. Etap 3: ryzyko i legendarne przedmioty (2026-11-22)
+
+Pula: 134 kafelki (6 nowych ryzyka, 6 legendarnych przedmiotów, wyklęty Dinozaur). `RUN_V = 5`.
+
+### +6 kafelków ryzyka
+| Kafelek | Zysk | Cena |
+|---|---|---|
+| Pożyczka Chwilówka | +15 Ziaren od razu (`coinsNow`) | -2 Ziarna po każdej wygranej rundzie; Lis jej nie przyjmuje (`noPawn`) |
+| Dopalacz z Biedronki | +40% szybkości ataku | -25% maks. Życia |
+| Nadgodziny Bez Dopłaty | +30% obrażeń | Odpoczynek leczy o połowę mniej (`restHalf`) |
+| Dieta Cud z Kantyny (Zwykły) | +15 Pancerza | -30% szybkości ataku |
+| Układ z Zarządem | +12 Ziaren od razu | następny boss +25% Życia (`bossBoost`, jak Zakazana Pasza) |
+| Los na Loterii | +25 Szczęścia | -1 Ziarno po każdej wygranej rundzie |
+
+### +6 legendarnych przedmiotów (rzadkość 3, flaga `legend`)
+- **Droga zdobycia:** wypadają w zwykłych ofertach, rerollach, bonusach i Skrzynce, ale **dopiero od 60% runu** (`tileAvailable`: strefa III w trybie pełnym od piętra 13, w szybkim od piętra 7). Wagę rzadkości 3 (`RARITY_WEIGHTS`: 0 / 2 / 5) podbija Szczęście. Cena dokupienia 30 Ziaren.
+- **Złoty Rosołek:** każde nałożenie efektu statusowego daje +1 stos (`allStatus`).
+- **Kogut Alfa:** umiejętność w 1. slocie jest gotowa od początku walki i ma -50% cooldownu (`firstReady`, `alphaCd`).
+- **Jajko Dinozaura:** kafelek rosnący (`grow` 5); po 5 wygranych piętrach zamienia się w **Dinozaura** (`hatched`, +60% Ataku i Życia); klient pokazuje okno „Wykluło się!” (`dino` w odpowiedzi `fightfinish`).
+- **Plan B:** raz w każdej walce, po spadku do zera, wstajesz z 30% Życia i 3 s nietykalności (`planB`; działa też po Gnieździe Zapasowym).
+- **Akcje Zarządu:** po wygranej +25% posiadanych Ziaren, maks. 12 (`bigInterest`).
+- **Dziób Mistrza Ceremonii:** umiejętności mogą zadawać trafienia krytyczne (`skillCrit`, `inSkill` w `sim.js`), +15% krytyka.
+
+### Balans
+Szybki `grow` zmieniony na `{1.12, 1.083}` (pełny bez zmian `{1.109, 1.068}`). Bot: szybki Pyrtek 47%, Zjarany 54%, Indor 60%, Kwoka 66%, Kaczor 56%; pełny Pyrtek 47%. Legendarne mają bardzo wysoką skuteczność wśród runów, które je zdobyły (94–99%), ale to głównie efekt selekcji (dochodzą tylko runy po 60% drogi). Jeśli okażą się zbyt mocne w grze: podnieś próg 60% w `tileAvailable` albo obniż wagę rzadkości 3.

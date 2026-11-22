@@ -46,7 +46,8 @@ function power(run) {
   const econ = 1 + (S.coinFlat + S.bossCoins / 4 + S.freeReroll * 1.5 + S.restDisc / 2) * 0.012 + (S.noSteal ? 0.02 : 0) + S.buyDisc * 0.002;
   // Etap 2: nowe efekty przedmiotów (przybliżone mnożniki)
   const extra = (1 + S.double / 100) * (1 + S.cleave * 0.004) * (1 + (S.vsBurn ? S.vsBurn / 100 * 0.5 : 0)) * (1 + (S.burnSpread ? 0.05 : 0)) * (1 + (S.burnArmor ? 0.05 : 0)) * (1 + (S.frostWeak ? S.frostWeak / 100 * 0.25 : 0)) * (1 + (S.firstFrost ? 0.03 : 0)) * (1 + (S.surprise ? 0.07 : 0)) * (1 + (S.scare ? 0.06 : 0)) * (1 + (S.medkit ? 0.07 : 0)) * (1 + S.skillReset * 0.004);
-  return extra * dps * ehp * (1 + skills) * (S.revive ? 1.1 : 1) * (1 + S.luck * 0.004) * econ * (1 + S.frostThorns * 0.05);
+  const legend = (1 + S.allStatus * 0.1) * (1 + (S.alphaCd ? 0.05 : 0)) * (S.planB ? 1.12 : 1) * (1 + (S.skillCrit ? 0.06 : 0)) * (1 + S.bigInterest * 0.0008);
+  return legend * extra * dps * ehp * (1 + skills) * (S.revive ? 1.1 : 1) * (1 + S.luck * 0.004) * econ * (1 + S.frostThorns * 0.05);
 }
 function tileValue(run, id) {
   const t = TILE_BY_ID[id];
@@ -62,6 +63,7 @@ function tileValue(run, id) {
     return power(trial);
   }
   trial.tiles.push(id);
+  if (id === 'jajko-dinozaura') { trial.tiles.pop(); trial.tiles.push('dinozaur'); return power(trial) * 0.8; }   // jajo wyceniane jak wyklęty Dinozaur z dyskontem
   if (t.grow) trial.grow = { ...(trial.grow || {}), [id]: Math.min(t.grow.max, Math.round(t.grow.max / 3)) };   // kafelek rosnący: wyceniany z oczekiwanym wzrostem
   const v = power(trial);
   if (id === 'zakazana-pasza') return v * 0.95;
