@@ -390,7 +390,7 @@ function topbarHTML() {
     ${r.decree && D.DECREES[r.decree] ? `<span class="pill dec" tabindex="0" title="${esc(D.DECREES[r.decree].name + ': ' + D.DECREES[r.decree].text)}">${art.decreeIcon()} Okólnik</span>` : ''}
     <span class="pill mode">${M.name}</span>${r.garnek ? `<span class="pill g" title="Temperatura Garnka ${r.garnek}: ${esc(D.GARNEK[r.garnek].name)}">Garnek ${r.garnek}<span class="gname"> · ${D.GARNEK[r.garnek].name}</span></span>` : ''}
     <span class="disp odo" title="Wynik na żywo" aria-label="Wynik ${r.score}"><b data-ctr="score" data-odo="6">${odoHTML(r.score, 6)}</b></span>
-    <button class="btn small menubtn" data-act="menu" title="Menu (Esc)" aria-label="Menu">${art.menuIcon()}</button></div>`;
+    <button class="btn small menubtn" data-act="book" title="Księga Kurnika (K)" aria-label="Księga Kurnika">${art.bookIcon()}</button><button class="btn small menubtn" data-act="help" title="Jak grać (H)" aria-label="Jak grać">${art.helpIcon()}</button><button class="btn small menubtn" data-act="menu" title="Menu (Esc)" aria-label="Menu">${art.menuIcon()}</button></div>`;
 }
 function stageHTML() {
   const r = G.run;
@@ -1102,6 +1102,16 @@ async function showRanking(mode, keep) {
 // Księga: nowe wpisy (odblokowane kafelki, przepisy, reakcje) od ostatniego otwarcia dostają naklejkę „Nowy wpis!”.
 function bookSeen() { try { return new Set(JSON.parse(store.get('bulgot:bookseen') || '[]')); } catch (e) { return new Set(); } }
 function bookMark(keys) { const s = bookSeen(); for (const k of keys) s.add(k); store.set('bulgot:bookseen', JSON.stringify([...s])); }
+// Księga jako rozkładówka: treść płynie w dwóch kolumnach poziomo, strony przewija się ←/→ (bez przewijania w dół).
+function bookFit() {
+  const v = $('.bookview'), fl = $('.bookflow'); if (!v || !fl) return;
+  const gap = parseFloat(getComputedStyle(fl).columnGap) || 28, W = v.clientWidth, pages = Math.max(1, Math.round((fl.scrollWidth + gap) / (W + gap)));
+  G.bookPages = pages; G.bookPage = Math.max(0, Math.min(pages - 1, G.bookPage || 0));
+  fl.style.transform = `translateX(${-(G.bookPage * (W + gap))}px)`;
+  const no = $('.bookno'); if (no) no.textContent = 'Strona ' + (G.bookPage + 1) + ' z ' + pages;
+  const pv = $('[data-act=bookprev]'), nx = $('[data-act=booknext]'); if (pv) pv.disabled = G.bookPage <= 0; if (nx) nx.disabled = G.bookPage >= pages - 1;
+}
+const bookGo = d => { G.bookPage = (G.bookPage || 0) + d; bookFit(); };
 function showBook(tab = 'tiles') {
   const seen = bookSeen(), fresh = k => !seen.has(k), marks = [];
   const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['react', 'Reakcje i Okólniki'], ['badges', 'Odznaki'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania']];
@@ -1144,8 +1154,9 @@ function showBook(tab = 'tiles') {
     body = `<div class="help-list">${D.UNLOCKS.map(u => { const done = p.unlocked.includes(u.id), sec = u.secret && !done; return `<div><b>${done ? '✓' : '○'} ${esc(sec ? '???' : unlockName(u))}</b><p>${esc(sec ? '???' : u.text)}${done ? ' (zdobyte)' : ''}</p></div>`; }).join('')}</div>`;
   }
   // księga: okładka, zakładki-przekładki, strona z wklejanymi wpisami
-  openOverlay(`<div class="booktabs tabs">${tabs.map(([id, n], i) => `<button class="tab ${id === tab ? 'on' : ''}" data-act="booktab" data-v="${id}" style="--t:${i}">${n}</button>`).join('')}</div><div class="bookpage"><h2>Księga Kurnika</h2>${body}</div>`, { cls: 'bookmodal' });
+  openOverlay(`<div class="bookpage"><h2>Księga Kurnika</h2><div class="bookview"><div class="bookflow">${body}</div></div><div class="bookpager"><button class="btn small ghost" data-act="bookprev" aria-label="Poprzednia strona">‹ Wstecz</button><span class="bookno"></span><button class="btn small ghost" data-act="booknext" aria-label="Następna strona">Dalej ›</button></div></div><div class="booktabs tabs">${tabs.map(([id, n], i) => `<button class="tab ${id === tab ? 'on' : ''}" data-act="booktab" data-v="${id}" style="--t:${i}">${n}</button>`).join('')}</div>`, { cls: 'bookmodal' });
   bookMark(marks);
+  G.bookPage = 0; bookFit(); requestAnimationFrame(() => bookFit()); setTimeout(() => bookFit(), 250);
 }
 // TESTOWA historia gier: ostatnie 10 runów z dziennikiem rund. Przycisk pobiera plik JSON do analizy.
 async function showHistory() {
@@ -1195,6 +1206,7 @@ const ACT = {
   resume: () => { G.screen = 'run'; render(); },
   setmode: b => { G.setup.mode = b.dataset.v; store.set('bulgot:mode', b.dataset.v); render(); },
   setchar: b => { if (G.profile.chars.includes(b.dataset.v)) { G.setup.char = b.dataset.v; render(); } else toast('Ta postać jest zablokowana: ' + (D.CHARS[b.dataset.v].secret ? '???' : (D.UNLOCK_BY_ID[D.CHARS[b.dataset.v].lock] || {}).text)); },
+  bookprev: () => bookGo(-1), booknext: () => bookGo(1),
   setnext: () => { const id = charIds()[G.setup.cur]; if (!G.profile.chars.includes(id)) { const c = D.CHARS[id]; return toast('Ta postać jest zablokowana: ' + (c.secret ? '???' : (D.UNLOCK_BY_ID[c.lock] || {}).text)); } G.setup.char = id; G.setup.step = 2; if (G.setup.garnek > G.profile.garnek) G.setup.garnek = 0; render(); },
   setback: () => { G.setup.step = 1; render(); },
   carpick: b => carGo(+b.dataset.v),
@@ -1322,6 +1334,11 @@ document.addEventListener('keydown', e => {
     }
   }
   if (k === 'escape') { if (overlayOpen()) { if (!$('#overlay').dataset.force) closeOverlay(); } else if (G.screen === 'run' || (G.screen === 'fight' && G.fight && !G.fight.finishing)) { const m = $('[data-act="menu"]'); m && m.click(); } return; }
+  if (overlayOpen() && $('#overlay .bookmodal') && !e.shiftKey) {
+    if (k === 'arrowleft' || k === 'arrowright') { e.preventDefault(); bookGo(k === 'arrowright' ? 1 : -1); return; }
+    if (k === 'arrowup' || k === 'arrowdown') { e.preventDefault(); const ts = [...document.querySelectorAll('#overlay .booktabs .tab')], i = ts.findIndex(t => t.classList.contains('on')), n = ts[(i + (k === 'arrowdown' ? 1 : ts.length - 1)) % ts.length]; if (n) showBook(n.dataset.v); return; }
+  }
+  if (!overlayOpen() && (G.screen === 'run' || G.screen === 'fight') && (k === 'k' || k === 'h') && !(G.screen === 'fight' && G.fight && !G.fight.finishing && false)) { e.preventDefault(); (k === 'k' ? showBook : showHelp)(); return; }
   if (ARROWS[k] && !(F && !overlayOpen())) { e.preventDefault(); navMove(...ARROWS[k]); return; }
   if (k === 'enter') { const cur = navCurrent(navItems()); if (cur) { e.preventDefault(); cur.click(); return; } }
   if (overlayOpen()) {

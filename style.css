@@ -1149,3 +1149,28 @@ html.reduce .bflame, html.reduce .bsteam, html.reduce .bspark { animation: none;
   .stage > .hint { font-size: .78rem; margin: 0; }
   .slips { min-height: 98px; } .slip { height: 86px; } .slip small { font-size: 7px; } .slip b { font-size: 1.6rem; }
 }
+
+/* Księga Kurnika jako rozkładówka: dwie kolumny płynące poziomo, strony ←/→, zakładki na dole, bez przewijania */
+.modal.bookmodal { display: flex; flex-direction: column; width: min(1360px, calc(100% / var(--s, 1) - 20px)); height: calc(var(--vh, 100vh) - 34px); max-height: none; overflow: hidden; padding: 0 14px 0; }
+.bookmodal .bookpage { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 12px 26px 8px; margin-top: 14px; }
+.bookmodal .bookpage h2 { margin: 0 0 4px; font-size: 1.7rem; }
+.bookview { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+.bookflow { height: 100%; columns: 2; column-gap: 44px; column-fill: auto; transition: transform .3s ease; }
+.bookflow .entry, .bookflow .ms-row, .bookflow .hatch-row, .bookflow .help-list > div, .bookflow .opt { break-inside: avoid; }
+.bookflow .sec, .bookflow .lead { break-after: avoid; }
+.bookflow .book-grid { justify-content: flex-start; }
+.bookflow .ms-grid { grid-template-columns: 1fr; }
+.bookflow .opts { grid-template-columns: 1fr; }
+html.reduce .bookflow { transition: none; }
+.bookpager { flex: none; display: flex; align-items: center; justify-content: center; gap: 18px; padding-top: 6px; color: #5a4030; font: 700 .85rem var(--mono); }
+.bookpager .btn { color: #3b1d10; border-color: #7a5a3a; background: rgba(255,255,255,.4); }
+.bookpager .btn:disabled { opacity: .35; }
+.bookmodal .booktabs.tabs { position: static; flex: none; justify-content: center; gap: 6px; margin: 0; padding: 0 0 0; flex-wrap: nowrap; background: none; }
+.bookmodal .booktabs .tab { --c: #7b4a2c; border-radius: 0 0 10px 10px; border: 2px solid #2b1a12; border-top: 0; padding: .5em 1em .55em; background: var(--c); color: #f3e1bf; filter: none; transform: translateY(-3px); font-size: .9rem; white-space: nowrap; }
+.bookmodal .booktabs .tab:hover { background: #94603a; }
+.bookmodal .booktabs .tab.on { background: #f3e5c6; color: #5a2514; transform: translateY(-5px); box-shadow: 0 4px 8px rgba(0,0,0,.3); }
+.modal.bookmodal .modal-x { top: 12px; right: 18px; }
+@media (max-width: 900px) { .bookflow { columns: 1; } .bookmodal .booktabs.tabs { overflow-x: auto; justify-content: flex-start; } }
+.bookflow .book-grid { display: block; text-align: left; font-size: 0; }
+.bookflow .book-grid .entry { display: inline-block; vertical-align: top; margin: 12px 8px 4px 0; font-size: 1rem; width: 168px; }
+.bookflow .lead { margin-top: 0; }

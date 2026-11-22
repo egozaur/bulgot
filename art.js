@@ -660,3 +660,5 @@ export function burnerArt(lv = 0) {
   ][Math.max(0, Math.min(5, lv | 0))];
   return `<svg class="burner-art b${lv}" viewBox="0 0 200 170" aria-hidden="true">${body()}</svg>`;
 }
+export const bookIcon = (cls = 'mico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5 q5 -2 9 1 q4 -3 9 -1 v14 q-5 -2 -9 1 q-4 -3 -9 -1z M12 6 v14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+export const helpIcon = (cls = 'mico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M9 9.5 q0 -3 3 -3 q3 0 3 2.6 q0 1.6 -2 2.6 q-1 .6 -1 1.8 M12 17.2 v.2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`;
