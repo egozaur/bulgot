@@ -6,7 +6,7 @@
 - **`shared/*.js` jest GENEROWANE** (kopia silnika z serwera): `node dev/sync-engine.mjs`. Nie edytuj ręcznie.
 - Serwer: `../pl3y-server/src/games/bulgot/` (DO `BgPlayer`, `BgRanks`; trasy `/api/bg/*`). Testy: `cd ../pl3y-server && node --test test/all.test.js` (`test/games/bulgot/bulgot.suite.js`).
 - Lokalnie: `node C:\Users\Kurczak\tools\scripts\serve.mjs C:\Users\Kurczak\pl3y 8090` (z `LOBBY=…\egozaur.github.io`), otwórz `/bulgot/?local=1`. Bez `/auth.js` (lokalnie jest 404) gra sama przechodzi w tryb lokalny: ten sam kod serwera chodzi w przeglądarce, zapis w `localStorage`.
-- Balans: `node dev/sim-balance.mjs --mode full --n 1000 --table` (bot gra setki runów, pokazuje % wygranych i straty życia na rundę). Test w Edge: `node dev/smoke.mjs`.
+- Balans: `node dev/sim-balance.mjs --mode full --n 1000 --table` (bot gra setki runów, pokazuje % wygranych i straty życia na rundę). Testy w Edge (z `C:\Users\Kurczak\tools\pt`): `node <repo>/dev/<test>.mjs <katalog na zrzuty>` dla smoke, e2e-ui, e2e-sciezki, e2e-odpoczynek, e2e-rozbudowa, e2e-strzalki, e2e-jeszcze, e2e-uklad, e2e-ukryte, e2e-efekty (`smoke` bierze tryb, nie katalog).
 - Node: `export PATH="/c/Users/Kurczak/tools/node:$PATH"` (przenośny, nie jest w PATH).
 
 Zawsze odpowiadaj po polsku. Teksty UI i komentarze po polsku.
@@ -39,4 +39,9 @@ Repo `egozaur/bulgot` (GitHub Pages pod `https://pl3y.pl/bulgot/`), czysty HTML/
 - Kafelki `hatched` (wyklute) i `hidden` (umowy z Kontraktu) nigdy nie trafiają do ofert ani puli startowej.
 - Strefy: tryb szybki to strefy I i II (Prezes zawsze w strefie III, patrz `zoneOf`). Mnożniki bossów w trybie szybkim: `MODES.quick.bossPct`.
 - Wyciszenie lobby (`localStorage.pl3y_mute === '1'`) wycisza też efekty Bulgota. Ustawienia gry: `bulgot:sfx`, `bulgot:music`, `bulgot:speed`, `bulgot:mode`.
+- **Szablony pięter i ukryty podgląd (2026-11-22)**: `FLOOR_TPL` + `floorTemplate` (Czempion, Rój, Zwiad, Para; nie na wczesnych piętrach, bossach, elitach, Nemezis, ryzykownych drzwiach). Od Garnka 1 `view()` nie zdradza składu (`enemies/tpl/affixes = null`, `hidden = true`, bossowie zapowiedziani). Opis: `DESIGN.md` sekcja 12.
+- **Wersja reguł runu**: `RUN_V` w `rules.js`; run z inną wersją serwer unieważnia (`voided`). Podbij `RUN_V` przy każdej zmianie spotkań lub powtórki walki.
+- **Układ na komputerze** (od 1121 px szerokości): `.run` ma stałą wysokość okna (`flex: none; height: var(--vh)`), wieża, środek i panel boczny przewijają się osobno; górny pasek nie zawija się (`.topbar` `nowrap`). Test: `dev/e2e-uklad.mjs`.
+- **Efekty tylko na obrazie**: `F.stopUntil` (zamrożenie klatki po Reakcji, wejście bossa) wstrzymuje dodawanie ticków w `frame()`; nigdy nie zmieniaj silnika ani wejść dla efektów wizualnych. Animacje: CSS/SVG, szanuj `REDUCED` (prefers-reduced-motion).
+- Wyglądu kart kafelków (`.tile`) nie zmieniamy (decyzja właściciela); w Księdze karty są tylko „wklejane” w ramki `.entry`.
 - Push do `main` = produkcja (GitHub Pages). Zawsze pytaj przed pushem.

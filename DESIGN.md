@@ -368,3 +368,28 @@ Cel: więcej powodów do kolejnego runu (combo, ryzyko, nieprzewidywalność, re
 
 ### Balans po rozbudowie (bot, 600–800 runów)
 Same nowe mechaniki podniosły wygrane bota z 58% do ok. 80% (G0), głównie przez ryzykowne drzwi. Po wzmocnieniu wroga za drzwiami (165/125%) i przestrojeniu wzrostu (pełny `grow` 1,14/1,093, szybki 1,16/1,11): G0 pełny 60%, szybki 57%, G2 52%, G5 17–19% (tak jak przed rozbudową). Pomiar pojedynczych mechanik: nakładka z nadpisanymi `RULES`/`MODES` (wszystko wyłączone = 59%, zgodnie z poprzednią wersją).
+
+## 12. Szablony pięter, ukryty podgląd i remaster (2026-11-22)
+
+### Szablony pięter (serwer: `data.js` → `FLOOR_TPL`, `rules.js` → `floorTemplate`, `encounterIds`, `buildSetup`)
+Losowane z osobnej soli ziarna runu (`hash('tpl')`), więc nie zmieniają losowania zwykłych wrogów. Nie dotyczą wczesnych pięter (`MODES.*.early.rounds`), bossów, elit, Nemezis ani ryzykownych drzwi. Wagi: Zwykłe 40, Czempion 15, Rój 15, Zwiad 15, Para 15.
+- **Czempion**: 1 wróg (bez rojów), +80% Życia, nazwa „Czempion …”.
+- **Rój**: 3 wrogów (bez rojów), każdy 60% Życia i 70% Ataku.
+- **Zwiad**: 1 wróg z następnej strefy, skalowany do bieżącego piętra (nie ma go w strefie III).
+- **Para**: 2 różne gatunki; silniejszy +8 Pancerza, obaj regenerują 1% Życia na sekundę (istniejące pole `regenPct`, bez zmian w silniku walki).
+Szablon trafia do `setup.tpl` (baner na starcie walki) i do dziennika rund (`log[].tpl`).
+
+### Ukryty podgląd (`rules.js` → `hideFoes`, `view()`)
+Garnek 0: widok ma `enemies` i `tpl`. Od Garnka 1: `enemies = null`, `tpl = null`, `affixes = null`, `hidden = true`; wyjątek: piętro z bossem (`enemies = [boss]`). Ukrycie jest po stronie serwera; skład poznajesz dopiero z `fightstart`. Test serwera przeszukuje cały widok pod kątem identyfikatorów i nazw wrogów.
+
+### Wersja reguł runu (`RULES` → `RUN_V = 2`)
+Run z inną wersją (`run.v`) `BgPlayer` unieważnia przy pierwszym żądaniu (`voided: true` w odpowiedzi, klient pokazuje komunikat). Decyzja właściciela: bez dokańczania starych runów. Przy każdej zmianie, która zmienia spotkania lub powtórkę walki, podbij `RUN_V`.
+
+### Balans po zmianach (bot, 700 runów)
+Same szablony prawie nie ruszyły wyniku (pełny 61%, szybki 56%). Właściciel chciał trudniejszego startu („ciężej wygrać za pierwszym razem”), więc wzrost wrogów podniesiono: pełny `grow` 1,155/1,10 (było 1,14/1,093), szybki 1,18/1,12 (było 1,16/1,11). Wynik: G0 pełny 48%, szybki 45%; G2 38%/33%; G5 8%/9% (było 17–19%).
+
+### Interfejs (frontend)
+- Tempo walki: wybór przed walką (`bulgot:speed`), w walce przycisk ×N i klawisz F. Okno Gdakania liczy się w tickach, więc przy ×3 trwa trzy razy krócej w prawdziwym czasie (podpowiedź przy wyborze).
+- Zamrożenie klatki po Reakcji i wejście bossa wstrzymują tylko obraz (`F.stopUntil`): zegar walki nie liczy, więc powtórka na serwerze się zgadza.
+- Paski porównania (Atak / Obrona: słabo / OK / mocno) liczą typowego wroga strefy z jawnych danych (`zoneCompare` w `app.js`), bez składu piętra.
+- Wszystkie nowe animacje to CSS/SVG; `prefers-reduced-motion` wyłącza liczniki, paralaksę, pióra i światła alarmowe.

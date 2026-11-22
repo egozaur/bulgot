@@ -1,4 +1,4 @@
-# Bulgot: stan gry i etap rozbudowy (2026-11-21)
+# Bulgot: stan gry i etap rozbudowy (2026-11-22)
 
 Krótkie podsumowanie całej gry w jednym miejscu. Szczegóły: `DESIGN.md` (projekt i balans), `PRZEKAZANIE.md` (jak to działa w kodzie), `RAPORT-NOCNY.md` (nocna rozbudowa).
 
@@ -61,7 +61,7 @@ Każda strefa ma w runie inny **Okólnik Zarządu** (modyfikator zasad). Między
 - **Serwer liczy wszystko, co ma znaczenie.** Losuje oferty z ziarna, którego klient nie widzi, i powtarza każdą walkę z kliknięć gracza, więc wyniku nie da się podrobić. Ten sam deterministyczny silnik walki chodzi w przeglądarce (`shared/`, generowane) i na serwerze.
 - **Gdzie co edytować**: treść w `data.js`, reguły runu w `rules.js`, walka w `sim.js`, statystyki w `stats.js`, interfejs w `app.js`, grafika w `art.js`, teksty w `text.js`.
 - **Tryb lokalny**: `?local=1` uruchamia kod serwera w przeglądarce, więc całość testuje się bez internetu.
-- **Testy**: 205 testów serwera i 7 testów w przeglądarce (Edge): smoke, ścieżki, odpoczynek, UI, rozbudowa, strzałki, jeszcze (10 mechanik retencji). Do strojenia trudności służy symulator `dev/sim-balance.mjs`.
+- **Testy**: 208 testów serwera i 10 testów w przeglądarce (Edge): smoke, ścieżki, odpoczynek, UI, rozbudowa, strzałki, jeszcze (10 mechanik retencji), układ (5 rozdzielczości), ukryte (szablony pięter i ukryty podgląd), efekty (aury, reakcje, Furia, wejście bossa). Do strojenia trudności służy symulator `dev/sim-balance.mjs`.
 
 ## 5. Na jakim etapie jesteśmy
 
@@ -72,9 +72,10 @@ Każda strefa ma w runie inny **Okólnik Zarządu** (modyfikator zasad). Między
 | 3. Wielka rozbudowa (efekty, Mutacje, 25 przedmiotów, Wylęgarnia, Odznaki, elity, nowi wrogowie i wydarzenia) | 2026-11-21, noc | na produkcji |
 | 4. Sterowanie strzałkami i Enterem | 2026-11-21 | na produkcji |
 | 5. Rozbudowa „jeszcze jedna partia” (Reakcje, Okno Gdakania, kafelki rosnące, Rozwidlenie, Lombard, Odsetki, Okólniki, Wadliwa Partia, Nemezis, Testament) + przestrojenie wzrostu wrogów | 2026-11-21 | na produkcji |
-| 6. **Dostrojenie trudności po grze ludzi** | teraz | **do zrobienia** |
+| 6. Układ bez przewijania, tempo walki przed walką, szablony pięter, ukryty podgląd od Garnka 1, trudniejszy start, remaster grafiki (20 punktów) | 2026-11-22 | lokalnie, czeka na „wypychaj” |
+| 7. Dostrojenie trudności po grze ludzi (Garnek 2–5) | dalej | do obserwacji |
 
-**Balans (bot, 600–800 runów, po rozbudowie „jeszcze jedna partia”):** Garnek 0 to 60% (pełny) i 57% (szybki), Garnek 2 ok. 52%, Garnek 5 17–19%. Szczegóły: `DESIGN.md` sekcja 11.
+**Balans (bot, 700 runów, 2026-11-22, po szablonach pięter i podkręceniu startu):** Garnek 0 to 48% (pełny) i 45% (szybki), Garnek 2 ok. 34–38%, Garnek 5 8–9%. Wzrost wrogów: pełny 1,155/1,10, szybki 1,18/1,12. Szczegóły: `DESIGN.md` sekcja 12.
 **Pierwszy test po rozbudowie:** właściciel wygrał tryb pełny za pierwszym razem (22 421 pkt). Cel był taki, żeby rozsądny gracz zwykle przegrywał kilka pierwszych gier, więc **Garnek 0 jest prawdopodobnie za łatwy**. Dźwignie: tempo wzrostu wrogów (`MODES.*.grow`), siła elit i bossów, mnożnik strefy (`zoneMul`).
 
 ## 6. Rzeczy tymczasowe i otwarte
@@ -82,3 +83,12 @@ Każda strefa ma w runie inny **Okólnik Zarządu** (modyfikator zasad). Między
 - **Historia gier (test)**: Menu → Historia. Służy do analizy balansu, do usunięcia po testach.
 - Odłożone pomysły: dzienny seed z rankingiem, co-op i pojedynki „duchów”, kosmetyka (czapeczki), podpowiedź przed walką (twoje obrażenia na sekundę kontra życie wrogów).
 - Do obserwacji: czy pierwsza elita na 4. piętrze i Kaczka Podpalaczka nie są za ostre dla nowych graczy, i które kafelki gracze uznają za za mocne albo bezużyteczne (`sim-balance.mjs --tilestats`).
+
+## 7. Zmiany z 2026-11-22 (skrót)
+
+- **Układ**: górny pasek zawsze w jednej linii (Menu jako ikona ☰, Esc), na komputerze strona się nie przewija, kolumny przewijają się osobno (bug B-Dop).
+- **Tempo walki**: wybór ×1/×2/×3 na ekranie przed walką (zapamiętany), w walce przycisk i klawisz F. Okno Gdakania przyspiesza razem z walką.
+- **Szablony pięter** (od piętra po wczesnych, bez bossów, elit, Nemezis i ryzykownych drzwi): Czempion, Rój, Zwiad, Para, Zwykłe.
+- **Ukryty podgląd**: od Garnka 1 serwer nie wysyła składu piętra ani cech elity; w grze widać zaparowaną szybę. Bossów zapowiada pasek pięter.
+- **Runy ze starą wersją reguł** (sprzed szablonów) serwer unieważnia przy pierwszym żądaniu (komunikat w grze).
+- **Remaster**: tablica rozdzielcza, przewijane liczniki, szyb windy, drzwi z okienkiem, paski porównania ze strefą, aury statusów, wybuchy reakcji, animacje walki, konsola umiejętności z Oknem Gdakania, alarm Furii, kinowe wejścia bossów, paralaksa, Okólnik jako pismo, karta pracy, ekran końca, żywa fabryka, logo z bąbelków, legitymacje, termometr Garnka, Księga jako księga.
