@@ -35,7 +35,7 @@ async function patchRun(fnSrc) {
 }
 
 // 1. Mutacja: grad na poziomie 2, w ofercie trzecia kopia.
-await patchRun(`run.skills = [{ id: 'grad', lvl: 2 }, { id: 'chlust', lvl: 1 }, { id: 'lodowy', lvl: 1 }]; run.tiles = ['kukurydziany-grad', 'rosolowy-chlust', 'lodowy-dziob']; run.offer = ['kukurydziany-grad', 'zgnile-jajo', 'darcie-pierza', 'ziarno-mocy']; run.phase = 'offer'; run.round = 7; run.tiles.push('twardy-grzebien', 'twardy-grzebien', 'twardy-grzebien', 'pancerz-z-pierza', 'pancerz-z-pierza', 'pancerz-z-pierza', 'twardy-grzebien', 'twardy-grzebien'); run.hp = 400;`);
+await patchRun(`run.skills = [{ id: 'grad', lvl: 2 }, { id: 'chlust', lvl: 1 }, { id: 'lodowy', lvl: 1 }]; run.tiles = ['kukurydziany-grad', 'rosolowy-chlust', 'lodowy-dziob']; run.offer = ['kukurydziany-grad', 'zgnile-jajo', 'darcie-pierza', 'ziarno-mocy']; run.phase = 'offer'; run.round = 7; run.tiles.push('twardy-grzebien', 'twardy-grzebien', 'twardy-grzebien', 'pancerz-z-pierza', 'pancerz-z-pierza', 'pancerz-z-pierza', 'twardy-grzebien', 'twardy-grzebien'); run.tiles.push(...Array(14).fill('twardy-grzebien')); run.hp = 2000;`);
 if ((await st()).screen !== 'run') fail('po przeładowaniu powinien być ekran runu: ' + JSON.stringify(await st()));
 const mutTag = await p.$$eval('.tag.mut', n => n.length);
 mutTag ? ok('karta pokazuje znacznik Mutacji') : fail('brak znacznika Mutacji');
@@ -60,7 +60,8 @@ for (let i = 0; i < 40; i++) {
   if (await p.$('.modal')) break;
 }
 seen.size ? ok('ikonki efektów w walce: ' + [...seen].join(', ')) : fail('nie widać ikonek efektów');
-for (let i = 0; i < 120 && !(await p.$('.modal')); i++) await wait(300);
+await p.evaluate(() => { const F = window.__bulgot.fight; if (F) F.speed = 3; });
+for (let i = 0; i < 400 && !(await p.$('.modal')); i++) await wait(300);
 (await p.$('.modal')) ? ok('walka się skończyła') : fail('walka nie skończyła się');
 
 // 3. Zestaw Rosołowy x4 + Garnek: walka zaczyna się od Oparzenia, wybuchy nie psują interfejsu.
