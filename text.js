@@ -155,3 +155,22 @@ export const NEMESIS_LINES = [
   'Czas wyrównać rachunki. Z odsetkami.',
 ];
 export const pickLine =(arr, n) => arr[Math.abs(n | 0) % arr.length];
+
+// Karta bohatera w panelu bocznym: skrót tego, co robi postać (cecha + plusy i minusy), żeby nie trzeba było pamiętać opisów.
+// perks: [ikona, znak, tekst]; ikona = klucz statystyki (maxHp, atk, aspd, crit, regen, luck…) albo emoji. `role` zastępuje „Stanowisko” z danych.
+export const CHAR_PERKS = {
+  pyrtek: { title: 'Bez fanaberii', perks: [['🐥', '+', 'Równe statystyki, bez minusów']] },
+  kwoka: { title: 'Czołg', perks: [['maxHp', '+', '+20% Życia'], ['🌾', '+', 'Start: Zagrzebanie w Sianie'], ['aspd', '-', '−25% szybkości ataku']] },
+  kaczor: { title: 'Ryzyko i Odsetki', perks: [['🪙', '+', '+10 Ziaren, Odsetki do 5'], ['🔄', '+', '1 reroll gratis na piętro'], ['🎲', '+', 'Więcej kafelków ryzyka']] },
+  indor: { title: 'Ciężkie ciosy', perks: [['atk', '+', '+55% Ataku'], ['crit', '+', '+10% szansy na krytyk'], ['aspd', '-', '−30% szybkości ataku']] },
+  zjarany: { title: 'Podpala wrogów', perks: [['🔥', '+', '30% Oparzenia przy ataku'], ['☁️', '+', 'Chmura Dymu co 4 s'], ['aspd', '-', '−45% szybkości ataku'], ['atk', '-', '−10% Ataku']] },
+  barista: { title: 'Szybkie ciosy', perks: [['aspd', '+', '+35% szybkości ataku'], ['⚡', '+', 'Start: Dziobnięcie Szału'], ['maxHp', '-', '−30% Życia'], ['atk', '-', '−10% Ataku']] },
+  ges: { title: 'Wygrywa portfelem', perks: [['🪙', '+', '+15 Ziaren na start'], ['💰', '+', '+1 Ziarno za wygraną, Odsetki do 6'], ['atk', '-', '−15% Ataku']] },
+  lodziarz: { title: 'Mróz', perks: [['❄️', '+', '20% Mrozu przy ataku'], ['🧊', '+', 'Zmrożeni zadają −10%'], ['aspd', '-', '−20% szybkości ataku']] },
+  pielegniarka: { title: 'Leczenie', perks: [['regen', '+', 'Regeneracja +1,2 / s'], ['💚', '+', 'Leczenie po rundzie +8 pkt proc.'], ['atk', '-', '−25% Ataku']] },
+  rzeznik: { title: 'Krwawienie', perks: [['🩸', '+', 'Każdy atak: Krwawienie'], ['🗡️', '+', 'Start: Darcie Pierza'], ['maxHp', '-', '−15% Życia'], ['atk', '-', '−10% Ataku']] },
+  wrozka: { title: 'Lepsze oferty', perks: [['luck', '+', '+20 Szczęścia'], ['🔄', '+', '1 reroll gratis na piętro'], ['maxHp', '-', '−10% Życia']] },
+  stazysta: { title: 'Rośnie z piętrami', perks: [['📈', '+', '+5% statystyk za piętro (maks. +35%)'], ['atk', '-', '−25% Ataku na start'], ['maxHp', '-', '−25% Życia na start']] },
+  mutant: { title: 'Mistrz umiejętności', perks: [['⏱️', '+', 'Cooldowny −25%'], ['🎲', '+', 'Start: losowa umiejętność'], ['maxHp', '-', '−20% Życia']] },
+  dinozaur: { role: 'Sekretny', title: 'Wykluwa się', perks: [['🥚', '+', 'Po 4 piętrach: Dinozaur (+30% Ataku i Życia)'], ['atk', '-', '−8% Ataku'], ['maxHp', '-', '−8% Życia']] },
+};

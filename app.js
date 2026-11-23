@@ -361,9 +361,14 @@ function sideHTML() {
   const sets = Object.entries(D.SETS).map(([id, st]) => { const n = setOwned(id); if (!n) return ''; const total = D.TILES.filter(t => t.set === id).length; return `<div class="setline" data-tipk="set:${id}" tabindex="0">Zestaw ${st.name} ${n}/${total}${n >= 2 ? ': ' + st.b2 : ''}${n >= 3 ? '; ' + st.b3 : ''}${n >= 4 && st.b4 ? '; ' + st.b4 : ''}</div>`; }).join('');
   const mss = Object.entries(D.MILESTONES).map(([id, m]) => { const n = Math.floor(r.tiles.filter(x => x === id).length / D.MILESTONE_EVERY); return n ? `<div class="setline ms">${esc(m.name)}${n > 1 ? ' ×' + n : ''}: ${esc(m.text)}</div>` : ''; }).join('');
   const pct = Math.max(0, Math.min(100, r.hp / S.maxHp * 100));
+  const cp = T.CHAR_PERKS[r.char] || { title: "", perks: [] };
+  const perks = cp.perks.map(([ic, sg, tx]) => `<span class="pk ${sg === "+" ? "plus" : "minus"}">${/^[a-zA-Z]+$/.test(ic) ? art.statIcon(ic) : `<span class="pe">${ic}</span>`}${esc(tx)}</span>`).join("");
   return `<aside class="side">
-    <div class="panel hero-card">${art.heroArt(r.char, r.form)}<div><div class="hero-top"><div><div class="nm">${esc(ch.name)}</div><div class="fm">${esc(form.name)}</div></div>${r.badges && r.badges.length ? `<div class="bdgs" aria-label="Odznaki (${r.badges.length})">${r.badges.map(b => `<div class="chip badge" tabindex="0" data-tipk="badge:${b}">${art.badgeIcon(b)}</div>`).join('')}</div>` : ''}</div>
-      <div class="hpbar" style="margin-top:6px"><i style="width:${pct}%"></i><b><span data-ctr="hp">${r.hp}</span> / ${S.maxHp}</b></div></div></div>
+    <div class="panel hero-card" tabindex="0" data-tip="${esc(ch.name + " · " + (cp.role || ch.style) + '\n' + ch.text)}">
+      <div class="hc-head">${art.heroArt(r.char, r.form)}<div class="hc-id"><div class="nm">${esc(ch.name)}</div><div class="fm">${esc(cp.role || ch.style)}</div></div><span class="hc-num"><span data-ctr="hp">${r.hp}</span>/${S.maxHp}</span></div>
+      <div class="hpbar"><i style="width:${pct}%"></i></div>
+      <div class="hc-trait"><span>${cp.title ? "★ " + esc(cp.title) : ""}</span>${r.badges && r.badges.length ? `<div class="bdgs" aria-label="Odznaki (${r.badges.length})">${r.badges.map(bd => `<div class="chip badge" tabindex="0" data-tipk="badge:${bd}">${art.badgeIcon(bd)}</div>`).join("")}</div>` : ""}</div>
+      ${cp.perks.length ? `<div class="hc-perks">${perks}</div>` : ""}</div>
     ${companionPanel()}
     <div class="panel"><h4>Umiejętności aktywne</h4><div class="slots">${slots}</div></div>
     <div class="panel"><h4>Statystyki</h4>${zoneCompareHTML()}<dl class="stats">${rows}</dl></div>
@@ -384,7 +389,7 @@ function rollCounters() {
     const k = el.dataset.ctr, to = k === 'score' ? G.run.score : k === 'coins' ? G.run.coins : G.run.hp, from = prev[k];
     prev[k] = to;
     if (from === undefined || from === to) continue;
-    const cell = el.closest('.disp, .hpbar') || el;
+    const cell = el.closest('.disp, .hpbar, .hc-num') || el;
     cell.classList.remove('flash-up', 'flash-down'); void cell.offsetWidth; cell.classList.add(to > from ? 'flash-up' : 'flash-down');
     if (REDUCED.matches) continue;
     const fmt = v => el.dataset.odo ? odoHTML(v, +el.dataset.odo) : String(v), t0 = performance.now(), dur = Math.min(900, 300 + Math.abs(to - from) * 6);

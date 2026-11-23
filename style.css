@@ -154,10 +154,21 @@ button.tile:disabled { opacity: .5; cursor: not-allowed; }
 .side { display: flex; flex-direction: column; gap: 12px; }
 .panel { background: var(--panel); border: 3px solid var(--outline); border-radius: 16px; box-shadow: 0 4px 0 var(--outline); padding: 12px; }
 .panel h4 { margin: 0 0 8px; font: 600 10px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
-.hero-card { display: grid; grid-template-columns: 96px 1fr; gap: 10px; align-items: center; }
-.hero-card .fig { width: 96px; height: 96px; }
-.hero-card .nm { font-family: var(--display); font-size: 1.25rem; color: var(--amber); line-height: 1.1; }
-.hero-card .fm { color: var(--muted); font-size: .85rem; }
+/* Karta bohatera: nagłówek (ikona, nazwa, stanowisko, punkty życia), cienki pasek życia, cecha i plakietki plusów i minusów */
+.hero-card { display: block; cursor: help; }
+.hero-card .hc-head { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.hero-card .fig { width: 56px; height: 56px; }
+.hero-card .nm { font-family: var(--display); font-size: 1.2rem; color: var(--amber); line-height: 1.1; }
+.hero-card .fm { color: var(--muted); font-size: .8rem; }
+.hero-card .hc-num { font: 700 .82rem/1 var(--mono); color: #cfe9cf; white-space: nowrap; }
+.hero-card .hpbar { height: 8px; margin-top: 8px; }
+.hero-card .hc-trait { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 10px 0 6px; min-height: 12px; font: 700 .72rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--amber); }
+.hero-card .hc-perks { display: flex; flex-wrap: wrap; gap: 5px; }
+.pk { display: inline-flex; align-items: center; gap: .3em; padding: .22em .55em; border-radius: 8px; font-size: .78rem; font-weight: 700; border: 1px solid; line-height: 1.15; }
+.pk.plus { color: #9be59b; border-color: rgba(111,207,111,.45); background: rgba(111,207,111,.08); }
+.pk.minus { color: #ff9f8a; border-color: rgba(228,87,46,.5); background: rgba(228,87,46,.1); }
+.pk .stico { width: 1.15em; height: 1.15em; flex: none; }
+.pk .pe { flex: none; font-size: 1em; line-height: 1; }
 .hpbar { height: 16px; border-radius: 8px; background: #1a120c; border: 2px solid var(--outline); overflow: hidden; position: relative; }
 .hpbar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#7fe17f, #3fae4a); transition: width .25s; }
 .hpbar.enemy i { background: linear-gradient(#ff8a65, #d84315); }
@@ -320,7 +331,7 @@ button.tile:disabled { opacity: .5; cursor: not-allowed; }
   .tile { width: 100%; max-width: 360px; min-height: 0; flex-direction: row; flex-wrap: wrap; text-align: left; align-items: center; }
   .tile .ico { margin: 0 8px 0 0; width: 56px; height: 56px; }
   .tile .tname { margin: 0; flex: 1; } .tile .ttext { flex-basis: 100%; }
-  .hero-card { grid-template-columns: 70px 1fr; } .hero-card .fig { width: 70px; height: 70px; }
+  
   .modal { padding: 16px; } .arena { max-height: none; aspect-ratio: 1 / 1; }
   .unit { width: 24%; } .unit.boss { width: 40%; } .unit.small { width: 17%; }
   .hud > .box:first-child { display: none; } .hud { justify-content: space-between; }
