@@ -465,7 +465,7 @@ function topbarHTML() {
 function stageHTML() {
   const r = G.run;
   if (r.phase === 'offer') return stageOffer();
-  if (r.phase === 'event') { const kd = r.pending.kind; return kd === 'shop' ? stageShop() : kd === 'contract' ? stageContract() : kd === 'shrine' ? stageShrine() : kd === 'adopt' ? stageAdopt() : kd === 'arena' ? stageArena() : stageGamble(); }
+  if (r.phase === 'event') { const kd = r.pending.kind; return kd === 'shop' ? stageShop() : kd === 'contract' ? stageContract() : kd === 'shrine' ? stageShrine() : kd === 'adopt' ? stageAdopt() : kd === 'crate' ? stageCrate() : kd === 'arena' ? stageArena() : stageGamble(); }
   if (r.phase === 'badge') return stageBadge();
   if (r.phase === 'loot') return stageLoot();
   if (r.phase === 'door') return stageDoor();
@@ -609,6 +609,14 @@ function stageAdopt() {
     <div class="kron">Adopcja jest bezpłatna. Gryzienie w cenie.</div><div class="cards">${cards}</div>
     <div class="actions"><button class="btn" data-act="choose" data-i="-1">Nie adoptuję</button></div>`;
 }
+// Tajemnicza Skrzynka przy pełnych slotach: wybierz umiejętność do zastąpienia albo zostaw nagrodę.
+function stageCrate() {
+  const r = G.run, t = TILE[r.pending.tile];
+  const cards = r.skills.map((s, i) => choiceCard(i, art.tileIcon(D.TILES.find(x => x.skill === s.id).id), (i + 1) + '. ' + D.SKILLS[s.id].name + (s.lvl >= 3 ? ' (zmutowana)' : s.lvl >= 2 ? ' (poz. 2)' : ''), 'Zastąp tę umiejętność: ' + t.name + '.')).join('');
+  return `<div class="stage-title"><h2>Tajemnicza Skrzynka</h2><div class="sub">W środku leży ${esc(t.name)} (${D.RARITY[t.rarity]}), ale masz pełne sloty. Którą umiejętność zastąpić?</div></div>
+    <div class="cards">${tileCard(t.id, { static: true, mini: true })}</div><div class="cards">${cards}</div>
+    <div class="actions"><button class="btn" data-act="choose" data-i="-1">Zostaw nagrodę</button></div>`;
+}
 // Arena Duchów: walka z buildem innego gracza.
 function stageArena() {
   const r = G.run, g = r.pending.ghost, st = g.stats, ch = D.CHARS[g.char], tiles = [...new Set(g.tiles || [])].slice(0, 16).map(id => TILE[id] ? art.tileIcon(id) : '').join('');
@@ -678,6 +686,7 @@ async function doPick(i, slot, mut) {
   const j = await act('pick', { i, slot, mut });
   if (!j) return;
   snd.sfx('pick'); flawToast(i, t);
+  if (j.crate && j.crate.pick) { snd.sfx(j.crate.trap ? 'hurt' : 'unlock'); return render(); }   // pełne sloty: wybór slotu na ekranie wydarzenia
   if (j.crate) return showCrate(j.crate);
   if (j.automat) toast('Automat wypluł: ' + j.automat.map(id => TILE[id].name).join(' i '), false, 4200);
   render();
@@ -1538,7 +1547,7 @@ document.addEventListener('keydown', e => {
   if (G.screen === 'run' && r) {
     const dg = /^Digit([1-5])$/.exec(e.code);
     if (r.phase === 'offer' && dg && e.shiftKey) { const b = $(`.cards [data-act=buyoffer][data-i="${+dg[1] - 1}"]`); if (b && !b.disabled) b.click(); }
-    else if ((r.phase === 'badge' || r.phase === 'loot' || r.phase === 'door' || r.phase === 'route' || r.phase === 'victory' || (r.phase === 'event' && r.pending && ['contract', 'shrine', 'arena', 'adopt'].includes(r.pending.kind))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
+    else if ((r.phase === 'badge' || r.phase === 'loot' || r.phase === 'door' || r.phase === 'route' || r.phase === 'victory' || (r.phase === 'event' && r.pending && ['contract', 'shrine', 'arena', 'adopt', 'crate'].includes(r.pending.kind))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && ['1', '2', '3', '4', '5'].includes(k)) { const b = $(`.cards [data-act=pick][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && k === 'u') { const b = $('[data-act="upgrademenu"]'); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'offer' && k === 'l') { const b = $('[data-act="pawnmenu"], [data-act="redeem"]'); if (b && !b.disabled) b.click(); }
