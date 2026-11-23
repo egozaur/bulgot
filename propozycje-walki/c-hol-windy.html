@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Propozycja C: Hol z windami</title>
+<link rel="stylesheet" href="wspolne.css">
+<style>
+/* ===== C: HOL Z WINDAMI: lada recepcji i pieczątki zamiast przycisków, leczenie Kurzym Pogotowiem ===== */
+.bg{position:absolute;inset:0}.bg svg{width:100%;height:100%}
+.vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,transparent 55%,rgba(30,20,10,.5));z-index:5;pointer-events:none}
+.unit .sprite{-webkit-box-reflect:below -.6vh linear-gradient(transparent 66%,rgba(255,255,255,.22))}
+.siren{position:absolute;inset:0;z-index:6;pointer-events:none;mix-blend-mode:multiply;opacity:0;animation:siren 8s infinite}
+.siren:before,.siren:after{content:"";position:absolute;inset:0}
+.siren:before{background:radial-gradient(ellipse at 22% 50%,rgba(255,60,60,.55),transparent 55%);animation:sa .5s steps(1) infinite}
+.siren:after{background:radial-gradient(ellipse at 22% 50%,rgba(70,120,255,.55),transparent 55%);animation:sa .5s steps(1) infinite reverse}
+@keyframes sa{0%{opacity:1}50%{opacity:0}}
+@keyframes siren{0%,24%{opacity:0}27%,52%{opacity:1}58%,100%{opacity:0}}
+
+/* --- lada recepcji --- */
+.counter{position:absolute;left:0;right:0;bottom:0;height:21vh;z-index:29;background:linear-gradient(#e9d7b0 0 1.6vh,#6e3f1e 1.6vh 2.2vh,#8c5428 2.2vh,#4a2810);border-top:.4vh solid #2a160a;box-shadow:0 -1.4vh 3vh rgba(0,0,0,.4)}
+.counter:before{content:"";position:absolute;left:0;right:0;top:2.2vh;bottom:0;background:repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 .3vh,transparent .3vh 16vh)}
+.brass{position:absolute;left:0;right:0;top:1.6vh;height:.6vh;background:linear-gradient(#ffe69a,#b98a2c)}
+.clip{position:absolute;left:calc(50% - 61vh);bottom:3.2vh;width:21vh;height:16.5vh;transform:rotate(-3deg);z-index:2;background:linear-gradient(#f9f6ec,#e8e2cf);border:.3vh solid #1b1b22;border-radius:.8vh;box-shadow:0 .6vh 1.4vh rgba(0,0,0,.4);padding:3vh 1.4vh 1vh}
+.clip:before{content:"";position:absolute;left:50%;top:-1.2vh;width:9vh;height:3.2vh;margin-left:-4.5vh;border-radius:.8vh;background:linear-gradient(#cfd5e1,#7c869c);border:.25vh solid #1b1b22}
+.clip h5{font:800 1.15vh var(--mono);letter-spacing:.14em;color:#d6402b;margin-bottom:.6vh}
+.clip div{display:flex;align-items:center;gap:.8vh;font:700 1.45vh var(--mono);color:#2b2b35;margin-bottom:.6vh}
+.clip div i{width:2vh;height:2vh;border:.25vh solid #2b2b35;border-radius:.3vh;position:relative;background:#fff}
+.clip div i:after{content:"✔";position:absolute;left:.15vh;top:-.55vh;font-size:2.4vh;color:#1f9d55;opacity:0}
+.clip .t1 i:after{animation:t1 8s infinite}.clip .t2 i:after{animation:t2 8s infinite}
+@keyframes t1{0%,24%{opacity:0}26%,100%{opacity:1}}@keyframes t2{0%,35%{opacity:0}37%,100%{opacity:1}}
+.clip em{display:block;font:800 1.3vh var(--mono);color:#b8820a;font-style:normal;margin-top:.8vh;text-align:right}
+
+/* --- pieczątki --- */
+.stamp{position:absolute;bottom:3.6vh;width:19vh;height:22vh;z-index:3;text-align:center}
+.s1{left:calc(50% - 31vh)}.s2{left:calc(50% - 9.5vh)}.s3{left:calc(50% + 12vh)}
+.stamp .knob{position:absolute;left:50%;top:-5.5vh;width:7vh;height:7vh;margin-left:-3.5vh;border-radius:50% 50% 45% 45%;background:radial-gradient(circle at 36% 28%,#d89a5a,#8c5428 60%,#4a2810);border:.3vh solid #2a160a;box-shadow:inset 0 -.6vh .8vh rgba(0,0,0,.35)}
+.stamp .neck{position:absolute;left:50%;top:.2vh;width:3vh;height:3vh;margin-left:-1.5vh;background:linear-gradient(90deg,#6e3f1e,#c78a4c,#6e3f1e);border:.25vh solid #2a160a}
+.stamp .body{position:absolute;left:0;right:0;top:2.6vh;height:13.4vh;border-radius:1.6vh 1.6vh .8vh .8vh;background:linear-gradient(105deg,#a56a35,#d79b5c 35%,#9a5f2e 70%,#7a481f);border:.35vh solid #2a160a;box-shadow:inset 0 .4vh .5vh rgba(255,255,255,.28),0 .6vh 0 #2a160a}
+.stamp .win{position:absolute;left:50%;top:.9vh;width:6.4vh;height:6.4vh;margin-left:-3.2vh;border-radius:50%;background:radial-gradient(circle at 40% 30%,#fff,#d7dce8);border:.3vh solid #2a160a;display:grid;place-items:center}
+.stamp .win svg{width:5.2vh;height:5.2vh}
+.stamp .plate{position:absolute;left:1.2vh;right:1.2vh;bottom:1vh;padding:.45vh 0;border-radius:.6vh;background:linear-gradient(#ffe69a,#b98a2c);border:.2vh solid #5a3c00;font:700 1.55vh/1.1 var(--disp);color:#2a160a}
+.stamp .plate small{display:block;font:700 .95vh var(--mono);letter-spacing:.08em;color:#5a3c00}
+.stamp .rub{position:absolute;left:1.2vh;right:1.2vh;top:15.2vh;height:2vh;border-radius:0 0 .8vh .8vh;background:var(--ink);border:.25vh solid #2a160a;border-top:0}
+.stamp .pad{position:absolute;left:-1.2vh;right:-1.2vh;bottom:-.6vh;height:5.4vh;border-radius:1.2vh;background:linear-gradient(#2a2d3a,#14161f);border:.3vh solid #0b0d15;box-shadow:0 .5vh 1vh rgba(0,0,0,.5)}
+.stamp .pad i{position:absolute;left:.9vh;right:.9vh;top:.8vh;height:2.8vh;border-radius:.8vh;background:var(--ink);box-shadow:inset 0 .4vh .6vh rgba(255,255,255,.3)}
+.stamp .key{position:absolute;right:-1.2vh;top:2vh;width:3.6vh;height:3.6vh;border-radius:50%;background:var(--gold);border:.3vh solid #1b1b22;font:800 1.9vh/3.2vh var(--mono);color:#1c1100;z-index:5}
+.stamp .dry{position:absolute;left:0;right:0;top:2.6vh;height:13.4vh;border-radius:1.6vh 1.6vh .8vh .8vh;background:rgba(30,20,10,.55);z-index:4;clip-path:inset(0 0 var(--dry,0%) 0)}
+.stamp .grp{position:absolute;inset:0}
+.s1{--ink:#d6402b}.s2{--ink:#2f8fd6}.s3{--ink:#1f9d55}
+.s1 .grp{animation:slam 8s infinite}.s1 .dry{animation:dry1 8s infinite}
+@keyframes slam{0%,24%{transform:translateY(0)}25.6%{transform:translateY(3.4vh) scale(1.03,.94)}28%{transform:translateY(1vh)}32%,100%{transform:none}}
+@keyframes dry1{0%,25%{--dry:100%}25.4%{--dry:0%}100%{--dry:100%}}
+@property --dry{syntax:'<percentage>';inherits:true;initial-value:0%}
+.s2 .dry{--dry:100%}.s3 .dry{--dry:100%}
+.s1{--ink:#1f9d55}
+.ready{animation:rdy 1.1s ease-in-out infinite}
+@keyframes rdy{50%{filter:drop-shadow(0 0 1.4vh #ffd23f)}}
+
+/* --- Kurze Pogotowie: fale zdrowia, krzyże, odpowiedź na stempel --- */
+.heal{position:absolute;left:24%;bottom:25vh;width:34vh;height:11vh;margin-left:-17vh;border-radius:50%;z-index:9;opacity:0;border:.8vh solid rgba(110,255,160,.9);box-shadow:0 0 3vh rgba(110,255,160,.8),inset 0 0 3vh rgba(110,255,160,.6);animation:heal 8s infinite}
+@keyframes heal{0%,26%{opacity:0;transform:scale(.3)}28%{opacity:1}38%{opacity:.5;transform:scale(1.5)}42%,100%{opacity:0;transform:scale(1.9)}}
+.heal.h2{animation-delay:.7s}.heal.h3{animation-delay:1.4s}
+.cross{position:absolute;z-index:22;font-size:4.4vh;font-weight:900;color:#7dffb0;text-shadow:0 0 1.4vh #1fbf6a,0 .3vh 0 #0b5a30;opacity:0;animation:cross 8s infinite}
+@keyframes cross{0%,28%{opacity:0;transform:translateY(0) scale(.5)}31%{opacity:1}44%{opacity:1;transform:translateY(-16vh) scale(1) rotate(12deg)}52%,100%{opacity:0;transform:translateY(-22vh) scale(.8) rotate(12deg)}}
+.plus{position:absolute;z-index:26;font-family:var(--disp);font-weight:700;font-size:5vh;color:#8dffb8;text-shadow:0 .4vh 0 #0b5a30,0 0 1.6vh rgba(60,255,140,.9);opacity:0;animation:plus 8s infinite}
+@keyframes plus{0%,29%{opacity:0;transform:translateY(0) scale(.5)}31%{opacity:1;transform:translateY(-1vh) scale(1.2)}34%{transform:translateY(-2vh) scale(1)}42%{opacity:1;transform:translateY(-6vh)}46%,100%{opacity:0;transform:translateY(-8vh)}}
+#h .tag .bar i{animation:hp 8s infinite}
+@keyframes hp{0%,25%{width:52%}50%,100%{width:74%}}
+.approved{position:absolute;left:41%;bottom:63vh;margin-left:-16vh;z-index:27;padding:.5vh 2vh;border:.7vh solid #1f9d55;border-radius:1.2vh;color:#1f9d55;font:800 3.8vh var(--mono);letter-spacing:.12em;background:rgba(255,255,255,.5);text-shadow:0 0 .4vh rgba(255,255,255,.8);opacity:0;transform:rotate(-9deg);animation:appr 8s infinite;filter:drop-shadow(0 .6vh 1vh rgba(0,0,0,.25))}
+.approved small{display:block;font-size:1.5vh;letter-spacing:.3em;text-align:center}
+@keyframes appr{0%,25%{opacity:0;transform:rotate(-9deg) scale(2.4)}27%{opacity:.95;transform:rotate(-9deg) scale(1)}29%{transform:rotate(-9deg) scale(1.06)}30%,40%{opacity:.95;transform:rotate(-9deg) scale(1)}50%,100%{opacity:0;transform:rotate(-9deg) scale(1)}}
+.hero .sprite{animation:bob 1.6s ease-in-out infinite,glow 8s infinite!important}
+@keyframes glow{0%,26%{filter:none}30%,48%{filter:brightness(1.18) saturate(1.2) drop-shadow(0 0 2vh rgba(110,255,160,.9))}56%,100%{filter:none}}
+</style></head>
+<body>
+<div class="fs">
+  <div class="bg" id="bg"></div>
+  <div class="layer" id="units"></div>
+  <div class="siren"></div>
+  <div class="layer" id="fx"></div>
+  <div class="vig"></div>
+  <div id="top"></div>
+  <div class="counter" id="counter"></div>
+  <div class="kron">„Na pierwszym piętrze zawsze ktoś potrzebuje zaświadczenia o zdrowiu.”</div>
+  <div class="prop">PROPOZYCJA C · HOL Z WINDAMI</div>
+</div>
+<script type="module">
+import {unit,st,topbar,icon,sname,hero,CAST,sti,freezeAt} from './wspolne.js';
+const W=1920,H=1080,VX=960,VY=500;
+// posadzka szachownica w perspektywie
+let floor='';const R=11,C=18;const rowY=r=>VY+(H-VY)*Math.pow(r/R,1.7),colX=(c,y)=>VX+(c-C/2)*(y-VY)*.62;
+for(let r=0;r<R;r++){const y0=rowY(r),y1=rowY(r+1);for(let c=0;c<C;c++){if((r+c)%2)continue;floor+=`<polygon points="${colX(c,y0)},${y0} ${colX(c+1,y0)},${y0} ${colX(c+1,y1)},${y1} ${colX(c,y1)},${y1}" fill="#8f8776" opacity=".55"/>`}}
+const door=(cx,open)=>`<g transform="translate(${cx} 0)">
+ <rect x="-150" y="130" width="300" height="360" rx="6" fill="#c8a24a" stroke="#4a3410" stroke-width="6"/>
+ <rect x="-130" y="156" width="260" height="334" fill="${open?'url(#lit)':'#aeb6c4'}" stroke="#4a3410" stroke-width="4"/>
+ ${open?'<rect x="-14" y="156" width="28" height="334" fill="#fff6c8"/><rect x="-130" y="156" width="116" height="334" fill="#b8c0cf" stroke="#4a3410" stroke-width="4"/><rect x="14" y="156" width="116" height="334" fill="#b8c0cf" stroke="#4a3410" stroke-width="4"/>':'<line x1="0" y1="156" x2="0" y2="490" stroke="#4a3410" stroke-width="6"/><rect x="-124" y="170" width="116" height="300" fill="#fff" opacity=".18"/>'}
+ <rect x="-52" y="76" width="104" height="38" rx="6" fill="#1a0e0a" stroke="#4a3410" stroke-width="4"/>
+ <text x="0" y="104" text-anchor="middle" font-family="Consolas" font-weight="800" font-size="28" fill="${open?'#ff4a2e':'#7a3a2a'}">▲ ${open?'14':'—'}</text></g>`;
+const palm=(x,y,sc)=>`<g transform="translate(${x} ${y}) scale(${sc})"><rect x="-34" y="-40" width="68" height="62" rx="10" fill="#e2dccb" stroke="#2b1a12" stroke-width="4"/>
+ <path d="M0 -40 C-30 -110 -80 -100 -92 -150 C-50 -146 -10 -120 0 -40 M0 -40 C30 -120 80 -110 96 -158 C50 -156 8 -120 0 -40 M0 -40 C-6 -130 8 -160 0 -190 C26 -160 18 -110 0 -40" fill="#3f9f58" stroke="#2b1a12" stroke-width="4" stroke-linejoin="round"/></g>`;
+document.getElementById('bg').innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice"><defs>
+ <linearGradient id="wl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4eedd"/><stop offset="1" stop-color="#d8cfb6"/></linearGradient>
+ <linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfc6b0"/><stop offset="1" stop-color="#a69d88"/></linearGradient>
+ <linearGradient id="lit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b8"/><stop offset="1" stop-color="#ffd27a"/></linearGradient></defs>
+ <rect width="${W}" height="${VY}" fill="url(#wl)"/>
+ ${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${i*250+120}" y="0" width="14" height="${VY}" fill="#c9ad60" opacity=".7"/>`).join('')}
+ <rect width="${W}" height="70" fill="#e5dcc4"/><rect y="64" width="${W}" height="10" fill="#c9ad60"/>
+ ${[300,960,1620].map(x=>`<circle cx="${x}" cy="62" r="46" fill="#fff8e0" stroke="#c9ad60" stroke-width="6"/><ellipse cx="${x}" cy="280" rx="230" ry="260" fill="#fff3c8" opacity=".25"/>`).join('')}
+ ${door(660,false)}${door(960,true)}${door(1260,false)}
+ <rect x="70" y="150" width="440" height="190" rx="10" fill="#1d1810" stroke="#c9ad60" stroke-width="6"/>
+ <text x="290" y="240" text-anchor="middle" font-family="Baloo 2,Impact" font-weight="800" font-size="76" letter-spacing="8" fill="#e7c36a">ROSOŁEX</text>
+ <text x="290" y="296" text-anchor="middle" font-family="Consolas" font-weight="700" font-size="22" letter-spacing="10" fill="#e7c36a" opacity=".8">KORPORACJA ROSOŁOWA</text>
+ <rect y="${VY-8}" width="${W}" height="18" fill="#7a5a28"/>
+ <rect y="${VY+8}" width="${W}" height="${H-VY}" fill="url(#fl)"/>${floor}
+ ${palm(1790,560,1.25)}${palm(130,590,1.15)}
+ <rect x="1500" y="470" width="260" height="34" rx="8" fill="#5a3219" stroke="#2b1a12" stroke-width="4"/>
+ <ellipse cx="960" cy="${VY+14}" rx="200" ry="26" fill="#fff5c4" opacity=".55"/></svg>`;
+
+document.getElementById('units').innerHTML=
+ unit({id:'sep',x:58,bottom:31,w:21,name:'Sęp Audytor',hp:55,max:55,svg:CAST.sep()})+
+ unit({id:'kan',x:91,bottom:33,w:16,name:'Księgowy Kanarek',hp:37,max:37,svg:CAST.kanarek()})+
+ unit({id:'kot',x:75,bottom:25,w:26,name:'Kot Ochroniarz',hp:39,max:39,svg:CAST.kot()})+
+ unit({id:'h',cls:'hero',x:24,bottom:26,w:30,name:'Pyrtek',hp:62,max:100,svg:hero()});
+document.getElementById('top').innerHTML=topbar('Hol Główny');
+
+document.getElementById('fx').innerHTML=`
+ <div class="heal"></div><div class="heal h2"></div><div class="heal h3"></div>
+ ${[[17,0],[22,.15],[27,.3],[20,.5],[25,.65],[30,.8]].map(([x,d],i)=>`<span class="cross" style="left:${x}%;bottom:${32+(i%3)*4}vh;animation-delay:${d}s;font-size:${3.6+(i%3)}vh">✚</span>`).join('')}
+ <div class="plus" style="left:32%;bottom:42vh">+8%</div><div class="plus" style="left:37.5%;bottom:50vh;animation-delay:.55s">+8%</div><div class="plus" style="left:30%;bottom:58vh;animation-delay:1.1s">+8%</div>
+ <div class="approved">ZATWIERDZONO<small>WNIOSEK O LECZENIE · NR 4/2026</small></div>`;
+
+const stamp=(n,sk,lvl,cls)=>`<div class="stamp s${n} ${cls||''}"><div class="grp"><div class="knob"></div><div class="neck"></div><div class="body"><div class="win">${icon(sk)}</div><div class="plate">${sname(sk)}<small>${lvl}</small></div></div><div class="rub"></div><div class="dry"></div><div class="key">${n}</div></div><div class="pad"><i></i></div></div>`;
+document.getElementById('counter').innerHTML=`<div class="brass"></div>
+ <div class="clip"><h5>FORMULARZ Z-3 · SERIA</h5><div class="t1"><i></i>1. umiejętność</div><div class="t2"><i></i>2. w 1,5 s</div><div class="t3"><i></i>3. różna = ogłuszenie</div><em>Okno Gdakania ×2</em></div>
+ ${stamp(1,'pogotowie','poz. ★ · używana')}${stamp(2,'chlust','poz. ★ · odnawia','')}${stamp(3,'lodowy','poz. ★★ · GOTOWA','ready')}`;
+document.querySelectorAll('.s2 .dry').forEach(e=>e.style.setProperty('--dry','36%'));
+document.querySelectorAll('.s3 .dry').forEach(e=>e.style.setProperty('--dry','100%'));
+freezeAt();
+</script>
+</body></html>

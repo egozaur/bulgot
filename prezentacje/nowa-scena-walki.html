@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bulgot: nowa scena walki</title>
+<style>
+:root{
+  --bg:#0a0d18; --bg2:#121830; --ink:#f3f5ff; --mute:#9aa3c7; --line:#252d52;
+  --neon:#35f0c8; --pink:#ff3d8b; --gold:#ffc83d; --violet:#8a5cff; --red:#ff4a4a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#05070f;color:var(--ink);font-family:"Segoe UI",system-ui,sans-serif;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:0 0;background:radial-gradient(1200px 700px at 80% -10%,#1b2350 0%,var(--bg) 55%);overflow:hidden}
+.slide{position:absolute;inset:0;padding:36px 64px 44px;display:none;flex-direction:column}
+.slide.on{display:flex;animation:in .45s ease both}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.kick{font-size:14px;letter-spacing:.22em;text-transform:uppercase;color:var(--neon);font-weight:700}
+h1{font-size:68px;line-height:1.02;font-weight:900;letter-spacing:-.02em}
+h2{font-size:42px;line-height:1.05;font-weight:900;letter-spacing:-.01em;margin:8px 0 0}
+p.lead{font-size:22px;color:var(--mute);line-height:1.4;margin-top:16px;max-width:760px}
+.grad{background:linear-gradient(90deg,var(--neon),var(--violet) 50%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.cols{display:flex;gap:36px;flex:1;margin-top:16px;min-height:0}
+.txt{width:430px;flex:none;display:flex;flex-direction:column;gap:9px;font-size:14.5px;line-height:1.34}
+.txt b{color:var(--ink)}
+.txt .box{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:9px 13px}
+.txt .box h4{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+.txt ul{list-style:none;display:flex;flex-direction:column;gap:4px}
+.txt li{padding-left:18px;position:relative;color:#d7dcf5}
+.txt li:before{content:"";position:absolute;left:0;top:.6em;width:8px;height:8px;border-radius:2px;background:var(--neon)}
+.mock{flex:1;display:flex;flex-direction:column;gap:12px;min-width:0;justify-content:center}
+.tag{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--mute);display:flex;align-items:center;gap:8px}
+.tag i{width:9px;height:9px;border-radius:50%;background:var(--pink)}
+.tag.new i{background:var(--neon)}
+.foot{position:absolute;left:64px;right:64px;bottom:20px;display:flex;justify-content:space-between;font-size:12px;color:#5b6490;letter-spacing:.08em}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;border:1px solid var(--line);color:var(--mute)}
+.pill.g{color:#06281f;background:var(--neon);border-color:var(--neon)}
+.pill.y{color:#2a1d00;background:var(--gold);border-color:var(--gold)}
+
+/* ===== makieta areny ===== */
+.ar{position:relative;container-type:size;width:100%;aspect-ratio:1000/460;border-radius:16px;overflow:hidden;isolation:isolate}
+.ar .u{position:absolute;bottom:17%;line-height:1;text-align:center;transform-origin:50% 100%}
+.ar .hero{left:12%;font-size:14cqw}
+.ar .foe{right:14%;font-size:12cqw}
+.ar .foe2{right:30%;font-size:11cqw}
+.ar .plate{position:absolute;font-size:2.2cqw;font-weight:800;white-space:nowrap}
+.ar .dmg{position:absolute;font-weight:900;font-size:5cqw;opacity:0}
+.ar .sk{position:absolute;bottom:3%;width:9cqw;height:9cqw;border-radius:2cqw;display:grid;place-items:center;font-size:5cqw}
+
+/* --- STARY styl --- */
+.old{background:linear-gradient(#f6e7b3 0 58%,#c9a66a 58%);border:4px solid #3b2a1a}
+.old .plate{color:#3b2a1a}
+.old .hp{position:absolute;height:2.6cqw;width:18cqw;border:.5cqw solid #3b2a1a;background:#fff;border-radius:1cqw;overflow:hidden}
+.old .hp i{display:block;height:100%;background:#d94a3d;animation:hpold 6s infinite}
+@keyframes hpold{0%,25%{width:100%}30%,100%{width:62%}}
+.old .sk{background:#fff;border:.6cqw solid #3b2a1a;box-shadow:0 .6cqw 0 #3b2a1a}
+.old .dmg{color:#fff;-webkit-text-stroke:.5cqw #3b2a1a;animation:dmgold 6s infinite}
+@keyframes dmgold{0%,25%{opacity:0;transform:translateY(0)}28%{opacity:1}45%{opacity:1;transform:translateY(-8cqw)}50%,100%{opacity:0}}
+
+/* --- NOWY styl neon --- */
+.neo{background:radial-gradient(70% 90% at 50% 0%,#2a1a63 0%,#0c0f26 60%,#06081a 100%);border:1px solid #3a4585}
+.neo .grid{position:absolute;left:-30%;right:-30%;bottom:-6%;height:62%;transform:perspective(60cqw) rotateX(64deg);transform-origin:50% 100%;
+  background:linear-gradient(var(--neon) 1px,transparent 1px) 0 0/100% 8cqw,linear-gradient(90deg,var(--neon) 1px,transparent 1px) 0 0/9cqw 100%;opacity:.28;animation:gridmove 2.4s linear infinite;
+  -webkit-mask-image:linear-gradient(transparent,#000 40%);mask-image:linear-gradient(transparent,#000 40%)}
+@keyframes gridmove{to{background-position:0 8cqw,9cqw 0}}
+.neo .cone{position:absolute;top:-10%;width:30cqw;height:90%;background:linear-gradient(rgba(138,92,255,.35),transparent 80%);clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);mix-blend-mode:screen;animation:sway 5s ease-in-out infinite alternate}
+.neo .cone.a{left:4%}.neo .cone.b{right:6%;background:linear-gradient(rgba(255,61,139,.33),transparent 80%);animation-delay:-2s}
+@keyframes sway{from{transform:translateX(-2cqw) skewX(-4deg)}to{transform:translateX(2cqw) skewX(4deg)}}
+.neo .u{filter:drop-shadow(0 0 2cqw rgba(53,240,200,.45))}
+.neo .foe{filter:drop-shadow(0 0 2cqw rgba(255,61,139,.55))}
+.neo .glass{position:absolute;padding:.8cqw 1.4cqw 1.2cqw;border-radius:1.6cqw;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px);box-shadow:0 0 3cqw rgba(0,0,0,.35)}
+.neo .glass .nm{font-size:2cqw;font-weight:800;color:#e9edff;letter-spacing:.04em}
+.neo .bar{position:relative;height:1.7cqw;width:19cqw;margin-top:.5cqw;border-radius:99px;background:rgba(0,0,0,.45);overflow:hidden}
+.neo .bar .ghost{position:absolute;inset:0 auto 0 0;background:#fff;opacity:.9;animation:ghost 6s infinite}
+.neo .bar .real{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--pink),#ff8a4d);animation:real 6s infinite;box-shadow:0 0 1.5cqw var(--pink)}
+.neo .bar.h .real{background:linear-gradient(90deg,var(--neon),#7dffd9);animation:none;width:84%;box-shadow:0 0 1.5cqw var(--neon)}
+@keyframes real{0%,25%{width:100%}28%,100%{width:62%}}
+@keyframes ghost{0%,25%{width:100%}60%,100%{width:62%}}
+.neo .sk{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(4px)}
+.neo .sk.rdy{box-shadow:0 0 2.5cqw var(--neon);border-color:var(--neon)}
+.neo .dmg{color:var(--gold);text-shadow:0 0 2cqw rgba(255,200,61,.9),0 .4cqw 0 #5a3c00;animation:dmgneo 6s infinite}
+@keyframes dmgneo{0%,25%{opacity:0;transform:translateY(0) scale(.5)}28%{opacity:1;transform:translateY(-2cqw) scale(1.4)}34%{transform:translateY(-4cqw) scale(1)}48%{opacity:1;transform:translateY(-10cqw) scale(1)}54%,100%{opacity:0}}
+.neo .hero{animation:lunge 6s infinite}
+@keyframes lunge{0%,22%{transform:none}27%{transform:translateX(14cqw) rotate(8deg)}34%,100%{transform:none}}
+.neo .foe{animation:knock 6s infinite}
+@keyframes knock{0%,26%{transform:none}29%{transform:translateX(3cqw) scale(1.1,.9);filter:brightness(3) drop-shadow(0 0 2cqw #fff)}38%,100%{transform:none}}
+.neo .scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 1px,transparent 1px 3px);pointer-events:none;z-index:5}
+.neo .vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,transparent 50%,rgba(0,0,0,.6));z-index:4}
+
+/* --- IDEA 2: kamera --- */
+.cam{background:linear-gradient(#2a1a63,#0c0f26 62%,#1a1530 62%)}
+.cam .world{position:absolute;inset:0;transform-origin:78% 62%;animation:camzoom 7s infinite}
+@keyframes camzoom{0%,18%{transform:scale(1)}24%{transform:scale(1.55) rotate(-1.2deg)}38%{transform:scale(1.55) rotate(-1.2deg)}48%{transform:scale(1.18)}60%{transform:scale(1.18)}72%,100%{transform:scale(1)}}
+.cam .hero{animation:camlunge 7s infinite}
+@keyframes camlunge{0%,16%{transform:none}22%{transform:translateX(30cqw) rotate(10deg)}30%,100%{transform:none}}
+.cam .foe{animation:camfoe 7s infinite;font-size:13cqw}
+@keyframes camfoe{0%,20%{transform:none}22%{transform:translateX(0);filter:brightness(4)}24%,36%{transform:translateX(2cqw);filter:brightness(1.6) hue-rotate(-30deg)}50%{transform:translateX(4cqw) rotate(25deg) translateY(-10cqw);opacity:1}62%,100%{transform:translateX(0);opacity:1}}
+.cam .foe.dead{animation:camdead 7s infinite}
+@keyframes camdead{0%,20%{opacity:1;transform:none}24%{opacity:1;transform:translateX(2cqw);filter:brightness(3)}50%{opacity:1}60%,100%{opacity:0;transform:translate(8cqw,-16cqw) rotate(90deg)}}
+.cam .speed{position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at 78% 55%,rgba(255,255,255,.55) 0 .6deg,transparent .6deg 8deg);opacity:0;animation:speed 7s infinite;mix-blend-mode:overlay;z-index:3;-webkit-mask-image:radial-gradient(circle at 78% 55%,transparent 14%,#000 70%);mask-image:radial-gradient(circle at 78% 55%,transparent 14%,#000 70%)}
+@keyframes speed{0%,21%{opacity:0}23%,32%{opacity:1}38%,100%{opacity:0}}
+.cam .flash{position:absolute;inset:0;background:#fff;opacity:0;animation:flash 7s infinite;z-index:6;mix-blend-mode:overlay}
+@keyframes flash{0%,21%{opacity:0}22.5%{opacity:.85}26%,100%{opacity:0}}
+.cam .letter{position:absolute;left:0;right:0;height:0;background:#000;z-index:7;animation:letter 7s infinite}
+.cam .letter.t{top:0}.cam .letter.b{bottom:0}
+@keyframes letter{0%,40%{height:0}48%,66%{height:12cqh}74%,100%{height:0}}
+.cam .slowtag{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);z-index:8;font-weight:900;letter-spacing:.3em;font-size:3.3cqw;color:var(--gold);opacity:0;animation:slowtag 7s infinite;text-shadow:0 0 2cqw rgba(255,200,61,.7)}
+@keyframes slowtag{0%,45%{opacity:0}50%,64%{opacity:1}70%,100%{opacity:0}}
+.cam .rim{position:absolute;inset:0;z-index:5;pointer-events:none;box-shadow:inset 0 0 0 0 rgba(255,61,139,.0);animation:rim 7s infinite}
+@keyframes rim{0%,21%{box-shadow:inset 0 0 0 0 rgba(255,61,139,0)}24%{box-shadow:inset 0 0 12cqw 0 rgba(255,61,139,.55)}40%,100%{box-shadow:inset 0 0 0 0 rgba(255,61,139,0)}}
+.timeline{display:flex;gap:6px}
+.timeline div{flex:1;border-radius:10px;padding:8px 10px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:12.5px;line-height:1.3;color:var(--mute)}
+.timeline div b{display:block;color:var(--ink);font-size:13px}
+.timeline div em{font-style:normal;color:var(--gold);font-weight:800}
+
+/* --- IDEA 3: cut-in --- */
+.cut{background:radial-gradient(70% 90% at 50% 0%,#241a58,#0a0d22 70%)}
+.cut .base{position:absolute;inset:0;animation:cutdim 6s infinite}
+@keyframes cutdim{0%,18%{filter:none}22%,50%{filter:brightness(.35) saturate(.6) blur(1.5px)}56%,100%{filter:none}}
+.cut .band{position:absolute;left:-20%;right:-20%;height:34%;top:33%;transform:skewY(-9deg) translateX(-130%);background:linear-gradient(90deg,var(--pink),#ff7a3d 60%,var(--gold));z-index:3;box-shadow:0 0 4cqw rgba(255,61,139,.6);animation:bandin 6s infinite}
+.cut .band.b2{top:29%;height:5%;background:#fff;animation-delay:.05s}
+.cut .band.b3{top:67%;height:4%;background:var(--neon);animation-delay:.1s}
+@keyframes bandin{0%,19%{transform:skewY(-9deg) translateX(-130%)}24%,46%{transform:skewY(-9deg) translateX(0)}52%,100%{transform:skewY(-9deg) translateX(130%)}}
+.cut .port{position:absolute;left:8%;bottom:0;font-size:36cqw;line-height:.9;z-index:4;transform:translateX(-140%) skewX(-6deg);animation:portin 6s infinite;filter:drop-shadow(1cqw 1cqw 0 rgba(0,0,0,.5))}
+@keyframes portin{0%,20%{transform:translateX(-140%) skewX(-6deg)}26%,46%{transform:translateX(0) skewX(-6deg)}52%,100%{transform:translateX(140%) skewX(-6deg)}}
+.cut .big{position:absolute;right:5%;top:30%;z-index:5;text-align:right;transform:skewY(-9deg) translateX(120%);animation:bigin 6s infinite;color:#fff;font-weight:900;font-style:italic;line-height:.95;text-shadow:.5cqw .5cqw 0 rgba(0,0,0,.5)}
+.cut .big small{display:block;font-size:2.4cqw;letter-spacing:.3em;color:#1a0a2a;background:var(--gold);padding:.3cqw 1.2cqw;width:max-content;margin-left:auto;margin-bottom:1cqw;font-style:normal}
+.cut .big span{font-size:7.4cqw;display:block}
+.cut .big em{font-size:3.2cqw;font-style:normal;color:#ffe9a8}
+@keyframes bigin{0%,21%{transform:skewY(-9deg) translateX(120%)}27%,46%{transform:skewY(-9deg) translateX(0)}52%,100%{transform:skewY(-9deg) translateX(-130%)}}
+.cut .flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:6;animation:cutflash 6s infinite}
+@keyframes cutflash{0%,22%{opacity:0}24%{opacity:.9}30%,52%{opacity:0}54%{opacity:.5}60%,100%{opacity:0}}
+.cut .stars{position:absolute;inset:0;z-index:2;opacity:0;animation:stars 6s infinite;background:radial-gradient(circle,#fff 1px,transparent 2px) 0 0/9cqw 9cqw}
+@keyframes stars{0%,22%{opacity:0}26%,46%{opacity:.35}52%,100%{opacity:0}}
+.chain{display:flex;gap:10px;align-items:center;margin-top:6px}
+.chain .c{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.chain .c.hit{border-color:var(--neon);box-shadow:0 0 12px rgba(53,240,200,.5)}
+.chain .arrow{color:var(--mute)}
+
+/* --- IDEA 4: boss bar + telegrafy --- */
+.tel{background:radial-gradient(70% 90% at 50% 0%,#3a1030,#0c0a1c 70%)}
+.tel .bossbar{position:absolute;left:12%;right:12%;top:5%;z-index:5;text-align:center}
+.tel .bossbar .nm{font-size:2.6cqw;font-weight:900;letter-spacing:.35em;text-transform:uppercase;color:#ffd9e8;text-shadow:0 0 2cqw rgba(255,61,139,.9)}
+.tel .bossbar .nm small{display:block;font-size:1.5cqw;letter-spacing:.3em;color:var(--mute);font-weight:600}
+.tel .bossbar .b{position:relative;height:2.2cqw;margin-top:.7cqw;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.55);border-radius:3px;overflow:hidden}
+.tel .bossbar .b i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#b0124f,var(--pink));animation:bosshp 8s infinite;box-shadow:0 0 2cqw var(--pink)}
+@keyframes bosshp{0%{width:100%}100%{width:34%}}
+.tel .bossbar .b u{position:absolute;top:0;bottom:0;width:2px;background:#fff;opacity:.9}
+.tel .world{position:absolute;inset:0}
+.tel .foe{right:12%;font-size:17cqw;bottom:14%;animation:bossbreath 2s ease-in-out infinite alternate}
+@keyframes bossbreath{to{transform:scale(1.04) translateY(-1cqw)}}
+.tel .hero{left:12%;font-size:13cqw;bottom:14%}
+.tel .ring{position:absolute;right:14%;bottom:12%;width:30cqw;height:30cqw;border-radius:50%;z-index:2;
+  background:conic-gradient(from 0deg,rgba(255,74,74,.0) 0turn,rgba(255,74,74,.0) 0turn);animation:charge 4s linear infinite;
+  -webkit-mask-image:radial-gradient(circle,transparent 58%,#000 60%,#000 66%,transparent 68%);mask-image:radial-gradient(circle,transparent 58%,#000 60%,#000 66%,transparent 68%);transform:rotateX(62deg)}
+@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes charge{0%{background:conic-gradient(var(--red) 0deg,transparent 0deg)}100%{background:conic-gradient(var(--red) 360deg,transparent 360deg)}}
+.tel .path{position:absolute;left:30%;right:30%;bottom:14%;height:5cqw;z-index:1;background:repeating-linear-gradient(90deg,rgba(255,74,74,.0) 0 2cqw,rgba(255,74,74,.35) 2cqw 3.2cqw);transform:perspective(40cqw) rotateX(60deg);animation:path 4s linear infinite}
+@keyframes path{0%,60%{opacity:0}75%,95%{opacity:1}100%{opacity:0}}
+.tel .warn{position:absolute;right:6%;top:22%;z-index:4;font-size:2.2cqw;font-weight:900;letter-spacing:.18em;color:var(--red);animation:warn 4s infinite;text-shadow:0 0 1.5cqw rgba(255,74,74,.9)}
+@keyframes warn{0%,55%{opacity:0}62%,95%{opacity:1}100%{opacity:0}}
+.tel .glass{position:absolute;left:5%;bottom:3%;z-index:5;padding:.8cqw 1.4cqw 1.2cqw;border-radius:1.6cqw;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18)}
+.tel .gdak{position:absolute;left:12%;bottom:12%;width:19cqw;height:19cqw;z-index:2;border-radius:50%;
+  -webkit-mask-image:radial-gradient(circle,transparent 62%,#000 64%,#000 72%,transparent 74%);mask-image:radial-gradient(circle,transparent 62%,#000 64%,#000 72%,transparent 74%);
+  background:conic-gradient(var(--gold) 0deg,transparent 0deg);animation:gd 4s linear infinite;transform:rotateX(62deg)}
+@keyframes gd{0%{background:conic-gradient(var(--gold) 360deg,transparent 0)}60%{background:conic-gradient(var(--gold) 0deg,transparent 0)}100%{background:conic-gradient(var(--gold) 0deg,transparent 0)}}
+.tel .skills{position:absolute;right:5%;bottom:4%;display:flex;gap:1.2cqw;z-index:5}
+.tel .skills .sk{position:static;width:8cqw;height:8cqw;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:1.8cqw;display:grid;place-items:center;font-size:4.2cqw;position:relative}
+.tel .skills .sk.rdy{border-color:var(--gold);box-shadow:0 0 2cqw rgba(255,200,61,.7)}
+.tel .skills .sk:after{content:"";position:absolute;inset:0;border-radius:inherit;background:conic-gradient(rgba(0,0,0,.6) var(--cd,0deg),transparent 0)}
+
+/* --- tabele --- */
+table{width:100%;border-collapse:collapse;font-size:17px;margin-top:20px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+td b{color:var(--ink)}
+.dots{letter-spacing:3px;color:var(--neon)}
+.dots.s{color:var(--gold)}
+.nav{position:fixed;right:14px;top:12px;display:flex;gap:8px;z-index:10}
+.nav button{background:#161c3a;color:#cfd6ff;border:1px solid #2a3263;border-radius:10px;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer}
+.nav button:hover{border-color:var(--neon);color:#fff}
+@media (prefers-reduced-motion:reduce){*{animation-duration:0s!important}}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- 0: TYTUŁ -->
+<section class="slide on" style="justify-content:center">
+  <div class="kick">Bulgot · propozycje dla Wielkiego Kurczaka</div>
+  <h1 style="margin-top:14px">Walka, która wygląda<br>jak <span class="grad">rok 2026</span>,<br>a nie jak miecze i sandały.</h1>
+  <p class="lead">Cztery pomysły na nową scenę walki. Wszystkie są tylko „na obrazie”: silnik, cooldowny, balans i powtórka walki na serwerze zostają bez zmian.</p>
+  <div class="pills" style="margin-top:26px"><span class="pill g">Bez zmian w silniku</span><span class="pill g">Bez nowego RUN_V</span><span class="pill">Szanuje „Animacje: wył.”</span><span class="pill">Działające makiety na kolejnych slajdach</span></div>
+  <div class="foot"><span>BULGOT · SCENA WALKI 2.0</span><span>← → lub spacja</span></div>
+</section>
+
+<!-- 1: PUNKT WYJŚCIA -->
+<section class="slide">
+  <div class="kick">Punkt wyjścia</div>
+  <h2>Co mamy dziś i dlaczego to „sandały”</h2>
+  <div class="cols">
+    <div class="txt" style="width:520px;font-size:17px;gap:14px">
+      <div class="box"><h4>Co działa świetnie</h4><ul>
+        <li>Auto-walka + 3 umiejętności i <b>Okno Gdakania</b> to dobry rdzeń</li>
+        <li>Mamy już <b>paralaksę</b> (tło / mgła / pierwszy plan), wejście bossa „jak w kinie”, zamrożenie klatki <b>F.stopUntil</b>, banery, liczby obrażeń, pióra</li>
+        <li>Wszystko jest oddzielone od silnika, więc można to przerobić bezpiecznie</li></ul></div>
+      <div class="box"><h4>Co trąci starociem</h4><ul>
+        <li>Płaska „bajkowa” scena z grubym obrysem, jak z gry przeglądarkowej z 2012</li>
+        <li>Kamera nie reaguje na to, co się dzieje: <b>krytyk, ostatni cios i boss wyglądają jak zwykły cios</b></li>
+        <li>Paski życia i skille wyglądają jak formularz, a nie jak HUD</li>
+        <li>Gracz patrzy na walkę, ale nic go nie „wciąga”: brak wyczuwalnego rytmu i zagrożenia</li></ul></div>
+    </div>
+    <div class="mock">
+      <div class="tag"><i></i>Dziś (uproszczone)</div>
+      <div class="ar old">
+        <div class="plate" style="left:5%;top:6%">Pyrtek</div><div class="hp" style="left:5%;top:14%"><i style="width:100%;animation:none"></i></div>
+        <div class="plate" style="right:5%;top:6%;text-align:right">Konserwa</div><div class="hp" style="right:5%;top:14%"><i></i></div>
+        <div class="u hero">🐔</div><div class="u foe">🥫</div>
+        <div class="dmg" style="right:24%;bottom:46%">12</div>
+        <div class="sk" style="left:34%">🔥</div><div class="sk" style="left:45%">❄️</div><div class="sk" style="left:56%">⚡</div>
+      </div>
+      <p style="color:var(--mute);font-size:15px;line-height:1.4">Klatka z makiety. Zasada nowych pomysłów: <b style="color:var(--ink)">zmieniamy to, jak walka wygląda i jak „czuć” każdy cios, a nie to, jak liczy się obrażenia.</b></p>
+    </div>
+  </div>
+  <div class="foot"><span>BULGOT · SCENA WALKI 2.0</span><span>1 / 8</span></div>
+</section>
+
+<!-- 2: POMYSŁ 1 NEON -->
+<section class="slide">
+  <div class="kick">Pomysł 1 z 4 · wygląd</div>
+  <h2>Neon Taśma: fabryka rosołu po zmroku</h2>
+  <div class="cols">
+    <div class="txt">
+      <div class="box"><h4>Jak to wygląda</h4><ul>
+        <li>Ciemna scena z <b>neonową podłogą w perspektywie</b>, która „jedzie” jak taśma produkcyjna</li>
+        <li>Stożki świateł z sufitu (kolor strefy: I turkus, II fiolet, III róż)</li>
+        <li><b>Szklane plakietki</b> zamiast obrysowanych pasków; pasek życia z „duchem” (biały ślad szybko pokazuje, ile zeszło)</li>
+        <li>Postacie z poświatą, krytyki z mocnym, złotym napisem</li></ul></div>
+      <div class="box"><h4>Jak wpływa na flow</h4>
+        Od razu widać, <b>kto kogo bije i ile zeszło</b>. Ślad na pasku robi z każdego ciosu małą nagrodę.</div>
+      <div class="box"><h4>Koszt i ryzyko</h4>
+        CSS + kilka SVG w <b>art.arenaBg</b>, bez dotykania silnika. Ryzyko: czytelność (zostawiamy kontrast i tryb „Animacje: wył.”). <b>Rozmiar: S–M</b></div>
+    </div>
+    <div class="mock">
+      <div class="tag"><i></i>Przed</div>
+      <div class="ar old" style="aspect-ratio:1000/230">
+        <div class="plate" style="left:4%;top:8%">Pyrtek</div><div class="plate" style="right:4%;top:8%">Konserwa</div>
+        <div class="u hero" style="font-size:19cqw;bottom:6%">🐔</div><div class="u foe" style="font-size:16cqw;bottom:6%">🥫</div>
+      </div>
+      <div class="tag new"><i></i>Po (animacja na żywo)</div>
+      <div class="ar neo">
+        <div class="cone a"></div><div class="cone b"></div><div class="grid"></div>
+        <div class="glass" style="left:3%;top:5%"><div class="nm">Pyrtek</div><div class="bar h"><i class="real"></i></div></div>
+        <div class="glass" style="right:3%;top:5%"><div class="nm">Konserwa</div><div class="bar"><i class="ghost"></i><i class="real"></i></div></div>
+        <div class="u hero">🐔</div><div class="u foe">🥫</div>
+        <div class="dmg" style="right:22%;bottom:48%">12!</div>
+        <div class="sk rdy" style="left:34%">🔥</div><div class="sk" style="left:45%">❄️</div><div class="sk" style="left:56%">⚡</div>
+        <div class="vig"></div><div class="scan"></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>BULGOT · SCENA WALKI 2.0</span><span>2 / 8</span></div>
+</section>
+
+<!-- 3: POMYSŁ 2 KAMERA -->
+<section class="slide">
+  <div class="kick">Pomysł 2 z 4 · flow</div>
+  <h2>Kamera reżyserska: każdy cios ma ciężar</h2>
+  <div class="cols">
+    <div class="txt">
+      <div class="box"><h4>Jak to działa</h4><ul>
+        <li><b>Hit-stop</b>: 60–90 ms zamrożenia obrazu przy krytyku i ciosie umiejętności (mamy już <b>F.stopUntil</b>)</li>
+        <li><b>Najazd kamery</b> na cel, linie szybkości, błysk i lekki przechył</li>
+        <li><b>Ostatni wróg w walce</b>: letterbox i slow-mo przy zabójczym ciosie, jak „kill cam”</li>
+        <li>Boss: powolny dolly-in na wejściu, wstrząs przy jego uderzeniu</li></ul></div>
+      <div class="box"><h4>Jak wpływa na flow</h4>
+        Walka ma <b>momenty szczytowe</b> zamiast jednostajnego tłuczenia. Krytyk i finisz stają się nagrodą, którą się chce zobaczyć znowu.</div>
+      <div class="box"><h4>Koszt i ryzyko</h4>
+        Tylko transformacje CSS na kontenerze sceny i zegar <i>obrazu</i> (nie ticków). Powtórka na serwerze nie widzi różnicy. Opcja „Kamera: wył.” dla wrażliwych. <b>Rozmiar: M</b></div>
+    </div>
+    <div class="mock">
+      <div class="ar cam">
+        <div class="world">
+          <div style="position:absolute;inset:0;background:linear-gradient(transparent 60%,rgba(53,240,200,.12) 61%)"></div>
+          <div class="u hero">🐔</div>
+          <div class="u foe">🥫</div>
+        </div>
+        <div class="speed"></div><div class="flash"></div><div class="rim"></div>
+        <div class="letter t"></div><div class="letter b"></div>
+        <div class="slowtag">SLOW-MO</div>
+      </div>
+      <div class="timeline">
+        <div><b>1 · Zamach</b>normalne tempo</div>
+        <div><b>2 · Trafienie</b><em>hit-stop 80 ms</em> + błysk</div>
+        <div><b>3 · Najazd</b>zoom ×1,5, linie szybkości</div>
+        <div><b>4 · Finisz</b>letterbox + <em>slow-mo</em></div>
+        <div><b>5 · Powrót</b>kamera wraca, gra leci dalej</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>BULGOT · SCENA WALKI 2.0</span><span>3 / 8</span></div>
+</section>
+
+<!-- 4: POMYSŁ 3 CUT-IN -->
+<section class="slide">
+  <div class="kick">Pomysł 3 z 4 · efekt widowiskowy</div>
+  <h2>Cut-in Finiszera: Pełna Kurza Seria jak ultimate</h2>
+  <div class="cols">
+    <div class="txt">
+      <div class="box"><h4>Jak to działa</h4><ul>
+        <li>Gdy gracz złapie <b>Okno Gdakania</b> (trzy różne umiejętności pod rząd), na 0,7 s wjeżdża <b>kadr w stylu anime</b>: ukośne pasy, wielki portret kurczaka, nazwa serii</li>
+        <li>Tło ściemnia się i rozmywa, potem uderzenie, błysk i wracamy do walki</li>
+        <li>Mniejsze wersje (sam pas z nazwą) dla serii x2 i x3</li>
+        <li>Każda postać ma swój portret i hasło (z <b>text.js</b>)</li></ul></div>
+      <div class="box"><h4>Jak wpływa na flow</h4>
+        Okno Gdakania dziś jest paskiem w rogu. Teraz to <b>cel, o który gracz walczy</b>, bo wygląda jak najlepszy moment całej walki.</div>
+      <div class="box"><h4>Koszt i ryzyko</h4>
+        Warstwa nad areną (jak <b>bossIntro</b>), zegar obrazu. Efekt pomijalny jednym kliknięciem. Ryzyko: nuda przy 50. powtórzeniu, więc krótko i z opcją „Cut-iny: rzadziej”. <b>Rozmiar: S–M</b></div>
+      <div class="chain"><div class="c hit">🔥</div><span class="arrow">▶</span><div class="c hit">❄️</div><span class="arrow">▶</span><div class="c hit">⚡</div><span class="arrow">=</span><b style="color:var(--gold)">PEŁNA KURZA SERIA</b></div>
+    </div>
+    <div class="mock">
+      <div class="ar cut">
+        <div class="base">
+          <div class="u hero" style="left:12%;font-size:14cqw">🐔</div><div class="u foe" style="right:14%;font-size:12cqw">🥫</div>
+          <div class="grid" style="position:absolute;left:-30%;right:-30%;bottom:-6%;height:62%;transform:perspective(60cqw) rotateX(64deg);transform-origin:50% 100%;background:linear-gradient(var(--violet) 1px,transparent 1px) 0 0/100% 8cqw,linear-gradient(90deg,var(--violet) 1px,transparent 1px) 0 0/9cqw 100%;opacity:.25"></div>
+        </div>
+        <div class="stars"></div>
+        <div class="band b2"></div><div class="band"></div><div class="band b3"></div>
+        <div class="port">🐔</div>
+        <div class="big"><small>3 UMIEJĘTNOŚCI · +50% OBRAŻEŃ</small><span>PEŁNA</span><span>KURZA SERIA!</span><em>„Gdakanie na trzy fronty”</em></div>
+        <div class="flash"></div>
+      </div>
+      <p style="color:var(--mute);font-size:15px;line-height:1.4">Makieta: pętla 6 s. W grze kadr trwa ok. 0,7 s i nie wstrzymuje licznika walki, bo to tylko obraz (patrz <b style="color:var(--ink)">F.stopUntil</b>).</p>
+    </div>
+  </div>
+  <div class="foot"><span>BULGOT · SCENA WALKI 2.0</span><span>4 / 8</span></div>
+</section>
+
+<!-- 5: POMYSŁ 4 BOSS+TELEGRAF -->
+<section class="slide">
+  <div class="kick">Pomysł 4 z 4 · czytelność i napięcie</div>
+  <h2>Telegrafy i Wielki Pasek Bossa</h2>
+  <div class="cols">
+    <div class="txt">
+      <div class="box"><h4>Jak to działa</h4><ul>
+        <li><b>Wielki pasek bossa u góry</b> z nazwą, ze znacznikami faz i falą „czerwieni” przy mocnych ciosach</li>
+        <li><b>Telegraf</b>: czerwony pierścień na podłodze ładuje się pod wrogiem, gdy zbliża się jego mocny atak (klient zna cooldowny wrogów, bo liczy tym samym silnikiem)</li>
+        <li><b>Pierścień Gdakania</b> wokół bohatera zamiast paska w rogu: widać okno czasu <i>tam, gdzie patrzysz</i></li>
+        <li>Cooldowny umiejętności jako „kołowe zegary” z błyskiem przy gotowości</li></ul></div>
+      <div class="box"><h4>Jak wpływa na flow</h4>
+        Gracz <b>widzi nadchodzące zagrożenie</b> i planuje: „zaraz boss uderza, więc wciskam Pancerz”. Walka przestaje być oglądaniem.</div>
+      <div class="box"><h4>Koszt i ryzyko</h4>
+        Tylko odczyt stanu silnika (bez zapisu). Telegraf nie zdradza niczego, czego silnik już nie pokazuje w paskach. <b>Rozmiar: M</b>. Przy braku danych o następnym ataku wróg po prostu nie ma pierścienia.</div>
+    </div>
+    <div class="mock">
+      <div class="ar tel">
+        <div class="bossbar"><div class="nm"><small>BOSS · PIĘTRO 5</small>Brojler Alfa</div><div class="b"><i></i><u style="left:66%"></u><u style="left:33%"></u></div></div>
+        <div class="world">
+          <div class="gdak"></div>
+          <div class="path"></div>
+          <div class="ring"></div>
+          <div class="u hero">🐔</div>
+          <div class="u foe">🍗</div>
+          <div class="warn">⚠ MOCNE UDERZENIE</div>
+        </div>
+        <div class="glass"><div style="font-size:2cqw;font-weight:800;color:#e9edff">Pyrtek</div>
+          <div style="margin-top:.5cqw;height:1.7cqw;width:19cqw;border-radius:99px;background:rgba(0,0,0,.45);overflow:hidden"><i style="display:block;height:100%;width:84%;background:linear-gradient(90deg,var(--neon),#7dffd9)"></i></div></div>
+        <div class="skills"><div class="sk rdy" style="--cd:0deg">🔥</div><div class="sk" style="--cd:230deg">❄️</div><div class="sk" style="--cd:120deg">⚡</div></div>
+      </div>
+      <p style="color:var(--mute);font-size:15px;line-height:1.4">Czerwony pierścień ładuje się 4 s (pętla), złoty pierścień pod bohaterem to Okno Gdakania. Nic z tego nie zmienia liczb obrażeń.</p>
+    </div>
+  </div>
+  <div class="foot"><span>BULGOT · SCENA WALKI 2.0</span><span>5 / 8</span></div>
+</section>
+
+<!-- 6: POROWNANIE -->
+<section class="slide">
+  <div class="kick">Porównanie</div>
+  <h2>Cztery pomysły obok siebie</h2>
+  <table>
+    <tr><th>Pomysł</th><th>Co daje</th><th>Czego dotyka</th><th>Rozmiar</th><th>„Dojebanie” (efekt wow)</th></tr>
+    <tr><td><b>1 · Neon Taśma</b></td><td>Nowoczesny wygląd, czytelność pasków</td><td>CSS, <code>art.arenaBg</code>, plakietki</td><td>S–M</td><td class="dots">●●●○○</td></tr>
+    <tr><td><b>2 · Kamera reżyserska</b></td><td>Ciężar ciosów, momenty szczytowe</td><td>Transformacje sceny, zegar obrazu</td><td>M</td><td class="dots">●●●●○</td></tr>
+    <tr><td><b>3 · Cut-in Finiszera</b></td><td>Okno Gdakania jako cel gry</td><td>Warstwa nad areną</td><td>S–M</td><td class="dots">●●●●●</td></tr>
+    <tr><td><b>4 · Telegrafy i pasek bossa</b></td><td>Planowanie, napięcie, bossy z charakterem</td><td>Odczyt stanu silnika (tylko do wyświetlenia)</td><td>M</td><td class="dots">●●●●○</td></tr>
+  </table>
+  <div class="box" style="margin-top:26px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:18px;line-height:1.5">
+    <b style="color:var(--gold)">Wspólna zasada bezpieczeństwa:</b> nic z tego nie wchodzi do <code>shared/*.js</code> ani do serwera. Zmiany są w <code>app.js</code>, <code>art.js</code>, <code>style.css</code>, więc <b>nie trzeba bumpować RUN_V</b>, a zapisane runy i rankingi się nie psują. Wszystko szanuje przełącznik „Animacje” i ma osobne opcje wyłączenia w „Dźwięk i walka”.
+  </div>
+  <div class="foot"><span>BULGOT · SCENA WALKI 2.0</span><span>6 / 8</span></div>
+</section>
+
+<!-- 7: REKOMENDACJA -->
+<section class="slide">
+  <div class="kick">Rekomendacja</div>
+  <h2>Proponowana kolejność wdrożenia</h2>
+  <div class="cols" style="margin-top:28px">
+    <div class="txt" style="width:700px;font-size:19px;gap:14px">
+      <div class="box"><h4>Etap 1 · fundament (1 sesja)</h4><b>Pomysł 1 + Pomysł 2</b>: nowy wygląd sceny i kamera z hit-stopem. Razem dają największą różnicę „od razu po uruchomieniu”, a Neon Taśma jest tłem dla reszty.</div>
+      <div class="box"><h4>Etap 2 · widowisko (1 sesja)</h4><b>Pomysł 3</b>: Cut-in Finiszera dla Pełnej Kurzej Serii i mniejsze pasy dla x2/x3, z opcją rzadszego pokazywania.</div>
+      <div class="box"><h4>Etap 3 · taktyka (1 sesja)</h4><b>Pomysł 4</b>: pasek bossa, telegrafy i pierścień Gdakania. Tu trzeba zerknąć, co silnik wystawia o następnym ataku wroga.</div>
+      <div class="box"><h4>Do decyzji Wielkiego Kurczaka</h4><ul>
+        <li>Czy kierunek wizualny to <b>neon / cyberpunk</b>, czy raczej <b>ciepły fabryczny noir</b> (sepia, para, żarówki)?</li>
+        <li>Wszystkie cztery po kolei, czy najpierw tylko 1+2 do przymierzenia?</li></ul></div>
+    </div>
+    <div class="mock" style="justify-content:flex-start;padding-top:6px">
+      <div class="ar neo" style="aspect-ratio:1000/520">
+        <div class="cone a"></div><div class="cone b"></div><div class="grid"></div>
+        <div class="u hero" style="font-size:17cqw">🐔</div><div class="u foe" style="font-size:13cqw">🥫</div>
+        <div class="glass" style="left:3%;top:5%"><div class="nm">Pyrtek</div><div class="bar h"><i class="real"></i></div></div>
+        <div class="glass" style="right:3%;top:5%"><div class="nm">Konserwa</div><div class="bar"><i class="ghost"></i><i class="real"></i></div></div>
+        <div class="dmg" style="right:22%;bottom:50%">12!</div>
+        <div class="vig"></div><div class="scan"></div>
+      </div>
+      <p style="color:var(--mute);font-size:15px;margin-top:6px">Tak wyglądałby punkt wyjścia po etapie 1.</p>
+    </div>
+  </div>
+  <div class="foot"><span>BULGOT · SCENA WALKI 2.0</span><span>7 / 8</span></div>
+</section>
+
+<!-- 8: KONIEC -->
+<section class="slide" style="justify-content:center;align-items:flex-start">
+  <div class="kick">Koniec</div>
+  <h1 style="margin-top:12px">Powiedz tylko:<br><span class="grad">który kierunek?</span></h1>
+  <p class="lead">Wybierz numery pomysłów (np. „1+2, potem 3”) i kierunek wizualny. Zrobię to w małych krokach, z testem e2e i zrzutami przed pushem.</p>
+  <div class="foot"><span>BULGOT · SCENA WALKI 2.0</span><span>8 / 8</span></div>
+</section>
+
+</div>
+<div class="nav"><button id="prev">◀</button><button id="next">▶</button></div>
+<script>
+(function(){
+  var st=document.getElementById('stage'),sl=[].slice.call(document.querySelectorAll('.slide')),i=0;
+  function fit(){var s=Math.min(innerWidth/1280,innerHeight/720);st.style.transform='scale('+s+')';st.style.left=((innerWidth-1280*s)/2)+'px';st.style.top=((innerHeight-720*s)/2)+'px'}
+  function go(n){i=Math.max(0,Math.min(sl.length-1,n));sl.forEach(function(s,k){s.classList.toggle('on',k===i)});try{location.hash=i}catch(e){}}
+  addEventListener('resize',fit);fit();
+  addEventListener('keydown',function(e){if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();go(i+1)}else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();go(i-1)}else if(e.key==='Home')go(0);else if(e.key==='End')go(sl.length-1)});
+  document.getElementById('next').onclick=function(){go(i+1)};document.getElementById('prev').onclick=function(){go(i-1)};
+  var h=parseInt(location.hash.slice(1),10);if(h>=0)go(h);
+})();
+</script>
+</body>
+</html>

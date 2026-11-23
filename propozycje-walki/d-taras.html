@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Propozycja D: Taras Prezesa</title>
+<link rel="stylesheet" href="wspolne.css">
+<style>
+/* ===== D: TARAS NA DACHU: nowoczesne kafelki-wskaźniki, Kukurydziany Grad spada z nieba ===== */
+.bg{position:absolute;inset:0}.bg svg{width:100%;height:100%}
+.vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 60%,transparent 55%,rgba(20,8,30,.55));z-index:5;pointer-events:none}
+.wind{position:absolute;left:0;right:0;height:14vh;z-index:3;opacity:.7;pointer-events:none}
+.cloud{position:absolute;border-radius:99px;background:linear-gradient(rgba(255,255,255,.35),rgba(255,214,190,.18));filter:blur(.6vh);animation:drift 8s linear infinite}
+@keyframes drift{from{transform:translateX(-8vh)}to{transform:translateX(8vh)}}
+
+/* --- kafelki KPI --- */
+.kpis{position:absolute;left:50%;bottom:2.8vh;transform:translateX(-50%);display:flex;gap:2vh;z-index:30;align-items:flex-end}
+.kpi{position:relative;width:29vh;height:13.2vh;border-radius:2.2vh;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.07));border:1px solid rgba(255,255,255,.4);backdrop-filter:blur(10px);box-shadow:0 1.4vh 3vh rgba(20,5,40,.45),inset 0 1px 0 rgba(255,255,255,.5);overflow:hidden;display:flex;align-items:center;gap:1.8vh;padding:0 2vh;color:#fff}
+.kpi .gauge{position:relative;width:9vh;height:9vh;flex:none}
+.kpi .gauge svg.g{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.kpi .gauge svg.g circle{fill:none;stroke-width:6;stroke-linecap:round}
+.kpi .gauge .trk{stroke:rgba(255,255,255,.18)}
+.kpi .gauge .val{stroke:var(--c);stroke-dasharray:var(--len);stroke-dashoffset:var(--off);filter:drop-shadow(0 0 .6vh var(--c))}
+.kpi .gauge .ic{position:absolute;inset:1.3vh;display:grid;place-items:center}
+.kpi .gauge .ic svg{width:100%;height:100%}
+.kpi .tx{min-width:0}
+.kpi .nm{font:700 2.1vh/1.05 var(--disp);color:#fff;letter-spacing:.02em}
+.kpi .st{margin-top:.7vh;font:700 1.25vh var(--mono);letter-spacing:.1em;color:rgba(255,255,255,.7)}
+.kpi .st b{color:var(--c)}
+.kpi .k{position:absolute;right:1.4vh;top:1.2vh;min-width:3vh;height:3vh;padding:0 .8vh;border-radius:.9vh;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.35);font:800 1.6vh/3vh var(--mono);text-align:center}
+.kpi .ripple{position:absolute;left:50%;top:50%;width:6vh;height:6vh;margin:-3vh;border-radius:50%;background:radial-gradient(rgba(255,255,255,.7),transparent 70%);opacity:0;pointer-events:none}
+.kpi .dim{position:absolute;inset:0;background:rgba(20,8,40,.45);clip-path:inset(0 var(--rest,100%) 0 0)}
+.k1{--c:#ffd23f;--len:226;--off:0}.k2{--c:#7fe0ff;--len:226;--off:56}.k3{--c:#7dff9f;--len:226;--off:140}
+.k1{animation:kp 8s infinite}.k1 .val{animation:v1 8s infinite}.k1 .ripple{animation:rip 8s infinite}.k1 .st{animation:none}
+@keyframes kp{0%,24%{transform:none}25.5%{transform:scale(.95)}29%{transform:scale(1.01)}33%,100%{transform:none}}
+@keyframes v1{0%,24.9%{stroke-dashoffset:0}25%{stroke-dashoffset:226}100%{stroke-dashoffset:0}}
+@keyframes rip{0%,24%{opacity:0;transform:scale(.4)}25%{opacity:.95;transform:scale(.4)}34%{opacity:0;transform:scale(11)}100%{opacity:0}}
+.k2{box-shadow:0 1.4vh 3vh rgba(20,5,40,.45),0 0 2.4vh rgba(127,224,255,.55),inset 0 1px 0 rgba(255,255,255,.5);border-color:rgba(127,224,255,.8)}
+.chain{position:absolute;left:50%;bottom:17.6vh;transform:translateX(-50%);z-index:30;display:flex;align-items:flex-end;gap:1vh;padding:.9vh 2vh;border-radius:99px;background:rgba(20,8,40,.55);border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(8px);font:800 1.3vh var(--mono);letter-spacing:.16em;color:#e9d9ff}
+.chain .bars{display:flex;gap:.6vh;align-items:flex-end;height:3vh}.chain .bars i{width:1.2vh;border-radius:.3vh;background:rgba(255,255,255,.2)}
+.chain .bars i:nth-child(1){height:1.2vh;animation:cb1 8s infinite}.chain .bars i:nth-child(2){height:2vh;animation:cb2 8s infinite}.chain .bars i:nth-child(3){height:3vh}
+@keyframes cb1{0%,24%{background:rgba(255,255,255,.2)}25%,100%{background:#ffd23f;box-shadow:0 0 1vh #ffd23f}}
+@keyframes cb2{0%,35%{background:rgba(255,255,255,.2)}36%,100%{background:#ffd23f;box-shadow:0 0 1vh #ffd23f}}
+.chain em{font-style:normal;color:#ffd23f;font-size:1.7vh}
+
+/* --- Kukurydziany Grad --- */
+.kern{position:absolute;z-index:23;width:3.4vh;height:2.2vh;margin:-1.1vh 0 0 -1.7vh;border-radius:50% 55% 50% 50%;background:radial-gradient(circle at 35% 30%,#fff3a0,#ffc72a 55%,#b87a00);border:.25vh solid #6b4400;opacity:0;animation:kern 8s infinite;box-shadow:0 0 1.4vh rgba(255,210,70,.9)}
+.kern:before{content:"";position:absolute;right:100%;top:35%;width:14vh;height:.7vh;border-radius:9px;background:linear-gradient(90deg,transparent,rgba(255,225,120,.85));transform-origin:100% 50%;transform:rotate(var(--rot,-28deg))}
+@keyframes kern{0%,26%{opacity:0;left:var(--sx);top:var(--sy);transform:rotate(var(--rot,-28deg))}26.4%{opacity:1}32%{opacity:1;left:var(--tx);top:var(--ty)}32.4%,100%{opacity:0;left:var(--tx);top:var(--ty)}}
+.spark{position:absolute;z-index:24;width:11vh;height:11vh;margin:-5.5vh;opacity:0;animation:spark 8s infinite;pointer-events:none}
+.spark svg{width:100%;height:100%}
+@keyframes spark{0%,32%{opacity:0;transform:scale(.2)}33%{opacity:1;transform:scale(1)}39%{opacity:.7;transform:scale(1.3)}44%,100%{opacity:0;transform:scale(1.5)}}
+.dmg{position:absolute;z-index:26;font-family:var(--disp);font-weight:700;font-size:4.4vh;color:#fff4b8;text-shadow:0 .4vh 0 #6b4400,0 0 1.6vh rgba(255,200,40,.9);opacity:0;animation:dmg 8s infinite}
+@keyframes dmg{0%,32.4%{opacity:0;transform:translateY(0) scale(.5)}34%{opacity:1;transform:translateY(-1vh) scale(1.3)}37%{transform:translateY(-2vh) scale(1)}48%{opacity:1;transform:translateY(-6vh)}54%,100%{opacity:0;transform:translateY(-8vh)}}
+.enemy .sprite{animation:bob 1.9s ease-in-out infinite,peck 8s infinite}
+@keyframes peck{0%,32%{transform:none;filter:none}33%{transform:translateX(1.4vh) rotate(3deg) scale(1.04,.96);filter:brightness(1.8)}38%{transform:none;filter:none}100%{transform:none}}
+.hero .sprite{animation:bob 1.6s ease-in-out infinite,throw 8s infinite!important}
+@keyframes throw{0%,24%{transform:none}26%{transform:translateY(-5vh) scale(.96,1.06)}30%{transform:translateY(-1vh)}34%,100%{transform:none}}
+.gold{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse at 70% 40%,rgba(255,214,90,.28),transparent 55%);opacity:0;animation:gld 8s infinite}
+@keyframes gld{0%,26%{opacity:0}30%,40%{opacity:1}52%,100%{opacity:0}}
+.skycast{position:absolute;left:0;right:0;top:0;height:60%;z-index:4;pointer-events:none;background:linear-gradient(rgba(255,214,90,.0),rgba(255,214,90,.0));animation:sc 8s infinite}
+@keyframes sc{0%,25%{background:linear-gradient(rgba(255,214,90,0),rgba(255,214,90,0))}28%,34%{background:linear-gradient(rgba(255,214,90,.18),rgba(255,214,90,0))}44%,100%{background:linear-gradient(rgba(255,214,90,0),rgba(255,214,90,0))}}
+</style></head>
+<body>
+<div class="fs">
+  <div class="bg" id="bg"></div>
+  <div class="cloud" style="left:8%;top:24%;width:34vh;height:4vh;animation-delay:-2s;opacity:.55"></div>
+  <div class="cloud" style="left:66%;top:16%;width:44vh;height:4.5vh;animation-delay:-5s;opacity:.45"></div>
+  <div class="skycast"></div>
+  <div class="layer" id="units"></div>
+  <div class="gold"></div>
+  <div class="layer" id="fx"></div>
+  <div class="vig"></div>
+  <div id="top"></div>
+  <div class="chain"><span>SERIA</span><div class="bars"><i></i><i></i><i></i></div><em>×2</em></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="kron">„Prezes nie schodzi z dachu. Wszystkie wnioski o awans rozpatruje stamtąd.”</div>
+  <div class="prop">PROPOZYCJA D · TARAS PREZESA</div>
+</div>
+<script type="module">
+import {unit,st,topbar,icon,sname,hero,CAST,sti,freezeAt} from './wspolne.js';
+const W=1920,H=1080,HOR=520;
+let s=5;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647};
+let sky='';for(let i=0;i<34;i++){const x=i*60-30,h=60+rnd()*200,w=36+rnd()*40;sky+=`<rect x="${x}" y="${HOR+40-h}" width="${w}" height="${h}" fill="${rnd()<.5?'#5a3a6e':'#6b4580'}" opacity=".9"/>`;
+  for(let j=0;j<h/20;j++)if(rnd()<.3)sky+=`<rect x="${x+5+(j%3)*10}" y="${HOR+40-h+8+j*16}" width="5" height="7" fill="#ffd98a" opacity=".9"/>`}
+let deck='';for(let i=-14;i<=14;i++)deck+=`<line x1="960" y1="${HOR+10}" x2="${960+i*280}" y2="${H}" stroke="#2b2433" stroke-opacity=".35" stroke-width="2"/>`;
+for(let i=0;i<12;i++){const y=HOR+10+Math.pow(i/11,2)*(H-HOR);deck+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#2b2433" stroke-opacity=".3" stroke-width="2"/>`}
+const mast=(x,h)=>`<g><rect x="${x-5}" y="${HOR-h}" width="10" height="${h}" fill="#2a2233"/><circle cx="${x}" cy="${HOR-h}" r="9" fill="#ff3d3d"><animate attributeName="opacity" values="1;.2;1" dur="1.4s" repeatCount="indefinite"/></circle>
+ <path d="M${x-40} ${HOR-h*.6} L${x} ${HOR-h*.9} L${x+40} ${HOR-h*.6}" stroke="#2a2233" stroke-width="4" fill="none"/></g>`;
+document.getElementById('bg').innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice"><defs>
+ <linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2a7a"/><stop offset=".45" stop-color="#b9548c"/><stop offset=".8" stop-color="#ff9a6a"/><stop offset="1" stop-color="#ffd08a"/></linearGradient>
+ <linearGradient id="dk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4d4658"/><stop offset="1" stop-color="#2a2433"/></linearGradient>
+ <radialGradient id="sun"><stop offset="0" stop-color="#fff2c0"/><stop offset=".4" stop-color="#ffc66a" stop-opacity=".8"/><stop offset="1" stop-color="#ff9a6a" stop-opacity="0"/></radialGradient></defs>
+ <rect width="${W}" height="${HOR+20}" fill="url(#sk)"/>
+ <circle cx="1180" cy="${HOR-40}" r="340" fill="url(#sun)"/>
+ ${[...Array(40)].map(()=>`<circle cx="${rnd()*W}" cy="${rnd()*260}" r="${.6+rnd()*1.4}" fill="#fff" opacity="${.3+rnd()*.5}"/>`).join('')}
+ ${sky}
+ ${mast(220,330)}${mast(1700,280)}
+ <rect y="${HOR+10}" width="${W}" height="${H-HOR-10}" fill="url(#dk)"/>${deck}
+ <ellipse cx="960" cy="820" rx="560" ry="140" fill="#3a3342" stroke="#e8e0cf" stroke-width="6"/>
+ <ellipse cx="960" cy="820" rx="480" ry="114" fill="none" stroke="#e8e0cf" stroke-width="4" stroke-dasharray="30 22" opacity=".8"/>
+ <text x="960" y="840" text-anchor="middle" font-family="Baloo 2,Impact" font-weight="800" font-size="120" fill="#e8e0cf" opacity=".28" transform="translate(0 0) scale(1 .42)" transform-origin="960 840">R</text>
+ <rect y="${HOR-4}" width="${W}" height="16" fill="#1d1824"/>
+ ${[...Array(33)].map((_,i)=>`<rect x="${i*60}" y="${HOR-60}" width="4" height="64" fill="#cfe3f0" opacity=".7"/>`).join('')}
+ <rect y="${HOR-62}" width="${W}" height="6" fill="#e8f2f8" opacity=".85"/>
+ <g transform="translate(960 330)"><rect x="-300" y="-60" width="600" height="110" rx="12" fill="#1d1824" opacity=".55" stroke="#e8e0cf" stroke-width="3"/>
+ <text x="0" y="14" text-anchor="middle" font-family="Baloo 2,Impact" font-weight="800" font-size="74" letter-spacing="10" fill="#fff2d0" opacity=".9">ROSOŁEX</text></g></svg>`;
+
+document.getElementById('units').innerHTML=
+ unit({id:'sep',x:56,bottom:32,w:20,name:'Sęp Audytor',hp:55,max:55,svg:CAST.sep()})+
+ unit({id:'rob',x:73,bottom:26,w:26,name:'Jajo-Sortownik',hp:60,max:60,svg:CAST.robot(),sts:'<span>🛡 3</span>'})+
+ unit({id:'kan',x:89,bottom:32,w:17,name:'Księgowy Kanarek',hp:37,max:37,svg:CAST.kanarek()})+
+ unit({id:'h',cls:'hero',x:23,bottom:26,w:30,name:'Pyrtek',hp:88,max:100,svg:hero()});
+document.getElementById('top').innerHTML=topbar('Taras Prezesa');
+
+// pięć ziaren: z nieba po skosie w losowych wrogów
+const T=[[56,52],[73,48],[89,50]];const ks=[[0,.00],[2,.07],[1,.14],[0,.22],[2,.30]];
+let fx='';ks.forEach(([t,d],i)=>{const [tx,ty]=T[t];const sx=tx-26-i*3, sy=-6;fx+=`<i class="kern" style="--sx:${sx}%;--sy:${sy}%;--tx:${tx+(i%2?2:-2)}%;--ty:${ty+ (i%3)*2}%;--rot:${-62+i*3}deg;animation-delay:${d}s"></i>`});
+const star=`<svg viewBox="0 0 100 100">${[...Array(10)].map((_,i)=>{const a=i/10*Math.PI*2,l=i%2?32:48;return `<polygon points="${50+Math.cos(a-.2)*8},${50+Math.sin(a-.2)*8} ${50+Math.cos(a)*l},${50+Math.sin(a)*l} ${50+Math.cos(a+.2)*8},${50+Math.sin(a+.2)*8}" fill="${i%2?'#ffd23f':'#fff8d0'}"/>`}).join('')}<circle cx="50" cy="50" r="9" fill="#fff"/></svg>`;
+T.forEach(([x,y],i)=>{fx+=`<div class="spark" style="left:${x}%;top:${y+4}%;animation-delay:${i*.06}s">${star}</div><div class="dmg" style="left:${x+4}%;top:${y+8}%;animation-delay:${i*.06}s">${i==1?'2 × 14':'14'}</div>`});
+document.getElementById('fx').innerHTML=fx;
+
+const R=36,L=2*Math.PI*R;
+const kpi=(n,sk,lvl,rest)=>`<div class="kpi k${n}"><div class="dim" style="--rest:${rest}"></div><div class="ripple"></div><div class="k">${n}</div>
+ <div class="gauge"><svg class="g" viewBox="0 0 90 90"><circle class="trk" cx="45" cy="45" r="${R}"/><circle class="val" cx="45" cy="45" r="${R}"/></svg><div class="ic">${icon(sk)}</div></div>
+ <div class="tx"><div class="nm">${sname(sk)}</div><div class="st">${lvl}</div></div></div>`;
+document.getElementById('kpis').innerHTML=kpi(1,'grad','<b>GRAD</b> · używasz...','100%')+kpi(2,'lodowy','<b>GOTOWE</b> · poz. ★★','100%')+kpi(3,'pogotowie','ODNAWIA · <b>3,6 s</b>','100%');
+document.querySelectorAll('.kpi .val').forEach(e=>e.style.setProperty('--len',L));
+document.querySelector('.k2 .val').style.setProperty('--off',0);
+document.querySelector('.k3 .val').style.setProperty('--off',L*.55);
+document.querySelector('.k1 .val').style.setProperty('--len',L);
+freezeAt();
+</script>
+</body></html>

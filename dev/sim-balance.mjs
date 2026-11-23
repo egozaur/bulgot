@@ -95,6 +95,15 @@ function botInputs(setup) {
         case 'pianie': use = windup || alive.length >= 2 || alive.some(e => e.boss); break;
         case 'unik': use = windup || f.hp * 100 < f.S.maxHp * 45; break;
         case 'zagrzebanie': use = f.hp * 100 < f.S.maxHp * 55; break;
+        // Etap 4: nowe umiejętności
+        case 'fala': case 'lawina': case 'zwarcie': case 'dziobanie': case 'niespodzianka': case 'wypowiedzenie': case 'audyt': case 'bonus': case 'ostateczny': case 'zamrazarka': case 'wicher': case 'pobudka': case 'zemsta': use = alive.length > 0; break;
+        case 'spotkanie': use = alive.length > 0 && (windup || alive.some(e => e.boss) || alive.length >= 2); break;
+        case 'pulapka': use = alive.length > 0 && f.tick >= f.trapUntil; break;
+        case 'tarcza': use = windup || f.hp * 100 < f.S.maxHp * 75; break;
+        case 'kawa': use = f.hp * 100 < f.S.maxHp * 65; break;
+        case 'zupa': use = f.hp * 100 < f.S.maxHp * 75; break;
+        case 'echo': use = alive.length > 0 && f.skills.some((o, k) => k !== slot && f.tick >= o.cd && o.id !== 'echo'); break;
+        case 'obieg': use = alive.length > 0 && f.skills.some((o, k) => k !== slot && o.cd - f.tick > 40); break;
       }
       if (use) now.push(slot);
     });

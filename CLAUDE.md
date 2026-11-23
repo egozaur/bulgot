@@ -2,7 +2,7 @@
 
 ## Szybki start
 - **Bulgot** („Awans albo rosół”): solo roguelike w przeglądarce. Kurczak wspina się po piętrach fabryki rosołu (tryb szybki 10, pełny 20), co piętro wybiera 1 z 4 kafelków i walczy (auto-walka + 3 umiejętności aktywne). Pełny projekt: `DESIGN.md`.
-- Pliki: `index.html`, `app.js` (cały interfejs i walka na żywo), `art.js` (grafika SVG w kodzie), `audio.js` (dźwięk WebAudio), `api.js` (serwer albo tryb lokalny), `text.js` (teksty Kronikarza), `style.css`.
+- Pliki: `index.html`, `app.js` (cały interfejs i walka na żywo), `fx.js` (animacje 44 umiejętności), `scenes.js` (tła walki, 3 strefy), `fight.css` (pełnoekranowa walka), `art.js` (grafika SVG w kodzie), `audio.js` (dźwięk WebAudio), `api.js` (serwer albo tryb lokalny), `text.js` (teksty Kronikarza), `style.css`.
 - **`shared/*.js` jest GENEROWANE** (kopia silnika z serwera): `node dev/sync-engine.mjs`. Nie edytuj ręcznie.
 - Serwer: `../pl3y-server/src/games/bulgot/` (DO `BgPlayer`, `BgRanks`; trasy `/api/bg/*`). Testy: `cd ../pl3y-server && node --test test/all.test.js` (`test/games/bulgot/bulgot.suite.js`).
 - Lokalnie: `node C:\Users\Kurczak\tools\scripts\serve.mjs C:\Users\Kurczak\pl3y 8090` (z `LOBBY=…\egozaur.github.io`), otwórz `/bulgot/?local=1`. Bez `/auth.js` (lokalnie jest 404) gra sama przechodzi w tryb lokalny: ten sam kod serwera chodzi w przeglądarce, zapis w `localStorage`.
@@ -81,3 +81,5 @@ opis"`. Opisy statystyk (Atak, krytyk, pancerz…) z przeliczeniem na liczbach b
 - **Uwaga przy bossach**: mechaniki bossa to lista `mech` w danych, nie id. `out.boss` w odpowiedzi `fightfinish` to **slot** (`brojler|skubarka|prezes`), `out.bossVar` to konkretny wariant; teksty (`T.BOSS_INTRO`) mają tylko oryginały, reszta bierze `name/title/quote` z danych (`bossIntroOf`). W testach serwera `BOSS_POOL` jest ustawiony na oryginały.
 - **Dogrywka w kliencie**: schody i wieża pokazują maks. `rounds` pięter (`Math.min(r.round, n)`), licznik pięter pokazuje ∞, plakietka `.pill.endl`.
 - **Arena Duchów**: Duch bez cudzych graczy to „Twoje Odbicie” (bieżące statystyki). Duch w kliencie: `art.ghostArt(char)`, w walce jednostka `e.ghost`. Widok `view().pending.ghost` nie ma krzywej statystyk ani klucza gracza.
+
+- **Pełnoekranowa walka i 20 nowych umiejętności (2026-11-23)**: opis w `DESIGN.md` sekcja 22. Walka rysuje się w `#fightlayer` (poza `#app`, jednostka `--u`), plakietki HP bez kartki (nazwa + pasek z liczbą), kafelki umiejętności z pierścieniem cooldownu, tła stref w `scenes.js`. Każda umiejętność ma animację w `fx.js` (`RECIPES[id]`); **nowa umiejętność = wpis w `SKILLS` i `TILES` + ikona w `art.js` (`ICON`) + receptura w `fx.js` + obsługa w `botInputs` (`dev/sim-balance.mjs`), inaczej bot jej nie używa**. Animacje to tylko obraz (nie dotykaj silnika ani wejść). 44 umiejętności, pula 156 kafelków, `RUN_V = 14`. Test: `dev/e2e-walka.mjs`.

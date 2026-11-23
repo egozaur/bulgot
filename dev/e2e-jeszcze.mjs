@@ -47,7 +47,7 @@ check(/personelu/.test(await text('.preview .lab')), 'podgląd: drzwi dla person
 check(/Audyt/.test(await text('.sub .dsub')) && (await p.$$('.pill.dec')).length === 1, 'okólnik w podtytule piętra i na pasku');
 const buy = await text('.cards [data-act=buyoffer]');
 check(/Dokup za (9|18|30|45)/.test(buy), 'Audyt: ceny dokupienia +50% (' + buy.slice(0, 60) + ')');
-check(/za darmo/.test(await text('[data-act=reroll]')), 'Audyt: darmowy reroll');
+check(/za darmo|gratis/.test(await text('[data-act=reroll]')), 'Audyt: darmowy reroll');
 
 // 3. Wadliwa Partia i Lombard
 await patch('run', `v.offer = ['ziarno-mocy', 'twardy-grzebien', 'szybki-dziob', 'ostry-dziob']; v.flawAt = 0; v.tiles = ['opaska-rambo']; v.coins = 0;`);
@@ -64,7 +64,7 @@ check(s.run.flawed && s.run.flawed.length === 1 && s.run.flawed[0].flaw === null
 
 // 4. Walka: seria trzech umiejętności i reakcja
 await patch('run', `v.skills = [{ id: 'zgnile', lvl: 1 }, { id: 'darcie', lvl: 1 }, { id: 'granat', lvl: 1 }]; v.tiles.push('zgnile-jajo', 'darcie-pierza', 'jajeczny-granat'); v.door = null; v.round = 9; for (let i = 0; i < 20; i++) v.tiles.push('twardy-grzebien', 'pancerz-z-pierza'); v.hp = 900;`);
-await p.click('[data-act=tofight]'); await wait(1600);
+await p.click('[data-act=tofight]'); await wait(2600);
 await p.keyboard.press('1'); await p.keyboard.press('2'); await p.keyboard.press('3');
 let seria = false, react = false;
 for (let i = 0; i < 25 && !(seria && react); i++) {

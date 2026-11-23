@@ -55,7 +55,6 @@ s = await R(); ok(s.skills[0].lvl === 2 && s.phase === 'fight', 'ta sama umieję
 // --- nagroda po bossie (runda 6, mocny bohater), wybór kafelka bonusowego
 await patch("r.phase='fight'; r.fight={}; r.round=6; r.tiles=Array(12).fill('ziarno-mocy').concat(Array(10).fill('twardy-grzebien')); r.hp=999; r.skills=[{id:'granat',lvl:2}];"); await reload();
 await p.click('[data-act=tofight]'); await wait(800);
-await p.evaluate(() => { const sp = document.querySelector('[data-act=speed]'); sp.click(); sp.click(); });
 for (let i = 0; i < 100; i++) { await wait(400); if (await p.$('.inv, .modal')) break; }
 ok(await p.evaluate(() => /NOTA OBCIĄŻENIOWA/.test(document.querySelector('.inv-title').textContent)), 'faktura po bossie (nota obciążeniowa)');
 await p.evaluate(() => { document.querySelector('#invoice').innerHTML = ''; }); await wait(400);
@@ -63,7 +62,7 @@ s = await R(); ok(s.phase === 'badge' && s.pending && s.pending.offer.length ===
 await p.keyboard.press('1'); await wait(500);
 s = await R(); ok(s.phase === 'bonus' && s.offer.length === 3, 'faza bonusowa z 3 kafelkami');
 await p.keyboard.press('1'); await wait(500);
-s = await R(); ok(s.phase === 'offer' && s.round === 7, 'po bonusie runda 7 (jest ' + s.round + ')');
+s = await R(); ok((s.phase === 'offer' || s.phase === 'route') && s.round === 7, 'po bonusie runda 7, oferta albo wybór trasy (jest ' + s.round + ', faza ' + s.phase + ')');
 
 // --- porzucenie runu
 await p.click('[data-act=menu]'); await wait(200); await p.click('.modal [data-act=abandon]'); await wait(300);

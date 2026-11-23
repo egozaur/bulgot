@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Propozycja A: Open Space</title>
+<link rel="stylesheet" href="wspolne.css">
+<style>
+/* ===== A: OPEN SPACE: karty dostępu na szynie, Lodowy Dziób leci przez biuro ===== */
+.bgA{position:absolute;inset:0}
+.bgA svg{width:100%;height:100%}
+.vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 58%,transparent 52%,rgba(5,8,20,.62));z-index:5;pointer-events:none}
+.haze{position:absolute;left:0;right:0;top:36%;height:26%;background:linear-gradient(transparent,rgba(255,170,130,.12),transparent);z-index:2;pointer-events:none}
+
+/* --- szyna i karty dostępu --- */
+.dock{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(96vw,150vh);height:30vh;z-index:30}
+.rail{position:absolute;left:0;right:0;bottom:19.8vh;height:1.8vh;border-radius:99px;background:linear-gradient(#e6ebf2,#8f99ab 55%,#59627a);box-shadow:0 .6vh 1.4vh rgba(0,0,0,.5)}
+.rail:after{content:"";position:absolute;left:4%;right:4%;top:.5vh;height:.4vh;border-radius:9px;background:rgba(255,255,255,.55)}
+.gdak{position:absolute;left:50%;bottom:22.4vh;transform:translateX(-50%);display:flex;align-items:center;gap:1.2vh;padding:.7vh 1.6vh;border-radius:99px;background:rgba(15,18,32,.78);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(5px);font-weight:800;font-size:1.3vh;letter-spacing:.18em;color:#cfd6f5}
+.gdak .seg{display:flex;gap:.5vh}.gdak .seg i{width:6vh;height:1vh;border-radius:9px;background:rgba(255,255,255,.14);overflow:hidden;position:relative}
+.gdak .seg i b{position:absolute;inset:0;background:linear-gradient(90deg,#ffd23f,#ff9a2e)}
+.gdak .seg i:nth-child(1) b{animation:g1 8s infinite}.gdak .seg i:nth-child(2) b{animation:g2 8s infinite}.gdak .seg i:nth-child(3) b{width:0}
+@keyframes g1{0%,24%{width:0}25%,100%{width:100%}}@keyframes g2{0%,35%{width:0}36%,100%{width:55%}}
+.gdak em{font-style:normal;color:#ffd23f;font-size:1.6vh}
+
+.card{position:absolute;bottom:3.6vh;width:27vh;height:15.5vh;transform-origin:50% 0;z-index:2}
+.card .strap{position:absolute;left:50%;bottom:100%;width:7vh;height:3.4vh;transform:translateX(-50%);clip-path:polygon(18% 0,82% 0,100% 100%,0 100%);background:repeating-linear-gradient(90deg,#c63a2a 0 2.2vh,#a62c1f 2.2vh 2.4vh)}
+.card .clip{position:absolute;left:50%;bottom:calc(100% + 2.4vh);width:3.2vh;height:2.6vh;transform:translateX(-50%);border-radius:.6vh;background:linear-gradient(#f1f3f7,#8b93a6);border:.2vh solid #4b5266}
+.card .face{position:absolute;inset:0;border-radius:1.6vh;background:linear-gradient(#fbf8ef,#eae4d2);border:.35vh solid #1b1b22;box-shadow:0 .7vh 0 #1b1b22,0 1.6vh 2.4vh rgba(0,0,0,.45);overflow:hidden}
+.card .band{position:absolute;left:0;right:0;top:0;height:3.6vh;background:var(--c);display:flex;align-items:center;justify-content:space-between;padding:0 3.4vh 0 3.6vh;font:800 1.15vh var(--mono);letter-spacing:.14em;color:#fff}
+.card .band s{text-decoration:none;opacity:.85}
+.card .photo{position:absolute;left:1.3vh;top:4.7vh;width:8.4vh;height:8.4vh;border-radius:1.1vh;background:radial-gradient(circle at 50% 35%,#fff,#c7d0df);border:.25vh solid #1b1b22;display:grid;place-items:center}
+.card .photo svg{width:7vh;height:7vh}
+.card .nm{position:absolute;left:10.6vh;top:4.6vh;right:1vh;font-family:var(--disp);font-weight:700;font-size:2.15vh;line-height:1.02;color:#1b1b22}
+.card .meta{position:absolute;left:10.6vh;bottom:2.9vh;font:700 1.15vh var(--mono);color:#5b5648}
+.card .bc{position:absolute;left:10.6vh;right:1.2vh;bottom:1vh;height:1.4vh;background:repeating-linear-gradient(90deg,#1b1b22 0 .25vh,transparent .25vh .5vh,#1b1b22 .5vh .9vh,transparent .9vh 1.1vh)}
+.card .key{position:absolute;left:-1.4vh;top:-1.4vh;width:4.2vh;height:4.2vh;border-radius:50%;background:var(--gold);border:.35vh solid #1b1b22;display:grid;place-items:center;font:800 2vh var(--mono);color:#1c1100;z-index:5;box-shadow:0 .4vh 0 #1b1b22}
+.card .led{position:absolute;right:1.1vh;top:1.1vh;width:1.3vh;height:1.3vh;border-radius:50%;background:#7dff9f;box-shadow:0 0 1.4vh #7dff9f;z-index:3}
+.card .cd{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(rgba(20,28,60,.45),rgba(20,28,60,.72));z-index:4}
+.card .cd:before{content:"";position:absolute;left:0;right:0;top:0;height:.35vh;background:#9fd8ff;box-shadow:0 0 1.2vh #9fd8ff}
+.card .state{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%) rotate(-6deg);z-index:6;text-align:center;font:800 2vh var(--mono);letter-spacing:.2em;color:#e84a3a;border:.4vh solid #e84a3a;padding:.4vh 0;opacity:0;margin:0 2vh;background:rgba(255,255,255,.35)}
+.c1{left:calc(50% - 41vh)}.c2{left:calc(50% - 13.5vh)}.c3{left:calc(50% + 14vh)}
+.c1 .face{--c:#e4572e}.c2 .face{--c:#2f8fd6}.c3 .face{--c:#2a9d6f}
+.c1 .led{animation:blink 1.1s infinite}
+@keyframes blink{50%{opacity:.35}}
+/* 1: gotowa (świeci), 2: właśnie użyta (wciśnięta), 3: w trakcie odnowienia */
+.c1 .face{box-shadow:0 .7vh 0 #1b1b22,0 0 2.6vh rgba(255,200,61,.75),0 1.6vh 2.4vh rgba(0,0,0,.45);border-color:#ffd23f}
+.c2{animation:press 8s infinite}.c2 .cd{animation:cdA 8s infinite}.c2 .led{animation:led2 8s infinite}.c2 .state{animation:stamp2 8s infinite}
+@keyframes press{0%,24%{transform:none}25.5%{transform:translateY(1.2vh) scale(.95)}29%{transform:translateY(.4vh) scale(.985)}33%,100%{transform:none}}
+@keyframes cdA{0%,25%{height:0}25.5%{height:100%}100%{height:0}}
+@keyframes led2{0%,24%{background:#7dff9f;box-shadow:0 0 1.4vh #7dff9f}25%,100%{background:#ff6a52;box-shadow:0 0 1.4vh #ff6a52}}
+@keyframes stamp2{0%,25%{opacity:0;transform:translateY(-50%) rotate(-6deg) scale(1.9)}27%,34%{opacity:1;transform:translateY(-50%) rotate(-6deg) scale(1)}40%,100%{opacity:0}}
+.c3 .cd{height:46%}.c3 .led{background:#ff6a52;box-shadow:0 0 1.4vh #ff6a52;animation:none}
+
+/* --- Lodowy Dziób: sopel leci od kurczaka do Sępa Audytora --- */
+#shard{position:absolute;left:32%;bottom:41vh;width:20vh;height:6vh;z-index:22;opacity:0;animation:fly 8s infinite;transform-origin:50% 50%}
+#shard svg{position:absolute;right:0;top:0;width:9vh;height:6vh;filter:drop-shadow(0 0 1.4vh #8fd8ff)}
+#shard .trail{position:absolute;left:0;right:7vh;top:2.2vh;height:1.8vh;border-radius:99px;background:linear-gradient(90deg,transparent,rgba(160,225,255,.75));filter:blur(.5vh)}
+#shard .snow i{position:absolute;width:.9vh;height:.9vh;background:#e8f8ff;border-radius:50%;box-shadow:0 0 .8vh #bfeaff}
+@keyframes fly{0%,26%{left:32%;opacity:0}27%{opacity:1}37.5%{left:63%;opacity:1}38.2%,100%{left:65%;opacity:0}}
+.burst{position:absolute;left:71.5%;bottom:40vh;width:28vh;height:28vh;margin:-14vh 0 0 -14vh;z-index:24;opacity:0;animation:burst 8s infinite}
+.burst svg{width:100%;height:100%}
+@keyframes burst{0%,37.4%{opacity:0;transform:scale(.2)}38.4%{opacity:1;transform:scale(1)}44%{opacity:.85;transform:scale(1.25)}50%,100%{opacity:0;transform:scale(1.4)}}
+.ringw{position:absolute;left:71.5%;bottom:40vh;width:12vh;height:12vh;margin:-6vh 0 0 -6vh;border-radius:50%;border:.5vh solid #dff6ff;z-index:23;opacity:0;animation:ringw 8s infinite}
+@keyframes ringw{0%,37.4%{opacity:0;transform:scale(.3)}38.4%{opacity:1}46%,100%{opacity:0;transform:scale(3.2)}}
+#sep .sprite{animation:bob 1.9s ease-in-out infinite,frozen 8s infinite}
+@keyframes frozen{0%,37.4%{filter:none;transform:none}38.4%{filter:brightness(3) saturate(0);transform:translateX(2.2vh) scale(1.08,.94)}42%{filter:sepia(1) hue-rotate(158deg) saturate(2.6) brightness(1.15);transform:translateX(.6vh)}80%{filter:sepia(1) hue-rotate(158deg) saturate(2.6) brightness(1.15)}92%,100%{filter:none}}
+.iceat{position:absolute;left:50%;bottom:-.6vh;width:130%;transform:translateX(-50%);z-index:3;opacity:0;animation:iceat 8s infinite;pointer-events:none}
+@keyframes iceat{0%,39%{opacity:0;transform:translateX(-50%) scale(.3)}42%{opacity:1;transform:translateX(-50%) scale(1)}80%{opacity:1}92%,100%{opacity:0}}
+.pop{position:absolute;left:60.5%;bottom:56vh;z-index:26;opacity:0;animation:pop 8s infinite;text-align:center}
+.pop b{display:block;font-family:var(--disp);font-size:7vh;color:#ffd23f;text-shadow:0 .5vh 0 #5a3c00,0 0 2vh rgba(255,210,63,.7)}
+.pop small{display:inline-flex;align-items:center;gap:.6vh;margin-top:.4vh;padding:.4vh 1.2vh;border-radius:99px;background:#0f2a3d;border:.2vh solid #8fd8ff;color:#bfeaff;font:800 1.7vh var(--mono)}
+.pop small svg{width:2.4vh;height:2.4vh}
+@keyframes pop{0%,38%{opacity:0;transform:translateY(0) scale(.4)}40%{opacity:1;transform:translateY(-1vh) scale(1.35)}43%{transform:translateY(-2vh) scale(1)}54%{opacity:1;transform:translateY(-8vh)}60%,100%{opacity:0;transform:translateY(-10vh)}}
+.hero .sprite{animation:bob 1.6s ease-in-out infinite,cast 8s infinite!important}
+@keyframes cast{0%,24%{transform:none}27%{transform:translateX(5vh) rotate(7deg)}34%,100%{transform:none}}
+.chill{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse at 72% 52%,rgba(150,220,255,.28),transparent 45%);opacity:0;animation:chill 8s infinite}
+@keyframes chill{0%,38%{opacity:0}42%,70%{opacity:1}90%,100%{opacity:0}}
+</style></head>
+<body>
+<div class="fs" id="fs">
+  <div class="bgA" id="bg"></div><div class="haze"></div>
+  <div class="layer" id="units"></div>
+  <div class="chill"></div>
+  <div class="layer" id="fx"></div>
+  <div class="vig"></div>
+  <div id="top"></div>
+  <div class="dock" id="dock"></div>
+  <div class="kron">„Sęp Audytor sprawdza, czy zimny dziób mieści się w budżecie.”</div>
+  <div class="prop">PROPOZYCJA A · OPEN SPACE</div>
+</div>
+<script type="module">
+import {unit,st,topbar,icon,sname,hero,CAST,sti,freezeAt} from './wspolne.js';
+
+/* ---- tło: open space o zmierzchu, widok z perspektywą ---- */
+const W=1920,H=1080,VX=960,VY=500;
+let s=7;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647};
+let sky='';for(let i=0;i<46;i++){const x=i*44-20,h=90+rnd()*230,w=30+rnd()*36;sky+=`<rect x="${x}" y="${500-h}" width="${w}" height="${h}" fill="${rnd()<.5?'#1a1f45':'#222857'}"/>`;
+  for(let j=0;j<h/18;j++)if(rnd()<.35)sky+=`<rect x="${x+4+(j%3)*10}" y="${500-h+8+Math.floor(j/1)*14}" width="5" height="7" fill="${rnd()<.6?'#ffd98a':'#9fd8ff'}" opacity=".85"/>`;}
+const lights=[[-1,0],[1,0]].map(()=>'').join('');
+let ceil='';for(const r of [0,1,2]){const y0=[40,150,262][r],y1=[88,186,284][r];for(const c of [-3,-2,-1,0,1,2,3]){
+  const k=(y0-VY)/(0-VY),k2=(y1-VY)/(0-VY);const x0=VX+c*340*k*0+c*(1+ (VY-y0)/VY*1.1)*130,x1=VX+c*(1+(VY-y1)/VY*1.1)*130;
+  const w0=(VY-y0)*0.18,w1=(VY-y1)*0.18;ceil+=`<polygon points="${x0-w0},${y0} ${x0+w0},${y0} ${x1+w1},${y1} ${x1-w1},${y1}" fill="#f3f6ff" opacity="${.55-r*.1}"/>`}}
+let floor='';for(let i=-14;i<=14;i++){floor+=`<line x1="${VX}" y1="${VY}" x2="${VX+i*260}" y2="${H}" stroke="#0e1530" stroke-opacity=".35" stroke-width="2"/>`}
+for(let i=0;i<14;i++){const y=VY+Math.pow(i/13,2.1)*(H-VY);floor+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#0e1530" stroke-opacity=".3" stroke-width="2"/>`}
+const desk=(cx,y,sc,flip)=>{const w=300*sc,h=60*sc,mx=flip?-1:1;return `<g transform="translate(${cx} ${y})">
+  <ellipse cx="0" cy="${h*1.15}" rx="${w*.62}" ry="${h*.32}" fill="#000" opacity=".28"/>
+  <polygon points="${-w/2},0 ${w/2},0 ${w/2+14*sc},${h} ${-w/2-14*sc},${h}" fill="#c9cdd8"/><rect x="${-w/2-14*sc}" y="${h}" width="${w+28*sc}" height="${12*sc}" fill="#8e93a6"/>
+  <rect x="${-w*.22}" y="${-h*1.15}" width="${w*.44}" height="${h*1.1}" rx="${4*sc}" fill="#1b2037"/><rect x="${-w*.2}" y="${-h*1.08}" width="${w*.4}" height="${h*.92}" fill="#3b82d6"/>
+  <rect x="${-w*.2}" y="${-h*1.08}" width="${w*.4}" height="${h*.92}" fill="url(#scr)"/>
+  <rect x="${-w*.3}" y="${h*.32}" width="${w*.6}" height="${h*.12}" rx="2" fill="#4c5268"/>
+  <g transform="translate(${mx*w*.62} ${h*1.5})"><ellipse cx="0" cy="${-h*.1}" rx="${w*.12}" ry="${h*.3}" fill="#232a44"/><rect x="${-w*.1}" y="${-h*1.7}" width="${w*.2}" height="${h*1.5}" rx="${6*sc}" fill="#2c3552"/></g></g>`};
+let desks='';[[560,.5],[610,.62],[700,.8],[830,1.08],[1010,1.45]].forEach(([y,sc],i)=>{desks+=desk(180+i*8-(sc*60),y,sc,false)+desk(1740-i*8+(sc*60),y,sc,true)});
+const plant=(x,y,sc)=>`<g transform="translate(${x} ${y}) scale(${sc})"><rect x="-26" y="-30" width="52" height="46" rx="8" fill="#e8e3d4" stroke="#2b1a12" stroke-width="3"/><path d="M0 -30 C-20 -80 -50 -70 -56 -100 C-30 -96 -8 -80 0 -30 M0 -30 C20 -90 50 -80 62 -112 C32 -108 6 -84 0 -30 M0 -30 C-4 -96 6 -120 0 -140 C18 -120 12 -80 0 -30" fill="#3f9f58" stroke="#2b1a12" stroke-width="3" stroke-linejoin="round"/></g>`;
+document.getElementById('bg').innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice"><defs>
+ <linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2a6e"/><stop offset=".55" stop-color="#8a4f86"/><stop offset="1" stop-color="#f09a72"/></linearGradient>
+ <linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#47536f"/><stop offset="1" stop-color="#2a3350"/></linearGradient>
+ <linearGradient id="cl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#171a27"/><stop offset="1" stop-color="#2a2f44"/></linearGradient>
+ <linearGradient id="scr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fc4ff" stop-opacity=".9"/><stop offset="1" stop-color="#2c5db3" stop-opacity=".2"/></linearGradient></defs>
+ <rect width="${W}" height="${VY}" fill="url(#sk)"/><g transform="translate(0 0)">${sky}</g>
+ <rect y="0" width="${W}" height="330" fill="url(#cl)"/>${ceil}
+ <rect y="${VY-4}" width="${W}" height="${H-VY+4}" fill="url(#fl)"/>${floor}
+ ${[...Array(9)].map((_,i)=>`<rect x="${i*240-6}" y="330" width="14" height="${VY-326}" fill="#12162a"/>`).join('')}
+ <rect y="${VY-14}" width="${W}" height="16" fill="#0e1226"/>
+ ${desks}${plant(60,640,1.05)}${plant(1860,640,1.05)}
+ <text x="960" y="396" text-anchor="middle" font-family="Baloo 2,Impact" font-weight="800" font-size="30" letter-spacing="14" fill="#fff" opacity=".18">KORPORACJA ROSOŁOWA</text></svg>`;
+
+/* ---- jednostki: prawdziwa grafika z gry ---- */
+document.getElementById('units').innerHTML=
+ unit({id:'k',x:57,bottom:36,w:16,name:'Księgowy Kanarek',hp:37,max:37,svg:CAST.kanarek()})+
+ unit({id:'kot',x:89,bottom:31,w:20,name:'Kot Ochroniarz',hp:39,max:39,svg:CAST.kot()})+
+ unit({id:'sep',x:73,bottom:25,w:28,name:'Sęp Audytor',hp:41,max:55,svg:CAST.sep(),sts:st('frost',3)})+
+ unit({id:'h',cls:'hero',x:22,bottom:27,w:29,name:'Pyrtek',hp:88,max:100,svg:hero()});
+document.getElementById('top').innerHTML=topbar();
+
+/* ---- efekty Lodowego Dzioba ---- */
+const shardSvg=`<svg viewBox="0 0 90 60"><polygon points="0,30 62,4 90,30 62,56" fill="#bfeaff" stroke="#2b1a12" stroke-width="3" stroke-linejoin="round"/><polygon points="8,30 62,12 78,30" fill="#fff" opacity=".85"/><polygon points="20,30 62,48 78,30" fill="#6bc3f2" opacity=".85"/><line x1="10" y1="30" x2="84" y2="30" stroke="#2b1a12" stroke-width="2" opacity=".5"/></svg>`;
+const spikes=[...Array(12)].map((_,i)=>{const a=i/12*Math.PI*2,l=i%2?46:70;return `<polygon points="${100+Math.cos(a-.12)*14},${100+Math.sin(a-.12)*14} ${100+Math.cos(a)*l},${100+Math.sin(a)*l} ${100+Math.cos(a+.12)*14},${100+Math.sin(a+.12)*14}" fill="${i%2?'#9fe0ff':'#fff'}" stroke="#6bc3f2" stroke-width="1.5" stroke-linejoin="round"/>`}).join('');
+const crystals=`<svg viewBox="0 0 300 80">${[[30,60,28,50],[78,66,20,36],[130,70,36,60],[190,66,22,40],[240,62,30,52],[272,68,16,28]].map(([x,y,w,h])=>`<polygon points="${x-w/2},${y} ${x},${y-h} ${x+w/2},${y}" fill="#bfeaff" stroke="#2b1a12" stroke-width="3" stroke-linejoin="round"/><polygon points="${x-w/4},${y} ${x},${y-h} ${x},${y}" fill="#fff" opacity=".8"/>`).join('')}</svg>`;
+document.getElementById('fx').innerHTML=`
+ <div id="shard"><div class="trail"></div><div class="snow"><i style="left:12%;top:.4vh"></i><i style="left:30%;top:4.6vh"></i><i style="left:48%;top:.2vh"></i><i style="left:22%;top:2.5vh"></i></div>${shardSvg}</div>
+ <div class="ringw"></div><div class="burst"><svg viewBox="0 0 200 200">${spikes}<circle cx="100" cy="100" r="16" fill="#fff"/></svg></div>
+ <div class="pop"><b>69!</b><small>${sti('frost')}+3 Mróz</small></div>`;
+document.querySelector('#sep').insertAdjacentHTML('beforeend',`<div class="iceat">${crystals}</div>`);
+
+/* ---- karty dostępu zamiast przycisków ---- */
+const card=(n,sk,lvl,cd)=>`<div class="card c${n}"><div class="strap"></div><div class="clip"></div><div class="key">${n}</div><div class="face">
+  <div class="band"><span>ROSOŁEX S.A.</span><s>ID-0${n}</s></div><div class="led"></div>
+  <div class="photo">${icon(sk)}</div><div class="nm">${sname(sk)}</div><div class="meta">${lvl}</div><div class="bc"></div>
+  <div class="cd"></div></div><div class="state">ZESKANOWANO</div></div>`;
+document.getElementById('dock').innerHTML=`<div class="rail"></div>
+ <div class="gdak">OKNO GDAKANIA <div class="seg"><i><b></b></i><i><b></b></i><i><b></b></i></div><em>×2</em></div>
+ ${card(1,'chlust','Poziom ★ · gotowa')}${card(2,'lodowy','Poziom ★★ · odnawia się')}${card(3,'pogotowie','Poziom ★ · odnawia się')}`;
+freezeAt();
+</script>
+</body></html>

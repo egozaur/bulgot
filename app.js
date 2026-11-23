@@ -8,6 +8,8 @@ import * as T from './text.js';
 import * as snd from './audio.js';
 import { initTip } from './tip.js';
 import { failFacts, pickFacts, winFacts } from './fakty.js';
+import { fightScene, sceneClouds } from './scenes.js';
+import { castFx, markHit, trapSnap, SK_COLOR } from './fx.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -720,69 +722,88 @@ function showCrate(c) {
 }
 
 // ---------- walka na żywo ----------
+// ---------- walka na pełnym ekranie (Etap 1 przebudowy, 2026-11-23) ----------
+// Cały ekran gry znika, zostaje scena strefy (scenes.js), cienki pasek u góry i szerokie szklane kafelki umiejętności na dole.
+// Układ liczymy w jednostkach --u (= 1% wysokości sceny, a na wąskich ekranach szerokości): postacie, plakietki i efekty skalują się razem.
+const HX = 23;   // środek bohatera w % szerokości (pływające napisy bohatera)
+const HERO_POS = [HX, 26, 30], COMP_POS = [9, 24, 13];
+const ENEMY_LAYOUT = {
+  1: [[76, 25, 28]],
+  2: [[64, 30, 23], [84, 25, 26]],
+  3: [[56, 32, 20], [73, 26, 26], [89, 32, 17]],
+  4: [[50, 34, 16], [64, 28, 20], [77, 24, 23], [91, 31, 16]],
+  5: [[46, 35, 14], [58, 30, 17], [70, 26, 20], [82, 23, 22], [93, 31, 14]],
+};
+const BOSS_POS = [82, 20, 39], MINION_POS = [[50, 31, 13], [62, 25, 13], [44, 24, 12], [56, 34, 12], [68, 29, 12]];
+const RING = 2 * Math.PI * 36;
 function startFight(setup) {
   const run = G.run, f = new Fight(setup);
-  const F = G.fight = { setup, f, inputs: [], queue: [], acc: 0, last: 0, paused: false, finishing: false, units: new Map(), raf: 0, bossBanner: false };
+  const F = G.fight = { setup, f, inputs: [], queue: [], acc: 0, last: 0, paused: false, finishing: false, units: new Map(), raf: 0, bossBanner: false, fxDelay: null, hitDelay: new Map(), trapEl: null, domeEl: null };
   G.screen = 'fight';
   const boss = setup.enemies.find(e => e.boss);
-  $('#screen').innerHTML = `<div class="run" style="grid-template-columns:minmax(0,1fr);max-width:1240px">${topbarHTML()}
-    <main class="stage fightwrap">
-      <div class="arena z${setup.zone}" id="arena"><div class="pl pl-bg">${art.arenaBg(setup.zone)}</div><div class="pl pl-haze" aria-hidden="true"></div><div class="pl pl-fore" aria-hidden="true"></div><div class="vign"></div>
-        <div class="hud"><div class="box">Piętro ${setup.round} · ${esc(T.ZONE_NAMES[setup.zone])}</div>
-          <div class="box timer" id="timer"><span id="tt">0:00</span><div class="tb"><i id="tbi" style="width:0"></i><u></u></div></div>
-          <div class="ctl"><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button></div></div>
-        <div id="units"></div><div id="fxl"></div></div>
-      <div class="console"><div class="gdak" id="gdak" data-tip="Okno Gdakania&#10;Użyj kolejnej umiejętności w ciągu 1,5 s po poprzedniej. 2. w serii zadaje +20% obrażeń, 3. +50%. Trzy różne umiejętności pod rząd to Pełna Kurza Seria: dodatkowo ogłuszenie wrogów na 1 s."><span class="gl">OKNO GDAKANIA</span><div class="gbar"><i id="gdaki"></i></div><b id="gdakn">–</b></div><div class="skillbar" id="skillbar"></div></div>
-      <div class="kron" id="kline">${esc(boss ? bossIntroOf(boss.boss).quote : floorKron())}</div>
-    </main></div>`;
-  F.arena = $('#arena');
+  $('#screen').innerHTML = '';
+  const old = $('#fightlayer'); if (old) old.remove();
+  const layer = document.createElement('div'); layer.id = 'fightlayer';
+  layer.innerHTML = `<div class="arena z${setup.zone}" id="arena"><div class="pl pl-bg">${fightScene(setup.zone)}</div>${sceneClouds(setup.zone)}<div class="pl pl-haze" aria-hidden="true"></div><div class="pl pl-fore" aria-hidden="true"></div><div class="vign"></div>
+    <div id="units"></div><div id="fxl"></div><div id="fxs"></div>
+    <div class="fhud"><div class="fl"><span class="hchip${boss ? ' boss' : ''}">Piętro ${setup.round}${boss ? ' · BOSS' : ''} · ${esc(T.ZONE_NAMES[setup.zone])}</span>${setup.tpl && D.FLOOR_TPL[setup.tpl] ? `<span class="hchip">${esc(D.FLOOR_TPL[setup.tpl].name)}</span>` : ''}</div>
+      <div class="timer" id="timer"><span id="tt">0:00</span><div class="tb"><i id="tbi" style="width:0"></i><u></u></div></div>
+      <div class="ctl"><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button><button data-act="menu" title="Menu (Esc)">Menu</button></div></div>
+    <div class="fcon"><div class="gdak" id="gdak" data-tip="Okno Gdakania&#10;Użyj kolejnej umiejętności w ciągu 1,5 s po poprzedniej. 2. w serii zadaje +20% obrażeń, 3. +50%. Trzy różne umiejętności pod rząd to Pełna Kurza Seria: dodatkowo ogłuszenie wrogów na 1 s."><span class="gl">SERIA</span><span class="gseg" id="gseg"><i></i><i></i><i></i></span><b id="gdakn">–</b><span class="gbar"><i id="gdaki"></i></span></div><div class="skillbar" id="skillbar"></div></div>
+    <div class="kron" id="kline">${esc(boss ? bossIntroOf(boss.boss).quote : floorKron())}</div></div>`;
+  document.body.appendChild(layer);
+  F.arena = $('#arena'); F.L = $('#fxs');
   // lekka paralaksa: tło, mgiełka i pierwszy plan przesuwają się za kursorem w różnym tempie (bez wpływu na walkę)
   if (!REDUCED.matches) F.arena.addEventListener('pointermove', ev => { const r = F.arena.getBoundingClientRect(); F.arena.style.setProperty('--px', ((ev.clientX - r.left) / r.width - .5).toFixed(3)); F.arena.style.setProperty('--py', ((ev.clientY - r.top) / r.height - .5).toFixed(3)); });
-  makeUnit('hero', { name: D.CHARS[run.char].name, art: art.heroArt(run.char, run.form), left: 17 });
-  if (f.comp) { const cc = f.loadout.companion; makeUnit('comp', { name: compForm(cc), art: art.companionArt(cc.id), left: 5 }); }
+  makeUnit('hero', { name: D.CHARS[run.char].name, art: art.heroArt(run.char, run.form), pos: HERO_POS });
+  if (f.comp) { const cc = f.loadout.companion; makeUnit('comp', { name: compForm(cc), art: art.companionArt(cc.id), pos: COMP_POS }); }
   for (const e of f.enemies) makeUnit(e.uid, { e, name: e.name, art: enemyFig(e) });
   layoutUnits(); buildSkillbar(); updateUI(true);
   if (boss) { bossIntro(boss); snd.sfx('boss'); } else if (setup.tpl && D.FLOOR_TPL[setup.tpl]) banner(D.FLOOR_TPL[setup.tpl].name + '!', D.FLOOR_TPL[setup.tpl].text, false); else banner('Walka!', '', false);
   F.last = 0; F.raf = requestAnimationFrame(frame);
 }
 
+function placeUnit(el, pos) { const x = innerWidth <= 760 ? 11 + pos[0] * .78 : pos[0]; el.style.left = x + '%'; el.style.bottom = `calc(var(--u) * ${pos[1]} + var(--ub, 0px))`; el.style.width = `calc(var(--u) * ${pos[2]})`; return x; }
 function makeUnit(key, o) {
   const F = G.fight, e = o.e, boss = e && e.boss, small = e && e.minion;
   const el = document.createElement('div');
   el.className = `unit ${key === 'hero' ? 'hero' : key === 'comp' ? 'ally' : 'enemy'} ${boss ? 'boss' : ''} ${small ? 'small' : ''} idle`;
-  el.innerHTML = `<div class="plate"><div class="nm">${esc(o.name)}</div>${e && e.affixes ? `<div class="affl">${e.affixes.map(a => esc(D.AFFIXES[a].name)).join(' · ')}</div>` : ''}<div class="hpbar ${key === 'hero' ? '' : 'enemy'}"><i></i><b></b></div><div class="sts"></div></div><div class="sprite">${o.art}</div><div class="fxs"></div>`;
-  if (o.left != null) el.style.left = o.left + '%';
+  const sub = boss ? bossIntroOf(e.boss).title.split(', ').slice(1).join(', ') : '';
+  el.innerHTML = `<div class="plate"><div class="nm">${esc(o.name)}</div>${sub ? `<div class="sub">${esc(sub)}</div>` : ''}${e && e.affixes ? `<div class="affl">${e.affixes.map(a => esc(D.AFFIXES[a].name)).join(' · ')}</div>` : ''}<div class="hpbar ${key === 'hero' ? '' : 'enemy'}"><i></i><b></b></div><div class="sts"></div></div><div class="shadow"></div><div class="sprite">${o.art}</div><div class="fxs"></div>`;
+  if (o.pos) placeUnit(el, o.pos);
   $('#units').appendChild(el);
-  F.units.set(key, { el, spr: el.querySelector('.sprite'), bar: el.querySelector('.hpbar i'), txt: el.querySelector('.hpbar b'), fx: el.querySelector('.fxs'), sts: el.querySelector('.sts'), e, x: o.left || 0, flags: {} });
+  F.units.set(key, { el, spr: el.querySelector('.sprite'), bar: el.querySelector('.hpbar i'), txt: el.querySelector('.hpbar b'), fx: el.querySelector('.fxs'), sts: el.querySelector('.sts'), e, x: o.pos ? placeUnit(el, o.pos) : 0, flags: {} });
   return F.units.get(key);
 }
 function layoutUnits() {
-  const F = G.fight, alive = F.f.enemies.filter(e => !e.dead), hasBoss = alive.some(e => e.boss);
-  let k = 0, idx = 0;
-  for (const e of alive) {
-    const u = F.units.get(e.uid); if (!u) continue;
-    let x;
-    if (hasBoss) x = e.boss ? 84 : 38 + (k++) * 10;
-    else { const n = alive.length; x = ({ 1: [72], 2: [60, 80], 3: [48, 66, 84] }[n] || [48, 66, 84])[idx]; }
-    idx++; u.x = x; u.el.style.left = x + '%';
+  const F = G.fight, alive = F.f.enemies.filter(e => !e.dead), boss = alive.find(e => e.boss);
+  if (boss) {
+    let k = 0;
+    for (const e of alive) { const u = F.units.get(e.uid); if (!u) continue; const pos = e.boss ? BOSS_POS : MINION_POS[Math.min(k++, MINION_POS.length - 1)]; u.x = placeUnit(u.el, pos); }
+    return;
   }
+  const L = ENEMY_LAYOUT[Math.max(1, Math.min(5, alive.length))];
+  alive.forEach((e, i) => { const u = F.units.get(e.uid); if (!u) return; const pos = L[Math.min(i, L.length - 1)]; u.x = placeUnit(u.el, pos); });
 }
 function buildSkillbar() {
   const F = G.fight, sks = F.f.skills;
   const html = Array.from({ length: 3 }, (_, i) => {
     const s = sks[i];
-    if (!s) return `<div class="sk none">slot ${i + 1} wolny</div>`;
+    if (!s) return `<div class="sk none"><span class="kbadge">${i + 1}</span>wolny slot</div>`;
     const def = D.SKILLS[s.id], tile = D.TILES.find(t => t.skill === s.id);
-    return `<button class="sk" data-act="useskill" data-v="${i}" id="sk${i}"><span class="kbadge">${i + 1}</span>${art.tileIcon(tile.id)}<div class="sn">${esc(s.lvl >= 3 ? def.muts[(s.mut || 1) - 1].name : def.name)}${s.lvl >= 3 ? ' ★★' : s.lvl >= 2 ? ' ★' : ''}</div><span class="cdv"></span><span class="cdt"></span></button>`;
+    return `<button class="sk" data-act="useskill" data-v="${i}" id="sk${i}" style="--c:${SK_COLOR[s.id] || '#ffd23f'}"><span class="kbadge">${i + 1}</span>
+      <span class="gauge"><svg class="g" viewBox="0 0 90 90" aria-hidden="true"><circle class="trk" cx="45" cy="45" r="36"/><circle class="val" cx="45" cy="45" r="36"/></svg><span class="ic">${art.tileIcon(tile.id)}</span></span>
+      <span class="tx"><span class="sn">${esc(s.lvl >= 3 ? def.muts[(s.mut || 1) - 1].name : def.name)}</span><span class="sst">GOTOWE</span></span><span class="rip"></span></button>`;
   }).join('');
   $('#skillbar').innerHTML = html;
 }
+
 function banner(text, sub, bad) {
   const b = document.createElement('div'); b.className = 'banner' + (bad ? ' bad' : '');
   b.innerHTML = `<b>${esc(text)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}`;
   $('#arena').appendChild(b); setTimeout(() => b.remove(), 1850);
 }
-function pop(text, cls, x, bottom = 60) {
+function pop(text, cls, x, bottom = 46) {
   const d = document.createElement('div'); d.className = 'dmg ' + cls; d.textContent = text;
   d.style.left = (x + (Math.random() * 6 - 3)) + '%'; d.style.bottom = (bottom + Math.random() * 6) + '%';
   $('#fxl').appendChild(d); setTimeout(() => d.remove(), 1000);
@@ -814,22 +835,72 @@ function burst(u, kind) {
   u.el.appendChild(b); setTimeout(() => b.remove(), 900);
 }
 function shake() { const a = $('#arena'); if (!a) return; a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake'); }
+// wysokość środka sylwetki w % sceny (tam pokazujemy liczby obrażeń)
+const ub = u => { const a = G.fight.arena.getBoundingClientRect(), r = u.spr.getBoundingClientRect(); return Math.max(8, Math.min(92, (a.bottom - r.top - r.height * .55) / a.height * 100)); };
+// kontekst animacji umiejętności (fx.js): punkty liczone z położenia sylwetek na scenie
+function fxBase(extra = {}) {
+  const F = G.fight, ar = F.arena, a = ar.getBoundingClientRect(), H = ar.clientHeight, W = ar.clientWidth, U = H / 100;
+  const c = { ar, L: F.L, F, W, H, U, u: n => n * U, hero: F.units.get('hero'), shake, mut: 0, ev: [], hits: [], arcs: [], dur: 3000,
+    pt: (u, fx = .5, fy = .5) => { const r = u.spr.getBoundingClientRect(); return { x: r.left - a.left + r.width * fx, y: r.top - a.top + r.height * fy }; },
+    targets: [...F.units.values()].filter(u => u.e && !u.el.classList.contains('dead')), byUid: k => F.units.get(k), ...extra };
+  c.main = c.hits[0] || c.targets[0] || null;
+  return c;
+}
+const durOf = (id, f) => {
+  const ms = x => Math.max(700, (x - f.tick) * 100);
+  switch (id) {
+    case 'unik': return ms(f.invulnUntil); case 'kontra': return ms(f.kontraUntil); case 'dziobniecie': return ms(f.hasteUntil); case 'podpalka': return ms(f.igniteUntil);
+    case 'garsc': return ms(f.dmgUntil); case 'tarcza': return ms(f.hshieldUntil); case 'zemsta': return ms(f.thornFireUntil); case 'pobudka': return ms(f.buffUntil); case 'zupa': return ms(f.soupUntil);
+    case 'wypowiedzenie': { const t = f.enemies.find(x => x.mark); return t ? ms(t.mark.at) : 4000; }
+    default: return 3000;
+  }
+};
+function skillFx(e, ev) {
+  if (REDUCED.matches) return;
+  const F = G.fight, f = F.f, tu = k => F.units.get(k); ev = ev || f.ev;
+  const hits = ev.filter(x => x.k === 'hit' && x.kind === e.id).map(x => tu(x.to)).filter(Boolean);
+  const mt = ev.find(x => x.k === 'meeting');
+  const c = fxBase({ mut: e.mut, ev, hits, arcs: ev.filter(x => x.k === 'arc').map(x => tu(x.to)).filter(Boolean), strong: mt ? tu(mt.uid) : null, dur: durOf(e.id, f) });
+  const r = castFx(e.id, c);
+  F.fxDelay = r ? { kind: e.id, base: r.base || 0, step: r.step || 0, byX: r.byX || 0, n: 0 } : null;
+}
 
 function onEvent(e) {
   const F = G.fight, f = F.f, hero = F.units.get('hero'), tu = k => F.units.get(k);
   switch (e.k) {
     case 'swing': cls(hero, 'lunge', 240); swoosh(hero); break;
-    case 'hit': { const u = tu(e.to); if (!u) break; cls(u, 'flash', 110); if (!['burn', 'poison', 'bleed'].includes(e.kind)) cls(u, e.crit ? 'knockbig' : 'knock', 220); pop(e.crit ? e.d + '!' : e.d, e.crit ? 'crit' : e.kind === 'bleed' || e.kind === 'burn' || e.kind === 'poison' ? e.kind : e.kind === 'egg' ? 'egg' : '', u.x); snd.sfx(e.crit ? 'crit' : 'hit'); if (e.crit) shake(); break; }
-    case 'hurt': { cls(hero, 'hurtshake', 260); pop('-' + e.d, e.kind === 'burn' ? 'hurt burn' : 'hurt', 17); const a = tu(e.from); if (a) cls(a, 'lunge', 240); snd.sfx('hurt'); if (e.d * 100 >= f.S.maxHp * 12 || e.crit) shake(); break; }
-    case 'heal': pop('+' + e.n, 'heal', 17); snd.sfx('heal'); break;
+    case 'hit': {
+      const u = tu(e.to); if (!u) break;
+      // trafienie umiejętności pokazujemy dopiero, gdy doleci jej animacja (fxDelay ustawia receptura z fx.js)
+      const fx = F.fxDelay; let d = 0;
+      if (fx && fx.kind === e.kind) d = fx.base + (fx.byX ? fx.byX * (u.x / 100) : fx.step * fx.n++);
+      F.hitDelay.set(e.to, d);
+      const show = () => { if (G.fight !== F) return; cls(u, 'flash', 110); if (!['burn', 'poison', 'bleed'].includes(e.kind)) cls(u, e.crit ? 'knockbig' : 'knock', 220); pop(e.crit ? e.d + '!' : e.d, e.crit ? 'crit' : e.kind === 'bleed' || e.kind === 'burn' || e.kind === 'poison' ? e.kind : e.kind === 'egg' ? 'egg' : '', u.x, ub(u)); snd.sfx(e.crit ? 'crit' : 'hit'); if (e.crit) shake(); };
+      d > 0 ? setTimeout(show, d) : show(); break;
+    }
+    case 'hurt': { cls(hero, 'hurtshake', 260); pop('-' + e.d, e.kind === 'burn' ? 'hurt burn' : 'hurt', HX); const a = tu(e.from); if (a) cls(a, 'lunge', 240); snd.sfx('hurt'); if (e.d * 100 >= f.S.maxHp * 12 || e.crit) shake(); break; }
+    case 'heal': pop('+' + e.n, 'heal', HX); snd.sfx('heal'); break;
     case 'miss': { const u = tu(e.to); if (u) pop('unik', 'txt', u.x); snd.sfx('miss'); break; }
-    case 'dodge': pop('unik!', 'txt', 17); snd.sfx('miss'); break;
-    case 'block': pop('blok', 'txt', 17); break;
+    case 'dodge': pop('unik!', 'txt', HX); snd.sfx('miss'); break;
+    case 'block': pop('blok', 'txt', HX); break;
     case 'shield': { const u = tu(e.to); if (u) pop('tarcza', 'txt', u.x); break; }
     case 'shieldhit': { const u = tu(e.to); if (u) pop(e.d, 'txt', u.x); snd.sfx('hit'); break; }
     case 'immune': { const u = tu(e.to); if (u) pop('nietykalny', 'txt', u.x); break; }
-    case 'skill': { pop(e.mut ? D.SKILLS[e.id].muts[e.mut - 1].name : D.SKILLS[e.id].name, 'txt', 17, 74); snd.sfx('skill'); break; }
-    case 'coin': pop('+' + e.n + ' Ziarno', 'txt gold', 17, 70); snd.sfx('coin'); break;
+    case 'skill': {
+      pop(e.mut ? D.SKILLS[e.id].muts[e.mut - 1].name : D.SKILLS[e.id].name, 'txt', HX, 74); snd.sfx('skill');
+      const b = $('#sk' + e.slot); if (b) { b.classList.remove('used'); void b.offsetWidth; b.classList.add('used'); setTimeout(() => b.classList.remove('used'), 700); }
+      F.lastSkill = { e, ev: f.ev }; skillFx(e); break;
+    }
+    case 'echo': { const L = F.lastSkill; if (F.fxDelay) { F.fxDelay.base += 480; F.fxDelay.n = 0; } if (L && !REDUCED.matches) setTimeout(() => { if (G.fight === F) skillFx(L.e, L.ev); }, 480); break; }
+    case 'markhit': { const u = tu(e.uid); if (u && !REDUCED.matches) markHit(fxBase(), u); pop('Wypowiedzenie!', 'txt', u ? u.x : HX, 74); break; }
+    case 'trap': { const u = tu(e.uid); if (u && !REDUCED.matches) trapSnap(fxBase(), u, F.trapEl); F.trapEl = null; pop('Pułapka!', 'txt', u ? u.x : HX, 74); snd.sfx('stun'); break; }
+    case 'hshield': pop('Tarcza ' + e.n, 'txt', HX, 76); break;
+    case 'hshit': { if (F.domeEl) F.domeEl.animate([{ filter: 'brightness(2.2)' }, { filter: 'none' }], { duration: 240 }); pop('tarcza −' + e.d, 'txt', HX, 70); break; }
+    case 'coffee2': { if (!REDUCED.matches) castFx('kawa', fxBase({ mut: 0, ev: [], hits: [], arcs: [] })); pop('Druga kawa', 'txt', HX, 74); break; }
+    case 'shred': { const u = tu(e.uid); if (u) pop('Pancerz −', 'txt', u.x, ub(u) + 10); break; }
+    case 'meeting': { const u = tu(e.uid); if (u) pop('Spotkanie!', 'txt', u.x, ub(u) + 10); break; }
+    case 'gust': break;
+    case 'coin': pop('+' + e.n + ' Ziarno', 'txt gold', HX, 70); snd.sfx('coin'); break;
     case 'stun': snd.sfx('stun'); break;
     case 'freeze': { const u = tu(e.uid); if (u) pop('zamrożony!', 'txt frost', u.x, 74); snd.sfx('stun'); break; }
     case 'boom': { const u = tu(e.uid); if (u) pop('WYBUCH!', 'crit', u.x, 72); shake(); snd.sfx('egg'); break; }
@@ -838,21 +909,26 @@ function onEvent(e) {
     case 'resist': { const u = tu(e.to); if (u) pop('odporny', 'txt', u.x, 70); break; }
     case 'telegraph': snd.sfx('telegraph'); break;
     case 'egg': snd.sfx('egg'); break;
-    case 'smoke': { pop('Chmura Dymu', 'txt', 17, 74); snd.sfx('heal'); const ar = F.arena; if (ar && !REDUCED.matches) { ar.classList.remove('smoked'); void ar.offsetWidth; ar.classList.add('smoked'); setTimeout(() => ar.classList.remove('smoked'), 1300); } break; }
+    case 'smoke': { pop('Chmura Dymu', 'txt', HX, 74); snd.sfx('heal'); const ar = F.arena; if (ar && !REDUCED.matches) { ar.classList.remove('smoked'); void ar.offsetWidth; ar.classList.add('smoked'); setTimeout(() => ar.classList.remove('smoked'), 1300); } break; }
     case 'okrzyk': banner('Ostatni Okrzyk!', 'Chwila nietykalności', false); break;
     case 'revive': banner('Gniazdo Zapasowe!', 'Kurczak wstaje z kolan', false); snd.sfx('heal'); break;
     case 'fury': banner('FURIA!', 'Wrogowie wpadają w szał', true); snd.sfx('fury'); F.arena.classList.add('furious'); if (!F.arena.querySelector('.beacons')) F.arena.insertAdjacentHTML('beforeend', '<div class="beacons" aria-hidden="true"><i></i><i></i></div>'); break;
     case 'summon': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: enemyFig(en) }); layoutUnits(); } break; }
     case 'phase': banner('Faza ' + e.n, '', true); snd.sfx('phase'); shake(); break;
     case 'skubanie': banner('Skubanie!', 'Wyłączony kafelek: ' + TILE[e.tile].name, true); snd.sfx('phase'); break;
-    case 'skubanie-end': pop('kafelek wraca', 'txt', 17, 74); break;
+    case 'skubanie-end': pop('kafelek wraca', 'txt', HX, 74); break;
     case 'blockslot': banner('Restrukturyzacja', 'Slot ' + (e.slot + 1) + ' zablokowany', true); snd.sfx('phase'); break;
-    case 'steal': pop('-1 Ziarno', 'txt', 17, 70); break;
-    case 'kill': { const u = tu(e.uid); if (u) { u.el.classList.remove('idle'); u.el.classList.add('dead'); feathers(u); setTimeout(() => { u.el.remove(); F.units.delete(e.uid); }, 900); layoutUnits(); } break; }
+    case 'steal': pop('-1 Ziarno', 'txt', HX, 70); break;
+    case 'kill': {
+      const u = tu(e.uid); if (!u) break;
+      const hd = F.hitDelay.get(e.uid) || 0;   // wróg znika dopiero po trafieniu animacji umiejętności
+      const go = () => { if (G.fight !== F) return; u.el.classList.remove('idle'); u.el.classList.add('dead'); feathers(u); setTimeout(() => { u.el.remove(); F.units.delete(e.uid); }, 900); layoutUnits(); };
+      hd > 0 ? setTimeout(go, hd + 60) : go(); break;
+    }
     case 'react': { const u = tu(e.uid), R = D.REACTIONS[e.r]; if (u && R) { pop(R.name + '!', 'react ' + e.r, u.x, 80); burst(u, e.r); } if (e.r === 'szok') shake(); if (!REDUCED.matches) F.stopUntil = performance.now() + 120; snd.sfx('crit'); break; }
-    case 'chain': pop('Seria ×' + e.n, 'txt gold', 17, 84); break;
+    case 'chain': pop('Seria ×' + e.n, 'txt gold', HX, 84); break;
     case 'seria': banner('Pełna Kurza Seria!', 'Popłoch: wrogowie ogłuszeni', false); snd.sfx('unlock'); shake(); break;
-    case 'flaw': pop(e.f === 'samozaplon' ? 'Samozapłon!' : 'Usterka!', 'txt warn', 17, 80); snd.sfx('hurt'); break;
+    case 'flaw': pop(e.f === 'samozaplon' ? 'Samozapłon!' : 'Usterka!', 'txt warn', HX, 80); snd.sfx('hurt'); break;
     case 'comp': { const u = tu('comp'); if (u) cls(u, 'lunge', 240); break; }
     case 'night': { banner('Ciemność!', 'Część twoich ciosów chybia', true); snd.sfx('phase'); const ar = F.arena; if (ar) { ar.classList.add('night'); setTimeout(() => ar && ar.classList.remove('night'), e.dur * 100); } break; }
     case 'blizzard': { banner('Zamieć!', 'Twoje ataki są wolniejsze', true); snd.sfx('stun'); const ar = F.arena; if (ar) { ar.classList.add('blizz'); setTimeout(() => ar && ar.classList.remove('blizz'), e.dur * 100); } break; }
@@ -871,7 +947,7 @@ function updateUI(first) {
   const hst = f.hburn > 0 ? 'burn' + f.hburn : ''; if (hst !== (hu.flags.stk || '')) { hu.flags.stk = hst; hu.sts.innerHTML = hst ? `<span class="st burn">${art.statusIcon('burn')}${f.hburn}</span>` : ''; }
   for (const e of f.enemies) {
     const u = F.units.get(e.uid); if (!u) continue;
-    u.bar.style.width = Math.max(0, e.hp / e.maxHp * 100) + '%'; u.txt.textContent = e.dead ? '' : Math.max(0, e.hp) + (e.shield > 0 ? ' +' + e.shield : '');
+    u.bar.style.width = Math.max(0, e.hp / e.maxHp * 100) + '%'; u.txt.textContent = e.dead ? '' : Math.max(0, e.hp) + ' / ' + e.maxHp + (e.shield > 0 ? ' +' + e.shield : '');
     const stunned = tick < e.stunUntil && !e.dead, fl = u.flags;
     if (stunned !== !!fl.stun) { fl.stun = stunned; u.fx.querySelectorAll('.stars').forEach(n => n.remove()); if (stunned) u.fx.insertAdjacentHTML('beforeend', '<div class="stars"><i></i><i></i><i></i></div>'); }
     const tele = !!e.windup && !e.dead; if (tele !== !!fl.tele) { fl.tele = tele; u.fx.querySelectorAll('.tele').forEach(n => n.remove()); if (tele) u.fx.insertAdjacentHTML('beforeend', '<div class="tele"></div>'); }
@@ -887,13 +963,16 @@ function updateUI(first) {
   }
   // wskaźnik Okna Gdakania: ile czasu zostało na kolejną umiejętność w serii
   const gi = $('#gdaki'); if (gi) { const left = f.chain > 0 ? D.RULES.chainWindow - (tick - f.chainT) : -1, on = left > 0 && !f.over;
-    gi.style.width = on ? (left / D.RULES.chainWindow * 100) + '%' : '0%'; $('#gdak').classList.toggle('on', on); const gn = $('#gdakn'), tx = on ? '×' + f.chain : '–'; if (gn.textContent !== tx) gn.textContent = tx; }
+    gi.style.width = on ? (left / D.RULES.chainWindow * 100) + '%' : '0%'; $('#gdak').classList.toggle('on', on); const gn = $('#gdakn'), tx = on ? '×' + f.chain : '–'; if (gn.textContent !== tx) gn.textContent = tx;
+    $('#gseg').querySelectorAll('i').forEach((s, k) => s.classList.toggle('lit', on && k < f.chain)); }
   f.skills.forEach((s, i) => {
     const b = $('#sk' + i); if (!b) return;
     const def = D.SKILLS[s.id], total = Math.floor((s.lvl >= 2 ? Math.floor(def.cd * 80 / 100) : def.cd) * (100 - (f.S.cdPct || 0)) / 100), blocked = tick < s.blockedUntil;
     const remain = Math.max(s.cd - tick, blocked ? s.blockedUntil - tick : 0), ready = remain <= 0;
     b.classList.toggle('ready', ready && !f.over); b.classList.toggle('blocked', blocked);
-    b.querySelector('.cdv').style.setProperty('--cd', ready ? 0 : Math.min(1, remain / total).toFixed(3));
+    b.style.setProperty('--cd', ready ? 0 : Math.min(1, remain / total).toFixed(3));
+    const st = b.querySelector('.sst'), txt = blocked ? 'ZABLOKOWANA' : ready ? 'GOTOWE' + (s.lvl >= 3 ? ' · ★★' : s.lvl >= 2 ? ' · ★' : '') : 'ODNAWIA · ' + (remain / 10).toFixed(1).replace('.', ',') + ' s';
+    if (st.dataset.t !== txt) { st.dataset.t = txt; st.innerHTML = blocked ? '<b>' + txt + '</b>' : ready ? '<b>GOTOWE</b>' + txt.slice(6) : 'ODNAWIA · <b>' + (remain / 10).toFixed(1).replace('.', ',') + ' s</b>'; }
   });
   const secs = Math.floor(tick / 10);
   $('#tt').textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
@@ -924,7 +1003,7 @@ function useSkill(slot) {
   const F = G.fight; if (!F || F.f.over || F.paused || F.finishing || !F.f.skills[slot]) return;
   if (F.queue.length < 6) F.queue.push(slot);
 }
-function stopFight() { const F = G.fight; if (F) { cancelAnimationFrame(F.raf); } }
+function stopFight() { const F = G.fight; if (F) { cancelAnimationFrame(F.raf); } const l = $('#fightlayer'); if (l) l.remove(); }
 
 async function finishFight() {
   const F = G.fight, local = F.f.result();

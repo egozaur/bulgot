@@ -20,6 +20,13 @@ await p.click('[data-act=introgo]'); await wait(300);
 // gruby panel boczny: dużo kafelków i Odznak, żeby sprawdzić przewijanie
 await p.evaluate(() => { const r = window.__bulgot.run; r.garnek = 1; });
 
+// Walka na pełnym ekranie (#fightlayer): jeden rząd górnego paska, kafelki umiejętności w oknie, bez przewijania strony.
+const measureFight = () => p.evaluate(() => {
+  const kids = [...document.querySelectorAll('.fhud .hchip, .fhud .timer, .fhud .ctl')].filter(c => c.offsetParent);
+  const tops = kids.map(c => Math.round(c.getBoundingClientRect().top + c.getBoundingClientRect().height / 2));
+  const bar = document.querySelector('#skillbar').getBoundingClientRect(), se = document.scrollingElement;
+  return { oneLine: Math.max(...tops) - Math.min(...tops) < 14, pageScroll: se.scrollHeight - innerHeight, menuVisible: !!document.querySelector('#fightlayer [data-act=menu]'), sideScrollable: null, sideBottom: Math.round(bar.bottom), vh: innerHeight, skillsInside: bar.left >= 0 && bar.right <= innerWidth && bar.bottom <= innerHeight };
+});
 const measure = () => p.evaluate(() => {
   const tb = document.querySelector('.topbar'), menu = document.querySelector('[data-act=menu]'), side = document.querySelector('.side');
   const kids = [...tb.children].filter(c => c.offsetParent);
@@ -63,19 +70,20 @@ if (tof) {
   await p.click('[data-act=tofight]'); await wait(1200);
   if (await p.evaluate(() => !!document.querySelector('#speedbtn'))) fail('w walce wciąż jest przycisk tempa'); else console.log('OK: w walce nie ma przycisku tempa');
   await p.keyboard.press('f'); await wait(100);
+  // Esc w trakcie walki otwiera Menu (przycisk Menu w pasku walki), a zamknięcie wznawia walkę
+  await p.keyboard.press('Escape'); await wait(250);
+  if (!(await p.$('.modal'))) fail('Esc w walce nie otworzył Menu'); else console.log('OK: Esc otwiera Menu w walce');
+  await p.keyboard.press('Escape'); await wait(250);
   for (const [w, h] of SIZES) {
     await p.setViewport({ width: w, height: h }); await wait(250);
-    const m = await measure();
+    const m = await measureFight();
+    if (!m.skillsInside) fail(`${w}x${h}: kafelki umiejętności wychodzą poza okno`);
     console.log(`${w}x${h} walka:`, JSON.stringify(m));
     if (!m.oneLine) fail(`${w}x${h}: pasek (walka) w więcej niż jednej linii`);
     if (m.pageScroll > 1) fail(`${w}x${h}: strona (walka) przewija się o ${m.pageScroll}px`);
     await p.screenshot({ path: `${OUT}/uklad-${w}x${h}-walka.png` });
   }
 }
-// Esc otwiera Menu
-await p.evaluate(() => { const pb = document.querySelector('[data-act=pause]'); pb && pb.click(); });
-await p.keyboard.press('Escape'); await wait(200);
-if (!(await p.$('.modal'))) fail('Esc nie otworzył Menu');
 if (errs.length) { fail('błędy na stronie'); console.error(errs.join('\n')); }
 await b.close();
 console.log(process.exitCode ? 'NIEZALICZONY' : 'OK: układ');

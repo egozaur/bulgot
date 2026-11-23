@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wariant 1: czysty pasek</title><link rel="stylesheet" href="wspolne2.css"></head>
+<body><div class="fs"><div class="bg" id="bg"></div><div class="layer" id="units"></div><div class="gold"></div><div class="layer" id="fx"></div><div class="vig"></div>
+<div id="top"></div><div class="chain" id="chain"><span>SERIA</span><div class="bars"><i></i><i></i><i></i></div><em>×2</em></div><div class="kpis" id="kpis"></div>
+<div class="kron" id="kron"></div><div class="prop">WARIANT 1 · CZYSTY PASEK + KAFELKI JAK W D</div></div>
+<script type="module">
+import {unit,st,topbar,kpis,hero,foe,gradFx,bgTaras,clouds,freezeAt} from './wspolne2.js';
+document.getElementById('bg').innerHTML=bgTaras(); document.body.insertAdjacentHTML('afterbegin','');
+
+document.getElementById('bg').insertAdjacentHTML('afterend',clouds());
+document.getElementById('top').innerHTML=topbar(14,'Taras Prezesa');
+document.getElementById('units').innerHTML=
+ unit({x:56,bottom:32,w:20,name:'Sęp Audytor',hp:55,max:55,svg:foe('vulture')})+
+ unit({x:73,bottom:26,w:26,name:'Jajo-Sortownik',hp:60,max:60,svg:foe('robot'),sts:st('frost',2)})+
+ unit({x:89,bottom:32,w:17,name:'Księgowy Kanarek',hp:37,max:37,svg:foe('canary'),pw:20})+
+ unit({id:'h',cls:'hero',x:23,bottom:26,w:30,name:'Pyrtek',hp:88,max:100,svg:hero()});
+document.getElementById('fx').innerHTML=gradFx([[56,52,'14'],[73,48,'2 × 14'],[89,50,'14']]);
+document.getElementById('chain').style.bottom='17.6vh';
+document.getElementById('kpis').innerHTML=kpis('a',[{skill:'grad',state:'used',text:'<b>GRAD</b> · używasz...'},{skill:'lodowy',state:'ready',text:'<b>GOTOWE</b> · poz. ★★'},{skill:'pogotowie',state:'cd',fill:.45,text:'ODNAWIA · <b>3,6 s</b>'}]);
+document.getElementById('kron').textContent='„Prezes nie schodzi z dachu. Wszystkie wnioski o awans rozpatruje stamtąd.”';
+
+freezeAt();
+</script></body></html>
