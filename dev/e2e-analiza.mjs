@@ -25,7 +25,6 @@ await p.evaluate(() => {
 });
 await p.reload({ waitUntil: 'networkidle0' }); await wait(500);
 await p.evaluate(() => { const c = document.querySelector('[data-act=resume]'); c && c.click(); }); await wait(400);
-await p.click('[data-act=setspeed][data-v="3"]'); await wait(100);
 await p.click('[data-act=tofight]');
 let end = false;
 for (let i = 0; i < 80 && !end; i++) { await wait(500); end = await p.evaluate(() => !!document.querySelector('#analyzebox')); }

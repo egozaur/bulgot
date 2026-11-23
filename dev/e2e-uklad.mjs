@@ -55,17 +55,14 @@ if (tof) {
     await p.screenshot({ path: `${OUT}/uklad-${w}x${h}-przed.png` });
   }
   await p.setViewport({ width: 1440, height: 900 });
-  // tempo walki: wybór przed walką, zapamiętany, przenosi się do walki; F w walce zmienia tempo
-  await p.click('[data-act=setspeed][data-v="3"]'); await wait(100);
-  const sp = await p.evaluate(() => ({ st: localStorage.getItem('bulgot:speed'), on: document.querySelector('[data-act=setspeed].on')?.dataset.v, icons: document.querySelectorAll('.stats .stico').length }));
-  if (sp.st !== '3' || sp.on !== '3') fail('wybór tempa ×3 nie zapisał się: ' + JSON.stringify(sp)); else console.log('OK: tempo ×3 wybrane i zapamiętane');
+  // tempo walki jest stałe (×1): brak wyboru tempa i przycisku w walce
+  const sp = await p.evaluate(() => ({ pick: !!document.querySelector('[data-act=setspeed], .speedpick'), icons: document.querySelectorAll('.stats .stico').length }));
+  if (sp.pick) fail('wybór tempa wciąż jest na ekranie'); else console.log('OK: brak wyboru tempa');
   if (sp.icons < 8) fail('brak ikonek statystyk: ' + sp.icons); else console.log('OK: ikonki statystyk', sp.icons);
-  await p.screenshot({ path: `${OUT}/tempo-przed-walka.png` });
+  await p.screenshot({ path: `${OUT}/przed-walka.png` });
   await p.click('[data-act=tofight]'); await wait(1200);
-  const fs1 = await p.evaluate(() => ({ s: window.__bulgot.fight.speed, b: document.querySelector('#speedbtn').textContent }));
-  if (fs1.s !== 3 || fs1.b !== '×3') fail('walka nie ruszyła z tempem ×3: ' + JSON.stringify(fs1)); else console.log('OK: walka w tempie ×3');
+  if (await p.evaluate(() => !!document.querySelector('#speedbtn'))) fail('w walce wciąż jest przycisk tempa'); else console.log('OK: w walce nie ma przycisku tempa');
   await p.keyboard.press('f'); await wait(100);
-  if (await p.evaluate(() => window.__bulgot.fight.speed) !== 1) fail('F w walce nie zmienił tempa na ×1'); else console.log('OK: F w walce zmienia tempo');
   for (const [w, h] of SIZES) {
     await p.setViewport({ width: w, height: h }); await wait(250);
     const m = await measure();

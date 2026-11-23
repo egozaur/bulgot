@@ -15,7 +15,7 @@ p.on('console', m => { if (m.type() === 'error' && !/404/.test(m.text())) errs.p
 await p.setViewport({ width: 1600, height: 900 });
 const url = 'http://localhost:8090/bulgot/?local=1';
 await p.goto(url, { waitUntil: 'networkidle0' });
-await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:speed', '3'); localStorage.setItem('bulgot:invoice', '0'); localStorage.setItem('bulgot:intro', '1'); });
+await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:invoice', '0'); localStorage.setItem('bulgot:intro', '1'); });
 await p.reload({ waitUntil: 'networkidle0' }); await wait(400);
 const K = n => 'bulgot:local:player:' + n;
 const getRun = () => p.evaluate(k => JSON.parse(localStorage.getItem(k)), K('run'));

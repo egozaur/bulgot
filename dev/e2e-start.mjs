@@ -19,6 +19,16 @@ for (const [w, h] of [[1920, 925], [1366, 650], [1280, 720], [390, 800]]) {
   const noScroll = () => p.evaluate(() => { const s = document.querySelector('.setup2'); const r = s.getBoundingClientRect(); return { fits: r.bottom <= innerHeight + 2 && s.scrollHeight <= s.clientHeight + 2, doc: document.documentElement.scrollHeight <= innerHeight + 2, sh: s.scrollHeight, ch: s.clientHeight, ih: innerHeight }; });
   let n = await noScroll(); ok(n.fits && n.doc, `${w}x${h} krok 1 mieści się bez przewijania ${JSON.stringify(n)}`);
   await p.screenshot({ path: `${OUT}/start1-${w}.png` });
+  {   // żadna karta postaci (zwłaszcza zablokowana, z długim opisem i warunkiem) nie może być ucięta przez tor karuzeli
+    const total = await p.evaluate(() => document.querySelectorAll('.car-card').length), cut = [];
+    for (let i = 0; i < total; i++) {
+      const m = await p.evaluate(() => { const t = document.querySelector('.car-track').getBoundingClientRect(), c = document.querySelector('.car-card.on'), r = c.getBoundingClientRect(); return { n: c.querySelector('h3').textContent, up: Math.round(t.top - r.top), down: Math.round(r.bottom - t.bottom) }; });
+      if (m.up > 1 || m.down > 1) cut.push(`${m.n} (góra ${m.up}, dół ${m.down})`);
+      await p.keyboard.press('ArrowRight'); await wait(320);
+    }
+    ok(cut.length === 0, `${w}x${h} żadna z ${total} kart postaci nie jest ucięta ${cut.join('; ')}`);
+    for (let i = 0; i < total; i++) await p.keyboard.press('ArrowLeft'); await wait(300);
+  }
   if (w === 1920) {
     // najechanie na kartę postaci nie może jej przesuwać ani wprawiać w drgania
     const cr = () => p.evaluate(() => { const r = document.querySelector('.car-card.on').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top)]; });

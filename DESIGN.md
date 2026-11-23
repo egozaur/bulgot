@@ -389,7 +389,7 @@ Run z inną wersją (`run.v`) `BgPlayer` unieważnia przy pierwszym żądaniu (`
 Same szablony prawie nie ruszyły wyniku (pełny 61%, szybki 56%). Właściciel chciał trudniejszego startu („ciężej wygrać za pierwszym razem”), więc wzrost wrogów podniesiono: pełny `grow` 1,155/1,10 (było 1,14/1,093), szybki 1,18/1,12 (było 1,16/1,11). Wynik: G0 pełny 48%, szybki 45%; G2 38%/33%; G5 8%/9% (było 17–19%).
 
 ### Interfejs (frontend)
-- Tempo walki: wybór przed walką (`bulgot:speed`), w walce przycisk ×N i klawisz F. Okno Gdakania liczy się w tickach, więc przy ×3 trwa trzy razy krócej w prawdziwym czasie (podpowiedź przy wyborze).
+- Tempo walki: stałe ×1 (wybór ×2/×3, przycisk w walce i klawisz F usunięte 2026-11-23). Okno Gdakania liczy się w tickach.
 - Zamrożenie klatki po Reakcji i wejście bossa wstrzymują tylko obraz (`F.stopUntil`): zegar walki nie liczy, więc powtórka na serwerze się zgadza.
 - Paski porównania (Atak / Obrona: słabo / OK / mocno) liczą typowego wroga strefy z jawnych danych (`zoneCompare` w `app.js`), bez składu piętra.
 - Wszystkie nowe animacje to CSS/SVG; `prefers-reduced-motion` wyłącza liczniki, paralaksę, pióra i światła alarmowe.

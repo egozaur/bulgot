@@ -23,7 +23,6 @@ const fmtNum = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const G = {
   profile: null, run: null, screen: 'loading', fight: null, busy: false, unlocks: [], lastEnd: null,
   setup: { mode: store.get('bulgot:mode') === 'quick' ? 'quick' : 'full', char: 'pyrtek', garnek: 0 },
-  speed: [1, 2, 3].includes(+store.get('bulgot:speed')) ? +store.get('bulgot:speed') : 1,
 };
 window.__bulgot = G; G.render = () => render();      // podgląd stanu i odświeżanie w testach
 
@@ -109,7 +108,7 @@ function render() {
     case 'loading': root.innerHTML = '<div class="loading"><span>Bulgocze</span> <i></i><i></i><i></i></div>'; break;
     case 'noplayer': root.innerHTML = `<div class="loading" style="flex-direction:column;gap:14px;text-align:center"><span>Do gry w Bulgot potrzebny jest nick.</span><button class="btn primary" data-act="retry">Wybierz nick</button><a class="btn ghost" href="/">← PL3Y</a></div>`; break;
     case 'home': root.innerHTML = renderHome(); break;
-    case 'setup': root.innerHTML = renderSetup(); break;
+    case 'setup': root.innerHTML = renderSetup(); fitCarousel(); requestAnimationFrame(fitCarousel); break;
     case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); fitTower(); fitBoard(); break;
     case 'fight': return;   // arena buduje się w startFight()
   }
@@ -200,6 +199,18 @@ function renderSetup() {
 }
 
 // Karuzela postaci i wybór palnika: te same ruchy dla strzałek, kliknięć i przycisków ‹ ›.
+// Karty postaci mają różną wysokość (długi opis, warunek odblokowania). Gdy karta nie mieści się w torze karuzeli, zmniejszamy jej ZAWARTOŚĆ
+// (zmienna --fit, CSS `zoom` na dzieciach karty), żeby nic nie było ucięte u góry ani u dołu, w żadnym oknie.
+function fitCarousel() {
+  const tr = $('.car-track'); if (!tr) return;
+  const H = tr.clientHeight - 12, PAD = 22;   // zapas na podskok jajka i ramkę karty
+  for (const c of tr.querySelectorAll('.car-card')) {
+    c.style.setProperty('--fit', 1);
+    const nat = c.offsetHeight;
+    c.style.setProperty('--fit', H > PAD && nat > H ? Math.max(0.5, (H - PAD) / (nat - PAD)).toFixed(3) : 1);
+  }
+}
+addEventListener('resize', fitCarousel);
 function carGo(i) { const n = charIds().length, s = G.setup; s.cur = Math.max(0, Math.min(n - 1, i)); const id = charIds()[s.cur]; if (G.profile.chars.includes(id)) s.char = id; render(); }
 function garGo(v) { const s = G.setup; s.garnek = Math.max(0, Math.min(D.GARNEK.length - 1, v)); render(); }
 // ---------- karty kafelków ----------
@@ -627,24 +638,12 @@ function stageBonus() {
     <div class="kron">${esc(fromDoor ? 'Ryzyko się opłaciło. Tym razem.' : T.BOSS_WIN_LINES[lastBoss()] || 'Boss padł, a łup czeka.')}</div><div class="cards">${cards}</div>`;
 }
 const lastBoss = () => { const b = G.run && G.run.stats.bossKills; return b && b[b.length - 1]; };
-function setSpeed(v) {
-  const F = G.fight; G.speed = v; store.set('bulgot:speed', v);
-  if (F) { F.speed = v; const sb = $('#speedbtn'); if (sb) { sb.textContent = '×' + v; sb.title = 'Tempo walki (F): ' + SPEED_NOTE[v]; } }
-  for (const b of document.querySelectorAll('[data-act=setspeed]')) { const on = +b.dataset.v === v; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); }
-  const n = $('#spdnote'); if (n) n.textContent = SPEED_NOTE[v];
-}
 function stagePrep() {
   const r = G.run;
   return `<div class="stage-title"><h2>Piętro ${r.round}: do walki!</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${decreeSub()}</div></div>
     <div class="kron">${esc(r.nemesisRound ? T.pickLine(T.NEMESIS_LINES, r.round + 1) : floorKron())}</div>${decreeHTML()}${previewHTML()}
     <div class="actions">${restBtn()}<button class="btn primary big" data-act="tofight" data-primary>Do walki!</button></div>
-    ${speedPick()}
-    <div class="hint">W walce użyjesz umiejętności klawiszami 1, 2, 3. P robi pauzę, F zmienia tempo. O to odpoczynek.<br><b>Okno Gdakania:</b> kolejna umiejętność w ciągu 1,5 s bije mocniej (2. +20%, 3. +50%), a trzy różne pod rząd ogłuszają wrogów na 1 s.</div>`;
-}
-// Tempo walki: wybór przed walką (zapamiętywany), w walce mały przycisk ×N i klawisz F.
-const SPEED_NOTE = { 1: 'Spokojnie: pełny czas na serie umiejętności.', 2: 'Szybciej: walka i Okno Gdakania trwają o połowę krócej.', 3: 'Najszybciej: walka leci trzy razy szybciej, Okno Gdakania też. Trudniej o serie.' };
-function speedPick() {
-  return `<div class="speedpick" role="radiogroup" aria-label="Tempo walki"><span class="lab">Tempo walki</span>${[1, 2, 3].map(v => `<button class="spd${G.speed === v ? ' on' : ''}" data-act="setspeed" data-v="${v}" role="radio" aria-checked="${G.speed === v}">×${v}</button>`).join('')}<span class="note" id="spdnote">${SPEED_NOTE[G.speed]}</span></div>`;
+    <div class="hint">W walce użyjesz umiejętności klawiszami 1, 2, 3. P robi pauzę. O to odpoczynek.<br><b>Okno Gdakania:</b> kolejna umiejętność w ciągu 1,5 s bije mocniej (2. +20%, 3. +50%), a trzy różne pod rząd ogłuszają wrogów na 1 s.</div>`;
 }
 function renderRun() {
   return `<div class="run">${topbarHTML()}${WIDE.matches ? stairsHTML() : towerHTML()}<main class="stage">${stageHTML()}${boardHTML()}</main>${sideHTML()}</div>`;
@@ -705,7 +704,7 @@ function showCrate(c) {
 // ---------- walka na żywo ----------
 function startFight(setup) {
   const run = G.run, f = new Fight(setup);
-  const F = G.fight = { setup, f, inputs: [], queue: [], acc: 0, last: 0, speed: G.speed, paused: false, finishing: false, units: new Map(), raf: 0, bossBanner: false };
+  const F = G.fight = { setup, f, inputs: [], queue: [], acc: 0, last: 0, paused: false, finishing: false, units: new Map(), raf: 0, bossBanner: false };
   G.screen = 'fight';
   const boss = setup.enemies.find(e => e.boss);
   $('#screen').innerHTML = `<div class="run" style="grid-template-columns:minmax(0,1fr);max-width:1240px">${topbarHTML()}
@@ -713,9 +712,9 @@ function startFight(setup) {
       <div class="arena z${setup.zone}" id="arena"><div class="pl pl-bg">${art.arenaBg(setup.zone)}</div><div class="pl pl-haze" aria-hidden="true"></div><div class="pl pl-fore" aria-hidden="true"></div><div class="vign"></div>
         <div class="hud"><div class="box">Piętro ${setup.round} · ${esc(T.ZONE_NAMES[setup.zone])}</div>
           <div class="box timer" id="timer"><span id="tt">0:00</span><div class="tb"><i id="tbi" style="width:0"></i><u></u></div></div>
-          <div class="ctl"><button data-act="speed" id="speedbtn" title="Tempo walki (F): ${SPEED_NOTE[F.speed]}">×${F.speed}</button><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button></div></div>
+          <div class="ctl"><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button></div></div>
         <div id="units"></div><div id="fxl"></div></div>
-      <div class="console"><div class="gdak" id="gdak" data-tip="Okno Gdakania&#10;Użyj kolejnej umiejętności w ciągu 1,5 s po poprzedniej. 2. w serii zadaje +20% obrażeń, 3. +50%. Trzy różne umiejętności pod rząd to Pełna Kurza Seria: dodatkowo ogłuszenie wrogów na 1 s. Przy tempie ×3 okno trwa trzy razy krócej."><span class="gl">OKNO GDAKANIA</span><div class="gbar"><i id="gdaki"></i></div><b id="gdakn">–</b></div><div class="skillbar" id="skillbar"></div></div>
+      <div class="console"><div class="gdak" id="gdak" data-tip="Okno Gdakania&#10;Użyj kolejnej umiejętności w ciągu 1,5 s po poprzedniej. 2. w serii zadaje +20% obrażeń, 3. +50%. Trzy różne umiejętności pod rząd to Pełna Kurza Seria: dodatkowo ogłuszenie wrogów na 1 s."><span class="gl">OKNO GDAKANIA</span><div class="gbar"><i id="gdaki"></i></div><b id="gdakn">–</b></div><div class="skillbar" id="skillbar"></div></div>
       <div class="kron" id="kline">${esc(boss ? bossIntroOf(boss.boss).quote : floorKron())}</div>
     </main></div>`;
   F.arena = $('#arena');
@@ -837,8 +836,8 @@ function onEvent(e) {
     case 'seria': banner('Pełna Kurza Seria!', 'Popłoch: wrogowie ogłuszeni', false); snd.sfx('unlock'); shake(); break;
     case 'flaw': pop(e.f === 'samozaplon' ? 'Samozapłon!' : 'Usterka!', 'txt warn', 17, 80); snd.sfx('hurt'); break;
     case 'comp': { const u = tu('comp'); if (u) cls(u, 'lunge', 240); break; }
-    case 'night': { banner('Ciemność!', 'Część twoich ciosów chybia', true); snd.sfx('phase'); const ar = F.arena; if (ar) { ar.classList.add('night'); setTimeout(() => ar && ar.classList.remove('night'), e.dur * 100 / F.speed); } break; }
-    case 'blizzard': { banner('Zamieć!', 'Twoje ataki są wolniejsze', true); snd.sfx('stun'); const ar = F.arena; if (ar) { ar.classList.add('blizz'); setTimeout(() => ar && ar.classList.remove('blizz'), e.dur * 100 / F.speed); } break; }
+    case 'night': { banner('Ciemność!', 'Część twoich ciosów chybia', true); snd.sfx('phase'); const ar = F.arena; if (ar) { ar.classList.add('night'); setTimeout(() => ar && ar.classList.remove('night'), e.dur * 100); } break; }
+    case 'blizzard': { banner('Zamieć!', 'Twoje ataki są wolniejsze', true); snd.sfx('stun'); const ar = F.arena; if (ar) { ar.classList.add('blizz'); setTimeout(() => ar && ar.classList.remove('blizz'), e.dur * 100); } break; }
     case 'crash': { const u = tu(e.uid); if (u) pop('przegrzany!', 'txt', u.x, 74); break; }
     case 'victory': snd.sfx('win'); break;
     case 'defeat': snd.sfx('lose'); break;
@@ -890,7 +889,7 @@ function frame(ts) {
   let dt = ts - F.last; F.last = ts; if (dt > 250) dt = 250;
   // zamrożenie klatki po Reakcji: stoi tylko obraz (zegar walki nie liczy), więc powtórka na serwerze się zgadza
   if (!F.paused && !F.f.over && !(F.stopUntil > ts)) {
-    F.acc += dt * F.speed;
+    F.acc += dt;
     while (F.acc >= 100 && !F.f.over && !(F.stopUntil > ts)) { F.acc -= 100; stepOnce(); }
   }
   if (F.f.over && !F.finishing) { F.finishing = true; finishFight(); }
@@ -1148,7 +1147,8 @@ function backFromAnalyze() { const f = G.ana && G.ana.from; if (f === 'hist') sh
 // Kontekst ciekawostek na ekranie końca (przegrana: dane z ostatniej walki, wygrana: ogólne).
 function endFacts(j, win) {
   const r = G.run, M = D.MODES[r.mode], res = j.result || (G.lastEndJ && G.lastEndJ.result) || null, seed = parseInt(String(r.id).slice(-6), 10) || 0;
-  if (win) { store.set('bulgot:lastlose', 'null'); return winFacts({ mode: r.mode, garnek: r.garnek, seed }); }
+  const e = G.lastEnd || {}, st = r.stats || {}, lastKind = store.get('bulgot:lastfact') || '';
+  if (win) { store.set('bulgot:lastlose', 'null'); return winFacts({ mode: r.mode, garnek: r.garnek, seed, lastKind, floor: e.floor || null, flawless: st.flawless || 0, rerolls: st.rerolls || 0, coins: r.coins, maxHit: st.maxHit || 0 }); }
   const k = r.killer, kd = k && (D.ENEMIES[k.enemy] || D.BOSSES[k.enemy]);
   const boss = r.boss ? D.BOSSES[r.boss] : null;
   // seria porażek na tym samym piętrze (zapamiętana w przeglądarce, liczona raz na run)
@@ -1163,6 +1163,9 @@ function endFacts(j, win) {
     mode: r.mode, modeName: M.name, rounds: M.rounds, round: r.round, garnek: r.garnek, garnekName: D.GARNEK[r.garnek].name, seed,
     result: res, abandoned: !res && r.ended === 'lose', coins: r.coins, hasSkills: r.skills.length > 0, boss: !!boss, bossName: boss ? boss.name : '',
     killerName: kd ? kd.name : '', nemesis: !!(k && k.nemesis), setHint: sets.length ? sets[0].name : '', streak, runs: G.profile.counters.runs,
+    lastKind, score: r.score, best: e.prevBest || 0, newBest: !!e.newBest, above: e.above || null, floor: e.floor || null,
+    rerolls: st.rerolls || 0, buys: st.buys || 0, rested: !!r.rested, restCost: r.restCost, restPct: r.restPct,
+    scoreRound: D.RULES.scoreRound, scoreCoin: D.RULES.scoreCoin, prices: D.RULES.prices,
   });
 }
 function showEnd(j, quiet = false) {
@@ -1174,7 +1177,9 @@ function showEnd(j, quiet = false) {
   const lines = win ? T.END_WIN.lines : [T.pickLine(T.LOSE_LINES, r.done)];
   const feathers = win ? [8, 18, 27, 36, 45, 55, 63, 72, 81, 90].map((x, i) => `<i style="left:${x}%;--r:${(i * 67) % 360}deg;--dl:${(i * 0.17).toFixed(2)}s;--dx:${(i % 2 ? 1 : -1) * (10 + i * 3)}px"></i>`).join('') : '';
   const scene = `<div class="endscene ${win ? 'win' : 'lose'}" aria-hidden="true"><div class="es-steam"><i></i><i></i><i></i></div><div class="es-clip"><div class="es-hero">${art.portrait(r.char, r.form)}</div></div><div class="es-pot">${art.potArt(win)}</div>${win ? `<div class="es-confetti">${feathers}</div>` : ''}</div>`;
-  const facts = pickFacts(endFacts(G.lastEndJ, win));
+  // Ciekawostka jest losowana raz na run (ponowne otwarcie ekranu, np. po analizie, pokazuje tę samą); zapamiętujemy rodzaj, żeby się nie powtarzała z rzędu.
+  if (!G.factsOf || G.factsOf.id !== r.id) { const f = pickFacts(endFacts(G.lastEndJ, win)); G.factsOf = { id: r.id, facts: f }; if (f[0]) store.set('bulgot:lastfact', f[0].kind); }
+  const facts = G.factsOf.facts;
   // pełny ekran: po lewej scena, tytuł i ciekawostki; po prawej rachunek, rekordy, odblokowania i przyciski
   openOverlay(`<div class="endwrap ${win ? 'win' : 'lose'}"><div class="end-left">${scene}<h2 class="end-title ${win ? '' : 'lose'}">${win ? T.END_WIN.title : T.END_LOSE.title}</h2>
     ${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}
@@ -1339,7 +1344,6 @@ function showSettings() {
     <div class="setrow"><span>Muzyka (bulgocząca pętla)</span><button class="toggle ${snd.settings.music ? 'on' : ''}" data-act="tmusic">${snd.settings.music ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Faktura po wygranej walce (zamiast okna wyniku)</span><button class="toggle ${invoiceOn() ? 'on' : ''}" data-act="tinv">${invoiceOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Animacje (wyłącz, jeśli ruch Ci przeszkadza)</span><button class="toggle ${animOn() ? 'on' : ''}" data-act="tanim">${animOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
-    <div class="setrow"><span>Domyślna szybkość walki</span><button class="toggle on" data-act="speed2">×${G.speed}</button></div>
     <p class="hint">Wyciszenie dźwięku w lobby wycisza także tę grę.</p>`, { narrow: true });
 }
 function showMenu() {
@@ -1418,9 +1422,6 @@ const ACT = {
     snd.unlock(); startFight(j.setup);
   },
   useskill: b => useSkill(+b.dataset.v),
-  speed: b => { setSpeed(G.speed >= 3 ? 1 : G.speed + 1); },
-  setspeed: b => { setSpeed(+b.dataset.v); },
-  speed2: b => { G.speed = G.speed >= 3 ? 1 : G.speed + 1; store.set('bulgot:speed', G.speed); b.textContent = '×' + G.speed; },
   pause: () => { const F = G.fight; if (!F || F.finishing) return; F.paused = !F.paused; $('#pausebtn').classList.toggle('on', F.paused); $('#pausebtn').textContent = F.paused ? 'Wznów' : 'Pauza'; if (F.paused) banner('Pauza', 'Naciśnij P, aby wznowić', false); },
   'retry-fight': () => { closeOverlay(); const cb = G.retryCb; G.retryCb = null; if (cb) cb(); },
   close: () => { closeOverlay(); if (G.screen === 'run' && G.run && G.run.phase === 'bonus') render(); },
@@ -1526,7 +1527,6 @@ document.addEventListener('keydown', e => {
     if (['1', '2', '3'].includes(k)) { e.preventDefault(); useSkill(+k - 1); }
     else if (k === 'q' || k === 'w' || k === 'e') useSkill('qwe'.indexOf(k));
     else if (k === 'p' || k === ' ') { e.preventDefault(); ACT.pause(); }
-    else if (k === 'f') ACT.speed();
     return;
   }
   const r = G.run;
@@ -1537,7 +1537,6 @@ document.addEventListener('keydown', e => {
     else if (r.phase === 'offer' && ['1', '2', '3', '4', '5'].includes(k)) { const b = $(`.cards [data-act=pick][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && k === 'u') { const b = $('[data-act="upgrademenu"]'); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'offer' && k === 'l') { const b = $('[data-act="pawnmenu"], [data-act="redeem"]'); if (b && !b.disabled) b.click(); }
-    else if (r.phase === 'fight' && k === 'f') ACT.speed();
     else if ((r.phase === 'offer' || r.phase === 'fight') && k === 'o') { const b = $('[data-act="rest"]'); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'offer' && k === 'r') { const b = $('[data-act="reroll"]'); if (b && !b.disabled) b.click(); }
     else if ((r.phase === 'event' || r.phase === 'bonus') && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-i="${+k - 1}"]`); if (b) b.click(); }

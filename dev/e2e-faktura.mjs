@@ -83,7 +83,7 @@ await wait(1800);
 const end = await p.evaluate(() => { const m = document.querySelector('.modal.endfull').getBoundingClientRect(); return { w: Math.round(m.width), h: Math.round(m.height), vw: innerWidth, vh: innerHeight, full: document.querySelector('#overlay').classList.contains('full'), facts: [...document.querySelectorAll('.fact')].map(f => f.textContent), title: document.querySelector('.end-title').textContent }; });
 console.log('koniec:', JSON.stringify(end));
 ok(Math.abs(end.w - end.vw) <= 2 && Math.abs(end.h - end.vh) <= 2 && end.full, `ekran końca wypełnia okno (${end.w}×${end.h} z ${end.vw}×${end.vh})`);
-ok(end.facts.length >= 1 && /małp|piętr|walk|Zabrakło|umiejętn/i.test(end.facts.join(' ')), 'ciekawostki przy odpadaniu: ' + end.facts.map(f => f.replace(/^Ciekawostka|^I jeszcze/, '')).join(' | '));
+ok(end.facts.length === 1 && !/małp/i.test(end.facts.join(' ')),'ciekawostki przy odpadaniu: ' + end.facts.map(f => f.replace(/^Ciekawostka|^I jeszcze/, '')).join(' | '));
 await p.screenshot({ path: OUT + '/koniec-pelny.png' });
 for (const [w, h] of [[1920, 1080], [1366, 650], [1280, 720]]) {
   await p.setViewport({ width: w, height: h }); await wait(400);

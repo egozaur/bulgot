@@ -423,13 +423,6 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 .dmg.react.szok { color: #ffb36b; } .dmg.react.goraczka { color: #b6f08a; } .dmg.react.kruchosc { color: #a8e6ff; }
 .dmg.txt.warn { color: #ff8a6a; }
 
-/* tempo walki przed walką */
-.speedpick { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
-.speedpick .lab { font: 600 11px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
-.speedpick .spd { min-width: 3.2em; padding: .35em .7em; border-radius: 10px; border: 3px solid var(--outline); background: var(--panel2); font-family: var(--display); font-size: 1.1rem; color: var(--ink); box-shadow: 0 3px 0 var(--outline); }
-.speedpick .spd.on { background: linear-gradient(#ffc56b, var(--amber2)); color: #1c1100; }
-.speedpick .spd:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-.speedpick .note { flex-basis: 100%; text-align: center; color: var(--faint); font-size: .82rem; }
 
 /* ikonki statystyk */
 .stats dt { display: flex; align-items: center; gap: 7px; }
@@ -1071,10 +1064,11 @@ html.reduce .slip.land, html.reduce .slip.pop, html.reduce .board.bump, html.red
 .mode-opt { padding: 10px 16px; }
 .mode-opt h3 { font-size: 1.35rem; }
 .carousel { position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; }
-.car-track { position: relative; height: 100%; min-height: 300px; max-height: 400px; align-self: center; overflow: hidden; }
+.car-track { position: relative; height: 100%; min-height: 300px; max-height: 470px; align-self: center; overflow: hidden; }
 .car-card { position: absolute; left: 50%; top: 50%; width: 260px; transform: translate(calc(-50% + var(--o) * 290px), -50%) scale(calc(1 - var(--a) * .18)); opacity: calc(1 - var(--a) * .5); transition: transform .28s cubic-bezier(.3,.9,.3,1), opacity .28s; }
 .car-card[aria-hidden="true"] { opacity: 0; pointer-events: none; }
 .car-card.on { z-index: 2; }
+.car-card > * { zoom: var(--fit, 1); }   /* fitCarousel(): zawartość karty kurczy się, gdy karta jest wyższa niż tor */
 .car-arrow { width: 46px; height: 64px; border-radius: 14px; border: 3px solid var(--outline); background: var(--panel); color: var(--amber); font-size: 2.2rem; line-height: 1; cursor: pointer; box-shadow: 0 4px 0 var(--outline); justify-self: center; }
 .car-arrow:hover { background: #3a2b1c; }
 .car-dots { display: flex; justify-content: center; gap: 8px; margin-top: 4px; }
@@ -1373,3 +1367,17 @@ html.reduce .sch.near .sic { animation: none; }
 .deepn { color: #e2c9ff; font-weight: 800; }
 .emo.emo-svg svg { width: 1em; height: 1em; }
 .tile.choice > .emo.emo-svg svg, .kb > .emo.emo-svg svg { width: 1em; height: 1em; }
+
+/* Górny pasek: pola Okólnik, tryb, Palnik, Klątwy, Trasa, Dogrywka i wynik wyglądają jak przyciski Księgi, Pomocy i Menu
+   (ten sam kształt, ciemny obrys, „klawisz” z cieniem pod spodem i ta sama wysokość). Kolor wyróżnienia zostaje jako tekst i cienki pierścień w środku. */
+.topbar .pill, .topbar .disp.odo, .topbar .btn.small.menubtn { height: 38px; box-sizing: border-box; border: 2px solid var(--outline); border-radius: 10px; box-shadow: 0 3px 0 var(--outline); }
+.topbar .pill { --acc: transparent; background: var(--panel2); color: var(--ink); font-family: var(--display); font-size: 1.05rem; font-weight: 700; letter-spacing: .03em; line-height: 1; padding: 0 .8em; gap: .45em; box-shadow: 0 3px 0 var(--outline), inset 0 0 0 1px var(--acc); }
+.topbar .pill.g { --acc: rgba(217,106,58,.65); color: #ffb48a; }
+.topbar .pill.dec { --acc: rgba(144,164,174,.5); color: #cfd8dc; }
+.topbar .pill.curse { --acc: rgba(178,58,72,.7); color: #ff9fa8; }
+.topbar .pill.route { --acc: rgba(74,163,223,.6); color: #bfe3ff; }
+.topbar .pill.endl { --acc: rgba(160,107,214,.65); color: #e2c9ff; }
+.topbar .pill .skull { width: 1em; height: 1em; }
+.topbar .disp.odo { background: var(--panel2); padding: 0 .5em; align-items: center; }
+.topbar .disp.odo b { align-items: center; }
+@container tb (max-width: 1200px) { .topbar .pill { padding: 0 .6em; font-size: .95rem; } }
