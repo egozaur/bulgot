@@ -16,6 +16,8 @@ const MODE = arg('mode', 'full'), GARNEK = +arg('garnek', 0), N = +arg('n', 300)
 const SEED0 = +arg('seed', 1);
 if (process.argv.includes('--noroutes')) for (const k of Object.keys(ROUTES)) ROUTES[k] = { name: k, text: '' };   // trasy bez modyfikatorów (pomiar)
 if (process.argv.includes('--bossorig')) for (const k of Object.keys(BOSS_POOL)) BOSS_POOL[k] = [k];   // tylko oryginalni bossowie (pomiar wpływu wariantów)
+const EXTRA = arg('extra', 'smart'), EXTRAHP = +arg('extrahp', 60), XS = { offers: 0, fights: 0, wins: 0, byId: {} };   // --extra never|always|smart (smart: walczy od --extrahp % życia)
+for (const [k, id] of [['xg', 'gruszka'], ['xp', 'pipsztal']]) if (arg(k)) { const [h, a] = arg(k).split(',').map(Number); BOSSES[id].hp = h; BOSSES[id].atk = a; }   // --xg hp,atk / --xp hp,atk: nadpisanie bossów dodatkowych
 const CURSES = (arg('curses', '') || '').split(',').filter(Boolean), ENDLESS = process.argv.includes('--endless'), KURNIK = arg('kurnik') ? Object.fromEntries(arg('kurnik').split(',').map(x => x.split(':')).map(([k, v]) => [k, +v])) : {};   // --curses a,b  --endless (po Prezesie gra dalej)  --kurnik silownia:2,spizarnia:3
 const TRACE = process.argv.includes('--trace');
 const NOREST = process.argv.includes('--norest'), RESTBELOW = +arg('restbelow', 55);
@@ -83,7 +85,7 @@ function botInputs(setup) {
   while (!f.over) {
     const now = [];
     f.skills.forEach((s, slot) => {
-      if (f.tick < s.cd || f.tick < s.blockedUntil) return;
+      if (f.tick < s.cd || f.tick < s.blockedUntil || f.tick < f.heroStunUntil) return;
       const alive = f.alive();
       const windup = alive.some(e => e.windup);
       let use = false;
@@ -155,6 +157,7 @@ function playRun(seed) {
         shopBuy(run, bi, 0, 1);
       } else if (run.pending.kind === 'contract') chooseOpt(run, 0);
       else if (run.pending.kind === 'adopt') chooseOpt(run, 0);
+      else if (run.pending.kind === 'extra') { const x = EXTRA === 'always' || (EXTRA === 'smart' && run.hp * 100 >= statsOf(run).maxHp * EXTRAHP); XS.offers++; chooseOpt(run, x ? 0 : 1); }
       else if (run.pending.kind === 'arena') chooseOpt(run, run.hp * 100 >= statsOf(run).maxHp * 70 ? 0 : 1);
       else if (run.pending.kind === 'shrine') chooseOpt(run, run.hp * 100 < statsOf(run).maxHp * 55 || !run.pending.badge ? 0 : 1);
       else bet(run, 0);
@@ -185,6 +188,7 @@ function playRun(seed) {
       const { setup } = fightSetup(run);
       const before = { hp: run.hp, coins: run.coins };
       const out = fightFinish(run, botInputs(setup));
+      if (setup.extra) { XS.fights++; const b = (XS.byId[setup.extra] = XS.byId[setup.extra] || { n: 0, w: 0 }); b.n++; if (out.result.win) { XS.wins++; b.w++; } }
       const S0 = statsOf(run);
       const row = (PER[setup.round] = PER[setup.round] || { n: 0, win: 0, loss: 0, ticks: 0, fast: 0 }); row.ticks += out.result.ticks; if (out.result.ticks <= 20) row.fast++;
       row.n++; if (out.result.win) { row.win++; row.loss += Math.max(0, before.hp - out.result.hp) / S0.maxHp; }
@@ -219,6 +223,7 @@ let line = 'Porażki w rundzie: ';
 for (let r = 1; r <= rounds; r++) if (died[r]) line += `${r}:${(died[r] / N * 100).toFixed(0)}% `;
 console.log(line);
 if (ENDLESS) console.log(`Dogrywka: ${clearedN} z ${N} runów pokonało Prezesa; średnio ${(deepSum / Math.max(1, clearedN)).toFixed(1)} pięter ponad limit, najgłębiej +${deepMax}`);
+if (XS.offers) console.log(`Dodatkowe rundy: ofert ${XS.offers}, walk ${XS.fights}, wygranych ${XS.wins}; ` + Object.entries(XS.byId).map(([k, v]) => k + ' ' + v.w + '/' + v.n + ' (' + (v.w / v.n * 100).toFixed(0) + '%)').join(', '));
 console.log(`Ulepszeń na run: ${(UPG / N).toFixed(2)}   łupów z bossów na run: ${(LOOT / N).toFixed(2)}`);
 if (process.argv.includes('--table')) {
   console.log('Runda  walk  wygr%  śr.strata życia przy wygranej  śr.czas walki (s)  walki ≤2 s');

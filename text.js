@@ -186,3 +186,24 @@ export const CHAR_PERKS = {
   sigma: { title: 'Samotny Wilk', perks: [['atk', '+', '+25% Ataku'], ['maxHp', '+', '+15% Życia'], ['🐺', '-', 'Bonusy zestawów i powiązań nie działają']] },
   dinozaur: { role: 'Sekretny', title: 'Wykluwa się', perks: [['🥚', '+', 'Po 4 piętrach: Dinozaur (+30% Ataku i Życia)'], ['atk', '-', '−8% Ataku'], ['maxHp', '-', '−8% Życia']] },
 };
+
+// Gruszka (dodatkowy boss na piętrze 3): na starcie walki wyśmiewa aktualny build. Wybiera najsłabszą stronę bohatera (najwyższy „wstyd”).
+export function gruszkaTaunt(r) {
+  const S = r.hero || {}, f1 = n => (n / 100).toFixed(2).replace('.', ','), sk = (r.skills || []).length, tiles = (r.tiles || []).length;
+  const L = [];   // [wstyd 0..100, tekst]
+  L.push([sk === 0 ? 95 : 0, 'Zero umiejętności? Ja bym się też wstydziła, więc cię rozumiem.']);
+  L.push([sk === 1 ? 55 : 0, 'Jedna umiejętność. Jedna! U mnie na podwórzu i kura ma więcej sztuczek.']);
+  L.push([S.armor <= 1 ? 80 : S.armor <= 4 ? 45 : 0, `Pancerz ${S.armor}? Przez ten dziurawy kubraczek widać nawet pestki.`]);
+  L.push([S.evade <= 0 ? 50 : 0, 'Unik 0%? Stoisz jak gruszka w sadzie. Tylko mniej smaczny.']);
+  L.push([S.crit < 8 ? 65 : S.crit < 15 ? 40 : 0, `Szansa na krytyk ${S.crit}%. Tyle trafień to ja mam w skórce od jednego uderzenia.`]);
+  L.push([S.aspd < 85 ? 70 : S.aspd < 100 ? 35 : 0, `Szybkość ${f1(S.aspd)} na sekundę? Moje pestki szybciej spadają z drzewa.`]);
+  L.push([S.maxHp < 85 ? 60 : 0, `${S.maxHp} punktów życia? Rosół z ciebie wyjdzie rzadki.`]);
+  L.push([S.atk < 12 ? 55 : 0, `Atak ${S.atk}? Łaskoczesz mnie, kurczaku, i to bez przekonania.`]);
+  L.push([(r.coins | 0) >= 14 ? 62 : 0, `${r.coins} Ziaren w kieszeni, a build jak z kantyny. Warto było oszczędzać?`]);
+  L.push([tiles <= 5 ? 58 : 0, `Zaledwie ${tiles} kafelków. Składasz tego kurczaka na gwoździe i ślinę.`]);
+  L.push([(r.hp * 100 < (S.maxHp || 1) * 55) ? 72 : 0, `Z ${r.hp} życia chcesz się ze mną bić? Odważnie. Głupio, ale odważnie.`]);
+  L.push([10, 'Ten build wygląda jak pomysł stażysty po trzech kawach.']);
+  L.push([8, 'Widziałam lepsze kafelki na dnie kosza z odpadami.']);
+  L.sort((a, b) => b[0] - a[0] || a[1].length - b[1].length);
+  return L[0][1];
+}

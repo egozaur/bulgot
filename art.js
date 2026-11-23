@@ -477,6 +477,36 @@ const ENEMY = {
     <path d="M80 44 v40" stroke="#b0bec5" stroke-width="4.5" stroke-linecap="round"/><circle cx="80" cy="40" r="9" fill="#cfd8dc" ${S2}/><path d="M80 31 v18" ${S2}/>`,
 };
 ENEMY.intern2 = ENEMY.intern;
+// Dodatkowi bossowie (piętra 3 i 6): Gruszka w piżamie (kurczak z głową gruszki) i Pipsztal w czarnym dresie; pies Pipsztala to osobny wróg.
+ENEMY.gruszka = () => `<g transform="translate(6 12) scale(.9)">
+    <path d="M36 88 v6 m-8 0 h16 M66 88 v6 m-8 0 h16" stroke="#e8902a" stroke-width="5.5" stroke-linecap="round"/>
+    <path d="M88 70 q14 -2 8 -20 q-16 6 -8 20 z" fill="#6b1d2a" ${S}/>
+    <ellipse cx="52" cy="66" rx="34" ry="26" fill="#c9a26b" ${S}/>
+    <path d="M26 56 q26 -14 52 0 l4 34 h-60z" fill="#5c6bc0" ${S}/><path d="M40 52 l12 40 l12 -40" ${S2} ${NF}/><path d="M28 76 q24 8 48 0" stroke="#fff3d6" stroke-width="5" ${NF}/>
+    <path d="M42 4 q-7 0 -9 9 q-15 8 -15 24 q0 15 24 15 q24 0 24 -15 q0 -16 -15 -24 q-2 -9 -9 -9z" fill="#f0a246" ${S}/>
+    <path d="M56 22 q8 10 4 24 q-6 6 -14 6 q12 -8 10 -30z" fill="#b9701a" opacity=".55"/><circle cx="30" cy="22" r="1.4" fill="#b9701a"/><circle cx="50" cy="28" r="1.4" fill="#b9701a"/><circle cx="34" cy="44" r="1.4" fill="#b9701a"/>
+    <path d="M42 5 q-2 -8 4 -12" stroke="#6b4423" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M44 -2 q12 -8 20 0 q-8 8 -20 0z" fill="#4caf50" ${S2}/>
+    <path d="M24 36 l-12 3 l12 5 z" fill="#ffb02e" ${S}/>${eye(33, 31, 7.5, -2)}${eye(49, 31, 6, -2)}${brow(25, 22, 40, 27)}
+    <path d="M78 34 h12 l-2 12 q-4 3 -8 0z" fill="#ffd9b0" ${S2}/><path d="M84 46 v14 m-5 0 h10" ${S2}/></g>`;
+ENEMY.pipsztal = () => `<g transform="translate(8 4) scale(.92)">
+    <path d="M36 88 v6 m-8 0 h16 M66 88 v6 m-8 0 h16" stroke="#e8902a" stroke-width="5.5" stroke-linecap="round"/>
+    <path d="M88 70 q14 -2 8 -20 q-16 6 -8 20 z" fill="#6b1d2a" ${S}/>
+    <ellipse cx="52" cy="66" rx="34" ry="26" fill="#fff3d6" ${S}/>
+    <path d="M30 54 q22 -10 44 0 l-2 32 q-20 6 -40 0z" fill="#212121" ${S}/><path d="M34 56 v30 M70 56 v30" stroke="#e53950" stroke-width="4"/><path d="M52 52 v34" ${S2}/>
+    <path d="M36 90 h-14 q-4 4 0 6 h22 v-6z M66 90 h-14 q-4 4 0 6 h22 v-6z" fill="#e53950" ${S2}/>
+    <path d="M36 52 q16 16 32 0" stroke="#ffc933" stroke-width="3.6" fill="none"/><circle cx="52" cy="64" r="5" fill="#ffc933" ${S2}/>
+    <circle cx="40" cy="34" r="17" fill="#fff3d6" ${S}/><path d="M30 20 q-2 -10 6 -8 q2 -8 9 -2 q8 -1 5 8 z" fill="#e53950" ${S}/>
+    <path d="M26 36 l-14 4 l14 6 z" fill="#ffb02e" ${S}/><path d="M20 40 h10" stroke="#ffc933" stroke-width="3.4"/>${eye(36, 32, 8, -2)}${brow(28, 24, 44, 29)}
+    <path d="M24 26 q14 -22 34 -2 l-2 6 h-32z" fill="#e53950" ${S2}/><path d="M24 28 h-14 q0 5 6 5 h10" fill="#e53950" ${S2}/>
+    <g transform="translate(-2 6)"><path d="M16 56 l-24 -10 l4 -6 l26 9z" fill="#eceff1" ${S2}/><rect x="14" y="52" width="12" height="7" rx="2" fill="#5d4037" ${S2}/></g></g>`;
+ENEMY.pipdog = () => `
+    <path d="M88 60 q14 -8 6 -20 q-12 4 -10 18 z" fill="#7d5a3c" ${S}/><rect x="30" y="52" width="56" height="34" rx="14" fill="#7d5a3c" ${S}/>
+    <path d="M18 34 q-6 14 4 22 q8 -4 6 -20 z" fill="#4a3322" ${S}/>
+    <rect x="12" y="38" width="38" height="30" rx="12" fill="#8f6a4a" ${S}/><ellipse cx="18" cy="54" rx="10" ry="8" fill="#eacda8" ${S}/><circle cx="12" cy="52" r="3.2" fill="${O}"/>
+    ${eye(34, 48, 5.5, -1.5)}${brow(27, 40, 41, 43)}<path d="M14 60 q4 4 8 0" ${S2} ${NF}/>
+    <path d="M28 68 q10 6 22 0 l0 6 q-12 6 -22 0 z" fill="#555" ${S2}/><path d="M32 69 l2 -6 l3 6 M40 72 l2 -6 l3 6 M47 72 l2 -6 l3 6" fill="#ccc" stroke="${O}" stroke-width="1.6"/>
+    <path d="M36 84 v10 m-6 0 h12 M72 84 v10 m-6 0 h12" stroke="#4a3322" stroke-width="5" stroke-linecap="round"/>`;
+
 
 export function enemyArt(key, tint) { return svg((ENEMY[key] || ENEMY.rat)(), '0 0 100 100', 'fig enemy-fig' + (tint ? ' tint-' + tint : '')); }
 

@@ -173,3 +173,10 @@
 }
 @media (prefers-reduced-motion: reduce) { .fxo, #fightlayer .cloud { animation: none; } }
 html.reduce .fxo { display: none; }
+
+/* Dymek Gruszki: docinki o buildzie gracza na starcie walki */
+.saybub { position: absolute; left: 50%; bottom: calc(100% + var(--u) * 7); transform: translateX(-62%); width: calc(var(--u) * 34); padding: calc(var(--u) * 1.1) calc(var(--u) * 1.6); border: calc(var(--u) * .3) solid #2b1a12; border-radius: calc(var(--u) * 1.6); background: #fff3d6; color: #2b1a12; font: 800 calc(var(--u) * 1.9)/1.2 'Baloo 2', system-ui, sans-serif; text-align: center; z-index: 30; pointer-events: none; box-shadow: 0 calc(var(--u) * .4) calc(var(--u) * 1.2) rgba(0,0,0,.45); animation: saybub-in .28s cubic-bezier(.2,1.4,.4,1) both; }
+.saybub::after { content: ""; position: absolute; left: 62%; top: 100%; width: calc(var(--u) * 2); height: calc(var(--u) * 2); background: #fff3d6; border-right: calc(var(--u) * .3) solid #2b1a12; border-bottom: calc(var(--u) * .3) solid #2b1a12; transform: translate(-50%, -55%) rotate(45deg); }
+.saybub.out { opacity: 0; transition: opacity .45s; }
+@keyframes saybub-in { from { opacity: 0; transform: translateX(-62%) scale(.7); } to { opacity: 1; transform: translateX(-62%) scale(1); } }
+html.reduce .saybub { animation: none; }

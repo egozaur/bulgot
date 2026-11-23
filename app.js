@@ -253,8 +253,13 @@ function arenaPreview() {
   const g = G.run.arenaGhost, st = g.stats;
   return `<div class="preview doorview arenaview"><div class="lab">Arena Duchów! Nagroda: +${D.RULES.arenaCoins} Ziaren i wybór rzadkiego kafelka</div><div class="glass"><div class="pv boss">${art.ghostArt(g.char)}<span>Duch: ${esc(g.nick)}</span></div></div><div class="tplnote">Życie ${st.hp}, Atak ${st.atk}, szybkość ${(st.aspd / 100).toFixed(2).replace('.', ',')} / s, Pancerz ${st.armor}${g.mirror ? '. To twoje własne Odbicie.' : ''}</div></div>`;
 }
+function extraPreview(id) {
+  const d = D.BOSSES[id], pv = id === 'pipsztal' ? `<div class="pv">${art.enemyArt('pipdog')}<span>${esc(D.EXTRA_DOG.name)}</span></div>` : '';
+  return `<div class="preview doorview arenaview"><div class="lab">Dodatkowa runda! Nagroda: +${D.RULES.extraCoins} Ziaren i wybór legendarnej statystyki</div><div class="glass">${pv}<div class="pv boss">${art.enemyArt(d.art)}<span>${esc(d.name)}</span></div></div><div class="tplnote">${esc(d.text)} Walczysz z życiem po poprzedniej walce (odpoczynek wyłączony).</div></div>`;
+}
 function previewHTML() {
   const r = G.run; if (r.arenaGhost) return arenaPreview();
+  if (r.extraNow) return extraPreview(r.extraNow);
   let ids = r.enemies || [];
   const bdef = r.boss && D.BOSSES[r.boss];
   if (bdef && bdef.guards) ids = [...Array(bdef.guards).fill('kot-ochroniarz'), r.boss];
@@ -474,7 +479,7 @@ function topbarHTML() {
 function stageHTML() {
   const r = G.run;
   if (r.phase === 'offer') return stageOffer();
-  if (r.phase === 'event') { const kd = r.pending.kind; return kd === 'shop' ? stageShop() : kd === 'contract' ? stageContract() : kd === 'shrine' ? stageShrine() : kd === 'adopt' ? stageAdopt() : kd === 'crate' ? stageCrate() : kd === 'arena' ? stageArena() : stageGamble(); }
+  if (r.phase === 'event') { const kd = r.pending.kind; return kd === 'shop' ? stageShop() : kd === 'contract' ? stageContract() : kd === 'shrine' ? stageShrine() : kd === 'adopt' ? stageAdopt() : kd === 'crate' ? stageCrate() : kd === 'arena' ? stageArena() : kd === 'extra' ? stageExtra() : stageGamble(); }
   if (r.phase === 'badge') return stageBadge();
   if (r.phase === 'loot') return stageLoot();
   if (r.phase === 'door') return stageDoor();
@@ -486,13 +491,14 @@ function stageHTML() {
 }
 function floorKron() {
   const r = G.run;
+  if (r.extraNow) return D.BOSSES[r.extraNow].quote;
   if (r.boss) return bossIntroOf(r.boss).quote;
   return T.pickLine(T.OFFER_LINES[r.zone], r.round - 1);
 }
 // Odpoczynek: za Ziarna leczy część życia, raz na rundę, przed walką.
 function restBtn() {
-  const r = G.run, off = r.rested || r.hp >= r.maxHp || r.coins < r.restCost;
-  const why = r.rested ? 'W tej rundzie już odpoczywałeś' : r.hp >= r.maxHp ? 'Masz pełne życie' : r.coins < r.restCost ? 'Za mało Ziaren' : 'Odpoczynek (klawisz O)';
+  const r = G.run, off = r.rested || r.hp >= r.maxHp || r.coins < r.restCost || !!r.extraNow;
+  const why = r.extraNow ? 'Przed dodatkową rundą nie ma odpoczynku' : r.rested ? 'W tej rundzie już odpoczywałeś' : r.hp >= r.maxHp ? 'Masz pełne życie' : r.coins < r.restCost ? 'Za mało Ziaren' : 'Odpoczynek (klawisz O)';
   return `<button class="btn" data-act="rest" ${off ? 'disabled' : ''} title="${why}">Odpoczynek: +${r.restPct}% życia za ${r.restCost} ${art.coinIcon()}</button>`;
 }
 function offerCard(id, i) {
@@ -643,6 +649,22 @@ function stageArena() {
     <div class="ghostcard"><div class="gfig">${art.ghostArt(g.char, g.wear)}</div><div class="gst"><b>Statystyki Ducha na tym piętrze</b><span>Życie ${st.hp}</span><span>Atak ${st.atk}</span><span>Szybkość ${(st.aspd / 100).toFixed(2).replace('.', ',')} / s</span><span>Pancerz ${st.armor}</span><span>Krytyk ${st.crit}%</span><span>Unik ${st.evade}%</span><div class="gtiles">${tiles}</div></div></div>
     <div class="cards">${cards}</div>`;
 }
+// Dodatkowa runda po wygranej na piętrze 3 (Gruszka) i 6 (Pipsztal): opcjonalna walka z życiem, które ci zostało.
+const EXTRA_INFO = {
+  gruszka: { title: 'Gruszka czeka w sadzie', sub: 'Wielki kurczak z głową gruszki wyszedł z cienia i wygląda na obrażonego, że jeszcze stoisz.', kron: 'Zacznie od docinków. Skończy na obieraniu.' },
+  pipsztal: { title: 'Pipsztal wchodzi z psem', sub: 'Kurczak w dresie, nóż w skrzydle i pies, który nie trzyma moczu. Pytanie o pięć złotych to dopiero początek.', kron: 'Pies sika, Pipsztal tnie. Ty ogłuszony.' },
+};
+function stageExtra() {
+  const r = G.run, id = r.pending.boss, X = EXTRA_INFO[id], d = D.BOSSES[id], hpPct = Math.round(r.hp * 100 / r.maxHp);
+  const cards = [
+    choiceCard(0, art.enemyArt(d.art), 'Walcz: ' + d.name, 'Walka z życiem, które ci zostało (' + r.hp + ' z ' + r.maxHp + '). Nagroda: +' + D.RULES.extraCoins + ' Ziaren i wybór 1 z 3 legendarnych statystyk. Przegrana kończy run, a leczenie po piętrze dostajesz dopiero po walce.', '<div class="tmeta"><span class="tag up">Ryzyko</span></div>'),
+    choiceCard(1, art.doorIcon(false), 'Odpuszczam', 'Odchodzisz bez bicia piany, dostajesz leczenie po piętrze i idziesz dalej.'),
+  ].join('');
+  return `<div class="stage-title"><h2>Dodatkowa runda: ${esc(d.name)}</h2><div class="sub">${esc(X.title)}. Opcjonalna, możesz odpuścić.</div></div>
+    <div class="kron">${esc(X.kron)}</div>
+    <div class="ghostcard"><div class="gfig">${art.enemyArt(d.art)}</div><div class="gst"><b>${esc(d.name)}, ${esc(d.title)}</b><span>${esc(X.sub)}</span><span>${esc(d.text)}</span><span>Twoje życie: ${r.hp} / ${r.maxHp} (${hpPct}%)</span></div></div>
+    <div class="cards">${cards}</div>`;
+}
 function stageContract() {
   const cards = [
     choiceCard(0, art.tileIcon('umowa-etat'), 'Umowa o Pracę', '+30% Ataku do końca runu, ale -2 Ziarna po każdej rundzie.'),
@@ -754,7 +776,7 @@ function startFight(setup) {
   const layer = document.createElement('div'); layer.id = 'fightlayer';
   layer.innerHTML = `<div class="arena z${setup.zone}" id="arena"><div class="pl pl-bg">${fightScene(setup.zone)}</div>${sceneClouds(setup.zone)}<div class="pl pl-haze" aria-hidden="true"></div><div class="pl pl-fore" aria-hidden="true"></div><div class="vign"></div>
     <div id="units"></div><div id="fxl"></div><div id="fxs"></div>
-    <div class="fhud"><div class="fl"><span class="hchip${boss ? ' boss' : ''}">Piętro ${setup.round}${boss ? ' · BOSS' : ''} · ${esc(T.ZONE_NAMES[setup.zone])}</span>${setup.tpl && D.FLOOR_TPL[setup.tpl] ? `<span class="hchip">${esc(D.FLOOR_TPL[setup.tpl].name)}</span>` : ''}</div>
+    <div class="fhud"><div class="fl"><span class="hchip${boss ? ' boss' : ''}">Piętro ${setup.round}${setup.extra ? ' · DODATKOWY BOSS' : boss ? ' · BOSS' : ''} · ${esc(T.ZONE_NAMES[setup.zone])}</span>${setup.tpl && D.FLOOR_TPL[setup.tpl] ? `<span class="hchip">${esc(D.FLOOR_TPL[setup.tpl].name)}</span>` : ''}</div>
       <div class="timer" id="timer"><span id="tt">0:00</span><div class="tb"><i id="tbi" style="width:0"></i><u></u></div></div>
       <div class="ctl"><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button><button data-act="menu" title="Menu (Esc)">Menu</button></div></div>
     <div class="fcon"><div class="gdak" id="gdak" data-tip="Okno Gdakania&#10;Użyj kolejnej umiejętności w ciągu 1,5 s po poprzedniej. 2. w serii zadaje +20% obrażeń, 3. +50%. Trzy różne umiejętności pod rząd to Pełna Kurza Seria: dodatkowo ogłuszenie wrogów na 1 s."><span class="gl">SERIA</span><span class="gseg" id="gseg"><i></i><i></i><i></i></span><b id="gdakn">–</b><span class="gbar"><i id="gdaki"></i></span></div><div class="skillbar" id="skillbar"></div></div>
@@ -767,7 +789,7 @@ function startFight(setup) {
   if (f.comp) { const cc = f.loadout.companion; makeUnit('comp', { name: compForm(cc), art: art.companionArt(cc.id), pos: COMP_POS }); }
   for (const e of f.enemies) makeUnit(e.uid, { e, name: e.name, art: enemyFig(e) });
   layoutUnits(); buildSkillbar(); updateUI(true);
-  if (boss) { bossIntro(boss); snd.sfx('boss'); } else if (setup.tpl && D.FLOOR_TPL[setup.tpl]) banner(D.FLOOR_TPL[setup.tpl].name + '!', D.FLOOR_TPL[setup.tpl].text, false); else banner('Walka!', '', false);
+  if (boss) { bossIntro(boss); snd.sfx('boss'); if (setup.extra === 'gruszka') gruszkaSay(boss); } else if (setup.tpl && D.FLOOR_TPL[setup.tpl]) banner(D.FLOOR_TPL[setup.tpl].name + '!', D.FLOOR_TPL[setup.tpl].text, false); else banner('Walka!', '', false);
   F.last = 0; F.raf = requestAnimationFrame(frame);
 }
 
@@ -821,9 +843,15 @@ const cls = (u, c, ms) => { u.spr.classList.remove(c); void u.spr.offsetWidth; u
 function bossIntro(boss) {
   const F = G.fight, I = bossIntroOf(boss.boss), [nm, ...rest] = I.title.split(', ');
   const el = document.createElement('div'); el.className = 'cine'; el.setAttribute('role', 'status');
-  el.innerHTML = `<i class="bar t"></i><i class="bar b"></i><div class="plate"><small>BOSS · PIĘTRO ${F.setup.round}</small><h3>${esc(nm)}</h3>${rest.length ? `<em>${esc(rest.join(', '))}</em>` : ''}<p>„${esc(I.quote)}”</p></div>`;
+  el.innerHTML = `<i class="bar t"></i><i class="bar b"></i><div class="plate"><small>${F.setup.extra ? 'DODATKOWY BOSS' : 'BOSS'} · PIĘTRO ${F.setup.round}</small><h3>${esc(nm)}</h3>${rest.length ? `<em>${esc(rest.join(', '))}</em>` : ''}<p>„${esc(I.quote)}”</p></div>`;
   F.arena.appendChild(el); F.stopUntil = performance.now() + 2300;
   setTimeout(() => el.classList.add('out'), 2000); setTimeout(() => el.remove(), 2500);
+}
+// Gruszka na starcie walki wyśmiewa build gracza (dymek nad bossem, po wstępie).
+function gruszkaSay(boss) {
+  const F = G.fight, fb = F.f.enemies.find(e => e.boss), u = fb && F.units.get(fb.uid); if (!u) return;
+  const txt = T.gruszkaTaunt({ ...G.run, hp: F.setup.hero.hp });
+  setTimeout(() => { if (G.fight !== F) return; const b = document.createElement('div'); b.className = 'saybub'; b.textContent = '„' + txt + '”'; u.el.appendChild(b); setTimeout(() => b.classList.add('out'), 3600); setTimeout(() => b.remove(), 4100); }, 2300);
 }
 // Zamach skrzydłem bohatera (łuk przed dziobem) i pióra wylatujące z pokonanego wroga.
 function swoosh(u) {
@@ -886,7 +914,7 @@ function onEvent(e) {
       const show = () => { if (G.fight !== F) return; cls(u, 'flash', 110); if (!['burn', 'poison', 'bleed'].includes(e.kind)) cls(u, e.crit ? 'knockbig' : 'knock', 220); pop(e.crit ? e.d + '!' : e.d, e.crit ? 'crit' : e.kind === 'bleed' || e.kind === 'burn' || e.kind === 'poison' ? e.kind : e.kind === 'egg' ? 'egg' : '', u.x, ub(u)); snd.sfx(e.crit ? 'crit' : 'hit'); if (e.crit) shake(); };
       d > 0 ? setTimeout(show, d) : show(); break;
     }
-    case 'hurt': { cls(hero, 'hurtshake', 260); pop('-' + e.d, e.kind === 'burn' ? 'hurt burn' : 'hurt', HX); const a = tu(e.from); if (a) cls(a, 'lunge', 240); snd.sfx('hurt'); if (e.d * 100 >= f.S.maxHp * 12 || e.crit) shake(); break; }
+    case 'hurt': { const dg = tu(e.from); if (dg && dg.e && dg.e.art === 'pipdog') pop('sik!', 'txt', HX, 64); cls(hero, 'hurtshake', 260); pop('-' + e.d, e.kind === 'burn' ? 'hurt burn' : 'hurt', HX); const a = tu(e.from); if (a) cls(a, 'lunge', 240); snd.sfx('hurt'); if (e.d * 100 >= f.S.maxHp * 12 || e.crit) shake(); break; }
     case 'heal': pop('+' + e.n, 'heal', HX); snd.sfx('heal'); break;
     case 'miss': { const u = tu(e.to); if (u) pop('unik', 'txt', u.x); snd.sfx('miss'); break; }
     case 'dodge': pop('unik!', 'txt', HX); snd.sfx('miss'); break;
@@ -921,6 +949,7 @@ function onEvent(e) {
     case 'okrzyk': banner('Ostatni Okrzyk!', 'Chwila nietykalności', false); break;
     case 'revive': banner('Gniazdo Zapasowe!', 'Kurczak wstaje z kolan', false); snd.sfx('heal'); break;
     case 'fury': banner('FURIA!', 'Wrogowie wpadają w szał', true); snd.sfx('fury'); F.arena.classList.add('furious'); if (!F.arena.querySelector('.beacons')) F.arena.insertAdjacentHTML('beforeend', '<div class="beacons" aria-hidden="true"><i></i><i></i></div>'); break;
+    case 'herostun': { banner('Ogłuszony!', 'Nie atakujesz i nie używasz umiejętności', true); snd.sfx('stun'); cls(hero, 'hurtshake', 500); pop('OGŁUSZONY', 'crit', HX, 76); break; }
     case 'summon': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: enemyFig(en) }); layoutUnits(); } break; }
     case 'phase': banner('Faza ' + e.n, '', true); snd.sfx('phase'); shake(); break;
     case 'skubanie': banner('Skubanie!', 'Wyłączony kafelek: ' + TILE[e.tile].name, true); snd.sfx('phase'); break;
@@ -1028,10 +1057,13 @@ async function finishFight() {
   const res = j.result;
   if (res.win !== local.win) toast('Serwer rozliczył walkę inaczej niż Twoja przeglądarka. Obowiązuje wynik serwera.', true, 5000);
   if (G.run.phase === 'over') { G.screen = 'run'; return showEnd(j); }
-  G.screen = 'run'; INV.pending = invoiceOn() ? F.setup.round : 0; render(); showInvoice(j, F.setup.round); fightToasts(j);
+  G.screen = 'run'; if (F.setup.extra) { render(); fightToasts(j); return; }
+  INV.pending = invoiceOn() ? F.setup.round : 0; render(); showInvoice(j, F.setup.round); fightToasts(j);
 }
 // Komunikaty po walce: Arena, ewolucja towarzysza, Prezes pokonany.
 function fightToasts(j) {
+  if (j.extra && j.extra.won) { snd.sfx('unlock'); toast(`${D.BOSSES[j.extra.id].name} pokonany! +${D.RULES.extraCoins} Ziaren i łup.`, false, 4200); }
+  if (j.extraOffer) toast('Dodatkowa runda: ' + D.BOSSES[j.extraOffer].name + '. Możesz walczyć albo odpuścić.', false, 4200);
   if (j.arena) toast(j.arena.won ? 'Duch pokonany: ' + j.arena.nick + '! Bonus czeka.' : 'Duch ' + j.arena.nick + ' okazał się silniejszy.', !j.arena.won, 4200);
   if (j.compUp && G.run.companion) toast('Towarzysz ewoluuje: ' + compForm(G.run.companion) + '!', false, 4200);
   if (j.victory) { snd.sfx('unlock'); toast('Prezes pokonany! Wygrana zaliczona: kończysz albo grasz dalej w Dogrywce.', false, 6000); }
@@ -1648,7 +1680,7 @@ document.addEventListener('keydown', e => {
   if (G.screen === 'run' && r) {
     const dg = /^Digit([1-5])$/.exec(e.code);
     if (r.phase === 'offer' && dg && e.shiftKey) { const b = $(`.cards [data-act=buyoffer][data-i="${+dg[1] - 1}"]`); if (b && !b.disabled) b.click(); }
-    else if ((r.phase === 'badge' || r.phase === 'loot' || r.phase === 'door' || r.phase === 'route' || r.phase === 'victory' || (r.phase === 'event' && r.pending && ['contract', 'shrine', 'arena', 'adopt', 'crate'].includes(r.pending.kind))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
+    else if ((r.phase === 'badge' || r.phase === 'loot' || r.phase === 'door' || r.phase === 'route' || r.phase === 'victory' || (r.phase === 'event' && r.pending && ['contract', 'shrine', 'arena', 'adopt', 'crate', 'extra'].includes(r.pending.kind))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && ['1', '2', '3', '4', '5'].includes(k)) { const b = $(`.cards [data-act=pick][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && k === 'u') { const b = $('[data-act="upgrademenu"]'); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'offer' && k === 'l') { const b = $('[data-act="pawnmenu"], [data-act="redeem"]'); if (b && !b.disabled) b.click(); }
