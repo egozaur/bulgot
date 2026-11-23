@@ -565,10 +565,10 @@ function stageOffer() {
 }
 function stageDoor() {
   const r = G.run, P = r.pending, a = D.AFFIXES[P.affix];
-  const reward = P.reward === 'rare' ? 'wybór 1 z 3 rzadkich kafelków' : `+${P.coins} Ziaren`;
+  const reward = `wybór 1 z 3 rzadkich kafelków albo +${P.coins} Ziaren`;
   const cards = [
-    choiceCard(0, art.doorIcon(false), 'Zwykłe drzwi', 'Spokojne piętro: zwykli wrogowie i zwykła nagroda.'),
-    choiceCard(1, art.doorIcon(true), 'Tylko dla personelu', `Pierwszy wróg ma cechę ${a.name} (${a.text}) i jest dużo silniejszy. Przychodzi najwyżej z jednym pomocnikiem.`, `<div class="tmeta"><span class="tag up">Nagroda: ${esc(reward)}</span></div>`),
+    choiceCard(0, art.doorIcon(false), 'Zwykłe drzwi', 'Spokojne piętro: zwykli wrogowie i darmowy Odpoczynek na wejściu (leczy jak zwykły).'),
+    choiceCard(1, art.doorIcon(true), 'Tylko dla personelu', `Pierwszy wróg ma cechę ${a.name} (${a.text}) i jest dużo silniejszy. Przychodzi najwyżej z jednym pomocnikiem. Po tej walce nie leczysz się.`, `<div class="tmeta"><span class="tag up">Nagroda: ${esc(reward)}</span></div>`),
   ].join('');
   return `<div class="stage-title"><h2>Piętro ${r.round}: Rozwidlenie Korytarza</h2><div class="sub">Masz ${r.hp} / ${r.maxHp} Życia. Wybierz drzwi.</div></div>
     <div class="kron">${esc(T.pickLine(T.DOOR_LINES, r.round))}</div>${decreeHTML(true)}<div class="cards">${cards}</div>`;
@@ -664,8 +664,8 @@ function stageShrine() {
 function stageBonus() {
   const r = G.run, cards = r.offer.map((id, i) => tileCard(id, { i, act: 'bonuspick' })).join('');
   const fromDoor = !r.boss && r.door && r.door.risky;
-  return `<div class="stage-title"><h2>${fromDoor ? 'Łup zza drzwi dla personelu' : 'Nagroda za pokonanie bossa'}</h2><div class="sub">Wybierz jeden z trzech rzadkich lub lepszych kafelków</div></div>
-    <div class="kron">${esc(fromDoor ? 'Ryzyko się opłaciło. Tym razem.' : T.BOSS_WIN_LINES[lastBoss()] || 'Boss padł, a łup czeka.')}</div><div class="cards">${cards}</div>`;
+  return `<div class="stage-title"><h2>${fromDoor ? 'Łup zza drzwi dla personelu' : 'Nagroda za pokonanie bossa'}</h2><div class="sub">Wybierz jeden z trzech rzadkich lub lepszych kafelków${fromDoor ? ` albo weź ${D.RULES.doorCoins} Ziaren` : ''}</div></div>
+    <div class="kron">${esc(fromDoor ? 'Ryzyko się opłaciło. Tym razem.' : T.BOSS_WIN_LINES[lastBoss()] || 'Boss padł, a łup czeka.')}</div><div class="cards">${cards}</div>${fromDoor ? `<div class="actions"><button class="btn" data-act="bonuscoins">Wolę ${D.RULES.doorCoins} Ziaren</button></div>` : ''}`;
 }
 const lastBoss = () => { const b = G.run && G.run.stats.bossKills; return b && b[b.length - 1]; };
 function stagePrep() {
@@ -1531,6 +1531,7 @@ const ACT = {
   leave: async () => { const j = await act('shop', { i: -1 }); if (j) render(); },
   bet: async b => { const j = await act('bet', { amount: +b.dataset.v }); if (!j) return; if (j.bet) { snd.sfx(j.won ? 'win' : 'lose'); toast(j.won ? `Wygrana! +${j.bet} Ziaren` : `Pudło. -${j.bet} Ziaren`, !j.won); } render(); },
   bonuspick: b => ACT.bonusgo(+b.dataset.i),
+  bonuscoins: async () => { const j = await act('bonus', { i: -1 }); if (j) { snd.sfx('coin'); render(); } },
   choose: async b => { const j = await act('choose', { i: +b.dataset.i }); if (j) { if (G.run && G.run.phase === 'over') { G.screen = 'run'; return showEnd(j); } if (j.companion) toast('Adoptowano: ' + compForm(j.companion) + '!', false, 3600); snd.sfx(j.looted ? 'unlock' : 'pick'); if (j.looted) toast(`Łup: ${TILE[j.looted].name}!`, false, 3200); render(); } },
   bonusgo: async (i, slot, mut) => { const t = TILE[G.run.offer[i]]; if (needChoice(t, slot, mut, (s2, m2) => ACT.bonusgo(i, s2, m2))) return;
     const j = await act('bonus', { i, slot, mut }); if (j) { snd.sfx('pick'); render(); } },

@@ -646,3 +646,10 @@ Rosołowa Fala, Lawina Segregatorów, Zwarcie w Biurze, Dziobanie Seryjne, Jajo 
 - **Silnik** (`sim.js`): `okrzykN` (liczba Okrzyków), `volley` (Armia Jednego Kurczaka: pierwszy i co piąty zwykły atak to krytyk), `szokMult`, `feverPlus`, `brittleCut`, `burnBleed`; `rules.js`: `interestPlus` (limit Odsetek). `RUN_V = 15`.
 - **Klient**: `setChipsHTML` (kropki z progami 2/3/4/6) i `linkChipsHTML` (pigułki ⚔ konflikt, ☮ zdjęty, ✚ synergia, podpowiedź `data-tipk="link:<id>"`), `tip.js` → `linkTip`.
 - **Balans** (bot): pełny Pyrtek ok. 38% bez zmian, buildy tematyczne +1–2 pp. Testy: 3 nowe w `bulgot.suite.js` (`zestawy: ...`).
+
+## 24. Rozwidlenie Korytarza po przestrojeniu (2026-11-23)
+
+- **Zwykłe drzwi**: darmowy Odpoczynek na wejściu (leczy jak zwykły, nie zużywa odpoczynku rundy; odpowiedź `choose` zwraca `healed`).
+- **Ryzykowne drzwi**: elitarny wróg (`doorHp` 161%, `doorAtk` 124%), **bez leczenia po wygranej**, łup to wybór 1 z 3 rzadkich kafelków albo `doorCoins` = 10 Ziaren (`bonus {i: -1}`; tylko po ryzykownych drzwiach).
+- Cel balansu: różnica wygranych `--doors always` vs `never` ok. ±2 pp (po zmianie: szybki 48,4 vs 47,3%, pełny 36,4 vs 34,3%; przed: 38,2 vs 33,5% w pełnym).
+- **`RUN_V` zostaje 15** (zmiana nie unieważnia trwających runów). Stare runy z nagrodą `coins` nadal ją dostają (zgodność wsteczna w `fightFinish`).
