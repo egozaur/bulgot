@@ -27,13 +27,9 @@ const click = async sel => { await p.click(sel); await wait(450); };
 
 // ---------- Klątwy w ekranie startowym ----------
 await click('[data-act=new]'); await p.keyboard.press('Enter'); await wait(400);
-ok(await count('.curse-chip') === 8, '8 klątw do wyboru w kroku 2');
-await click('.curse-chip[data-v="mgla"]'); await click('.curse-chip[data-v="podatek"]');
-ok(await count('.curse-chip.on') === 2 && /\+26%/.test(await text('.curses .sec')), 'dwie klątwy zaznaczone, premia +26% w nagłówku: ' + (await text('.curses .sec')).trim());
-ok(/×1,26/.test(await text('.gmult')), 'mnożnik wyniku uwzględnia klątwy: ' + await text('.gmult'));
-await p.screenshot({ path: `${OUT}/nowosci-klatwy.png` });
+ok(await count('.curse-chip') === 0, 'klątwy ukryte na ekranie startowym (SHOW_CURSES = false)');
 await click('[data-act=start]'); await wait(800);
-ok(await count('.pill.curse') === 1 && /\+26%/.test(await text('.pill.curse')), 'plakietka Klątw na pasku');
+ok(await count('.pill.curse') === 0, 'bez klątw nie ma plakietki Klątw na pasku');
 ok(await p.evaluate(() => !!document.querySelector('.preview.fog, .preview .tplnote')), 'Mgła Zarządu: skład piętra ukryty (zaparowana szyba)');
 
 // ---------- Trasa ----------

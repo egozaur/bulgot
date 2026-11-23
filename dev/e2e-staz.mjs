@@ -68,8 +68,9 @@ await p.screenshot({ path: OUT + '/staz-oferta.png' });
 await p.evaluate(async () => { const m = await import('/bulgot/api.js'); await m.call('abandon'); });
 await p.evaluate(() => { window.__bulgot.run = null; });
 await reload();
-await p.click('[data-act=new]'); await wait(200); await p.click('[data-act=setnext]'); await wait(150);
-await p.click('[data-act=curse][data-v=zakaz-wymian]'); await wait(100); await p.click('[data-act=start]'); await wait(500);
+// klątwy są ukryte w ekranie startowym (SHOW_CURSES = false), więc run z Klątwą startujemy przez API
+await p.evaluate(async () => { const m = await import('/bulgot/api.js'); await m.call('start', { mode: 'quick', char: 'pyrtek', garnek: 0, curses: ['zakaz-wymian'] }); });
+await reload(); await wait(500);
 if (await p.$('[data-act=introgo]')) { await p.click('[data-act=introgo]'); await wait(300); }
 const rb = await p.evaluate(() => { const b = document.querySelector('.btn.reroll'); return b ? { t: b.textContent.split(/[ \n\t]+/).join(' ').trim(), dis: b.disabled } : null; });
 ok(rb && rb.dis && !/null/.test(rb.t), 'Zakaz Wymian: przycisk zablokowany, bez napisu null: ' + (rb && rb.t));

@@ -161,6 +161,8 @@ function metaChips() {
 const BURNERS = ['Ognisko', 'Gazówka', 'Kuchenka', 'Piec', 'Kuźnia', 'Wulkan'];
 const charIds = () => Object.keys(D.CHARS);
 // Klątwy Prezesa: dobrowolne utrudnienia za premię do wyniku (do D.CURSE_MAX naraz).
+// Na razie UKRYTE na ekranie startowym (decyzja właściciela, 2026-11-23). Cały mechanizm zostaje; żeby przywrócić, ustaw true.
+const SHOW_CURSES = false;
 function cursesHTML() {
   const s = G.setup, sel = s.curses || (s.curses = []);
   const chips = Object.entries(D.CURSES).map(([id, c]) => `<button class="curse-chip ${sel.includes(id) ? 'on' : ''}" data-act="curse" data-v="${id}" aria-pressed="${sel.includes(id)}" data-tip="${esc(c.name + '\n' + c.text + '\nPremia do wyniku: +' + c.pct + '%')}">${art.emo(c.icon)}<b>${esc(c.name)}</b><small>+${c.pct}%</small></button>`).join('');
@@ -180,7 +182,7 @@ function renderSetup() {
           <h3>${BURNERS[s.garnek]} <small>poziom ${s.garnek} · ${esc(g.name)}</small></h3><p>${esc(g.text)}</p>
           <div class="gmult">Mnożnik wyniku ×${((1 + s.garnek * .25) * (1 + D.cursePct(s.curses) / 100)).toFixed(2).replace('.', ',')}</div>${s.garnek > p.garnek ? `<div class="glockmsg">🔒 Zablokowany: wygraj run na poziomie ${s.garnek - 1}</div>` : ''}</div>
         <button class="car-arrow" data-act="gnext" aria-label="Wyższy palnik">›</button></div>
-      <div class="bthumbs">${thumbs}</div>${cursesHTML()}
+      <div class="bthumbs">${thumbs}</div>${SHOW_CURSES ? cursesHTML() : ""}
       <div class="start-row"><div class="setsum">${esc(m.name)} · ${esc(ch.name)}</div><button class="btn primary big" data-act="start" data-primary ${s.garnek > p.garnek ? "disabled" : ""}>Do garnka!</button></div>
       <div class="keyhint">← → poziom palnika · Enter start · Esc wróć</div></div>`;
   }
