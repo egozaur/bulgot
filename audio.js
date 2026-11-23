@@ -7,6 +7,7 @@ const store = {
 export const settings = {
   sfx: store.get('bulgot:sfx') !== '0',
   music: store.get('bulgot:music') === '1',
+  vol: (() => { const v = parseInt(store.get('bulgot:vol'), 10); return v >= 0 && v <= 100 ? v : 100; })(),   // głośność główna 0-100 (suwak w ustawieniach)
 };
 const lobbyMuted = () => store.get('pl3y_mute') === '1';
 
@@ -15,7 +16,7 @@ function ac() {
   if (!ctx) {
     try {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
-      master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination);
+      master = ctx.createGain(); master.gain.value = 0.5 * settings.vol / 100; master.connect(ctx.destination);
       musicBus = ctx.createGain(); musicBus.gain.value = 0.35; musicBus.connect(master);
     } catch (e) { return null; }
   }
@@ -77,6 +78,7 @@ export function sfx(name) {
   if (!settings.sfx || lobbyMuted()) return;
   try { (SFX[name] || (() => {}))(); } catch (e) {}
 }
+export function setVolume(v, preview) { v = Math.max(0, Math.min(100, Math.round(v) || 0)); settings.vol = v; store.set('bulgot:vol', String(v)); if (master) master.gain.value = 0.5 * v / 100; if (preview) sfx('click'); }
 export function setSfx(on) { settings.sfx = on; store.set('bulgot:sfx', on ? '1' : '0'); if (on) sfx('click'); }
 
 // ---------- muzyka: prosta pętla w molowej pentatonice z bulgotem ----------

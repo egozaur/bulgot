@@ -1396,3 +1396,8 @@ html.reduce .sch.near .sic { animation: none; }
 .home-top .meta-chips { margin-right: 0; }
 .home-top .meta-chip { width: 34px; height: 34px; border-width: 2px; box-shadow: 0 2px 0 var(--outline); }
 .home-top .meta-chip svg { width: 20px; height: 20px; }
+
+/* Suwak głośności w ustawieniach dźwięku */
+.volbox { display: inline-flex; align-items: center; gap: 10px; }
+.volbox input[type=range] { width: 160px; accent-color: var(--amber); cursor: pointer; }
+.volbox b { min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; }

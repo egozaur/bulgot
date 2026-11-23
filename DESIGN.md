@@ -599,3 +599,7 @@ Przed zmianami 42,8%, po: 43,8% (trasy dostrojone tak, żeby były neutralne dla
 Problem: przy kosztach 2 kopie zlanie L2→L3 zawsze traciło moc (np. 2 × Pierze Prasowane = 12 Pancerza → Pancerz z Pierza = 10), a bot zlewał ok. 0,03–0,18 razy na run (zysk tylko z progu poziomu 3).
 Zmiana: wartości poziomów układają się tak, że **zlanie daje +8…25% ponad sumę dwóch kopii** (L1 → L2 → L3 → legendarny). Tabela (L1/L2/L3): Życie 3/7/16, Atak % 5/11/24, Obrażenia 5/11/25, Szybkość 5/11/24, Pancerz 2/5/11, Krytyk 5/12/28, Unik 2/5/11, Regeneracja (dziesiąte) 2/5/11 (legendarna 17), Szczęście 4/9/21. Poziomy 3 (stare id) lekko wzrosły, poziomy 1–2 spadły, więc same oferty L1/L2 są słabsze, a zlewanie realnie się opłaca.
 Balans (bot, 600 runów): szybki ok. 47%, pełny ok. 37,5% (wcześniej 46,7% / 38%); `grow` pełny 1.091/1.056, szybki 1.090/1.060. Bot zlewa teraz ok. 0,5 razy na run w pełnym. `RUN_V = 11`.
+
+### Aktualizacja (2026-11-23): Pisklęcarnia poz. 2 i suwak głośności
+- **Pisklęcarnia poz. 2+**: towarzysza wybierasz z 3 losowych jeszcze przed pierwszą ofertą (faza `event`, `pending = { kind: 'adopt', opts, start: true }`; po wyborze lub `-1` wraca faza `offer`). Poz. 1 zostaje losowym towarzyszem, poz. 3 daje dodatkowo towarzysza o poziom wyżej. Schronisko dla Piskląt ma zawsze 3 opcje. `RUN_V = 12`.
+- **Suwak głośności** w „Dźwięk i walka” (`bulgot:vol`, 0–100, domyślnie 100, `audio.setVolume`; głośność główna = 0,5 × suwak).

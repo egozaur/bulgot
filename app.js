@@ -595,9 +595,9 @@ function stageVictory() {
 // Schronisko dla Piskląt: adopcja towarzysza.
 function companionBlurb(id, lvl = 1) { const d = D.COMPANIONS[id], L = d.lv[lvl - 1]; return d.text + (L.every ? ' Co ' + (L.every / 10).toString().replace('.', ',') + ' s: ' + ({ peck: L.v + '% Ataku', heal: L.v + '% Życia', burn: L.v + ' st. Oparzenia', frost: L.v + ' st. Mrozu', honk: 'ogłuszenie ' + (L.v / 10).toString().replace('.', ',') + ' s' }[L.act] || '') + '.' : ''); }
 function stageAdopt() {
-  const r = G.run, cur = r.companion, cards = r.pending.opts.map((id, i) => choiceCard(i, art.companionArt(id), D.COMPANIONS[id].name, companionBlurb(id, 1), '<div class="tmeta"><span class="tag up">Rośnie po bossach</span></div>')).join('');
-  return `<div class="stage-title"><h2>Schronisko dla Piskląt</h2><div class="sub">${cur ? 'Masz już: ' + esc(compForm(cur)) + '. Nowy towarzysz go zastąpi.' : 'Wybierz towarzysza, który będzie walczył u twojego boku.'}</div></div>
-    <div class="kron">Adopcja jest bezpłatna. Gryzienie w cenie.</div><div class="cards">${cards}</div>
+  const r = G.run, cur = r.companion, cards = r.pending.opts.map((id, i) => choiceCard(i, art.companionArt(id), D.COMPANIONS[id].name, companionBlurb(id, r.pending.start ? Math.max(1, (r.kurnik && r.kurnik.pisklecarnia >= 3) ? 2 : 1) : 1), '<div class="tmeta"><span class="tag up">Rośnie po bossach</span></div>')).join('');
+  return `<div class="stage-title"><h2>${r.pending.start ? 'Pisklęcarnia' : 'Schronisko dla Piskląt'}</h2><div class="sub">${cur ? 'Masz już: ' + esc(compForm(cur)) + '. Nowy towarzysz go zastąpi.' : 'Wybierz towarzysza, który będzie walczył u twojego boku.'}</div></div>
+    <div class="kron">${r.pending.start ? 'Pisklęta z Pisklęcarni czekają na ciebie przed pierwszym piętrem.' : 'Adopcja jest bezpłatna. Gryzienie w cenie.'}</div><div class="cards">${cards}</div>
     <div class="actions"><button class="btn" data-act="choose" data-i="-1">Nie adoptuję</button></div>`;
 }
 // Tajemnicza Skrzynka przy pełnych slotach: wybierz umiejętność do zastąpienia albo zostaw nagrodę.
@@ -1346,6 +1346,7 @@ function showHelp() {
 }
 function showSettings() {
   openOverlay(`<h2>Dźwięk i walka</h2><div class="setrow"><span>Efekty dźwiękowe</span><button class="toggle ${snd.settings.sfx ? 'on' : ''}" data-act="tsfx">${snd.settings.sfx ? 'WŁ.' : 'WYŁ.'}</button></div>
+    <div class="setrow"><span>Głośność</span><span class="volbox"><input type="range" id="set-vol" min="0" max="100" step="5" value="${snd.settings.vol}" aria-label="Głośność"><b id="set-vol-n">${snd.settings.vol}%</b></span></div>
     <div class="setrow"><span>Muzyka (bulgocząca pętla)</span><button class="toggle ${snd.settings.music ? 'on' : ''}" data-act="tmusic">${snd.settings.music ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Faktura po wygranej walce (zamiast okna wyniku)</span><button class="toggle ${invoiceOn() ? 'on' : ''}" data-act="tinv">${invoiceOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Animacje (wyłącz, jeśli ruch Ci przeszkadza)</span><button class="toggle ${animOn() ? 'on' : ''}" data-act="tanim">${animOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
@@ -1471,6 +1472,8 @@ document.addEventListener('click', e => {
   if (fn) { if (!['pick', 'buy', 'reroll', 'useskill', 'bet'].includes(b.dataset.act)) snd.sfx('click'); fn(b, e); }
 });
 // Filtry rankingu: zmiana listy, poziomu Garnka albo nicka odświeża tabelę.
+document.addEventListener('input', e => { const t = e.target; if (t && t.id === 'set-vol') { snd.setVolume(+t.value); const n = $('#set-vol-n'); if (n) n.textContent = snd.settings.vol + '%'; } });
+document.addEventListener('change', e => { if (e.target && e.target.id === 'set-vol') snd.setVolume(+e.target.value, true); });
 document.addEventListener('change', e => { const t = e.target; if (!t || !t.id || !t.id.startsWith('rk-')) return; if (t.id === 'rk-char') RK.char = t.value; else if (t.id === 'rk-garnek') RK.garnek = t.value; else if (t.id === 'rk-nick') RK.nick = t.value.trim(); showRanking(RK.mode, true); });
 // ---------- sterowanie strzałkami ----------
 // Strzałki przesuwają zaznaczenie do najbliższego przycisku w danym kierunku (karty, Dokup, Reroll, okna), Enter zatwierdza zaznaczony.
