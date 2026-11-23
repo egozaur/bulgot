@@ -4,7 +4,7 @@
 // Bot używa dokładnie tych samych funkcji co serwer (rules.js, sim.js), więc liczby są prawdziwe.
 import { choose as chooseOpt, newRun, pickTile, reroll, buyOffer, rest, shopBuy, bet, bonusPick, upgrade, upgradable, fightSetup, fightFinish, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
 import { Fight } from '../../pl3y-server/src/games/bulgot/sim.js';
-import { AFFIXES, RARITY_WEIGHTS, TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, RULES } from '../../pl3y-server/src/games/bulgot/data.js';
+import { AFFIXES, RARITY_WEIGHTS, TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, BOSS_POOL, ROUTES, RULES } from '../../pl3y-server/src/games/bulgot/data.js';
 import { makeRng, mix } from '../../pl3y-server/src/games/bulgot/rng.js';
 import { heroStats } from '../../pl3y-server/src/games/bulgot/stats.js';
 import { loadoutOf } from '../../pl3y-server/src/games/bulgot/rules.js';
@@ -14,6 +14,9 @@ import { power } from './lib-power.mjs';
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i >= 0 ? process.argv[i + 1] : d; };
 const MODE = arg('mode', 'full'), GARNEK = +arg('garnek', 0), N = +arg('n', 300), POLICY = arg('policy', 'smart'), POOL = arg('pool', 'all'), CHAR = arg('char', 'pyrtek');
 const SEED0 = +arg('seed', 1);
+if (process.argv.includes('--noroutes')) for (const k of Object.keys(ROUTES)) ROUTES[k] = { name: k, text: '' };   // trasy bez modyfikatorów (pomiar)
+if (process.argv.includes('--bossorig')) for (const k of Object.keys(BOSS_POOL)) BOSS_POOL[k] = [k];   // tylko oryginalni bossowie (pomiar wpływu wariantów)
+const CURSES = (arg('curses', '') || '').split(',').filter(Boolean), ENDLESS = process.argv.includes('--endless'), KURNIK = arg('kurnik') ? Object.fromEntries(arg('kurnik').split(',').map(x => x.split(':')).map(([k, v]) => [k, +v])) : {};   // --curses a,b  --endless (po Prezesie gra dalej)  --kurnik silownia:2,spizarnia:3
 const TRACE = process.argv.includes('--trace');
 const NOREST = process.argv.includes('--norest'), RESTBELOW = +arg('restbelow', 55);
 const NOBUY = process.argv.includes('--nobuy'), BUYMIN = +arg('buymin', 1.05);
@@ -49,6 +52,8 @@ function tileValueRaw(run, id) {
   const t = TILE_BY_ID[id];
   const base = power(run);
   const trial = JSON.parse(JSON.stringify(run));
+  if (t.event === 'schronisko') return base * 1.07;
+  if (t.event === 'arena') return base * 0.98;
   if (t.event) return t.event === 'skrzynka' ? base * 1.12 : t.event === 'sklepik' ? base * 1.03 : t.event === 'automat' ? (run.coins >= 5 ? base * 1.09 : 0) : t.event === 'kapliczka' ? base * 1.06 : t.event === 'kontrakt' ? base * 1.05 : base * 0.99;
   if (t.type === 'skill') {
     const own = trial.skills.find(s => s.id === t.skill);
@@ -102,7 +107,7 @@ function botInputs(setup) {
 function playRun(seed) {
   const rng = makeRng(mix(seed, 777));
   const pool = POOL === 'all' ? TILES.map(t => t.id) : STARTER_TILES;
-  const r = newRun({ mode: MODE, char: CHAR, garnek: GARNEK, pool, seed });
+  const r = newRun({ mode: MODE, char: CHAR, garnek: GARNEK, pool, seed, curses: CURSES, kurnik: KURNIK });
   const run = r.run;
   let guard = 0;
   while (run.phase !== 'over' && guard++ < 400) {
@@ -140,8 +145,15 @@ function playRun(seed) {
         run.pending.offer.forEach((id, k) => { const t = TILE_BY_ID[id]; if (shopPrice(t, run) <= run.coins) { const v = tileValue(run, id); if (v > bv) { bv = v; bi = k; } } });
         shopBuy(run, bi, 0, 1);
       } else if (run.pending.kind === 'contract') chooseOpt(run, 0);
+      else if (run.pending.kind === 'adopt') chooseOpt(run, 0);
+      else if (run.pending.kind === 'arena') chooseOpt(run, run.hp * 100 >= statsOf(run).maxHp * 70 ? 0 : 1);
       else if (run.pending.kind === 'shrine') chooseOpt(run, run.hp * 100 < statsOf(run).maxHp * 55 || !run.pending.badge ? 0 : 1);
       else bet(run, 0);
+    } else if (run.phase === 'route') {
+      const ri = arg('route') ? run.pending.opts.indexOf(arg('route')) : 0;   // --route id: bot wybiera tę trasę, gdy jest w ofercie
+      chooseOpt(run, ri < 0 ? (arg('route') ? 1 : 0) : ri);
+    } else if (run.phase === 'victory') {
+      chooseOpt(run, ENDLESS ? 0 : 1);
     } else if (run.phase === 'door') {
       // Rozwidlenie: ryzykowne drzwi, gdy życie jest wysokie (--doors never|always|smart)
       const S = statsOf(run), d = arg('doors', 'smart');
@@ -180,22 +192,24 @@ function playRun(seed) {
 
 // ---------- statystyki ----------
 const rounds = MODES[MODE].rounds;
-const died = Array(rounds + 2).fill(0);
-let wins = 0, scoreSum = 0, roundsSum = 0, timeSum = 0;
+const died = Array(rounds + 80).fill(0);
+let wins = 0, scoreSum = 0, roundsSum = 0, timeSum = 0, clearedN = 0, deepSum = 0, deepMax = 0;
 const t0 = Date.now();
 const TS = {}, BS = {};   // --tilestats: ile runów miało kafelek / Odznakę i ile z nich wygrało
 for (let s = 0; s < N; s++) {
   const run = playRun(SEED0 * 100003 + s);
-  if (run.ended === 'win') wins++; else died[run.round]++;
+  if (run.ended === 'win') wins++; if (run.ended !== 'win' || run.fell) died[run.round]++;
   for (const id of new Set([...run.tiles, ...run.skills.map(k => 'skill:' + k.id + (k.lvl >= 3 ? '+mut' : ''))])) { const x = (TS[id] = TS[id] || { n: 0, w: 0 }); x.n++; if (run.ended === 'win') x.w++; }
   for (const b of (run.badges || [])) { const x = (BS[b] = BS[b] || { n: 0, w: 0 }); x.n++; if (run.ended === 'win') x.w++; }
   scoreSum += run.score; roundsSum += run.done;
+  if (run.cleared != null) { clearedN++; const dp = run.endless ? run.done - run.cleared : 0; deepSum += dp; deepMax = Math.max(deepMax, dp); }
 }
 console.log(`Tryb ${MODE}, Garnek ${GARNEK}, postać ${CHAR}, bot ${POLICY}, pula ${POOL}, ${N} runów (${Date.now() - t0} ms)`);
 console.log(`Wygrane: ${(wins / N * 100).toFixed(1)}%   średnio ukończonych rund: ${(roundsSum / N).toFixed(2)}/${rounds}   średni wynik: ${Math.round(scoreSum / N)}`);
 let line = 'Porażki w rundzie: ';
 for (let r = 1; r <= rounds; r++) if (died[r]) line += `${r}:${(died[r] / N * 100).toFixed(0)}% `;
 console.log(line);
+if (ENDLESS) console.log(`Dogrywka: ${clearedN} z ${N} runów pokonało Prezesa; średnio ${(deepSum / Math.max(1, clearedN)).toFixed(1)} pięter ponad limit, najgłębiej +${deepMax}`);
 console.log(`Ulepszeń na run: ${(UPG / N).toFixed(2)}   łupów z bossów na run: ${(LOOT / N).toFixed(2)}`);
 if (process.argv.includes('--table')) {
   console.log('Runda  walk  wygr%  śr.strata życia przy wygranej  śr.czas walki (s)  walki ≤2 s');

@@ -47,8 +47,12 @@ function monkeyRun(mode, garnek, seed) {
       if (run.pending.kind === 'shop') shopBuy(run, rng.int(run.pending.offer.length + 1) - 1, 0, 1);
       else if (run.pending.kind === 'contract') chooseOpt(run, rng.int(2));
       else if (run.pending.kind === 'shrine') chooseOpt(run, run.pending.badge && rng.int(2) ? 1 : 0);
+      else if (run.pending.kind === 'adopt') chooseOpt(run, rng.int(run.pending.opts.length + 1) - 1);
+      else if (run.pending.kind === 'arena') chooseOpt(run, rng.int(2));
       else bet(run, rng.int(run.coins + 1));
-    } else if (run.phase === 'door') chooseOpt(run, rng.int(2));
+    } else if (run.phase === 'route') chooseOpt(run, rng.int(2));
+    else if (run.phase === 'victory') chooseOpt(run, 1);
+    else if (run.phase === 'door') chooseOpt(run, rng.int(2));
     else if (run.phase === 'badge') chooseOpt(run, rng.int(run.pending.offer.length));
     else if (run.phase === 'loot') chooseOpt(run, rng.int(run.pending.offer.length));
     else if (run.phase === 'bonus') {

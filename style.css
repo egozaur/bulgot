@@ -1296,3 +1296,80 @@ html.reduce .sch.near .sic { animation: none; }
 .btn .ico { width: 1.2em; height: 1.2em; vertical-align: -0.2em; }
 .chip.fresh { animation: chipfresh 1.6s ease-out; }
 @keyframes chipfresh { 0% { transform: scale(1.6); box-shadow: 0 0 22px 6px rgba(123,216,143,.95); } 100% { transform: scale(1); } }
+
+/* ---------- Siedem nowości: Klątwy, trasy, Dogrywka, warianty bossów, Arena Duchów, Towarzysz, Kurnik ---------- */
+.emo { display: inline-flex; align-items: center; justify-content: center; font-size: 1.15em; line-height: 1; font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; filter: drop-shadow(0 2px 0 rgba(0,0,0,.35)); }
+.tile.choice > .emo { font-size: 54px; height: 64px; margin: 4px auto 2px; }
+.btn .emo { font-size: 1.1em; }
+.pill.curse { border-color: #b23a48; color: #ff9fa8; cursor: help; }
+.pill.route { border-color: #4aa3df; color: #bfe3ff; cursor: help; }
+.pill.endl { border-color: #a06bd6; color: #e2c9ff; cursor: help; }
+
+/* ekran startowy: Klątwy Prezesa */
+.curses { margin-top: 10px; }
+.curse-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
+.curse-chip { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 12px; border: 2px solid var(--line); background: rgba(0,0,0,.28); text-align: left; transition: transform .12s, border-color .12s, background .12s; }
+.curse-chip b { font: 700 .86rem/1.1 var(--display); letter-spacing: .02em; }
+.curse-chip small { color: var(--gold); font-weight: 800; }
+.curse-chip:hover { transform: translateY(-1px); border-color: #b23a48; }
+.curse-chip.on { border-color: #e4572e; background: linear-gradient(180deg, rgba(228,87,46,.32), rgba(120,30,20,.35)); box-shadow: 0 0 0 2px rgba(228,87,46,.25) inset; }
+@media (max-width: 900px) { .curse-row { grid-template-columns: repeat(2, 1fr); } }
+
+/* warianty bossów: odcienie tych samych figur */
+.tint-night { filter: brightness(.62) saturate(1.2) hue-rotate(205deg); }
+.tint-king { filter: hue-rotate(35deg) saturate(1.3) drop-shadow(0 0 6px #ffd23f); }
+.tint-frost { filter: hue-rotate(150deg) saturate(1.3) brightness(1.1); }
+.tint-proto { filter: grayscale(.55) hue-rotate(70deg) brightness(1.1); }
+.tint-gold { filter: sepia(.6) saturate(2.2) hue-rotate(-12deg) brightness(1.08); }
+.tint-blood { filter: hue-rotate(-40deg) saturate(1.8) brightness(.85); }
+.tint-super { filter: hue-rotate(260deg) saturate(1.5) brightness(.95) drop-shadow(0 0 8px #a06bd6); }
+
+/* walka: oślepienie, zamieć, towarzysz, Duch */
+.arena.night::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 5; background: radial-gradient(ellipse at 20% 62%, rgba(0,0,0,.25) 8%, rgba(4,6,20,.82) 55%); animation: nightfade .3s ease-out; }
+.arena.blizz::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 5; background: linear-gradient(115deg, rgba(220,240,255,.28), rgba(150,200,255,.12) 40%, rgba(255,255,255,.22)); animation: nightfade .3s ease-out; }
+@keyframes nightfade { from { opacity: 0; } to { opacity: 1; } }
+.unit.ally { width: 9%; bottom: 7%; }
+.unit.ally .plate .hpbar, .unit.ally .plate .sts { display: none; }
+.unit.ally .plate .nm { font-size: 9px; opacity: .9; }
+.unit.ally .sprite { transform-origin: 50% 90%; }
+.unit.ally .sprite.lunge { animation: lungeR .22s ease-out; }
+.ghostfig { display: block; }
+.ghostfig svg { transform: scaleX(-1); filter: grayscale(.55) brightness(1.55) saturate(.7) drop-shadow(0 0 8px #9fd8ff); opacity: .88; animation: ghostfloat 2.4s ease-in-out infinite; }
+@keyframes ghostfloat { 50% { transform: scaleX(-1) translateY(-4%); opacity: .7; } }
+.comp-panel { display: grid; grid-template-columns: 54px 1fr; gap: 10px; align-items: center; cursor: help; }
+.comp-panel .comp-fig { width: 54px; height: 54px; }
+.comp-panel .nm { font: 700 1rem/1.1 var(--display); }
+.comp-panel .fm { color: var(--muted); font-size: .8rem; }
+
+/* Arena Duchów */
+.ghostcard { display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center; max-width: 560px; margin: 8px auto 4px; padding: 10px 16px; border-radius: 16px; border: 2px solid #5b7fa0; background: linear-gradient(180deg, rgba(60,90,130,.28), rgba(20,30,50,.4)); }
+.ghostcard .gfig svg { width: 100%; height: auto; }
+.ghostcard .gst { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+.ghostcard .gst b { width: 100%; font: 700 .95rem var(--display); color: #bfe3ff; }
+.ghostcard .gst span { font-weight: 700; }
+.ghostcard .gtiles { display: flex; flex-wrap: wrap; gap: 3px; width: 100%; margin-top: 4px; }
+.ghostcard .gtiles .ico { width: 24px; height: 24px; }
+.arenaview .glass .ghostfig svg { width: 84px; height: 84px; }
+.tile.choice > .ghostfig { height: 64px; margin: 0 auto; }
+.tile.choice > .ghostfig svg { width: 64px; height: 64px; }
+.tile.choice > .comp-fig { width: 64px; height: 64px; margin: 0 auto; }
+
+/* Kurnik */
+.kurnikmodal .kfeathers { text-align: center; font: 700 1.3rem var(--display); color: var(--gold); margin: 6px 0 10px; }
+.kgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.kb { position: relative; padding: 12px 14px; border-radius: 14px; border: 2px solid var(--line); background: rgba(0,0,0,.26); display: flex; flex-direction: column; gap: 6px; }
+.kb > .emo { font-size: 34px; }
+.kb .kbn { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.kb .kbn b { font: 700 1rem/1.1 var(--display); }
+.kb p { margin: 0; color: var(--muted); font-size: .86rem; flex: 1; }
+.kb .kbl { display: inline-flex; gap: 4px; }
+.kb .kbl i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); background: transparent; }
+.kb .kbl i.on { background: var(--gold); border-color: #b8860b; box-shadow: 0 0 6px rgba(255,210,63,.6); }
+.kb.max { border-color: var(--gold); }
+.kb .kbm { color: var(--gold); font-weight: 800; text-align: center; font-size: .86rem; }
+.kghost { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: center; margin: 6px 0; }
+.kghost .ghostfig svg { width: 48px; height: 48px; }
+.kghost span { color: var(--muted); font-size: .86rem; }
+.deepn { color: #e2c9ff; font-weight: 800; }
+.emo.emo-svg svg { width: 1em; height: 1em; }
+.tile.choice > .emo.emo-svg svg, .kb > .emo.emo-svg svg { width: 1em; height: 1em; }

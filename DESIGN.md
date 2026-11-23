@@ -563,3 +563,34 @@ Premie dla wrogów rosną z piętrem (`garnekRamp`: 40% wartości na 1. piętrze
 | 4 | 13% | 15% |
 | 5 | 2,8% | 3,0% |
 Postacie w szybkim: palnik 0 od 44% (Pyrtek, Wróżka) do 60% (Indor, Lodziarz, Gęś, Pielęgniarka), palnik 5 od 2,6% (Zjarany) do 9% (Kwoka). Bot gra rozsądnie, ale człowiek bez ogrania zwykle wygrywa mniej; jeśli zbyt trudno, zacznij od obniżenia `grow`.
+
+## 18. Siedem nowości: Klątwy, Dogrywka, trasy, warianty bossów, Arena Duchów, Towarzysz, Kurnik (2026-11-23)
+
+Wszystko liczy serwer (`pl3y-server/src/games/bulgot/`), klient rysuje. `RUN_V = 8`. Testy: 248 (w tym 9 nowych), e2e: `dev/e2e-nowosci.mjs`.
+
+### 1. Klątwy Prezesa (`CURSES`, `CURSE_MAX = 3`)
+Dobrowolne utrudnienia wybierane w kroku 2 ekranu startowego (`start {curses: [id]}`). Każda dodaje `pct` do wyniku (sumują się): `liveScore = baza × (1 + 0,25 × palnik) × (1 + suma klątw)`. Zakaz Wymian (+25%, reroll niemożliwy), Przegrzany Piec (+30%, wrogowie +15% Życia i Ataku), Zakaz Drzemek (+5%, bez Odpoczynku), Podatek Kurzy (+18%, -2 Ziarna po walce), Ciasne Gniazdo (+20%, 2 sloty umiejętności), Pospiech (+6%, Furia od 30 s), Mgła Zarządu (+8%, ukryty skład piętra), Kruche Kości (+30%, -25% Życia). Procenty dobrane pomiarem bota (`sim-balance.mjs --curses a,b`): każda klątwa obniża wygrane o tyle, ile daje punktów, trzy ciężkie naraz to ok. 5% wygranych.
+
+### 2. Dogrywka (`run.endless`, `run.cleared`, faza `victory`)
+Po pokonaniu ostatniego bossa run nie kończy się od razu: faza `victory`, `choose 0` = Dogrywka, `choose 1` = koniec. Wygrana jest zaliczona w momencie pokonania Prezesa (`run.cleared = run.done`), więc porażka w Dogrywce (`endRun`) nadal daje `ended = 'win'` (`run.fell = true`). Piętra ponad limit trybu: wrogowie rosną dodatkowo o 7% Życia i 5% Ataku na każde piętro (procent składany, `RULES.endlessHp/Atk`) ponad zwykły wzrost, super-boss co 5 pięter (`SUPER_BOSSES`: Skubarka 9000, Rada Nadzorcza, Prezes Zero, po kolei). Osobny ranking głębokości: `GET /api/bg/ranks?mode=&kind=deep` (klucz `d:<tryb>` w `BgRanks`, sortowanie po `deep`, potem wyniku).
+
+### 3. Trasy (`ROUTES`, faza `route`, `run.routes[strefa]`)
+Na pierwszym piętrze strefy II i III (poza bossem) gracz wybiera 1 z 2 tras losowanych z 5. Trasa działa do końca strefy: wrogowie (poza bossami i Duchem) mają modyfikatory życia/ataku/spowolnienie/tarczę, a ekonomia: Ziarna za piętro, darmowy reroll, leczenie, zniżka cen, Szczęście w ofertach. Bot wybierający zawsze pierwszą opcję trzyma ok. 44% (bez tras 43%), czyli trasy są neutralne dla bota, a człowiek wybiera mądrzej.
+
+### 4. Warianty bossów (`BOSS_POOL`, `BOSSES.*.mech`, `bossFor`)
+Każde miejsce bossa (`brojler`, `skubarka`, `prezes`) ma 3 kandydatów losowanych z ziarna runu (oryginał z wagą 2): Szef Nocnej Zmiany (oślepia), Król Szczurów (rój stażystów), Wielka Chłodnia (zamieć), Wózek Prototyp (po szarży się przegrzewa), Dyrektor Finansowy (kradnie Ziarna, Audyt, blokuje umiejętności), Wampir z Działu HR (wampiryzm, szał). Mechaniki bossów to teraz lista `mech` (`summon`, `rage`, `plucker`, `guarded`, `block`, `tyrant`, `night`, `blizzard`, `crash`, `audit`), a nie sprawdzanie id. `out.boss` = slot (odblokowania i osiągnięcia działają), `out.bossVar` = wariant (liczony osobno w `profile.bosses`). Grafika: te same figury z odcieniem (`tint` → klasa `.tint-*` w CSS).
+
+### 5. Arena Duchów (kafelek-wydarzenie `arena-duchow`, od 3. piętra, nie na bossie, elicie, Nemezis ani ryzykownych drzwiach)
+Po każdym runie z co najmniej 3 piętrami w dzienniku `BgPlayer.saveGhost` zapisuje w `BgRanks` ducha (`g:<tryb>:<n>`, jeden na gracza i tryb): postać, `curve` (statystyki bohatera z każdego piętra: Życie, Atak, szybkość, Pancerz, krytyk, unik), kafelki, liczniki wygranych i porażek. Wybranie Areny pobiera cudzego ducha (`ghost-pick`, z tego samego trybu, bez własnego); gdy nikogo nie ma, walczysz z własnym Odbiciem. Duch ma statystyki z piętra odpowiadającego bieżącej rundzie (`ghostStats`: 95% Życia, 114% Ataku). `choose 0` = walka (`run.arena`), `choose 1` = odwrót. Wygrana: +6 Ziaren i bonus 3 rzadkich kafelków; przegrana kończy run jak każda walka. Wynik walki idzie do licznika ducha (`ghost-result`), `state` zwraca `myGhost` (Kurnik pokazuje „Twój Duch”). Widok nie zdradza krzywej ani klucza gracza.
+
+### 6. Towarzysz (`COMPANIONS`, `run.companion`, kafelek-wydarzenie `schronisko`)
+Schronisko dla Piskląt: adopcja 1 z 3 (4 z Pisklęcarnią 3). Sześciu: Pisklę (cios 18/28/40% Ataku), Trzmiel (leczy 2/3/4% Życia), Salamandra (Oparzenie), Bałwanek (Mróz), Gąsior (blok i ogłuszenie), Kot (Ziarna, Szczęście). Wartości po pomiarze: pierwsza wersja dawała botowi +9 pkt proc. już na poziomie 1, więc osłabiona. Poziom 1–3 rośnie po każdym pokonanym bossie (`compLevel`, `out.compUp`). W silniku `Fight.compAct` (co `every` ticków), stałe premie przez `stats.js`. Klient rysuje figurkę obok bohatera (`.unit.ally`).
+
+### 7. Kurnik (`KURNIK`, akcja `kurnik {id}`, `profile.feathers`, `profile.kurnik`)
+Pióra za run: piętra + 8 za wygraną + 2 za palnik + 2 za piętro Dogrywki. Siedem budynków po 3 poziomy (koszt 12/28/55 Piór, Siłownia 20/45/80, Pisklęcarnia 25/60/110): Spiżarnia (+1 Ziarno na start za poziom), Gabinet Lekarski (+5 pkt proc. Odpoczynku), Siłownia (+1% Życia i Ataku), Skarbiec Prezesa (+1 Ziarno za bossa), Kantyna (darmowy reroll na pierwszym piętrze strefy), Szkoła Kurzych Sztuczek (-4% cooldownu), Pisklęcarnia (poz. 1 start z losowym towarzyszem, poz. 2 wybór z 4 w Schronisku, poz. 3 towarzysz o poziom wyżej). Pomiar bota (pełny, palnik 0, baza 43%): pojedynczy budynek na 3. poziomie to +0 do +9 pkt proc., wszystkie siedem naraz ok. 67% (+24), czyli pełny Kurnik to sporo, ale daleko od gwarantowanej wygranej, a palniki 4–5 dalej bolą. Run zapamiętuje poziomy w chwili startu (`run.kurnik`), więc zakup w trakcie runu nic nie zmienia.
+
+### Osiągnięcia
+Przeklęty, Wróg Publiczny Nr 1, Dogrywka, Nieskończony Rosół, Pogromca Duchów, Najlepszy Przyjaciel, Zbieg Okoliczności, Gospodarz Kurnika, Kurnik Marzeń.
+
+### Balans (bot, pełny, 1000 runów, palnik 0)
+Przed zmianami 42,8%, po: 43,8% (trasy dostrojone tak, żeby były neutralne dla bota). Dogrywka (bot, 300 runów): ok. 40% runów pokonuje Prezesa, a z nich średnio +14 pięter ponad limit w trybie pełnym (najgłębiej +36) i +6 w szybkim (najgłębiej +24). `sim-balance.mjs --endless` drukuje te liczby. Klątwy: patrz punkt 1.

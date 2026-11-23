@@ -136,6 +136,11 @@ export const HELP = [
   ['Garnek', 'Poziom palnika to poziom trudności. Wygrana na poziomie N odblokowuje poziom N+1 i podnosi mnożnik wyniku o 25%.'],
   ['Odblokowania', 'Nowe postacie i kafelki odblokowujesz osiągnięciami (lista w Księdze Kurnika). Nigdy nie dają stałej przewagi w sile, tylko nowe opcje.'],
   ['Zapis', 'Run zapisuje się na serwerze po każdym ruchu. Możesz zamknąć kartę i dokończyć z dowolnego komputera.'],
+  ['Klątwy Prezesa', 'Przed runem (krok z palnikiem) możesz wybrać do trzech dobrowolnych utrudnień. Każda dodaje premię do końcowego wyniku.'],
+  ['Trasy', 'Na początku drugiej i trzeciej strefy wybierasz jedną z dwóch dróg. Trasa zmienia wrogów i ekonomię do końca strefy.'],
+  ['Dogrywka', 'Po pokonaniu Prezesa wygrana jest już twoja, ale możesz zostać w fabryce. Wrogowie rosną szybciej, co pięć pięter czeka super-boss, a osobny ranking liczy, jak głęboko dotarłeś.'],
+  ['Arena Duchów i towarzysze', 'Kafelek Arena Duchów to walka z buildem innego gracza z końca jego runu (albo z twoim Odbiciem). Schronisko dla Piskląt daje towarzysza, który walczy obok i rośnie po bossach.'],
+  ['Kurnik', 'Za każdy run dostajesz Pióra, które wydajesz na trwałe, niewielkie ulepszenia w Kurniku (menu główne).'],
 ];
 
 // Wybór deterministyczny (ta sama runda, ta sama linia).

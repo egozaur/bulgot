@@ -53,7 +53,7 @@ await p.screenshot({ path: `${OUT}/efekty-furia.png` });
 // wejście bossa: piętro 6 (Brojler)
 await p.evaluate(() => { const F = window.__bulgot.fight; F.f.over = true; });
 await wait(1500);
-await p.evaluate(K => { const r = JSON.parse(localStorage.getItem(K)); r.round = 6; r.phase = 'fight'; r.fight = null; r.hp = 400; localStorage.setItem(K, JSON.stringify(r)); }, K);
+await p.evaluate(K => { const r = JSON.parse(localStorage.getItem(K)); r.round = 6; r.seed = 1001; r.phase = 'fight'; r.fight = null; r.hp = 400; localStorage.setItem(K, JSON.stringify(r)); }, K);
 await p.reload({ waitUntil: 'load' }); await wait(600);
 const rs2 = await p.$('[data-act=resume]'); if (rs2) { await rs2.click(); await wait(400); }
 await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; });

@@ -446,7 +446,46 @@ const ENEMY = {
 };
 ENEMY.intern2 = ENEMY.intern;
 
-export function enemyArt(key) { return svg((ENEMY[key] || ENEMY.rat)(), '0 0 100 100', 'fig enemy-fig'); }
+export function enemyArt(key, tint) { return svg((ENEMY[key] || ENEMY.rat)(), '0 0 100 100', 'fig enemy-fig' + (tint ? ' tint-' + tint : '')); }
+
+// ---------- Towarzysze (małe figurki obok bohatera w walce, w Schronisku i w panelu) ----------
+const COMP = {
+  pisklak: () => `<ellipse cx="50" cy="92" rx="22" ry="4" fill="rgba(0,0,0,.3)"/><path d="M40 84 v8 m-5 0 h10 M60 84 v8 m-5 0 h10" stroke="#ff8c2b" stroke-width="4" stroke-linecap="round" ${NF}/>
+    <ellipse cx="50" cy="62" rx="26" ry="24" fill="#ffd34e" ${S}/><path d="M28 62 q-4 14 10 17 q9 -5 3 -18 z" fill="#f2b82e" ${S2}/>
+    ${eye(60, 54, 8, 2)}${brow(52, 46, 68, 50)}<path d="M72 60 l12 3 l-12 5 z" fill="#ff8c2b" ${S2}/><path d="M42 38 q-2 -10 4 -12 M50 37 q2 -11 9 -10" ${S2} ${NF}/>`,
+  trzmiel: () => `<ellipse cx="50" cy="92" rx="20" ry="4" fill="rgba(0,0,0,.3)"/>
+    <ellipse cx="38" cy="38" rx="14" ry="20" fill="#cfe9ff" opacity=".85" ${S2} transform="rotate(-25 38 38)"/><ellipse cx="62" cy="38" rx="14" ry="20" fill="#cfe9ff" opacity=".85" ${S2} transform="rotate(25 62 38)"/>
+    <ellipse cx="50" cy="64" rx="30" ry="24" fill="#ffcc33" ${S}/><path d="M36 44 q-4 20 0 40 M50 41 v46 M64 44 q4 20 0 40" stroke="${O}" stroke-width="7" ${NF}/>
+    <circle cx="74" cy="60" r="14" fill="#ffcc33" ${S}/>${eye(78, 57, 6, 1)}<path d="M82 46 q6 -8 12 -6 M76 46 q2 -10 8 -12" ${S2} ${NF}/><path d="M42 58 h10 M46 54 v8" stroke="#e53935" stroke-width="3.4" stroke-linecap="round"/>`,
+  salamandra: () => `<ellipse cx="50" cy="92" rx="30" ry="4" fill="rgba(0,0,0,.3)"/>
+    <path d="M14 78 q-12 -16 4 -30 q-2 12 8 16 z" fill="#ff7043" ${S2}/><path d="M12 56 q-6 -12 2 -20 q2 8 8 10 z" fill="#ffd54f" ${S2}/>
+    <ellipse cx="50" cy="72" rx="32" ry="16" fill="#ff8a3d" ${S}/><path d="M30 78 h40" stroke="#ffd29a" stroke-width="5" stroke-linecap="round"/>
+    <path d="M32 84 l-4 8 M44 86 l-2 8 M58 86 l2 8 M70 84 l4 8" stroke="${O}" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="76" cy="56" rx="18" ry="14" fill="#ff8a3d" ${S}/>${eye(82, 50, 6, 1)}<path d="M88 62 q4 2 6 -1" ${S2} ${NF}/><path d="M62 58 q4 -14 12 -16" ${S2} ${NF}/>`,
+  balwanek: () => `<ellipse cx="50" cy="92" rx="26" ry="4" fill="rgba(0,0,0,.3)"/>
+    <circle cx="50" cy="70" r="24" fill="#f4fbff" ${S}/><circle cx="50" cy="38" r="17" fill="#f4fbff" ${S}/>
+    <path d="M36 24 h28 l-3 -12 h-22 z" fill="#37474f" ${S2}/><rect x="32" y="22" width="36" height="5" rx="2" fill="#546e7a" ${S2}/>
+    <circle cx="44" cy="36" r="2.8" fill="${O}"/><circle cx="56" cy="36" r="2.8" fill="${O}"/><path d="M50 40 l14 3 l-14 3 z" fill="#ff9800" ${S2}/>
+    <circle cx="50" cy="62" r="2.6" fill="${O}"/><circle cx="50" cy="74" r="2.6" fill="${O}"/><path d="M28 62 l-12 -8 M72 62 l12 -8" ${S} ${NF}/>`,
+  gasior: () => `<ellipse cx="50" cy="92" rx="24" ry="4" fill="rgba(0,0,0,.3)"/><path d="M42 84 v8 m-5 0 h10 M60 84 v8 m-5 0 h10" stroke="#ff9800" stroke-width="4" stroke-linecap="round" ${NF}/>
+    <path d="M30 70 q-8 -10 2 -16 q14 -6 28 4 q10 8 2 24 q-14 8 -32 -12z" fill="#fff" ${S}/><path d="M60 60 q10 -4 12 -22 q2 -14 12 -12" stroke="${O}" stroke-width="12" stroke-linecap="round" ${NF}/>
+    <path d="M60 60 q10 -4 12 -22 q2 -14 12 -12" stroke="#fff" stroke-width="7" stroke-linecap="round" ${NF}/>
+    <circle cx="86" cy="26" r="9" fill="#fff" ${S}/>${eye(88, 24, 4, 1)}<path d="M94 26 l9 3 l-9 4 z" fill="#ff9800" ${S2}/><path d="M32 70 q10 6 22 0" stroke="#e0e0e0" stroke-width="3" ${NF}/>`,
+  kot: () => `<ellipse cx="50" cy="92" rx="24" ry="4" fill="rgba(0,0,0,.3)"/>
+    <path d="M24 66 q-14 -4 -10 -22 q8 6 14 4 z" fill="#ff9d4d" ${S2}/><ellipse cx="50" cy="68" rx="26" ry="22" fill="#ffb066" ${S}/>
+    <path d="M26 34 l6 -16 l12 10 z M74 34 l-6 -16 l-12 10 z" fill="#ffb066" ${S}/><circle cx="50" cy="42" r="22" fill="#ffb066" ${S}/>
+    <ellipse cx="42" cy="40" rx="5" ry="6.5" fill="#fff" ${S2}/><ellipse cx="58" cy="40" rx="5" ry="6.5" fill="#fff" ${S2}/><ellipse cx="43" cy="41" rx="2" ry="4.4" fill="${O}"/><ellipse cx="59" cy="41" rx="2" ry="4.4" fill="${O}"/>
+    <path d="M47 50 l3 3 l3 -3 z" fill="#ff7a7a" ${S2}/><path d="M22 46 h12 M22 52 l12 -2 M78 46 h-12 M78 52 l-12 -2" stroke="${O}" stroke-width="1.8"/>
+    <circle cx="74" cy="76" r="9" fill="#ffc933" ${S2}/><path d="M74 71 v10 M70 76 h8" stroke="${O}" stroke-width="2.2" stroke-linecap="round"/>`,
+};
+export function companionArt(id) { return svg((COMP[id] || COMP.pisklak)(), '0 0 100 100', 'fig comp-fig'); }
+// Duch innego gracza: jego postać w widmowej poświacie (zwrócona w stronę bohatera).
+export function ghostArt(char) { return `<span class="ghostfig">${heroArt(char, 'kogut')}</span>`; }
+// Ikony tras, Klątw i budynków Kurnika to emoji w kółku (spójne z resztą dzięki ramce w CSS).
+export const EMO = { chlodnia: '❄️', kotlownia: '🔥', magazyn: '📦', kanaly: '🌀', sortownia: '🥚',
+  zakaz: '⛔', piec: '🌋', drzemka: '💤', podatek: '💸', gniazdo: '🧺', pospiech: '⏱️', mgla: '🌫️', kosci: '🦴',
+  spizarnia: '🌾', gabinet: '🩺', silownia: '💪', skarbiec: '🏆', kantyna: '🍲', szkola: '📚', pisklecarnia: '🐣', pioro: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3 C9 3 5 10 5 17 l-2 4 l3 -1.5 C7 20 8 19 9 18 C16 18 21 12 20 3z" fill="#ffd34e" stroke="#2b1a12" stroke-width="1.6" stroke-linejoin="round"/><path d="M5 20 L14 11" stroke="#2b1a12" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>', dogrywka: '♾️', duch: '👻' };
+export const emo = id => `<span class="emo ${String(EMO[id] || '').startsWith('<svg') ? 'emo-svg' : ''}" aria-hidden="true">${EMO[id] || '❔'}</span>`;
 
 // ---------- Ikony kafelków (48x48) ----------
 const I = (inner) => svg(inner, '0 0 48 48', 'ico');
@@ -497,6 +536,8 @@ const ICON = {
   'skarbonka-piskleca': `<ellipse cx="23" cy="29" rx="16" ry="13" ${k('#ffd166')}/><rect x="18" y="14" width="10" height="3.4" rx="1.7" fill="${O}"/><circle cx="31" cy="25" r="2.2" fill="${O}"/><path d="M38 27 l7 2.5 l-7 2.5z" ${k('#ff9f1c')}/><path d="M15 41 v4 M29 41 v4" stroke="${O}" stroke-width="3" stroke-linecap="round"/><path d="M10 25 q-5 -2 -4 -7 q5 1 6 5" ${k('#ffe08a')}/>`,
   'automat-z-pasza': `<rect x="8" y="4" width="32" height="40" rx="4" ${k('#e53950')}/><rect x="13" y="9" width="22" height="18" rx="2" ${k('#bfeaff')}/><circle cx="18" cy="15" r="2.4" fill="#ffc933" stroke="${O}" stroke-width="1"/><circle cx="26" cy="20" r="2.4" fill="#ffc933" stroke="${O}" stroke-width="1"/><circle cx="30" cy="13" r="2.4" fill="#ffc933" stroke="${O}" stroke-width="1"/><rect x="13" y="32" width="14" height="6" rx="1" fill="${O}"/><circle cx="33" cy="35" r="3" ${k('#ffc933')}/>`,
   'kontrakt-hr': `<path d="M10 4 h22 l8 8 v32 h-30z" ${k('#fff')}/><path d="M32 4 v8 h8" stroke="${O}" stroke-width="2" ${NF}/><path d="M15 16 h16 M15 22 h18 M15 28 h12" stroke="#90a4ae" stroke-width="2"/><path d="M14 38 q4 -6 8 0 q4 6 8 -2 q2 -3 6 0" stroke="#1e88e5" stroke-width="2.2" ${NF} stroke-linecap="round"/>`,
+  'arena-duchow': `<path d="M24 4 C13 4 8 12 8 22 v18 l5 -4 l5 4 l6 -4 l6 4 l5 -4 l5 4 V22 C40 12 35 4 24 4z" fill="#e8f4ff" stroke="${O}" stroke-width="2.6" stroke-linejoin="round"/><circle cx="18" cy="21" r="3.4" fill="${O}"/><circle cx="30" cy="21" r="3.4" fill="${O}"/><path d="M19 30 q5 4 10 0" stroke="${O}" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M4 14 l8 8 M44 14 l-8 8" stroke="#9fd8ff" stroke-width="3" stroke-linecap="round"/>`,
+  'schronisko': `<path d="M6 24 L24 8 L42 24 V42 H6 Z" ${k('#c58a5a')}/><path d="M4 25 L24 6 L44 25" stroke="${O}" stroke-width="2.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/><circle cx="24" cy="31" r="8" fill="#ffd34e" stroke="${O}" stroke-width="2"/><circle cx="27" cy="29" r="1.8" fill="${O}"/><path d="M30 31 l5 1.5 l-5 2z" fill="#ff8c2b" stroke="${O}" stroke-width="1.2"/><path d="M14 42 v-8 h6" stroke="${O}" stroke-width="2" fill="none"/>`,
   'kapliczka': `<path d="M8 20 L24 6 L40 20 Z" ${k('#8d6e63')}/><rect x="12" y="20" width="24" height="22" ${k('#f1e9d6')}/><path d="M20 42 v-12 q4 -4 8 0 v12" fill="#ffd166" stroke="${O}" stroke-width="2"/><path d="M24 2 v6 M21 4 h6" stroke="#ffc933" stroke-width="2.4" stroke-linecap="round"/><circle cx="24" cy="25" r="3" fill="#ff9f1c" stroke="${O}" stroke-width="1.2"/>`,
   'umowa-etat': `<path d="M10 4 h22 l8 8 v32 h-30z" ${k('#fff3d6')}/><path d="M15 16 h16 M15 22 h18 M15 28 h12" stroke="#b08968" stroke-width="2"/><circle cx="31" cy="35" r="6" ${k('#e53950')}/>`,
   'umowa-b2b': `<path d="M10 4 h22 l8 8 v32 h-30z" ${k('#e3f2fd')}/><path d="M15 16 h16 M15 22 h18 M15 28 h12" stroke="#5c8db8" stroke-width="2"/><text x="17" y="40" font-family="monospace" font-weight="700" font-size="9" fill="${O}">B2B</text>`,

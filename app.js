@@ -63,6 +63,7 @@ async function act(path, body) {
     const { j } = await call(path, body || {});
     if (j && j.profile) G.profile = j.profile;
     if (j && 'run' in j) G.run = j.run;
+    if (j && j.myGhost !== undefined) G.myGhost = j.myGhost;
     if (!j || j.err) { toast((j && j.err) || 'Coś poszło nie tak. Spróbuj jeszcze raz.', true, 3600); if (j && 'run' in j && G.screen !== 'fight') render(); return null; }
     if (j.voided) toast('Gra dostała aktualizację zasad, więc poprzedni run został unieważniony. Zacznij nowy!', false, 6000);
     if (j.hatched && j.hatched.length) setTimeout(() => showHatched(j.hatched), 80);
@@ -136,7 +137,7 @@ function renderHome() {
       ${run ? `<div class="resume">Trwa run: <b>${esc(D.MODES[run.mode].name)}</b>, piętro ${run.round}/${run.rounds}, ${run.coins} ${art.coinIcon()} Ziaren</div>
         <button class="btn primary big" data-act="resume" data-primary>Kontynuuj</button><button class="btn small ghost" data-act="abandon">Porzuć run</button>`
       : `<button class="btn primary big" data-act="new" data-primary>Graj</button>`}
-      <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="profile">Profil</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk</button><button class="btn ghost" data-act="history">Historia (test)</button></div>
+      <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="kurnik" title="Trwałe ulepszenia za Pióra">${art.emo('pisklecarnia')} Kurnik <small>${G.profile.feathers | 0}</small></button><button class="btn" data-act="profile">Profil</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk</button><button class="btn ghost" data-act="history">Historia (test)</button></div>
       ${bestLine ? `<div class="best">Najlepsze wyniki. ${bestLine}</div>` : ''}
       ${metaNotes()}
     </div></div></div>`;
@@ -158,6 +159,12 @@ function metaChips() {
 }
 const BURNERS = ['Ognisko', 'Gazówka', 'Kuchenka', 'Piec', 'Kuźnia', 'Wulkan'];
 const charIds = () => Object.keys(D.CHARS);
+// Klątwy Prezesa: dobrowolne utrudnienia za premię do wyniku (do D.CURSE_MAX naraz).
+function cursesHTML() {
+  const s = G.setup, sel = s.curses || (s.curses = []);
+  const chips = Object.entries(D.CURSES).map(([id, c]) => `<button class="curse-chip ${sel.includes(id) ? 'on' : ''}" data-act="curse" data-v="${id}" aria-pressed="${sel.includes(id)}" data-tip="${esc(c.name + '\n' + c.text + '\nPremia do wyniku: +' + c.pct + '%')}">${art.emo(c.icon)}<b>${esc(c.name)}</b><small>+${c.pct}%</small></button>`).join('');
+  return `<div class="curses"><div class="sec">Klątwy Prezesa <small>dobrowolne, do ${D.CURSE_MAX}${sel.length ? ': wynik +' + D.cursePct(sel) + '%' : ': trudniej, ale wynik rośnie'}</small></div><div class="curse-row">${chips}</div></div>`;
+}
 function renderSetup() {
   const p = G.profile, s = G.setup, ids = charIds();
   if (!s.step) s.step = 1;
@@ -170,9 +177,9 @@ function renderSetup() {
       <div class="burner-stage"><button class="car-arrow" data-act="gprev" aria-label="Niższy palnik">‹</button>
         <div class="burner-main ${s.garnek > p.garnek ? 'locked' : ''}"><div class="burner-big">${art.burnerArt(s.garnek)}</div>
           <h3>${BURNERS[s.garnek]} <small>poziom ${s.garnek} · ${esc(g.name)}</small></h3><p>${esc(g.text)}</p>
-          <div class="gmult">Mnożnik wyniku ×${(1 + s.garnek * .25).toFixed(2).replace('.', ',')}</div>${s.garnek > p.garnek ? `<div class="glockmsg">🔒 Zablokowany: wygraj run na poziomie ${s.garnek - 1}</div>` : ''}</div>
+          <div class="gmult">Mnożnik wyniku ×${((1 + s.garnek * .25) * (1 + D.cursePct(s.curses) / 100)).toFixed(2).replace('.', ',')}</div>${s.garnek > p.garnek ? `<div class="glockmsg">🔒 Zablokowany: wygraj run na poziomie ${s.garnek - 1}</div>` : ''}</div>
         <button class="car-arrow" data-act="gnext" aria-label="Wyższy palnik">›</button></div>
-      <div class="bthumbs">${thumbs}</div>
+      <div class="bthumbs">${thumbs}</div>${cursesHTML()}
       <div class="start-row"><div class="setsum">${esc(m.name)} · ${esc(ch.name)}</div><button class="btn primary big" data-act="start" data-primary ${s.garnek > p.garnek ? "disabled" : ""}>Do garnka!</button></div>
       <div class="keyhint">← → poziom palnika · Enter start · Esc wróć</div></div>`;
   }
@@ -216,7 +223,7 @@ function tileCard(id, o = {}) {
   else if (t.next && run && !o.static) { const c = run.tiles.filter(x => x === id).length; tags.push(`<span class="tag ${c >= D.RULES.upgradeCost - 1 ? 'hatch' : ''}">Zlew ${Math.min(c + 1, D.RULES.upgradeCost)}/${D.RULES.upgradeCost}</span>`); }
   if (own && own.lvl >= 2) tags.push('<span class="tag up mut">Mutacja</span>');
   else if (own) tags.push('<span class="tag up">Poziom 2</span>');
-  else if (t.type === 'skill' && run && run.skills.length >= D.RULES.maxSkills && !o.static) tags.push('<span class="tag">Zastąp slot</span>');
+  else if (t.type === 'skill' && run && run.skills.length >= (G.run.maxSkills || D.RULES.maxSkills) && !o.static) tags.push('<span class="tag">Zastąp slot</span>');
   const tag = o.static ? 'div' : 'button';
   const dis = o.price != null && run && run.coins < o.price ? 'disabled' : '';
   return `<${tag} class="tile r${t.rarity} ${o.static ? 'static' : ''} ${o.locked ? 'locked' : ''} ${o.mini ? 'mini' : ''}" ${o.static ? '' : `data-act="${o.act || 'pick'}" data-i="${i}"`} ${dis} style="--i:${i}" ${o.tip ? `data-tip="${esc(o.tip)}"` : ''}>
@@ -229,13 +236,22 @@ function tileCard(id, o = {}) {
 
 // ---------- ekran runu ----------
 const enemyDef = id => D.ENEMIES[id] || D.BOSSES[id];
+const bossIntroOf = id => T.BOSS_INTRO[id] || (D.BOSSES[id] ? { title: D.BOSSES[id].name + ', ' + D.BOSSES[id].title, quote: D.BOSSES[id].quote || '' } : { title: String(id), quote: '' });
+const enemyFig = e => e.ghost ? art.ghostArt(e.gchar) : art.enemyArt(e.art, e.tint);
+const compForm = c => { const d = D.COMPANIONS[c.id]; return d.forms[Math.min(2, Math.max(0, (c.lvl | 0) - 1))]; };
+function arenaPreview() {
+  const g = G.run.arenaGhost, st = g.stats;
+  return `<div class="preview doorview arenaview"><div class="lab">Arena Duchów! Nagroda: +${D.RULES.arenaCoins} Ziaren i wybór rzadkiego kafelka</div><div class="glass"><div class="pv boss">${art.ghostArt(g.char)}<span>Duch: ${esc(g.nick)}</span></div></div><div class="tplnote">Życie ${st.hp}, Atak ${st.atk}, szybkość ${(st.aspd / 100).toFixed(2).replace('.', ',')} / s, Pancerz ${st.armor}${g.mirror ? '. To twoje własne Odbicie.' : ''}</div></div>`;
+}
 function previewHTML() {
-  const r = G.run; let ids = r.enemies || [];
-  if (r.boss === 'prezes') ids = ['kot-ochroniarz', 'kot-ochroniarz', 'prezes'];
+  const r = G.run; if (r.arenaGhost) return arenaPreview();
+  let ids = r.enemies || [];
+  const bdef = r.boss && D.BOSSES[r.boss];
+  if (bdef && bdef.guards) ids = [...Array(bdef.guards).fill('kot-ochroniarz'), r.boss];
   const nem = r.nemesisRound && r.nemesis, risky = r.door && r.door.risky;
   const items = ids.map((id, i) => { const d = enemyDef(id); const boss = !!D.BOSSES[id], big = i === 0 && (nem || risky);
-    const name = i === 0 && nem ? r.nemesis.name : id === 'kot-ochroniarz' && r.boss === 'prezes' ? 'Ochroniarz' : (i === 0 && risky ? 'Elitarny ' : '') + d.name;
-    return `<div class="pv ${boss ? 'boss' : ''} ${big ? 'boss nemesis' : ''}">${art.enemyArt(d.art)}<span>${esc(name)}</span></div>`; }).join('');
+    const name = i === 0 && nem ? r.nemesis.name : id === 'kot-ochroniarz' && bdef && bdef.guards ? 'Ochroniarz' : (i === 0 && risky ? 'Elitarny ' : '') + d.name;
+    return `<div class="pv ${boss ? 'boss' : ''} ${big ? 'boss nemesis' : ''}">${art.enemyArt(d.art, d.tint)}<span>${esc(name)}</span></div>`; }).join('');
   const affs = r.elite && r.affixes ? r.affixes : nem ? [r.nemesis.affix] : risky ? [r.door.affix] : null;
   const aff = affs ? `<div class="affixes">${affs.map(a => `<span class="tag aff" title="${esc(D.AFFIXES[a].text)}">${esc(D.AFFIXES[a].name)}: ${esc(D.AFFIXES[a].text)}</span>`).join('')}</div>` : '';
   const loot = nem && r.nemesis.tile && TILE[r.nemesis.tile] ? ` · odzyskasz: ${esc(TILE[r.nemesis.tile].name)}` : '';
@@ -265,7 +281,7 @@ const WIDE = matchMedia('(min-width: 1121px)');
 WIDE.addEventListener('change', () => { if (G.screen === 'run' && G.run) render(); });
 addEventListener('resize', () => fitTower(false));
 function stairsHTML() {
-  const r = G.run, M = D.MODES[r.mode], n = M.rounds, g = art.stairsGeom(n), W = art.ST.W, f = r.round, f0 = G.cabFrom || 0;
+  const r = G.run, M = D.MODES[r.mode], n = M.rounds, g = art.stairsGeom(n), W = art.ST.W, f = Math.min(r.round, n), f0 = Math.min(G.cabFrom || 0, n);
   const over = r.phase === 'over', up = !over && f0 && f0 < f;
   let plates = '';
   for (let k = 1; k <= n; k++) {
@@ -305,9 +321,14 @@ function towerHTML() {
   G.cabFrom = r.phase === 'over' ? 0 : r.round;
   return `<aside class="tower shaft" aria-label="Postęp: szyb windy"><h4>Piętra</h4>${rows}<div class="pot"></div></aside>`;
 }
+function companionPanel() {
+  const c = G.run.companion; if (!c) return '';
+  const d = D.COMPANIONS[c.id];
+  return `<div class="panel comp-panel" data-tip="${esc(compForm(c) + ' (poziom ' + c.lvl + ' z 3)\n' + companionBlurb(c.id, c.lvl) + '\nRośnie po każdym pokonanym bossie.')}" tabindex="0">${art.companionArt(c.id)}<div><div class="nm">${esc(compForm(c))}</div><div class="fm">Towarzysz · poziom ${c.lvl}/3</div><div class="hint" style="text-align:left">${esc(d.text)}</div></div></div>`;
+}
 function sideHTML() {
   const r = G.run, S = r.hero, ch = D.CHARS[r.char], form = D.FORMS.find(f => f.id === r.form) || D.FORMS[0];
-  const slots = Array.from({ length: D.RULES.maxSkills }, (_, i) => {
+  const slots = Array.from({ length: r.maxSkills || D.RULES.maxSkills }, (_, i) => {
     const s = r.skills[i];
     if (!s) return '<div class="slot empty">wolny slot umiejętności</div>';
     const def = D.SKILLS[s.id], tile = D.TILES.find(t => t.skill === s.id);
@@ -332,6 +353,7 @@ function sideHTML() {
   return `<aside class="side">
     <div class="panel hero-card">${art.heroArt(r.char, r.form)}<div><div class="hero-top"><div><div class="nm">${esc(ch.name)}</div><div class="fm">${esc(form.name)}</div></div>${r.badges && r.badges.length ? `<div class="bdgs" aria-label="Odznaki (${r.badges.length})">${r.badges.map(b => `<div class="chip badge" tabindex="0" data-tipk="badge:${b}">${art.badgeIcon(b)}</div>`).join('')}</div>` : ''}</div>
       <div class="hpbar" style="margin-top:6px"><i style="width:${pct}%"></i><b><span data-ctr="hp">${r.hp}</span> / ${S.maxHp}</b></div></div></div>
+    ${companionPanel()}
     <div class="panel"><h4>Umiejętności aktywne</h4><div class="slots">${slots}</div></div>
     <div class="panel"><h4>Statystyki</h4>${zoneCompareHTML()}<dl class="stats">${rows}</dl></div>
     <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${sets}${mss}${pawnLine}${foxLine}</div></aside>`;
@@ -406,30 +428,40 @@ function armLetter() {
   const el = $('.decree.letter'); if (!el) return;
   clearTimeout(G.letterT); G.letterT = setTimeout(() => tuckLetter($('.decree.letter')), 9000);
 }
+// Plakietki na pasku: Dogrywka, Klątwy, trasa strefy.
+function topPills() {
+  const r = G.run, o = [];
+  if (r.endless) o.push('<span class="pill endl" title="Dogrywka: Prezes pokonany, run trwa dalej. Wrogowie rosną szybciej, co ' + D.RULES.superEvery + ' pięter wpada super-boss.">♾ Dogrywka</span>');
+  if (r.curses && r.curses.length) o.push('<span class="pill curse" title="' + esc('Klątwy Prezesa (+' + r.cursePct + '% do wyniku):\n' + r.curses.map(c => D.CURSES[c].name + ': ' + D.CURSES[c].text).join('\n')) + '">☠ +' + r.cursePct + '%</span>');
+  if (r.route && D.ROUTES[r.route]) { const R = D.ROUTES[r.route]; o.push('<span class="pill route" title="' + esc('Trasa: ' + R.name + '\n' + R.text) + '">' + art.emo(R.icon) + '<span class="lbl"> ' + esc(R.name) + '</span></span>'); }
+  return o.join('');
+}
 function topbarHTML() {
   const r = G.run, M = D.MODES[r.mode];
   return `<div class="topbar dash"><span class="brand" aria-label="Bulgot"><img src="logo-napis.png?v=2" alt="Bulgot"></span>
-    <span class="disp lift" title="Piętro ${r.round} z ${r.rounds}" aria-label="Piętro ${r.round} z ${r.rounds}"><i class="arr" aria-hidden="true">▲</i><b>${String(r.round).padStart(2, '0')}</b><small>/${r.rounds}</small></span><span class="zone-name" title="${esc(T.ZONE_NAMES[r.zone])}">${esc(T.ZONE_NAMES[r.zone])}</span><span class="spacer"></span>
+    <span class="disp lift" title="Piętro ${r.round} z ${r.rounds}" aria-label="Piętro ${r.round} z ${r.rounds}"><i class="arr" aria-hidden="true">▲</i><b>${String(r.round).padStart(2, '0')}</b><small>/${r.endless ? '∞' : r.rounds}</small></span><span class="zone-name" title="${esc(T.ZONE_NAMES[r.zone])}">${esc(T.ZONE_NAMES[r.zone])}</span><span class="spacer"></span>
     <span class="disp coins" title="Ziarna: waluta na rerolle i zakupy. Odsetki po wygranej walce: +${Math.min(r.interestMax || 3, Math.floor(r.coins / D.RULES.interestPer))}">${art.coinIcon()}<b data-ctr="coins">${r.coins}</b></span>
     ${r.decree && D.DECREES[r.decree] ? `<span class="pill dec" tabindex="0" title="${esc(D.DECREES[r.decree].name + ': ' + D.DECREES[r.decree].text)}">${art.decreeIcon()}<span class="lbl"> Okólnik</span></span>` : ''}
-    <span class="pill mode">${M.name}</span>${r.garnek ? `<span class="pill g" title="Palnik ${r.garnek} (${BURNERS[r.garnek]}): ${esc(D.GARNEK[r.garnek].name)}">Palnik ${r.garnek}</span>` : ''}
+    <span class="pill mode">${M.name}</span>${topPills()}${r.garnek ? `<span class="pill g" title="Palnik ${r.garnek} (${BURNERS[r.garnek]}): ${esc(D.GARNEK[r.garnek].name)}">Palnik ${r.garnek}</span>` : ''}
     <span class="disp odo" title="Wynik na żywo" aria-label="Wynik ${r.score}"><b data-ctr="score" data-odo="6">${odoHTML(r.score, 6)}</b></span>
     <button class="btn small menubtn" data-act="book" title="Księga Kurnika (K)" aria-label="Księga Kurnika">${art.bookIcon()}</button><button class="btn small menubtn" data-act="help" title="Jak grać (H)" aria-label="Jak grać">${art.helpIcon()}</button><button class="btn small menubtn" data-act="menu" title="Menu (Esc)" aria-label="Menu">${art.menuIcon()}</button></div>`;
 }
 function stageHTML() {
   const r = G.run;
   if (r.phase === 'offer') return stageOffer();
-  if (r.phase === 'event') { const kd = r.pending.kind; return kd === 'shop' ? stageShop() : kd === 'contract' ? stageContract() : kd === 'shrine' ? stageShrine() : stageGamble(); }
+  if (r.phase === 'event') { const kd = r.pending.kind; return kd === 'shop' ? stageShop() : kd === 'contract' ? stageContract() : kd === 'shrine' ? stageShrine() : kd === 'adopt' ? stageAdopt() : kd === 'arena' ? stageArena() : stageGamble(); }
   if (r.phase === 'badge') return stageBadge();
   if (r.phase === 'loot') return stageLoot();
   if (r.phase === 'door') return stageDoor();
+  if (r.phase === 'route') return stageRoute();
+  if (r.phase === 'victory') return stageVictory();
   if (r.phase === 'bonus') return stageBonus();
   if (r.phase === 'fight') return stagePrep();
   return '';
 }
 function floorKron() {
   const r = G.run;
-  if (r.boss) return T.BOSS_INTRO[r.boss].quote;
+  if (r.boss) return bossIntroOf(r.boss).quote;
   return T.pickLine(T.OFFER_LINES[r.zone], r.round - 1);
 }
 // Odpoczynek: za Ziarna leczy część życia, raz na rundę, przed walką.
@@ -537,6 +569,42 @@ function stageLoot() {
   return `<div class="stage-title"><h2>Łup z bossa</h2><div class="sub">Z pokonanego bossa wypadły trzy legendarne rzeczy. Weź jedną.</div></div>
     <div class="kron">Zarząd sprząta po bossie. Resztki wciąż są warte więcej niż twoja pensja.</div><div class="cards">${cards}</div>`;
 }
+// Trasa na początku strefy: dwie drogi z różnymi modyfikatorami na całą strefę.
+function stageRoute() {
+  const r = G.run, cards = r.pending.opts.map((id, i) => { const R = D.ROUTES[id]; return choiceCard(i, art.emo(R.icon), R.name, R.text, '<div class="tmeta"><span class="tag up">Trasa na całą strefę</span></div>'); }).join('');
+  return `<div class="stage-title"><h2>Piętro ${r.round}: wybierz trasę</h2><div class="sub">Wchodzisz do strefy: ${esc(T.ZONE_NAMES[r.zone])}. Trasa działa do końca strefy.</div></div>
+    <div class="kron">Korytarz rozwidla się w dwie strony. Jedna pachnie rosołem, druga czymś gorszym.</div><div class="cards">${cards}</div>`;
+}
+// Po Prezesie: koniec runu albo Dogrywka.
+function stageVictory() {
+  const r = G.run;
+  const cards = [
+    choiceCard(0, art.emo('dogrywka'), 'Dogrywka', 'Zostajesz w fabryce. Wrogowie rosną szybciej, co ' + D.RULES.superEvery + ' pięter wpada super-boss, a każde piętro dokłada ' + D.RULES.scoreRound + ' pkt. Porażka nie odbiera wygranej.', '<div class="tmeta"><span class="tag up">Ranking Dogrywki</span></div>'),
+    choiceCard(1, art.potArt(true), 'Zakończ run', 'Zgarniasz wygraną i wynik teraz: ' + fmtNum(r.score) + ' pkt.'),
+  ].join('');
+  return `<div class="stage-title"><h2>Prezes pokonany!</h2><div class="sub">Wygrana jest już twoja. Co dalej?</div></div>
+    <div class="kron">${esc('Padł Prezes, a z nim upadł cały cennik. Ale schody prowadzą jeszcze wyżej.')}</div><div class="cards">${cards}</div>`;
+}
+// Schronisko dla Piskląt: adopcja towarzysza.
+function companionBlurb(id, lvl = 1) { const d = D.COMPANIONS[id], L = d.lv[lvl - 1]; return d.text + (L.every ? ' Co ' + (L.every / 10).toString().replace('.', ',') + ' s: ' + ({ peck: L.v + '% Ataku', heal: L.v + '% Życia', burn: L.v + ' st. Oparzenia', frost: L.v + ' st. Mrozu', honk: 'ogłuszenie ' + (L.v / 10).toString().replace('.', ',') + ' s' }[L.act] || '') + '.' : ''); }
+function stageAdopt() {
+  const r = G.run, cur = r.companion, cards = r.pending.opts.map((id, i) => choiceCard(i, art.companionArt(id), D.COMPANIONS[id].name, companionBlurb(id, 1), '<div class="tmeta"><span class="tag up">Rośnie po bossach</span></div>')).join('');
+  return `<div class="stage-title"><h2>Schronisko dla Piskląt</h2><div class="sub">${cur ? 'Masz już: ' + esc(compForm(cur)) + '. Nowy towarzysz go zastąpi.' : 'Wybierz towarzysza, który będzie walczył u twojego boku.'}</div></div>
+    <div class="kron">Adopcja jest bezpłatna. Gryzienie w cenie.</div><div class="cards">${cards}</div>
+    <div class="actions"><button class="btn" data-act="choose" data-i="-1">Nie adoptuję</button></div>`;
+}
+// Arena Duchów: walka z buildem innego gracza.
+function stageArena() {
+  const r = G.run, g = r.pending.ghost, st = g.stats, ch = D.CHARS[g.char], tiles = [...new Set(g.tiles || [])].slice(0, 16).map(id => TILE[id] ? art.tileIcon(id) : '').join('');
+  const cards = [
+    choiceCard(0, art.ghostArt(g.char), 'Walcz z Duchem', 'Nagroda: +' + D.RULES.arenaCoins + ' Ziaren i wybór 1 z 3 rzadkich kafelków. Przegrana kończy run jak każda walka.', '<div class="tmeta"><span class="tag up">Ryzyko</span></div>'),
+    choiceCard(1, art.doorIcon(false), 'Odwrót', 'Odchodzisz i walczysz ze zwykłymi wrogami tego piętra.'),
+  ].join('');
+  return `<div class="stage-title"><h2>Arena Duchów</h2><div class="sub">${g.mirror ? 'Nikt jeszcze nie zostawił tu ducha, więc czeka twoje Odbicie.' : 'Duch gracza <b>' + esc(g.nick) + '</b> (' + esc(ch ? ch.name : '') + ', ' + g.floors + ' pięter)'}</div></div>
+    <div class="kron">Kto nie dotarł do Prezesa, ten krąży po arenie i bije następnych.</div>
+    <div class="ghostcard"><div class="gfig">${art.ghostArt(g.char)}</div><div class="gst"><b>Statystyki Ducha na tym piętrze</b><span>Życie ${st.hp}</span><span>Atak ${st.atk}</span><span>Szybkość ${(st.aspd / 100).toFixed(2).replace('.', ',')} / s</span><span>Pancerz ${st.armor}</span><span>Krytyk ${st.crit}%</span><span>Unik ${st.evade}%</span><div class="gtiles">${tiles}</div></div></div>
+    <div class="cards">${cards}</div>`;
+}
 function stageContract() {
   const cards = [
     choiceCard(0, art.tileIcon('umowa-etat'), 'Umowa o Pracę', '+30% Ataku do końca runu, ale -2 Ziarna po każdej rundzie.'),
@@ -588,7 +656,7 @@ function needChoice(t, slot, mut, go) {
   if (!t || t.type !== 'skill') return false;
   const r = G.run, own = r.skills.find(s => s.id === t.skill);
   if (own && own.lvl >= 2 && mut === undefined) { askMut(t, m => go(slot, m)); return true; }
-  if (!own && slot === undefined && r.skills.length >= D.RULES.maxSkills) { askSlot(t, s => go(s, mut)); return true; }
+  if (!own && slot === undefined && r.skills.length >= (G.run.maxSkills || D.RULES.maxSkills)) { askSlot(t, s => go(s, mut)); return true; }
   return false;
 }
 function askMut(tile, cb) {
@@ -648,13 +716,14 @@ function startFight(setup) {
           <div class="ctl"><button data-act="speed" id="speedbtn" title="Tempo walki (F): ${SPEED_NOTE[F.speed]}">×${F.speed}</button><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button></div></div>
         <div id="units"></div><div id="fxl"></div></div>
       <div class="console"><div class="gdak" id="gdak" data-tip="Okno Gdakania&#10;Użyj kolejnej umiejętności w ciągu 1,5 s po poprzedniej. 2. w serii zadaje +20% obrażeń, 3. +50%. Trzy różne umiejętności pod rząd to Pełna Kurza Seria: dodatkowo ogłuszenie wrogów na 1 s. Przy tempie ×3 okno trwa trzy razy krócej."><span class="gl">OKNO GDAKANIA</span><div class="gbar"><i id="gdaki"></i></div><b id="gdakn">–</b></div><div class="skillbar" id="skillbar"></div></div>
-      <div class="kron" id="kline">${esc(boss ? T.BOSS_INTRO[boss.boss].quote : floorKron())}</div>
+      <div class="kron" id="kline">${esc(boss ? bossIntroOf(boss.boss).quote : floorKron())}</div>
     </main></div>`;
   F.arena = $('#arena');
   // lekka paralaksa: tło, mgiełka i pierwszy plan przesuwają się za kursorem w różnym tempie (bez wpływu na walkę)
   if (!REDUCED.matches) F.arena.addEventListener('pointermove', ev => { const r = F.arena.getBoundingClientRect(); F.arena.style.setProperty('--px', ((ev.clientX - r.left) / r.width - .5).toFixed(3)); F.arena.style.setProperty('--py', ((ev.clientY - r.top) / r.height - .5).toFixed(3)); });
   makeUnit('hero', { name: D.CHARS[run.char].name, art: art.heroArt(run.char, run.form), left: 17 });
-  for (const e of f.enemies) makeUnit(e.uid, { e, name: e.name, art: art.enemyArt(e.art) });
+  if (f.comp) { const cc = f.loadout.companion; makeUnit('comp', { name: compForm(cc), art: art.companionArt(cc.id), left: 5 }); }
+  for (const e of f.enemies) makeUnit(e.uid, { e, name: e.name, art: enemyFig(e) });
   layoutUnits(); buildSkillbar(); updateUI(true);
   if (boss) { bossIntro(boss); snd.sfx('boss'); } else if (setup.tpl && D.FLOOR_TPL[setup.tpl]) banner(D.FLOOR_TPL[setup.tpl].name + '!', D.FLOOR_TPL[setup.tpl].text, false); else banner('Walka!', '', false);
   F.last = 0; F.raf = requestAnimationFrame(frame);
@@ -663,7 +732,7 @@ function startFight(setup) {
 function makeUnit(key, o) {
   const F = G.fight, e = o.e, boss = e && e.boss, small = e && e.minion;
   const el = document.createElement('div');
-  el.className = `unit ${key === 'hero' ? 'hero' : 'enemy'} ${boss ? 'boss' : ''} ${small ? 'small' : ''} idle`;
+  el.className = `unit ${key === 'hero' ? 'hero' : key === 'comp' ? 'ally' : 'enemy'} ${boss ? 'boss' : ''} ${small ? 'small' : ''} idle`;
   el.innerHTML = `<div class="plate"><div class="nm">${esc(o.name)}</div>${e && e.affixes ? `<div class="affl">${e.affixes.map(a => esc(D.AFFIXES[a].name)).join(' · ')}</div>` : ''}<div class="hpbar ${key === 'hero' ? '' : 'enemy'}"><i></i><b></b></div><div class="sts"></div></div><div class="sprite">${o.art}</div><div class="fxs"></div>`;
   if (o.left != null) el.style.left = o.left + '%';
   $('#units').appendChild(el);
@@ -704,7 +773,7 @@ function pop(text, cls, x, bottom = 60) {
 const cls = (u, c, ms) => { u.spr.classList.remove(c); void u.spr.offsetWidth; u.spr.classList.add(c); setTimeout(() => u.spr.classList.remove(c), ms); };
 // Wejście bossa jak w kinie: czarne pasy, plansza z imieniem i tytułem, tekst Kronikarza. Walka stoi (tylko obraz, zegar nie liczy).
 function bossIntro(boss) {
-  const F = G.fight, I = T.BOSS_INTRO[boss.boss] || { title: boss.name, quote: '' }, [nm, ...rest] = I.title.split(', ');
+  const F = G.fight, I = bossIntroOf(boss.boss), [nm, ...rest] = I.title.split(', ');
   const el = document.createElement('div'); el.className = 'cine'; el.setAttribute('role', 'status');
   el.innerHTML = `<i class="bar t"></i><i class="bar b"></i><div class="plate"><small>BOSS · PIĘTRO ${F.setup.round}</small><h3>${esc(nm)}</h3>${rest.length ? `<em>${esc(rest.join(', '))}</em>` : ''}<p>„${esc(I.quote)}”</p></div>`;
   F.arena.appendChild(el); F.stopUntil = performance.now() + 2300;
@@ -756,7 +825,7 @@ function onEvent(e) {
     case 'okrzyk': banner('Ostatni Okrzyk!', 'Chwila nietykalności', false); break;
     case 'revive': banner('Gniazdo Zapasowe!', 'Kurczak wstaje z kolan', false); snd.sfx('heal'); break;
     case 'fury': banner('FURIA!', 'Wrogowie wpadają w szał', true); snd.sfx('fury'); F.arena.classList.add('furious'); if (!F.arena.querySelector('.beacons')) F.arena.insertAdjacentHTML('beforeend', '<div class="beacons" aria-hidden="true"><i></i><i></i></div>'); break;
-    case 'summon': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: art.enemyArt(en.art) }); layoutUnits(); } break; }
+    case 'summon': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: enemyFig(en) }); layoutUnits(); } break; }
     case 'phase': banner('Faza ' + e.n, '', true); snd.sfx('phase'); shake(); break;
     case 'skubanie': banner('Skubanie!', 'Wyłączony kafelek: ' + TILE[e.tile].name, true); snd.sfx('phase'); break;
     case 'skubanie-end': pop('kafelek wraca', 'txt', 17, 74); break;
@@ -767,6 +836,10 @@ function onEvent(e) {
     case 'chain': pop('Seria ×' + e.n, 'txt gold', 17, 84); break;
     case 'seria': banner('Pełna Kurza Seria!', 'Popłoch: wrogowie ogłuszeni', false); snd.sfx('unlock'); shake(); break;
     case 'flaw': pop(e.f === 'samozaplon' ? 'Samozapłon!' : 'Usterka!', 'txt warn', 17, 80); snd.sfx('hurt'); break;
+    case 'comp': { const u = tu('comp'); if (u) cls(u, 'lunge', 240); break; }
+    case 'night': { banner('Ciemność!', 'Część twoich ciosów chybia', true); snd.sfx('phase'); const ar = F.arena; if (ar) { ar.classList.add('night'); setTimeout(() => ar && ar.classList.remove('night'), e.dur * 100 / F.speed); } break; }
+    case 'blizzard': { banner('Zamieć!', 'Twoje ataki są wolniejsze', true); snd.sfx('stun'); const ar = F.arena; if (ar) { ar.classList.add('blizz'); setTimeout(() => ar && ar.classList.remove('blizz'), e.dur * 100 / F.speed); } break; }
+    case 'crash': { const u = tu(e.uid); if (u) pop('przegrzany!', 'txt', u.x, 74); break; }
     case 'victory': snd.sfx('win'); break;
     case 'defeat': snd.sfx('lose'); break;
     case 'timeout': snd.sfx('lose'); break;
@@ -851,7 +924,13 @@ async function finishFight() {
   const res = j.result;
   if (res.win !== local.win) toast('Serwer rozliczył walkę inaczej niż Twoja przeglądarka. Obowiązuje wynik serwera.', true, 5000);
   if (G.run.phase === 'over') { G.screen = 'run'; return showEnd(j); }
-  G.screen = 'run'; INV.pending = invoiceOn() ? F.setup.round : 0; render(); showInvoice(j, F.setup.round);
+  G.screen = 'run'; INV.pending = invoiceOn() ? F.setup.round : 0; render(); showInvoice(j, F.setup.round); fightToasts(j);
+}
+// Komunikaty po walce: Arena, ewolucja towarzysza, Prezes pokonany.
+function fightToasts(j) {
+  if (j.arena) toast(j.arena.won ? 'Duch pokonany: ' + j.arena.nick + '! Bonus czeka.' : 'Duch ' + j.arena.nick + ' okazał się silniejszy.', !j.arena.won, 4200);
+  if (j.compUp && G.run.companion) toast('Towarzysz ewoluuje: ' + compForm(G.run.companion) + '!', false, 4200);
+  if (j.victory) { snd.sfx('unlock'); toast('Prezes pokonany! Wygrana zaliczona: kończysz albo grasz dalej w Dogrywce.', false, 6000); }
 }
 function retryOverlay() {
   return new Promise(res => { G.retryCb = res; openOverlay('<h2>Brak połączenia</h2><p class="lead">Nie udało się rozliczyć walki z serwerem. Twój run jest bezpieczny, spróbuj ponownie.</p><div class="actions"><button class="btn primary" data-act="retry-fight" data-primary>Spróbuj jeszcze raz</button></div>', { narrow: true, force: true }); });
@@ -914,7 +993,7 @@ function invoiceData(j, floor) {
   if (r.reactions) notes.push({ text: `Reakcje: ${r.reactions} (${(r.reactSeen || []).map(k => D.REACTIONS[k] ? D.REACTIONS[k].name : k).join(', ')})` });
   if (j.grew && j.grew.length) notes.push({ text: 'Urosło: ' + j.grew.map(id => TILE[id].name + ' (' + Math.min(TILE[id].grow.max, (run.grow || {})[id] || 0) + '/' + TILE[id].grow.max + ')').join(', ') });
   return { f, boss: !!boss, who: D.CHARS[run.char].name, zone: T.ZONE_NAMES[run.zone], rows, notes, imp: notes.some(n => n.imp), seen: false,
-    line: boss ? T.BOSS_WIN_LINES[boss] : T.pickLine(T.WIN_LINES, run.round), foot: T.pickLine(boss ? I.bossFooters : I.footers, run.round), stamp: boss ? I.bossStamp : I.stamp };
+    line: boss ? (T.BOSS_WIN_LINES[boss] || 'Boss padł, a wynik rośnie.') : T.pickLine(T.WIN_LINES, run.round), foot: T.pickLine(boss ? I.bossFooters : I.footers, run.round), stamp: boss ? I.bossStamp : I.stamp };
 }
 
 // ---------- Tablica Zarządu (korek z przybitymi fakturami za pokonane piętra, do końca runu) ----------
@@ -1071,7 +1150,7 @@ function endFacts(j, win) {
   const r = G.run, M = D.MODES[r.mode], res = j.result || (G.lastEndJ && G.lastEndJ.result) || null, seed = parseInt(String(r.id).slice(-6), 10) || 0;
   if (win) { store.set('bulgot:lastlose', 'null'); return winFacts({ mode: r.mode, garnek: r.garnek, seed }); }
   const k = r.killer, kd = k && (D.ENEMIES[k.enemy] || D.BOSSES[k.enemy]);
-  const boss = M.bosses[r.round] ? D.BOSSES[M.bosses[r.round]] : null;
+  const boss = r.boss ? D.BOSSES[r.boss] : null;
   // seria porażek na tym samym piętrze (zapamiętana w przeglądarce, liczona raz na run)
   if (!G.streakOf || G.streakOf.id !== r.id) {
     let last = null; try { last = JSON.parse(store.get('bulgot:lastlose') || 'null'); } catch (e) {}
@@ -1104,10 +1183,12 @@ function showEnd(j, quiet = false) {
       <tr><td>Ziarna w kieszeni (${r.coins} × ${D.RULES.scoreCoin})</td><td>${fmtNum(r.coins * D.RULES.scoreCoin)}</td></tr>
       <tr><td>Premia za szybkość walk</td><td>${fmtNum(r.timeBonus)}</td></tr>
       ${r.garnek ? `<tr><td>Mnożnik Garnka ${r.garnek} (${D.GARNEK[r.garnek].name})</td><td>×${mult.toFixed(2).replace('.', ',')}</td></tr>` : ''}
+      ${r.curses && r.curses.length ? `<tr><td>Klątwy Prezesa (${r.curses.map(c => esc(D.CURSES[c].name)).join(', ')})</td><td>×${(1 + D.cursePct(r.curses) / 100).toFixed(2).replace('.', ',')}</td></tr>` : ''}
+      ${r.endless ? `<tr><td>Dogrywka: piętra ponad limit (${Math.max(0, r.done - (r.cleared || 0))})</td><td>♾</td></tr>` : ''}
       <tr class="total"><td>Wynik</td><td id="endscore" data-v="${r.score}">${fmtNum(r.score)}</td></tr></table>
     ${e.newBest ? '<p class="lead" style="color:var(--gold)"><b>Nowy rekord życiowy w tym trybie!</b></p>' : ''}
     ${e.rank ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}
-    ${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano poziom palnika ${G.profile.garnek}: ${esc(BURNERS[G.profile.garnek])} (${esc(D.GARNEK[G.profile.garnek].name)})</b></div>` : ''}${unlocksHTML(un)}${achHTML(takeAch())}${endMeta(j)}
+    ${e.feathers ? `<p class="lead">${art.emo('pioro')} Pióra do Kurnika: <b>+${e.feathers}</b> (razem ${G.profile.feathers | 0})</p>` : ''}${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano poziom palnika ${G.profile.garnek}: ${esc(BURNERS[G.profile.garnek])} (${esc(D.GARNEK[G.profile.garnek].name)})</b></div>` : ''}${unlocksHTML(un)}${achHTML(takeAch())}${endMeta(j)}
     <div class="analyze" id="analyzebox">${analyzeHTML(r.id, !!(G.sentRuns && G.sentRuns[r.id]))}</div></div>
     <div class="actions end-actions"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>`, { force: true, cls: 'endfull' });
   G.screen = 'home'; render();
@@ -1116,20 +1197,21 @@ function showEnd(j, quiet = false) {
 
 // ---------- okna: ranking, księga, pomoc, ustawienia, menu ----------
 // Ranking: jeden ogólny (punkty) albo przefiltrowany po postaci, poziomie Garnka i graczu. Klik w nick, postać lub Garnek w tabeli ustawia filtr.
-const RK = { mode: null, char: '', garnek: '', nick: '' };
+const RK = { mode: null, char: '', garnek: '', nick: '', deep: false };
 async function showRanking(mode, keep) {
   mode = mode || G.setup.mode;
-  if (!keep) Object.assign(RK, { char: '', garnek: '', nick: '' });
+  if (!keep) Object.assign(RK, { char: '', garnek: '', nick: '', deep: false });
   RK.mode = mode;
   const chars = Object.values(D.CHARS).filter(c => !c.secret || G.profile.chars.includes(c.id));
   const maxG = Math.max(G.profile.garnek | 0, 0);
   const sel = (id, label, opts, val) => `<label class="rkf"><span>${label}</span><select id="${id}" >${opts.map(([v, n]) => `<option value="${esc(v)}" ${String(v) === String(val) ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`;
-  openOverlay(`<h2>Ranking</h2><div class="tabs">${['quick', 'full'].map(m => `<button class="tab ${m === mode ? 'on' : ''}" data-act="ranktab" data-v="${m}">${D.MODES[m].name}</button>`).join('')}</div>
+  openOverlay(`<h2>Ranking</h2><div class="tabs">${['quick', 'full'].map(m => `<button class="tab ${m === mode && !RK.deep ? 'on' : ''}" data-act="ranktab" data-v="${m}">${D.MODES[m].name}</button>`).join('')}<button class="tab ${RK.deep ? 'on' : ''}" data-act="rkdeep" title="Ranking Dogrywki w trybie: ${esc(D.MODES[mode].name)}">♾ Dogrywka</button></div>
     <div class="rkbar">${sel('rk-char', 'Postać', [['', 'Wszystkie'], ...chars.map(c => [c.id, c.name])], RK.char)}${sel('rk-garnek', 'Poziom trudności', [['', 'Wszystkie'], ...D.GARNEK.map((g, i) => [i, 'Garnek ' + i + ' · ' + g.name]).slice(0, Math.max(maxG, +RK.garnek || 0) + 1)], RK.garnek)}
       <label class="rkf"><span>Gracz</span><input id="rk-nick" type="text" maxlength="16" placeholder="dowolny nick" value="${esc(RK.nick)}" autocomplete="off"></label>
       <button class="btn small" data-act="rkme" title="Pokaż tylko moje wyniki">Tylko ja</button><button class="btn small ghost" data-act="rkclear" ${RK.char || RK.garnek !== '' || RK.nick ? '' : 'disabled'}>Wyczyść filtry</button></div>
     <div id="rk" class="lead">Ładowanie…</div>`);
-  const q = new URLSearchParams(); if (RK.char) q.set('char', RK.char); if (RK.garnek !== '') q.set('garnek', RK.garnek); if (RK.nick.trim()) q.set('nick', RK.nick.trim());
+  if (RK.deep) { const rb = $('.rkbar'); if (rb) rb.remove(); }
+  const q = new URLSearchParams(); if (RK.deep) q.set('kind', 'deep'); if (RK.char) q.set('char', RK.char); if (RK.garnek !== '') q.set('garnek', RK.garnek); if (RK.nick.trim()) q.set('nick', RK.nick.trim());
   const myMode = mode, { j } = await apiRanks(mode, q.toString());
   const box = $('#rk'); if (!box || RK.mode !== myMode) return;
   if (!j || !j.list) { box.textContent = (j && j.err) || 'Nie udało się pobrać rankingu.'; return; }
@@ -1142,10 +1224,24 @@ async function showRanking(mode, keep) {
     <table class="rank-list"><thead><tr><th></th><th>Gracz</th><th>Postać</th><th>Garnek</th><th>Piętra</th><th style="text-align:right">Wynik</th></tr></thead><tbody>${j.list.map((x, i) => {
     const av = x.avatar && !LOCAL ? `<span class="av"><img src="${esc(avatarUrl(x.avatar))}" alt="" onerror="this.remove()"></span>` : `<span class="av">${esc((x.nick || '?')[0].toUpperCase())}</span>`;
     const cn = (D.CHARS[x.char] || {}).name || '';
-    return `<tr class="${x.nick === mynick ? 'me' : ''} ${i < 3 ? 'top' + (i + 1) : ''}"><td class="pos">${i + 1}</td><td><button class="lnk" data-act="rknickset" data-v="${esc(x.nick)}" title="Pokaż wyniki tego gracza">${av}${esc(x.nick)}</button>${x.win ? ' ★' : ''}</td><td><button class="lnk" data-act="rkcharset" data-v="${esc(x.char)}" title="Filtruj po tej postaci">${esc(cn)}</button></td><td><button class="lnk" data-act="rkgset" data-v="${x.garnek | 0}" title="Filtruj po tym poziomie">G${x.garnek | 0}</button></td><td>${x.rounds}</td><td class="sc">${fmtNum(x.score)}</td></tr>`;
+    return `<tr class="${x.nick === mynick ? 'me' : ''} ${i < 3 ? 'top' + (i + 1) : ''}"><td class="pos">${i + 1}</td><td><button class="lnk" data-act="rknickset" data-v="${esc(x.nick)}" title="Pokaż wyniki tego gracza">${av}${esc(x.nick)}</button>${x.win ? ' ★' : ''}${x.deep ? ` <small class="deepn">♾ +${x.deep}</small>` : ''}</td><td><button class="lnk" data-act="rkcharset" data-v="${esc(x.char)}" title="Filtruj po tej postaci">${esc(cn)}</button></td><td><button class="lnk" data-act="rkgset" data-v="${x.garnek | 0}" title="Filtruj po tym poziomie">G${x.garnek | 0}</button></td><td>${x.rounds}</td><td class="sc">${fmtNum(x.score)}</td></tr>`;
   }).join('')}</tbody></table>`;
 }
 // Księga: nowe wpisy (odblokowane kafelki, przepisy, reakcje) od ostatniego otwarcia dostają naklejkę „Nowy wpis!”.
+// Kurnik: meta-progres. Pióra za runy → trwałe, niewielkie ulepszenia (maks. 3 poziomy). Na dole Duch gracza z Areny.
+function ghostBlock() {
+  const g = G.myGhost || {}, rows = Object.keys(D.MODES).filter(m => g[m]).map(m => { const x = g[m], ch = D.CHARS[x.char]; return `<div class="kghost">${art.ghostArt(x.char)}<div><b>${esc(D.MODES[m].name)}: ${esc(ch ? ch.name : '')}</b>, ${x.floors} pięter${x.win ? ' ★' : ''}<br><span>Pokonał ${x.wins} graczy, przegrał z ${x.losses}.</span></div></div>`; }).join('');
+  return `<div class="sec">Twój Duch na Arenie</div>${rows || '<p class="hint">Zakończ run z co najmniej 3 piętrami, a twój build zostanie na Arenie Duchów i będzie bił innych graczy.</p>'}`;
+}
+function showKurnik() {
+  const p = G.profile, ku = p.kurnik || {}, fe = p.feathers | 0;
+  const cards = Object.entries(D.KURNIK).map(([id, b]) => {
+    const lv = ku[id] | 0, max = lv >= D.KURNIK_MAX, cost = max ? 0 : b.cost[lv];
+    return `<div class="kb ${max ? 'max' : ''}">${art.emo(b.icon)}<div class="kbn"><b>${esc(b.name)}</b><span class="kbl">${[0, 1, 2].map(i => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</span></div><p>${esc(b.text)}</p>${max ? '<div class="kbm">Maksymalny poziom</div>' : `<button class="btn small ${fe >= cost ? 'primary' : ''}" data-act="kbuy" data-v="${id}" ${fe < cost ? 'disabled' : ''}>Ulepsz za ${cost} ${art.emo('pioro')}</button>`}</div>`;
+  }).join('');
+  openOverlay(`<h2>Kurnik</h2><p class="lead">Za każdy run dostajesz Pióra: piętra, premię za wygraną (z palnikiem) i za piętra Dogrywki. Wydaj je na trwałe, niewielkie ulepszenia dla wszystkich postaci.</p>
+    <div class="kfeathers">${art.emo('pioro')} Pióra: <b>${fe}</b></div><div class="kgrid">${cards}</div>${ghostBlock()}<div class="actions" style="margin-top:12px"><button class="btn ghost" data-act="close">Zamknij</button></div>`, { cls: 'kurnikmodal' });
+}
 function showProfile() {
   const p = G.profile, c = p.completion || { pct: 0, parts: [] }, pl = playerNow(), have = new Set(p.ach || []);
   const parts = c.parts.map(x => `<div class="prof-part"><span>${esc(x.name)}</span><b>${x.done}/${x.total}</b><i style="--w:${Math.min(100, x.done / x.total * 100).toFixed(1)}%"></i></div>`).join('');
@@ -1167,7 +1263,7 @@ function bookFit() {
 const bookGo = d => { G.bookPage = (G.bookPage || 0) + d; bookFit(); };
 function showBook(tab = 'tiles', turn = false) {
   const seen = bookSeen(), fresh = k => !seen.has(k), marks = [];
-  const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['react', 'Reakcje i Okólniki'], ['badges', 'Odznaki'], ['ach', 'Osiągnięcia'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania']];
+  const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['react', 'Reakcje i Okólniki'], ['badges', 'Odznaki'], ['ach', 'Osiągnięcia'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania'], ['more', 'Klątwy, trasy, towarzysze']];
   let body = '';
   if (tab === 'react') {
     const known = p.reactions || []; for (const k of known) marks.push('x:' + k);
@@ -1177,6 +1273,12 @@ function showBook(tab = 'tiles', turn = false) {
       <div class="sec">Okólniki Zarządu</div><p class="lead">Każda strefa w runie ma inny okólnik, który zmienia zasady.</p><div class="ms-grid">${Object.values(D.DECREES).map(d => `<div class="ms-row">${art.decreeIcon()}<div><b>${esc(d.name)}</b><br><span>${esc(d.text)}</span></div></div>`).join('')}</div>
       <div class="sec">Wady fabryczne</div><p class="lead">Kafelek z pieczątką „Wada fabryczna” jest o 50% mocniejszy, ale po następnej walce ujawnia jedną z wad:</p><div class="ms-grid">${Object.values(D.FLAWS).map(f => `<div class="ms-row"><div><b>${esc(f.name)}</b><br><span>${esc(f.text)}</span></div></div>`).join('')}</div>
       ${p.nemesis ? `<div class="sec">Twój Nemezis</div><p class="lead">${esc(p.nemesis.name)}, cecha ${esc(D.AFFIXES[p.nemesis.affix].name)}${p.nemesis.tile ? ', ukradł ' + esc(TILE[p.nemesis.tile].name) : ''}. Pokonane Nemezis: ${p.counters.nemesisKills || 0}.</p>` : ''}`;
+  } else if (tab === 'more') {
+    body = `<div class="sec">Klątwy Prezesa</div><p class="lead">Dobrowolne utrudnienia wybierane przed runem (do ${D.CURSE_MAX} naraz). Każda dodaje premię do końcowego wyniku.</p><div class="ms-grid">${Object.values(D.CURSES).map(c => `<div class="ms-row">${art.emo(c.icon)}<div><b>${esc(c.name)} (+${c.pct}%)</b><br><span>${esc(c.text)}</span></div></div>`).join('')}</div>
+      <div class="sec">Trasy</div><p class="lead">Na początku strefy II i III wybierasz jedną z dwóch tras (losowanych z pięciu). Trasa działa do końca strefy.</p><div class="ms-grid">${Object.values(D.ROUTES).map(R => `<div class="ms-row">${art.emo(R.icon)}<div><b>${esc(R.name)}</b><br><span>${esc(R.text)}</span></div></div>`).join('')}</div>
+      <div class="sec">Towarzysze</div><p class="lead">Schronisko dla Piskląt (wydarzenie) daje towarzysza. Rośnie do poziomu 3 po każdym pokonanym bossie.</p><div class="ms-grid">${Object.values(D.COMPANIONS).map(c => `<div class="ms-row">${art.companionArt(c.id)}<div><b>${esc(c.forms.join(' → '))}</b><br><span>${esc(c.text)}</span></div></div>`).join('')}</div>
+      <div class="sec">Bossowie (warianty)</div><p class="lead">Każde miejsce bossa ma trzech kandydatów, losowanych z ziarna runu (oryginał trafia się najczęściej).</p><div class="ms-grid">${Object.values(D.BOSSES).filter(b => !b.super).map(b => `<div class="ms-row">${art.enemyArt(b.art, b.tint)}<div><b>${esc(b.name)}</b><br><span>${esc(b.text)}</span></div></div>`).join('')}</div>
+      <div class="sec">Dogrywka i super-bossowie</div><p class="lead">Po Prezesie możesz zostać w fabryce. Wrogowie rosną szybciej, a co ${D.RULES.superEvery} pięter wpada super-boss.</p><div class="ms-grid">${Object.values(D.BOSSES).filter(b => b.super).map(b => `<div class="ms-row">${art.enemyArt(b.art, b.tint)}<div><b>${esc(b.name)}</b><br><span>${esc(b.text)}</span></div></div>`).join('')}</div>`;
   } else if (tab === 'ach') {
     const have = new Set(p.ach || []);
     body = `<p class="lead">Zdobyte: ${have.size} z ${D.ACHIEVEMENTS.length}.</p>` + Object.entries(D.ACH_GROUPS).map(([gid, g]) => `<div class="sec">${esc(g.name)}</div><div class="ach-list">${D.ACHIEVEMENTS.filter(a => a.g === gid).map(a => { const got = have.has(a.id), hide = a.secret && !got; return `<div class="ach-row ${got ? 'got' : 'lock'}">${art.medal(a.g, hide ? '?' : a.s, !got)}<div><b>${esc(hide ? '???' : a.name)}</b><span>${esc(hide ? 'Ukryte osiągnięcie.' : a.text)}</span></div></div>`; }).join('')}</div>`).join('');
@@ -1269,9 +1371,10 @@ const ACT = {
   cprev: () => carGo(G.setup.cur - 1), cnext: () => carGo(G.setup.cur + 1),
   gprev: () => garGo(G.setup.garnek - 1), gnext: () => garGo(G.setup.garnek + 1),
   setgarnek: b => garGo(+b.dataset.v),
+  curse: b => { const s = G.setup, sel = s.curses || (s.curses = []), id = b.dataset.v, k = sel.indexOf(id); if (k >= 0) sel.splice(k, 1); else if (sel.length >= D.CURSE_MAX) return toast('Najwyżej ' + D.CURSE_MAX + ' Klątwy naraz.', true, 2400); else sel.push(id); snd.sfx('click'); render(); },
   start: async () => {
     const s = G.setup; if (!G.profile.chars.includes(s.char)) s.char = 'pyrtek'; if (s.garnek > G.profile.garnek) return;
-    const j = await act('start', { mode: s.mode, char: s.char, garnek: s.garnek }); if (!j) return;
+    const j = await act('start', { mode: s.mode, char: s.char, garnek: s.garnek, curses: s.curses || [] }); if (!j) return;
     snd.sfx('bulgot'); G.screen = 'run'; render();
     if (!store.get('bulgot:intro')) showIntro();
   },
@@ -1305,7 +1408,7 @@ const ACT = {
   leave: async () => { const j = await act('shop', { i: -1 }); if (j) render(); },
   bet: async b => { const j = await act('bet', { amount: +b.dataset.v }); if (!j) return; if (j.bet) { snd.sfx(j.won ? 'win' : 'lose'); toast(j.won ? `Wygrana! +${j.bet} Ziaren` : `Pudło. -${j.bet} Ziaren`, !j.won); } render(); },
   bonuspick: b => ACT.bonusgo(+b.dataset.i),
-  choose: async b => { const j = await act('choose', { i: +b.dataset.i }); if (j) { snd.sfx(j.looted ? 'unlock' : 'pick'); if (j.looted) toast(`Łup: ${TILE[j.looted].name}!`, false, 3200); render(); } },
+  choose: async b => { const j = await act('choose', { i: +b.dataset.i }); if (j) { if (G.run && G.run.phase === 'over') { G.screen = 'run'; return showEnd(j); } if (j.companion) toast('Adoptowano: ' + compForm(j.companion) + '!', false, 3600); snd.sfx(j.looted ? 'unlock' : 'pick'); if (j.looted) toast(`Łup: ${TILE[j.looted].name}!`, false, 3200); render(); } },
   bonusgo: async (i, slot, mut) => { const t = TILE[G.run.offer[i]]; if (needChoice(t, slot, mut, (s2, m2) => ACT.bonusgo(i, s2, m2))) return;
     const j = await act('bonus', { i, slot, mut }); if (j) { snd.sfx('pick'); render(); } },
   mutchoose: b => { const cb = G.mutCb; closeOverlay(); G.mutCb = null; if (cb) cb(+b.dataset.v); },
@@ -1323,7 +1426,10 @@ const ACT = {
   close: () => { closeOverlay(); if (G.screen === 'run' && G.run && G.run.phase === 'bonus') render(); },
   ranking: () => showRanking(G.run ? G.run.mode : G.setup.mode),
   slip: b => showSlip(+b.dataset.f),
-  ranktab: b => showRanking(b.dataset.v, true),
+  ranktab: b => { RK.deep = false; showRanking(b.dataset.v, true); },
+  rkdeep: () => { RK.deep = !RK.deep; showRanking(RK.mode, true); },
+  kurnik: () => showKurnik(),
+  kbuy: async b => { const j = await act('kurnik', { id: b.dataset.v }); if (!j) return; snd.sfx('unlock'); toast(D.KURNIK[j.kurnikBought.id].name + ': poziom ' + j.kurnikBought.lvl, false, 2600); showKurnik(); },
   rkme: () => { const me = playerNow(); if (me) { RK.nick = me.nick; showRanking(RK.mode, true); } },
   rkclear: () => { Object.assign(RK, { char: '', garnek: '', nick: '' }); showRanking(RK.mode, true); },
   rknickset: b => { RK.nick = b.dataset.v; showRanking(RK.mode, true); },
@@ -1427,7 +1533,7 @@ document.addEventListener('keydown', e => {
   if (G.screen === 'run' && r) {
     const dg = /^Digit([1-5])$/.exec(e.code);
     if (r.phase === 'offer' && dg && e.shiftKey) { const b = $(`.cards [data-act=buyoffer][data-i="${+dg[1] - 1}"]`); if (b && !b.disabled) b.click(); }
-    else if ((r.phase === 'badge' || r.phase === 'loot' || r.phase === 'door' || (r.phase === 'event' && r.pending && (r.pending.kind === 'contract' || r.pending.kind === 'shrine'))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
+    else if ((r.phase === 'badge' || r.phase === 'loot' || r.phase === 'door' || r.phase === 'route' || r.phase === 'victory' || (r.phase === 'event' && r.pending && ['contract', 'shrine', 'arena', 'adopt'].includes(r.pending.kind))) && ['1', '2', '3'].includes(k)) { const b = $(`.cards [data-act=choose][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && ['1', '2', '3', '4', '5'].includes(k)) { const b = $(`.cards [data-act=pick][data-i="${+k - 1}"]`); if (b) b.click(); }
     else if (r.phase === 'offer' && k === 'u') { const b = $('[data-act="upgrademenu"]'); if (b && !b.disabled) b.click(); }
     else if (r.phase === 'offer' && k === 'l') { const b = $('[data-act="pawnmenu"], [data-act="redeem"]'); if (b && !b.disabled) b.click(); }

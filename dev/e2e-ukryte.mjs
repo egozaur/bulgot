@@ -37,7 +37,7 @@ check(h.enemies === null && !h.tpl && h.hidden === true, 'Garnek 1: widok bez wr
 check(h.fog && !/Szczur|Lis|Pies|Kaczka|Wózek|Bałwan|Mysz|Kurczak z|Jajo|Kot|Kanarek|Sęp/.test(h.names), 'Garnek 1: zaparowana szyba bez nazw');
 await p.screenshot({ path: `${OUT}/ukryte-g1.png` });
 // boss nadal zapowiedziany
-await patchRun(`r.round = 6; r.phase = 'offer';`); await reload();
+await patchRun(`r.round = 6; r.phase = 'offer'; r.seed = 1001;`); await reload();   // seed 1001: pierwszy boss to oryginalny Brojler (warianty bossów są losowane z ziarna)
 const bs = await p.evaluate(() => ({ enemies: window.__bulgot.run.enemies, fog: !!document.querySelector('.preview.fog') }));
 check(bs.enemies && bs.enemies[0] === 'brojler' && !bs.fog, 'Garnek 1: boss zapowiedziany');
 
