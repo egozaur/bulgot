@@ -424,9 +424,6 @@ button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid va
 .floor.nem .skull { filter: hue-rotate(250deg) saturate(2); }
 .preview.nem { border-color: #c77dff; background: rgba(120,40,160,.18); }
 .preview .pv.nemesis { color: #e3b8ff; }
-.meta-note { display: flex; align-items: center; gap: 10px; max-width: 520px; margin: 10px auto 0; padding: 7px 12px; border-radius: 12px; background: rgba(0,0,0,.3); border: 2px solid var(--line); color: var(--ink); font-size: .92rem; text-align: left; }
-.meta-note.nem { border-color: #c77dff; } .meta-note.will { border-color: #8fd1c7; }
-.meta-note .ico, .meta-note .skull { width: 30px; height: 30px; flex: none; }
 .unlock-box.nembox { border-color: #c77dff; } .unlock-box.flawbox { border-color: #e53950; }
 .ms-row.unknown { opacity: .55; }
 .ms-row .sti { width: 22px; height: 22px; flex: none; }
@@ -1392,3 +1389,10 @@ html.reduce .sch.near .sic { animation: none; }
 .topbar .disp.odo { background: var(--panel2); padding: 0 .5em; align-items: center; }
 .topbar .disp.odo b { align-items: center; }
 @container tb (max-width: 1200px) { .topbar .pill { padding: 0 .6em; font-size: .95rem; } }
+
+/* Menu: Nemezis i Testament jako ikonki obok nicka (nie zwiększają wysokości menu) */
+.home-top { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
+.home-top .me-badge { margin-bottom: 0; }
+.home-top .meta-chips { margin-right: 0; }
+.home-top .meta-chip { width: 34px; height: 34px; border-width: 2px; box-shadow: 0 2px 0 var(--outline); }
+.home-top .meta-chip svg { width: 20px; height: 20px; }

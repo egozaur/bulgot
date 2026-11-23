@@ -424,7 +424,7 @@ Cel aktualizacji: kafelki mają poziomy (rodziny po 3 poziomy + legendarny z bos
 - Błędy: `phase` (zła faza), `index` (nie masz kafelka), `level` (brak `next`), `copies` (mniej niż 3). Wada fabryczna zlanej kopii znika razem z nią (`flawed` nie ma więcej wpisów niż kopii). Życie rośnie o przyrost maks. Życia jak przy zwykłym zdobyciu kafelka.
 - `view().up` = id kafelków, które da się teraz zlać (tylko w ofercie; nie zdradza niczego o przyszłości). Dziennik rundy ma `upgrades: [{from,to}]`, `stats.upgrades` liczy zlania.
 - Klient: przycisk „Zlej kafelki” (klawisz U), okno z wierszami „3× X → Y” (`showUpgrade`), dźwięk `unlock`, toast, krótka animacja chipa (`.chip.fresh`).
-- **Proporcje (decyzja po etapie 1):** poziom 1 ≈ 10–15%, poziom 2 ≈ 30–35% mocy poziomu 3, więc 3 kopie ≈ następny poziom i zlewanie nie traci mocy (zysk: próg poziomu 3, porządek w panelu). Poziomy 1 i 2 to głównie „paliwo” do zlewania; pierwotna tabela (25% / 60%) czyniła zlewanie stratnym.
+- **Proporcje**: od 2026-11-23 zlanie daje premię ponad sumę kopii, patrz `DESIGN.md` sekcja 19 (wcześniejsze „zlewanie nie traci mocy” zostało zastąpione).
 
 ### Łup z bossów (faza `loot`)
 - Po pokonaniu bossa (poza ostatnim, który kończy run): Odznaka (jak dotąd) → **łup z szansą `RULES.lootChance` = 15%** (`lootRoll`, losowanie z ziarna runu; bez trafienia od razu bonus albo następne piętro): wybór 1 z 3 legendarnych statystyk (`RULES.lootSize`), losowanych z ziarna runu (`mix(seed, round, hash('loot'))`), najpierw takie, których jeszcze nie masz → oferta bonusowa (po bossach z `bonusAfter`) → następne piętro. Okazji jest 1 w trybie szybkim (boss 5) i 2 w pełnym (bossy 6 i 12), więc łup trafia się w ok. 15–28% runów.
@@ -594,3 +594,8 @@ Przeklęty, Wróg Publiczny Nr 1, Dogrywka, Nieskończony Rosół, Pogromca Duch
 
 ### Balans (bot, pełny, 1000 runów, palnik 0)
 Przed zmianami 42,8%, po: 43,8% (trasy dostrojone tak, żeby były neutralne dla bota). Dogrywka (bot, 300 runów): ok. 40% runów pokonuje Prezesa, a z nich średnio +14 pięter ponad limit w trybie pełnym (najgłębiej +36) i +6 w szybkim (najgłębiej +24). `sim-balance.mjs --endless` drukuje te liczby. Klątwy: patrz punkt 1.
+
+## 19. Ulepszanie z premią (2026-11-23)
+Problem: przy kosztach 2 kopie zlanie L2→L3 zawsze traciło moc (np. 2 × Pierze Prasowane = 12 Pancerza → Pancerz z Pierza = 10), a bot zlewał ok. 0,03–0,18 razy na run (zysk tylko z progu poziomu 3).
+Zmiana: wartości poziomów układają się tak, że **zlanie daje +8…25% ponad sumę dwóch kopii** (L1 → L2 → L3 → legendarny). Tabela (L1/L2/L3): Życie 3/7/16, Atak % 5/11/24, Obrażenia 5/11/25, Szybkość 5/11/24, Pancerz 2/5/11, Krytyk 5/12/28, Unik 2/5/11, Regeneracja (dziesiąte) 2/5/11 (legendarna 17), Szczęście 4/9/21. Poziomy 3 (stare id) lekko wzrosły, poziomy 1–2 spadły, więc same oferty L1/L2 są słabsze, a zlewanie realnie się opłaca.
+Balans (bot, 600 runów): szybki ok. 47%, pełny ok. 37,5% (wcześniej 46,7% / 38%); `grow` pełny 1.091/1.056, szybki 1.090/1.060. Bot zlewa teraz ok. 0,5 razy na run w pełnym. `RUN_V = 11`.

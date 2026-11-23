@@ -128,7 +128,7 @@ function renderHome() {
   return `<a class="lobby-link" href="/">← PL3Y</a>
   <div class="home"><div class="home-bg"></div><div class="bubbles">${bubblesHTML()}</div>
   <div class="home-in">
-    <div class="me-badge" ${LOCAL ? '' : 'data-act="changeplayer" style="cursor:pointer"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>
+    <div class="home-top"><div class="me-badge" ${LOCAL ? '' : 'data-act="changeplayer" style="cursor:pointer"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>${metaChips()}</div>
     ${art.towerArt(G.profile.garnek || 0)}
     <h1 class="logo" aria-label="Bulgot"><img src="logo.png?v=1" alt="Bulgot"></h1>
     <div class="tagline">${esc(T.TAGLINE)}</div>
@@ -138,17 +138,8 @@ function renderHome() {
       : `<button class="btn primary big" data-act="new" data-primary>Graj</button>`}
       <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="kurnik" title="Trwałe ulepszenia za Pióra">${art.emo('pisklecarnia')} Kurnik <small>${G.profile.feathers | 0}</small></button><button class="btn" data-act="profile">Profil</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk</button><button class="btn ghost" data-act="history">Historia (test)</button></div>
       ${bestLine ? `<div class="best">Najlepsze wyniki. ${bestLine}</div>` : ''}
-      ${metaNotes()}
     </div></div></div>`;
 }
-// Awans Wroga i Testament Pyrtka: to, co czeka w następnym runie.
-function metaNotes() {
-  const p = G.profile, out = [];
-  if (p.nemesis) { const n = p.nemesis, t = n.tile && TILE[n.tile]; out.push(`<div class="meta-note nem">${art.skullIcon()} <span>Twój Nemezis: <b>${esc(n.name)}</b>${n.lvl > 1 ? ' (awans ' + n.lvl + '.)' : ''}${t ? `, ukradł ci <b>${esc(t.name)}</b>` : ''}. Czeka w następnym runie.</span></div>`); }
-  if (p.will && TILE[p.will.tile]) { const ch = D.CHARS[p.will.char], multi = p.chars.length > 1; out.push(`<div class="meta-note will">${art.tileIcon(p.will.tile)} <span>Testament: <b>${esc(TILE[p.will.tile].name)}</b> czeka w pierwszej ofercie${multi ? ` następnego runu postacią inną niż ${esc(ch ? ch.name : '')}` : ' następnego runu'}.</span></div>`); }
-  return out.join('');
-}
-
 // ---------- przygotowanie runu ----------
 function metaChips() {
   const p = G.profile, out = [];

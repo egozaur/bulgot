@@ -40,7 +40,7 @@ for (const [w, h] of [[1920, 925], [1366, 650], [1280, 720], [390, 800]]) {
   }
   if (w === 1920) {
     await p.keyboard.press('ArrowDown'); await wait(100);
-    ok(await p.evaluate(() => document.querySelector('.mode-opt.on h3').textContent) === 'Zupka Chińska', '↓ przełącza tryb');
+    ok(await p.evaluate(() => document.querySelector('.mode-opt.on h3').textContent) === 'Szybki', '↓ przełącza tryb');
     await p.keyboard.press('ArrowRight'); await wait(400);
     ok(await p.evaluate(() => document.querySelectorAll('.car-dots i.on').length === 1 && document.querySelector('.car-dots i:nth-child(2)').classList.contains('on')), '→ przesuwa karuzelę');
     await p.screenshot({ path: `${OUT}/start1-karuzela.png` });

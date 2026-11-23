@@ -95,8 +95,8 @@ export const INVOICE = {
 };
 
 export const MODE_INFO = {
-  quick: { name: 'Zupka Chińska', rounds: 10, text: '10 pięter, dwóch bossów, ok. 10 minut. Szybka, zalewana wrzątkiem.' },
-  full: { name: 'Bulion Babci', rounds: 20, text: '20 pięter, trzech bossów, ok. 20 minut. Gotuje się długo, smakuje najlepiej.' },
+  quick: { name: 'Szybki', rounds: 10, text: '10 pięter, dwóch bossów, ok. 10 minut. Szybka, zalewana wrzątkiem.' },
+  full: { name: 'Pełny', rounds: 20, text: '20 pięter, trzech bossów, ok. 20 minut. Gotuje się długo, smakuje najlepiej.' },
 };
 
 // Regeneracja jest liczona w dziesiątych częściach Życia na sekundę (10 = 1 / s).
