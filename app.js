@@ -7,6 +7,7 @@ import * as art from './art.js';
 import * as T from './text.js';
 import * as snd from './audio.js';
 import { initTip } from './tip.js';
+import { setCounts, activeLinks } from './shared/stats.js';
 import { failFacts, pickFacts, winFacts } from './fakty.js';
 import { fightScene, sceneClouds } from './scenes.js';
 import { castFx, markHit, trapSnap, SK_COLOR } from './fx.js';
@@ -359,7 +360,8 @@ function sideHTML() {
   }).join('');
   const pawnLine = r.pawned ? `<div class="setline pawn">W lombardzie: ${esc(TILE[r.pawned.id].name)}${r.pawned.canRedeem ? ` (wykup za ${r.pawned.cost} Ziaren tylko na tym piętrze)` : ' (wykup na następnym piętrze)'}</div>` : '';
   const foxLine = r.foxDebt ? `<div class="setline pawn">Lisy Windykatory silniejsze o ${r.foxDebt * D.RULES.pawnFox}% (przepadłe zastawy)</div>` : '';
-  const sets = Object.entries(D.SETS).map(([id, st]) => { const n = setOwned(id); if (!n) return ''; const total = D.TILES.filter(t => t.set === id).length; return `<div class="setline" data-tipk="set:${id}" tabindex="0">Zestaw ${st.name} ${n}/${total}${n >= 2 ? ': ' + st.b2 : ''}${n >= 3 ? '; ' + st.b3 : ''}${n >= 4 && st.b4 ? '; ' + st.b4 : ''}</div>`; }).join('');
+  const sc = setCounts(r.tiles, r.decree);
+  const sets = Object.entries(D.SETS).map(([id, st]) => { const n = sc[id] || 0; if (!n) return ''; const total = setTotal(id); return `<div class="setline" data-tipk="set:${id}" tabindex="0">Zestaw ${st.name} ${n}/${total}${D.SET_STEPS.filter(s => n >= s).map(s => (s === 2 ? ': ' : '; ') + st['b' + s]).join('')}${n >= 5 && st.x ? '; Nadwyżka ' + (n - 4) + '×: ' + st.x : ''}</div>`; }).join('');
   const mss = Object.entries(D.MILESTONES).map(([id, m]) => { const n = Math.floor(r.tiles.filter(x => x === id).length / D.MILESTONE_EVERY); return n ? `<div class="setline ms">${esc(m.name)}${n > 1 ? ' ×' + n : ''}: ${esc(m.text)}</div>` : ''; }).join('');
   const pct = Math.max(0, Math.min(100, r.hp / S.maxHp * 100));
   const cp = T.CHAR_PERKS[r.char] || { title: "", perks: [] };
@@ -418,15 +420,24 @@ function zoneCompare() {
 }
 // Zestawy jako ikonki pod paskami Atak/Obrona: kropki = sztuki zestawu (wypełnione = posiadane, kwadrat = próg bonusu), żółty = brakuje jednej sztuki do progu.
 const SET_ICON = { jajeczne: '🥚', zbozowe: '🌽', rambo: '💪', rosolowe: '🔥', chlodnicze: '❄️', korpo: '💼' };
+// Ile sztuk zestawu jest w puli (legendy z podwójnym wpisem liczą się za 2).
+const setTotal = id => D.TILES.filter(t => !t.hatched && !t.hidden).reduce((a, t) => a + setsOf(t).filter(x => x === id).length, 0);
+function linkChipsHTML() {
+  if (!G.run) return '';
+  const r = G.run, st = activeLinks(r.tiles, r.skills, setCounts(r.tiles, r.decree)).filter(l => l.met);
+  const html = st.map(l => { const L = D.SET_LINKS.find(x => x.id === l.id); return `<div class="lnk ${l.kind} ${l.fixed ? 'fixed' : ''}" tabindex="0" data-tipk="link:${l.id}"><span class="lic">${l.kind === 'conflict' ? (l.fixed ? '☮' : '⚔') : '✚'}</span><span class="lnm">${esc(L.name)}</span></div>`; }).join('');
+  return html ? `<div class="zlinks" aria-label="Powiązania zestawów">${html}</div>` : '';
+}
 function setChipsHTML() {
   if (!G.run) return '';
+  const sc = setCounts(G.run.tiles, G.run.decree);
   const chips = Object.entries(D.SETS).map(([id, st]) => {
-    const n = setOwned(id); if (!n) return '';
-    const total = Math.max(n, D.TILES.filter(t => !t.hatched && !t.hidden && setsOf(t).includes(id)).length), maxB = st.b4 ? 4 : 3, next = [2, 3, 4].find(x => x <= maxB && n < x);
-    const dots = Array.from({ length: total }, (_, i) => `<i class="${i < n ? 'on' : ''}${[2, 3, 4].includes(i + 1) && i + 1 <= maxB ? ' th' : ''}"></i>`).join('');
+    const n = sc[id] || 0; if (!n) return '';
+    const total = Math.max(n, setTotal(id)), next = D.SET_STEPS.find(x => n < x);
+    const dots = Array.from({ length: Math.min(total, 8) }, (_, i) => `<i class="${i < n ? 'on' : ''}${D.SET_STEPS.includes(i + 1) ? ' th' : ''}"></i>`).join('');
     return `<div class="sch ${n >= 2 ? 'act' : ''} ${next && next - n === 1 ? 'near' : ''}" tabindex="0" data-tipk="set:${id}"><span class="sic">${SET_ICON[id] || '★'}</span><span class="snm">${esc(st.name)}</span><b>${n}/${total}</b><span class="sdots">${dots}</span></div>`;
   }).join('');
-  return chips ? `<div class="zsets" aria-label="Zestawy">${chips}</div>` : '';
+  return chips ? `<div class="zsets" aria-label="Zestawy">${chips}</div>${linkChipsHTML()}` : '';
 }
 function zoneCompareHTML() {
   const c = zoneCompare(); if (!c) { const z = setChipsHTML(); return z ? `<div class="zcmp">${z}</div>` : ''; }

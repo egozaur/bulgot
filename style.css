@@ -1272,6 +1272,12 @@ html.reduce .logo img { animation: none; }
 .sch .sdots i.th { border-radius: 2px; }
 .sch .sdots i.on { background: #8fd1c7; border-color: #8fd1c7; }
 .sch.act { color: #8fd1c7; opacity: 1; }
+.zlinks { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.lnk { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--outline); cursor: help; }
+.lnk.conflict { color: #ffb4a8; border-color: #b4483a; background: #2a1411; }
+.lnk.conflict.fixed { color: #b8d8c8; border-color: #4c7a64; background: #12211a; text-decoration: line-through; text-decoration-color: #4c7a64; }
+.lnk.synergy { color: #bdf0a8; border-color: #4f8f3a; background: #14210f; }
+#tip .tag.lk-bad { background: #b4483a; color: #fff; } #tip .tag.lk-good { background: #4f8f3a; color: #fff; }
 .sch.act .sic { filter: none; }
 .sch.near { opacity: 1; color: #ffd166; }
 .sch.near .sic { filter: none; animation: schPulse 1.6s ease-in-out infinite; }

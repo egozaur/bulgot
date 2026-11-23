@@ -4,6 +4,7 @@
 // albo zwykłym data-tip="Tytuł\nopis" (pierwsza linia pogrubiona).
 import * as D from './shared/data.js';
 import * as art from './art.js';
+import { setCounts, activeLinks } from './shared/stats.js';
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const TILE = D.TILE_BY_ID;
@@ -16,12 +17,25 @@ let ctx = { run: () => null };
 let tipEl = null, anchor = null;
 
 // ---------- treść ----------
-function owned(setId) { const r = ctx.run(); return r ? r.tiles.filter(id => TILE[id] && setsOf(TILE[id]).includes(setId)).length : 0; }
+function owned(setId) { const r = ctx.run(); return r ? (setCounts(r.tiles, r.decree)[setId] || 0) : 0; }
+
+// Powiązanie zestawów i żywiołów (konflikt albo synergia): opis, warunek i mediator.
+const LKEY = k => k.startsWith('set:') ? 'zestaw ' + (D.SETS[k.slice(4)] || {}).name : 'żywioł ' + ((D.ELEMENTS[k.slice(4)] || {}).name || k.slice(4));
+function linkTip(id) {
+  const L = D.SET_LINKS.find(x => x.id === id); if (!L) return '';
+  const r = ctx.run(), st = r && activeLinks(r.tiles, r.skills, setCounts(r.tiles, r.decree)).find(x => x.id === id);
+  const fix = (L.fix || []).map(f => TILE[f] && TILE[f].name).filter(Boolean);
+  return `<div class="tp-head r${L.kind === 'conflict' ? 0 : 2}"><div><div class="tp-name">${esc(L.name)}</div><div class="tp-tags"><span class="tag ${L.kind === 'conflict' ? 'lk-bad' : 'lk-good'}">${L.kind === 'conflict' ? 'Konflikt' : 'Synergia'}</span></div></div></div>
+    <div class="tp-text">${esc(L.text)}</div>
+    <div class="tp-line">Warunek: co najmniej <b>${L.need}</b> × ${esc(LKEY(L.a))} i <b>${L.need}</b> × ${esc(LKEY(L.b))}${st ? ` (masz <b>${st.na}</b> i <b>${st.nb}</b>)` : ''}</div>
+    ${fix.length ? `<div class="tp-line hatch">Mediator, który zdejmuje konflikt: <b>${esc(fix.join(', '))}</b>${st && st.fixed ? ' (masz go, konflikt wyłączony)' : ''}</div>` : ''}`;
+}
 
 function setBonuses(setId, have) {
   const st = D.SETS[setId]; if (!st) return '';
-  const rows = [[2, st.b2], [3, st.b3], [4, st.b4]].filter(x => x[1]);
-  return `<div class="tp-set"><div class="tp-sh">Zestaw ${esc(st.name)}${have != null ? ` <b>${have}</b>` : ''}</div>${rows.map(([n, tx]) => `<div class="tp-b ${have != null && have >= n ? 'on' : ''}"><i>${n}</i><span>${esc(tx)}</span></div>`).join('')}</div>`;
+  const rows = D.SET_STEPS.map(n => [n, st['b' + n]]).filter(x => x[1]);
+  const xr = st.x ? `<div class="tp-b ${have != null && have >= 5 ? 'on' : ''}"><i>5+</i><span><b>Nadwyżka</b> (każda sztuka ponad 4): ${esc(st.x)}</span></div>` : '';
+  return `<div class="tp-set"><div class="tp-sh">Zestaw ${esc(st.name)}${have != null ? ` <b>${have}</b>` : ''}</div>${rows.map(([n, tx]) => `<div class="tp-b ${have != null && have >= n ? 'on' : ''}"><i>${n}</i><span>${esc(tx)}</span></div>`).join('')}${xr}</div>`;
 }
 
 function tileTip(id, extra) {
@@ -55,7 +69,7 @@ function setTip(setId) {
   const members = D.TILES.filter(t => setsOf(t).includes(setId));
   const icons = members.map(t => `<span class="tp-mem ${r && r.tiles.includes(t.id) ? 'has' : ''}" title="${esc(t.name)}">${art.tileIcon(t.id)}</span>`).join('');
   return `<div class="tp-head r1"><div><div class="tp-name">Zestaw ${esc(st.name)}</div><div class="tp-tags"><span class="tag set">${have} / ${members.length} sztuk</span></div></div></div>
-    <div class="tp-text">Im więcej przedmiotów z tego zestawu, tym większe bonusy. Rozświetlone są te, które masz.</div>
+    <div class="tp-text">Progi: 2, 3, 4 i 6 sztuk, a każda sztuka ponad 4 daje jeszcze Nadwyżkę. Rozświetlone są te, które masz.</div>
     <div class="tp-mems">${icons}</div>${setBonuses(setId, have)}`;
 }
 
@@ -98,6 +112,7 @@ function build(el) {
     const x = el.dataset.tipx;
     if (kind === 'tile') return tileTip(id, x);
     if (kind === 'set') return setTip(id);
+    if (kind === 'link') return linkTip(id);
     if (kind === 'stat') return statTip(id);
     if (kind === 'badge') return badgeTip(id);
   }
