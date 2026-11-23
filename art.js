@@ -171,11 +171,11 @@ const accessory = (char, form) => {
   return a;
 };
 
-export function heroArt(char, form) {
+export function heroArt(char, form, opts = {}) {
   let body;
   if (char === 'pyrtek' || !char) body = ({ pyrtek: PYRTEK, kogut: KOGUT, bojowy: BOJOWY, rambo: RAMBO }[form] || PYRTEK)();
   else body = ({ kwoka: KWOKA, kaczor: KACZOR, indor: INDOR, zjarany: ZJARANY, ...NEWBODY }[char] || KOGUT)() + accessory(char, form);
-  return svg(body);
+  return svg(outfitWrap(body, opts.plain ? null : (opts.wear || OUTFIT)));
 }
 export const portrait = (char, form = 'pyrtek') => heroArt(char, form);
 
@@ -480,7 +480,7 @@ const COMP = {
 };
 export function companionArt(id) { return svg((COMP[id] || COMP.pisklak)(), '0 0 100 100', 'fig comp-fig'); }
 // Duch innego gracza: jego postać w widmowej poświacie (zwrócona w stronę bohatera).
-export function ghostArt(char) { return `<span class="ghostfig">${heroArt(char, 'kogut')}</span>`; }
+export function ghostArt(char, wear) { return `<span class="ghostfig">${heroArt(char, 'kogut', { wear: wear || {} })}</span>`; }
 // Ikony tras, Klątw i budynków Kurnika to emoji w kółku (spójne z resztą dzięki ramce w CSS).
 export const EMO = { chlodnia: '❄️', kotlownia: '🔥', magazyn: '📦', kanaly: '🌀', sortownia: '🥚',
   zakaz: '⛔', piec: '🌋', drzemka: '💤', podatek: '💸', gniazdo: '🧺', pospiech: '⏱️', mgla: '🌫️', kosci: '🦴',
@@ -793,3 +793,38 @@ const MEDAL = { win: '#f0b429', style: '#4db6ff', fight: '#ef6a4a', coll: '#7bd8
 export const medal = (g, sym, locked = false) => `<svg class="medal${locked ? ' locked' : ''}" viewBox="0 0 48 56" aria-hidden="true"><path d="M14 2 L24 22 L34 2 Z" fill="${locked ? '#555' : '#b4472a'}" stroke="#2b1a12" stroke-width="2.4" stroke-linejoin="round"/><circle cx="24" cy="32" r="17" fill="${locked ? '#3a3631' : MEDAL[g] || '#f0b429'}" stroke="#2b1a12" stroke-width="3"/><circle cx="24" cy="32" r="12" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.6"/><text x="24" y="38.5" text-anchor="middle" font-size="17" font-weight="700" fill="${locked ? '#7a746a' : '#2b1a12'}" font-family="Baloo 2, sans-serif">${sym}</text></svg>`;
 export const bookIcon = (cls = 'mico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5 q5 -2 9 1 q4 -3 9 -1 v14 q-5 -2 -9 1 q-4 -3 -9 -1z M12 6 v14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 export const helpIcon = (cls = 'mico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M9 9.5 q0 -3 3 -3 q3 0 3 2.6 q0 1.6 -2 2.6 q-1 .6 -1 1.8 M12 17.2 v.2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+
+// ---------- Sklepik Zakładowy: stroje na kurczaku ----------
+// Wszystkie postacie mają głowę w (66,40) i tułów w (48,64), więc nakładki pasują do każdej. `eq` = { slot: id } z profilu.
+let OUTFIT = null;
+export function setOutfit(eq) { OUTFIT = eq && Object.keys(eq).length ? { ...eq } : null; }
+const WEAR_UNDER = {
+  aura: () => `<g class="wear-aura"><ellipse cx="48" cy="62" rx="47" ry="43" fill="#ffb347" opacity=".16"/><ellipse cx="48" cy="62" rx="40" ry="36" fill="#ffd27a" opacity=".12"/>
+    <path d="M14 70 q-9 -14 1 -27 q-5 15 5 26 z" fill="#fff3d6" opacity=".85" ${S2}/><path d="M84 78 q10 -12 2 -26 q-1 14 -8 25 z" fill="#fff3d6" opacity=".85" ${S2}/><path d="M24 30 q-6 -10 2 -18 q0 9 5 17 z" fill="#ffe9b8" opacity=".8" ${S2}/>
+    <path d="M30 10 q-5 -6 0 -10 M48 8 q-5 -6 0 -12" stroke="#fff" stroke-width="3" stroke-linecap="round" ${NF} opacity=".7"/></g>`,
+};
+const WEAR_OVER = {
+  dres: () => `<path d="M30 60 q18 -7 33 0 l-4 25 q-13 6 -26 0 z" fill="#2c3e50" ${S}/><path d="M37 62 v21 M42 61 v22" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M38 60 q10 13 22 0" stroke="#ffd23f" stroke-width="2.6" ${NF} stroke-linecap="round"/><circle cx="49" cy="72" r="3.6" fill="#ffd23f" ${S2}/><path d="M34 60 q-4 -8 4 -10 q6 4 6 10 z" fill="#34495e" ${S2}/>`,
+  fartuch: () => `<path d="M34 58 h25 l-3 27 q-10 5 -19 0 z" fill="#f7f7f2" ${S}/><path d="M34 58 q-8 3 -10 9 M59 58 q6 1 8 6" stroke="#f7f7f2" stroke-width="3.4" ${NF} stroke-linecap="round"/>
+    <rect x="40" y="70" width="12" height="8" rx="2" fill="#e8e6dc" ${S2}/><path d="M43 63 h6" stroke="#cfc9b8" stroke-width="2" stroke-linecap="round"/>`,
+  kask: () => `<path d="M51 35 q15 -24 30 0 z" fill="#f5c518" ${S}/><rect x="49" y="33" width="34" height="5.5" rx="2.4" fill="#e0a800" ${S2}/><path d="M66 20 v13" stroke="#e0a800" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="77" cy="28" r="4.4" fill="#fff6a8" ${S2}/><path d="M81 27 l9 -4 M81 29 l10 2" stroke="#fff6a8" stroke-width="2" stroke-linecap="round" opacity=".7"/>`,
+  okulary: () => `<path d="M57 36 h22 v6 q-1 6 -7 6 h-8 q-7 0 -7 -6 z" fill="#15151c" ${S2}/><path d="M60 38 l5 0 M70 38 l5 0" stroke="#7a8aa6" stroke-width="1.6" stroke-linecap="round"/><path d="M57 37 l-7 -3" stroke="#15151c" stroke-width="2.6" stroke-linecap="round"/>`,
+};
+function outfitWrap(inner, eq) {
+  if (!eq) return inner;
+  const under = Object.values(eq).map(id => WEAR_UNDER[id]).filter(Boolean).map(f => f()).join('');
+  const over = ['body', 'eyes', 'head'].map(slot => WEAR_OVER[eq[slot]]).filter(Boolean).map(f => f()).join('');
+  return under + inner + over;
+}
+
+// ---------- Księga Rosołów: miska z rosołem w kolorze przepisu ----------
+export function soupArt(color = '#f2cf7a') {
+  return svg(`<ellipse cx="50" cy="88" rx="36" ry="6" fill="#000" opacity=".3"/>
+    <path d="M13 52 h74 q-2 31 -23 37 h-28 q-21 -6 -23 -37 z" fill="#f4efe6" ${S}/><path d="M28 80 q22 6 44 0" stroke="#d8d0c0" stroke-width="2.4" ${NF} stroke-linecap="round"/>
+    <ellipse cx="50" cy="52" rx="37" ry="10" fill="#e6dfd2" ${S}/><ellipse cx="50" cy="52.5" rx="32" ry="7" fill="${color}" ${S2}/>
+    <circle cx="38" cy="51" r="2.4" fill="#fff" opacity=".55"/><circle cx="58" cy="54" r="2" fill="#fff" opacity=".45"/><circle cx="66" cy="50" r="1.6" fill="#fff" opacity=".5"/>
+    <path d="M36 54 q4 -3 8 0 q4 3 8 0" stroke="#fff" stroke-width="1.8" ${NF} stroke-linecap="round" opacity=".6"/>
+    <g class="soup-steam"><path d="M38 40 q-5 -8 0 -15 M50 38 q-5 -9 0 -18 M62 40 q-5 -8 0 -15" stroke="#fff" stroke-width="3" stroke-linecap="round" ${NF} opacity=".7"/></g>`, '0 0 100 100', 'fig soup-fig');
+}

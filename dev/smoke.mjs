@@ -31,7 +31,7 @@ for (let r = 0; r < rounds; r++) {
   if (s.phase === 'fight') {
     await p.click('[data-act=tofight]'); await wait(1200);
     await p.keyboard.press('1'); await p.keyboard.press('2'); await p.keyboard.press('3');
-    await p.evaluate(() => { const sp = document.querySelector('[data-act=speed]'); sp.click(); sp.click(); });
+    await p.evaluate(() => { const sp = document.querySelector('[data-act=speed]'); if (sp) { sp.click(); sp.click(); } });
     let done = false;
     for (let i = 0; i < 150 && !done; i++) { await wait(400); done = !!(await p.$('.inv, .modal')); }
     if (!done) fail('walka ' + (r + 1) + ' nie skończyła się w czasie');

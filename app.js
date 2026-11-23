@@ -1,6 +1,6 @@
 // Bulgot: interfejs gry. Cała logika (oferty, rerolle, walki, wyniki) liczy serwer; tu rysujemy ekrany i prowadzimy walkę na żywo
 // tym samym silnikiem (shared/sim.js), a lista wejść gracza leci na serwer, który powtarza walkę i wydaje wynik.
-import { call, ranks as apiRanks, LOCAL, getPlayer, playerNow, avatarUrl } from './api.js';
+import { call, ranks as apiRanks, dailyRanks as apiDaily, LOCAL, getPlayer, playerNow, avatarUrl } from './api.js';
 import * as D from './shared/data.js';
 import { Fight, MAX_TICKS, FURY_FROM } from './shared/sim.js';
 import * as art from './art.js';
@@ -60,7 +60,8 @@ async function act(path, body) {
   G.busy = true; document.body.classList.add('busy');
   try {
     const { j } = await call(path, body || {});
-    if (j && j.profile) G.profile = j.profile;
+    if (j && j.profile) { G.profile = j.profile; art.setOutfit(j.profile.wardrobe && j.profile.wardrobe.eq); }
+    if (j && j.daily) G.daily = j.daily;
     if (j && 'run' in j) G.run = j.run;
     if (j && j.myGhost !== undefined) G.myGhost = j.myGhost;
     if (!j || j.err) { toast((j && j.err) || 'Coś poszło nie tak. Spróbuj jeszcze raz.', true, 3600); if (j && 'run' in j && G.screen !== 'fight') render(); return null; }
@@ -107,7 +108,7 @@ function render() {
   switch (G.screen) {
     case 'loading': root.innerHTML = '<div class="loading"><span>Bulgocze</span> <i></i><i></i><i></i></div>'; break;
     case 'noplayer': root.innerHTML = `<div class="loading" style="flex-direction:column;gap:14px;text-align:center"><span>Do gry w Bulgot potrzebny jest nick.</span><button class="btn primary" data-act="retry">Wybierz nick</button><a class="btn ghost" href="/">← PL3Y</a></div>`; break;
-    case 'home': root.innerHTML = renderHome(); break;
+    case 'home': root.innerHTML = renderHome(); setTimeout(maybeLevelUp, 120); break;
     case 'setup': root.innerHTML = renderSetup(); fitCarousel(); requestAnimationFrame(fitCarousel); break;
     case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); fitTower(); fitBoard(); break;
     case 'fight': return;   // arena buduje się w startFight()
@@ -122,21 +123,26 @@ function avatarHTML(pl) {
   if (!pl) return '';
   return pl.avatar && !LOCAL ? `<img src="${esc(avatarUrl(pl.avatar))}" alt="" onerror="this.remove()">` : `<span class="av">${esc((pl.nick || '?')[0].toUpperCase())}</span>`;
 }
+function dailyBtn() {
+  const d = G.daily; if (!d) return '';
+  return `<button class="btn big daily ${d.used ? 'done' : ''}" data-act="daily"><span>Dyżur dnia</span><small>${d.used ? (d.active ? 'w toku' : 'wynik ' + fmtNum(d.score)) : 'nowy, jedno podejście'}</small></button>`;
+}
 function renderHome() {
   const pl = playerNow(), run = G.run && G.run.phase !== 'over' ? G.run : null, best = G.profile.best || {};
   const bestLine = ['quick', 'full'].filter(m => best[m]).map(m => `${D.MODES[m].name}: <b>${fmtNum(best[m].score)}</b>`).join(' · ');
   return `<a class="lobby-link" href="/">← PL3Y</a>
   <div class="home"><div class="home-bg"></div><div class="bubbles">${bubblesHTML()}</div>
   <div class="home-in">
-    <div class="home-top"><div class="me-badge" ${LOCAL ? '' : 'data-act="changeplayer" style="cursor:pointer"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>${metaChips()}</div>
+    <div class="home-top"><div class="me-badge" ${LOCAL ? '' : 'data-act="changeplayer" style="cursor:pointer"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>${stazPill()}${metaChips()}</div>
     ${art.towerArt(G.profile.garnek || 0)}
     <h1 class="logo" aria-label="Bulgot"><img src="logo.png?v=1" alt="Bulgot"></h1>
     <div class="tagline">${esc(T.TAGLINE)}</div>
     <div class="home-actions">
       ${run ? `<div class="resume">Trwa run: <b>${esc(D.MODES[run.mode].name)}</b>, piętro ${run.round}/${run.rounds}, ${run.coins} ${art.coinIcon()} Ziaren</div>
         <button class="btn primary big" data-act="resume" data-primary>Kontynuuj</button><button class="btn small ghost" data-act="abandon">Porzuć run</button>`
-      : `<button class="btn primary big" data-act="new" data-primary>Graj</button>`}
-      <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="kurnik" title="Trwałe ulepszenia za Pióra">${art.emo('pisklecarnia')} Kurnik <small>${G.profile.feathers | 0}</small></button><button class="btn" data-act="profile">Profil</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk</button><button class="btn ghost" data-act="history">Historia (test)</button></div>
+      : `<div class="home-main"><button class="btn primary big" data-act="new" data-primary>Graj</button>${dailyBtn()}</div>`}
+      <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="kurnik" title="Trwałe ulepszenia za Pióra">${art.emo('pisklecarnia')} Kurnik <small>${G.profile.feathers | 0}</small></button><button class="btn" data-act="shop">Sklepik <small>🎟️ ${stazOf().talons}</small></button><button class="btn" data-act="profile">Profil</button><button class="btn" data-act="book">Księga Kurnika</button></div>
+      <div class="home-row small"><button class="btn small" data-act="help">Jak grać</button><button class="btn small" data-act="settings">Dźwięk</button><button class="btn small ghost" data-act="history">Historia (test)</button></div>
       ${bestLine ? `<div class="best">Najlepsze wyniki. ${bestLine}</div>` : ''}
     </div></div></div>`;
 }
@@ -239,7 +245,7 @@ function tileCard(id, o = {}) {
 // ---------- ekran runu ----------
 const enemyDef = id => D.ENEMIES[id] || D.BOSSES[id];
 const bossIntroOf = id => T.BOSS_INTRO[id] || (D.BOSSES[id] ? { title: D.BOSSES[id].name + ', ' + D.BOSSES[id].title, quote: D.BOSSES[id].quote || '' } : { title: String(id), quote: '' });
-const enemyFig = e => e.ghost ? art.ghostArt(e.gchar) : art.enemyArt(e.art, e.tint);
+const enemyFig = e => e.ghost ? art.ghostArt(e.gchar, e.gwear) : art.enemyArt(e.art, e.tint);
 const compForm = c => { const d = D.COMPANIONS[c.id]; return d.forms[Math.min(2, Math.max(0, (c.lvl | 0) - 1))]; };
 function arenaPreview() {
   const g = G.run.arenaGhost, st = g.stats;
@@ -449,7 +455,7 @@ function topbarHTML() {
     <span class="disp lift" title="Piętro ${r.round} z ${r.rounds}" aria-label="Piętro ${r.round} z ${r.rounds}"><i class="arr" aria-hidden="true">▲</i><b>${String(r.round).padStart(2, '0')}</b><small>/${r.endless ? '∞' : r.rounds}</small></span><span class="zone-name" title="${esc(T.ZONE_NAMES[r.zone])}">${esc(T.ZONE_NAMES[r.zone])}</span><span class="spacer"></span>
     <span class="disp coins" title="Ziarna: waluta na rerolle i zakupy. Odsetki po wygranej walce: +${Math.min(r.interestMax || 3, Math.floor(r.coins / D.RULES.interestPer))}">${art.coinIcon()}<b data-ctr="coins">${r.coins}</b></span>
     ${r.decree && D.DECREES[r.decree] ? `<span class="pill dec" tabindex="0" title="${esc(D.DECREES[r.decree].name + ': ' + D.DECREES[r.decree].text)}">${art.decreeIcon()}<span class="lbl"> Okólnik</span></span>` : ''}
-    <span class="pill mode">${M.name}</span>${topPills()}${r.garnek ? `<span class="pill g" title="Palnik ${r.garnek} (${BURNERS[r.garnek]}): ${esc(D.GARNEK[r.garnek].name)}">Palnik ${r.garnek}</span>` : ''}
+    <span class="pill mode">${M.name}</span>${r.daily ? '<span class="pill dly" title="Dyżur dnia: jeden run dla wszystkich, bez Kurnika i premii.">Dyżur dnia</span>' : ''}${topPills()}${r.garnek ? `<span class="pill g" title="Palnik ${r.garnek} (${BURNERS[r.garnek]}): ${esc(D.GARNEK[r.garnek].name)}">Palnik ${r.garnek}</span>` : ''}
     <span class="disp odo" title="Wynik na żywo" aria-label="Wynik ${r.score}"><b data-ctr="score" data-odo="6">${odoHTML(r.score, 6)}</b></span>
     <button class="btn small menubtn" data-act="book" title="Księga Kurnika (K)" aria-label="Księga Kurnika">${art.bookIcon()}</button><button class="btn small menubtn" data-act="help" title="Jak grać (H)" aria-label="Jak grać">${art.helpIcon()}</button><button class="btn small menubtn" data-act="menu" title="Menu (Esc)" aria-label="Menu">${art.menuIcon()}</button></div>`;
 }
@@ -527,14 +533,19 @@ function showPawn() {
     </div>
     <div class="pawn-cards">${cards}</div>`, { cls: 'pawnmodal' });
 }
+// Przycisk wymiany oferty: nazwa z fabuły (T.REROLL), cena w Ziarnach obok; Klątwa „Zakaz Wymian” blokuje go całkiem.
+function rerollBtn(cost, free, blocked, coins) {
+  if (blocked) return `<button class="btn reroll" disabled data-tip="${esc('Zakaz Wymian' + String.fromCharCode(10) + 'Klątwa Prezesa: taśma stoi, oferty nie przetasujesz.')}"><span>${esc(T.REROLL_BLOCKED)}</span></button>`;
+  return `<button class="btn reroll" data-act="reroll" ${coins < cost ? 'disabled' : ''}><span>${esc(T.REROLL)}</span><span class="rcost ${free ? 'free' : ''}">${free ? 'gratis' : `${cost} ${art.coinIcon()}`}</span></button>`;
+}
 function stageOffer() {
   const r = G.run, cards = r.offer.map((id, i) => id ? offerCard(id, i) : '<div class="slotcard"><div class="tile gone">Dokupione</div></div>').join('');
-  const cost = r.rerollCost, free = cost === 0;
+  const cost = r.rerollCost, free = cost === 0, blocked = cost === null || cost === undefined;
   const lost = r.lostPawn && r.foxDebt ? `<div class="hint warn">Lis zatrzymał ${esc(TILE[r.lostPawn] ? TILE[r.lostPawn].name : '')}. Lisy Windykatory są silniejsze o ${r.foxDebt * D.RULES.pawnFox}%.</div>` : '';
   return `<div class="stage-title"><h2>Piętro ${r.round}${r.boss ? ' · BOSS' : ''}</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${r.elite ? ' · elitarny wróg' : ''}${decreeSub()}</div></div>
     <div class="kron">${esc(r.nemesisRound ? T.pickLine(T.NEMESIS_LINES, r.round) : floorKron())}</div>${decreeHTML()}${previewHTML()}
     <div class="cards">${cards}</div>
-    <div class="actions"><button class="btn" data-act="reroll" ${r.coins < cost ? 'disabled' : ''}>Reroll ${free ? '(za darmo)' : `za ${cost} ${art.coinIcon()}`}</button>${restBtn()}${pawnBtn()}${upgradeBtn()}</div>${lost}
+    <div class="actions">${rerollBtn(cost, free, blocked, r.coins)}${restBtn()}${pawnBtn()}${upgradeBtn()}</div>${lost}
     <div class="hint">Jeden kafelek bierzesz za darmo (klawisze 1–${r.offer.length}), pozostałe możesz dokupić (Shift + cyfra). R przelosowuje ofertę, L otwiera Lombard, U zlewa kafelki. Strzałki i Enter też działają.</div>`;
 }
 function stageDoor() {
@@ -612,12 +623,12 @@ function stageCrate() {
 function stageArena() {
   const r = G.run, g = r.pending.ghost, st = g.stats, ch = D.CHARS[g.char], tiles = [...new Set(g.tiles || [])].slice(0, 16).map(id => TILE[id] ? art.tileIcon(id) : '').join('');
   const cards = [
-    choiceCard(0, art.ghostArt(g.char), 'Walcz z Duchem', 'Nagroda: +' + D.RULES.arenaCoins + ' Ziaren i wybór 1 z 3 rzadkich kafelków. Przegrana kończy run jak każda walka.', '<div class="tmeta"><span class="tag up">Ryzyko</span></div>'),
+    choiceCard(0, art.ghostArt(g.char, g.wear), 'Walcz z Duchem', 'Nagroda: +' + D.RULES.arenaCoins + ' Ziaren i wybór 1 z 3 rzadkich kafelków. Przegrana kończy run jak każda walka.', '<div class="tmeta"><span class="tag up">Ryzyko</span></div>'),
     choiceCard(1, art.doorIcon(false), 'Odwrót', 'Odchodzisz i walczysz ze zwykłymi wrogami tego piętra.'),
   ].join('');
   return `<div class="stage-title"><h2>Arena Duchów</h2><div class="sub">${g.mirror ? 'Nikt jeszcze nie zostawił tu ducha, więc czeka twoje Odbicie.' : 'Duch gracza <b>' + esc(g.nick) + '</b> (' + esc(ch ? ch.name : '') + ', ' + g.floors + ' pięter)'}</div></div>
     <div class="kron">Kto nie dotarł do Prezesa, ten krąży po arenie i bije następnych.</div>
-    <div class="ghostcard"><div class="gfig">${art.ghostArt(g.char)}</div><div class="gst"><b>Statystyki Ducha na tym piętrze</b><span>Życie ${st.hp}</span><span>Atak ${st.atk}</span><span>Szybkość ${(st.aspd / 100).toFixed(2).replace('.', ',')} / s</span><span>Pancerz ${st.armor}</span><span>Krytyk ${st.crit}%</span><span>Unik ${st.evade}%</span><div class="gtiles">${tiles}</div></div></div>
+    <div class="ghostcard"><div class="gfig">${art.ghostArt(g.char, g.wear)}</div><div class="gst"><b>Statystyki Ducha na tym piętrze</b><span>Życie ${st.hp}</span><span>Atak ${st.atk}</span><span>Szybkość ${(st.aspd / 100).toFixed(2).replace('.', ',')} / s</span><span>Pancerz ${st.armor}</span><span>Krytyk ${st.crit}%</span><span>Unik ${st.evade}%</span><div class="gtiles">${tiles}</div></div></div>
     <div class="cards">${cards}</div>`;
 }
 function stageContract() {
@@ -1197,7 +1208,7 @@ function showEnd(j, quiet = false) {
       ${r.endless ? `<tr><td>Dogrywka: piętra ponad limit (${Math.max(0, r.done - (r.cleared || 0))})</td><td>♾</td></tr>` : ''}
       <tr class="total"><td>Wynik</td><td id="endscore" data-v="${r.score}">${fmtNum(r.score)}</td></tr></table>
     ${e.newBest ? '<p class="lead" style="color:var(--gold)"><b>Nowy rekord życiowy w tym trybie!</b></p>' : ''}
-    ${e.rank ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}
+    ${e.rank && !e.daily ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}${endExtrasHTML(e)}
     ${e.feathers ? `<p class="lead">${art.emo('pioro')} Pióra do Kurnika: <b>+${e.feathers}</b> (razem ${G.profile.feathers | 0})</p>` : ''}${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano poziom palnika ${G.profile.garnek}: ${esc(BURNERS[G.profile.garnek])} (${esc(D.GARNEK[G.profile.garnek].name)})</b></div>` : ''}${unlocksHTML(un)}${achHTML(takeAch())}${endMeta(j)}
     <div class="analyze" id="analyzebox">${analyzeHTML(r.id, !!(G.sentRuns && G.sentRuns[r.id]))}</div></div>
     <div class="actions end-actions"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>`, { force: true, cls: 'endfull' });
@@ -1234,13 +1245,13 @@ async function showRanking(mode, keep) {
     <table class="rank-list"><thead><tr><th></th><th>Gracz</th><th>Postać</th><th>Garnek</th><th>Piętra</th><th style="text-align:right">Wynik</th></tr></thead><tbody>${j.list.map((x, i) => {
     const av = x.avatar && !LOCAL ? `<span class="av"><img src="${esc(avatarUrl(x.avatar))}" alt="" onerror="this.remove()"></span>` : `<span class="av">${esc((x.nick || '?')[0].toUpperCase())}</span>`;
     const cn = (D.CHARS[x.char] || {}).name || '';
-    return `<tr class="${x.nick === mynick ? 'me' : ''} ${i < 3 ? 'top' + (i + 1) : ''}"><td class="pos">${i + 1}</td><td><button class="lnk" data-act="rknickset" data-v="${esc(x.nick)}" title="Pokaż wyniki tego gracza">${av}${esc(x.nick)}</button>${x.win ? ' ★' : ''}${x.deep ? ` <small class="deepn">♾ +${x.deep}</small>` : ''}</td><td><button class="lnk" data-act="rkcharset" data-v="${esc(x.char)}" title="Filtruj po tej postaci">${esc(cn)}</button></td><td><button class="lnk" data-act="rkgset" data-v="${x.garnek | 0}" title="Filtruj po tym poziomie">G${x.garnek | 0}</button></td><td>${x.rounds}</td><td class="sc">${fmtNum(x.score)}</td></tr>`;
+    return `<tr class="${x.nick === mynick ? 'me' : ''} ${i < 3 ? 'top' + (i + 1) : ''}"><td class="pos">${i + 1}</td><td><button class="lnk" data-act="rknickset" data-v="${esc(x.nick)}" title="Pokaż wyniki tego gracza">${av}${esc(x.nick)}</button>${x.ttl && D.SHOP[x.ttl] ? ` <small class="ttl">${esc(D.SHOP[x.ttl].name)}</small>` : ''}${x.win ? ' ★' : ''}${x.deep ? ` <small class="deepn">♾ +${x.deep}</small>` : ''}</td><td><button class="lnk" data-act="rkcharset" data-v="${esc(x.char)}" title="Filtruj po tej postaci">${esc(cn)}</button></td><td><button class="lnk" data-act="rkgset" data-v="${x.garnek | 0}" title="Filtruj po tym poziomie">G${x.garnek | 0}</button></td><td>${x.rounds}</td><td class="sc">${fmtNum(x.score)}</td></tr>`;
   }).join('')}</tbody></table>`;
 }
 // Księga: nowe wpisy (odblokowane kafelki, przepisy, reakcje) od ostatniego otwarcia dostają naklejkę „Nowy wpis!”.
 // Kurnik: meta-progres. Pióra za runy → trwałe, niewielkie ulepszenia (maks. 3 poziomy). Na dole Duch gracza z Areny.
 function ghostBlock() {
-  const g = G.myGhost || {}, rows = Object.keys(D.MODES).filter(m => g[m]).map(m => { const x = g[m], ch = D.CHARS[x.char]; return `<div class="kghost">${art.ghostArt(x.char)}<div><b>${esc(D.MODES[m].name)}: ${esc(ch ? ch.name : '')}</b>, ${x.floors} pięter${x.win ? ' ★' : ''}<br><span>Pokonał ${x.wins} graczy, przegrał z ${x.losses}.</span></div></div>`; }).join('');
+  const g = G.myGhost || {}, rows = Object.keys(D.MODES).filter(m => g[m]).map(m => { const x = g[m], ch = D.CHARS[x.char]; return `<div class="kghost">${art.ghostArt(x.char, x.wear)}<div><b>${esc(D.MODES[m].name)}: ${esc(ch ? ch.name : '')}</b>, ${x.floors} pięter${x.win ? ' ★' : ''}<br><span>Pokonał ${x.wins} graczy, przegrał z ${x.losses}.</span></div></div>`; }).join('');
   return `<div class="sec">Twój Duch na Arenie</div>${rows || '<p class="hint">Zakończ run z co najmniej 3 piętrami, a twój build zostanie na Arenie Duchów i będzie bił innych graczy.</p>'}`;
 }
 function showKurnik() {
@@ -1273,7 +1284,7 @@ function bookFit() {
 const bookGo = d => { G.bookPage = (G.bookPage || 0) + d; bookFit(); };
 function showBook(tab = 'tiles', turn = false) {
   const seen = bookSeen(), fresh = k => !seen.has(k), marks = [];
-  const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['react', 'Reakcje i Okólniki'], ['badges', 'Odznaki'], ['ach', 'Osiągnięcia'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania'], ['more', 'Klątwy, trasy, towarzysze']];
+  const p = G.profile, tabs = [['tiles', 'Kafelki'], ['hatch', 'Wylęgarnia'], ['react', 'Reakcje i Okólniki'], ['badges', 'Odznaki'], ['ach', 'Osiągnięcia'], ['soups', 'Rosoły'], ['chars', 'Postacie'], ['foes', 'Wrogowie'], ['unl', 'Odblokowania'], ['more', 'Klątwy, trasy, towarzysze']];
   let body = '';
   if (tab === 'react') {
     const known = p.reactions || []; for (const k of known) marks.push('x:' + k);
@@ -1289,6 +1300,8 @@ function showBook(tab = 'tiles', turn = false) {
       <div class="sec">Towarzysze</div><p class="lead">Schronisko dla Piskląt (wydarzenie) daje towarzysza. Rośnie do poziomu 3 po każdym pokonanym bossie.</p><div class="ms-grid">${Object.values(D.COMPANIONS).map(c => `<div class="ms-row">${art.companionArt(c.id)}<div><b>${esc(c.forms.join(' → '))}</b><br><span>${esc(c.text)}</span></div></div>`).join('')}</div>
       <div class="sec">Bossowie (warianty)</div><p class="lead">Każde miejsce bossa ma trzech kandydatów, losowanych z ziarna runu (oryginał trafia się najczęściej).</p><div class="ms-grid">${Object.values(D.BOSSES).filter(b => !b.super).map(b => `<div class="ms-row">${art.enemyArt(b.art, b.tint)}<div><b>${esc(b.name)}</b><br><span>${esc(b.text)}</span></div></div>`).join('')}</div>
       <div class="sec">Dogrywka i super-bossowie</div><p class="lead">Po Prezesie możesz zostać w fabryce. Wrogowie rosną szybciej, a co ${D.RULES.superEvery} pięter wpada super-boss.</p><div class="ms-grid">${Object.values(D.BOSSES).filter(b => b.super).map(b => `<div class="ms-row">${art.enemyArt(b.art, b.tint)}<div><b>${esc(b.name)}</b><br><span>${esc(b.text)}</span></div></div>`).join('')}</div>`;
+  } else if (tab === 'soups') {
+    body = soupsBook(p, fresh, marks);
   } else if (tab === 'ach') {
     const have = new Set(p.ach || []);
     body = `<p class="lead">Zdobyte: ${have.size} z ${D.ACHIEVEMENTS.length}.</p>` + Object.entries(D.ACH_GROUPS).map(([gid, g]) => `<div class="sec">${esc(g.name)}</div><div class="ach-list">${D.ACHIEVEMENTS.filter(a => a.g === gid).map(a => { const got = have.has(a.id), hide = a.secret && !got; return `<div class="ach-row ${got ? 'got' : 'lock'}">${art.medal(a.g, hide ? '?' : a.s, !got)}<div><b>${esc(hide ? '???' : a.name)}</b><span>${esc(hide ? 'Ukryte osiągnięcie.' : a.text)}</span></div></div>`; }).join('')}</div>`).join('');
@@ -1314,7 +1327,7 @@ function showBook(tab = 'tiles', turn = false) {
   } else if (tab === 'chars') {
     body = `<div class="opts">${Object.values(D.CHARS).map(c => { const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock], v = charView(c, open);
       return `<div class="opt char-opt ${open ? '' : 'locked'}">${v.hidden ? art.eggArt(c.id, false) : art.portrait(c.id)}<div><h3>${esc(v.name)}</h3><p>${esc(v.style)}. ${esc(v.text)}</p>${open ? '' : `<div class="lockmsg">Zablokowana: ${esc(v.hidden ? '???' : u ? u.text : '')}</div>`}</div></div>`; }).join('')}</div>
-      <div class="sec">Formy kurczaka</div><div class="opts">${D.FORMS.map(f => `<div class="opt char-opt">${art.heroArt('pyrtek', f.id)}<div><h3>${f.name}</h3><p>Od ${Math.round(f.from * 100)}% runu.</p></div></div>`).join('')}</div>`;
+      <div class="sec">Formy kurczaka</div><div class="opts">${D.FORMS.map(f => `<div class="opt char-opt">${art.heroArt('pyrtek', f.id, { plain: true })}<div><h3>${f.name}</h3><p>Od ${Math.round(f.from * 100)}% runu.</p></div></div>`).join('')}</div>`;
   } else if (tab === 'foes') {
     const all = [...Object.values(D.ENEMIES), ...Object.values(D.BOSSES)];
     body = `<div class="opts">${all.map(d => `<div class="opt char-opt">${art.enemyArt(d.art)}<div><h3>${esc(d.name)}</h3><p>${d.title ? esc(d.title) + '. ' : ''}${esc(d.text)}</p><p style="color:var(--faint)">${d.zone != null && !d.minion ? 'Strefa ' + D.ZONES[d.zone].tag : d.minion ? 'Przywoływany przez bossa' : 'Boss'}</p></div></div>`).join('')}</div>`;
@@ -1436,6 +1449,8 @@ const ACT = {
   ranktab: b => { RK.deep = false; showRanking(b.dataset.v, true); },
   rkdeep: () => { RK.deep = !RK.deep; showRanking(RK.mode, true); },
   kurnik: () => showKurnik(),
+  shop: () => showShop(), shopbuy: b => shopAct('shopbuy', { id: b.dataset.id }, 'unlock'), wear: b => shopAct('wear', { id: b.dataset.id, on: b.dataset.on === '1' }, 'click'),
+  daily: () => showDaily(), dailystart: () => startDaily(), lvlpick: b => lvlPick(+b.dataset.i),
   kbuy: async b => { const j = await act('kurnik', { id: b.dataset.v }); if (!j) return; snd.sfx('unlock'); toast(D.KURNIK[j.kurnikBought.id].name + ': poziom ' + j.kurnikBought.lvl, false, 2600); showKurnik(); },
   rkme: () => { const me = playerNow(); if (me) { RK.nick = me.nick; showRanking(RK.mode, true); } },
   rkclear: () => { Object.assign(RK, { char: '', garnek: '', nick: '' }); showRanking(RK.mode, true); },
@@ -1553,3 +1568,83 @@ document.addEventListener('keydown', e => {
 });
 
 init();
+
+// ---------- Staż, Sklepik Zakładowy, Dyżur dnia ----------
+// Staż to poziom konta w tle: Nadgodziny z runów → poziomy → Talony (2 za poziom) + wybór 1 z 2 nagród. Talony idą do Sklepiku (kosmetyka, nic nie zmienia siły).
+const rewardText = (id, lvl) => { const r = D.REWARD_BY_ID[id]; return r.text.replace('{v}', r.v(lvl)); };
+const fmtDay = d => { const [y, m, dd] = String(d).split('-'); return `${+dd}.${m}.${y}`; };
+function stazOf() { return G.profile.staz || { level: 0, into: 0, need: D.stazCost(1), xp: 0, title: D.STAZ_TITLES[0], talons: 0 }; }
+function stazBar(s) { return `<span class="sp-bar"><i style="width:${Math.min(100, Math.round(100 * s.into / s.need))}%"></i></span>`; }
+function stazPill() {
+  const s = stazOf();
+  return `<button class="staz-pill" data-act="shop" data-tip="${esc('Staż ' + s.level + ': ' + s.title + '\nNadgodziny: ' + s.into + ' / ' + s.need + ' do następnego poziomu.\nTalony: ' + s.talons + '. Wydasz je w Sklepiku Zakładowym.')}"><b>Staż ${s.level}</b>${stazBar(s)}<span class="sp-t">🎟️ ${s.talons}</span></button>`;
+}
+// Po awansie czeka wybór nagrody; okno pokazuje się w menu, gdy nic innego nie jest otwarte.
+function maybeLevelUp() { if (G.screen === 'home' && !overlayOpen() && G.profile && G.profile.lvlPending) showLevelUp(); }
+function showLevelUp() {
+  const q = G.profile.lvlPending; if (!q) return;
+  const cards = q.opts.map((id, i) => { const r = D.REWARD_BY_ID[id]; return `<button class="opt reward-opt" data-act="lvlpick" data-i="${i}"><span class="rw-ico">${r.icon}</span><h3>${esc(r.name)}</h3><p>${esc(rewardText(id, q.lvl))}</p></button>`; }).join('');
+  openOverlay(`<h2>Awans! Staż ${q.lvl}</h2><p class="lead"><b>${esc(D.stazTitle(q.lvl))}</b>. Dostajesz <b>${D.STAZ.talons} Talony</b> do Sklepiku Zakładowego i jedną nagrodę do wyboru${q.left > 1 ? ` (czeka jeszcze ${q.left - 1} awansów)` : ''}.</p><div class="opts reward-opts">${cards}</div>`, { narrow: true, force: true });
+  snd.sfx('unlock');
+}
+async function lvlPick(i) {
+  const j = await act('levelchoice', { i }); if (!j) return;
+  closeOverlay(); snd.sfx('unlock');
+  const t = j.rewardTaken; if (t) toast('Nagroda: ' + rewardText(t.reward, t.lvl), false, 3600);
+  render(); maybeLevelUp();
+}
+function shopHero() { const ids = Object.keys(D.CHARS), id = G.setup && G.profile.chars.includes(G.setup.char) ? G.setup.char : 'pyrtek'; return { id, art: art.heroArt(id, id === 'pyrtek' ? 'pyrtek' : 'kogut') }; }
+function showShop() {
+  const p = G.profile, w = p.wardrobe || { owned: [], eq: {} }, s = stazOf(), me = playerNow(), hero = shopHero();
+  const ttl = w.eq.title && D.SHOP[w.eq.title] ? D.SHOP[w.eq.title].name : '';
+  const cards = Object.values(D.SHOP).map(it => {
+    const owned = w.owned.includes(it.id), on = w.eq[it.slot] === it.id;
+    const prev = it.slot === 'title' ? `<div class="sh-title">${esc(it.name)}</div>` : art.heroArt('pyrtek', 'pyrtek', { wear: { [it.slot]: it.id } });
+    const btn = owned ? `<button class="btn small ${on ? '' : 'primary'}" data-act="wear" data-id="${it.id}" data-on="${on ? 0 : 1}">${on ? 'Zdejmij' : 'Załóż'}</button>`
+      : `<button class="btn small primary" data-act="shopbuy" data-id="${it.id}" ${s.talons < it.cost ? 'disabled' : ''}>Kup · ${it.cost} 🎟️</button>`;
+    return `<div class="shop-card ${on ? 'on' : ''}"><div class="sh-prev">${prev}</div><h3>${esc(it.name)}</h3><div class="sh-slot">${esc(D.SLOTS[it.slot])}</div><p>${esc(it.text)}</p>${btn}</div>`;
+  }).join('');
+  openOverlay(`<h2>Sklepik Zakładowy</h2>
+    <div class="shop-top"><span class="staz-line"><b>Staż ${s.level}</b> ${esc(s.title)} ${stazBar(s)}<small>${s.into} / ${s.need} Nadgodzin</small></span><span class="talons">🎟️ <b>${s.talons}</b> Talonów</span></div>
+    <div class="shop-body"><div class="shop-me"><div class="shop-hero">${hero.art}</div><div class="shop-nick">${esc(me ? me.nick : '')}</div>${ttl ? `<div class="shop-ttl">${esc(ttl)}</div>` : ''}</div><div class="shop-grid">${cards}</div></div>
+    <p class="hint">Talony dostajesz za awanse na Stażu (2 za poziom) i za Dyżur dnia. Stroje są tylko ozdobą i widać je w walce, w ekranie końca i na Arenie Duchów.</p>`, { cls: 'shopmodal' });
+}
+async function shopAct(path, body, sfx) { const j = await act(path, body); if (!j) return; if (sfx) snd.sfx(sfx); showShop(); }
+
+async function showDaily() {
+  const d = G.daily; if (!d) return toast('Dyżur dnia jest chwilowo niedostępny.', true);
+  const c = D.CURSES[d.curses[0]], ch = D.CHARS[d.char];
+  openOverlay(`<h2>Dyżur dnia <small class="dy-date">${esc(fmtDay(d.date))}</small></h2>
+    <p class="lead">Ten sam run dla wszystkich: te same oferty, jedna Klątwa Prezesa, jedno podejście na dzień.</p>
+    <div class="daily-info"><div><span>Postać</span><b>${esc(ch.name)}</b></div><div><span>Tryb</span><b>${esc(D.MODES[d.mode].name)}</b></div><div><span>Klątwa dnia</span><b>${art.emo(c.icon)} ${esc(c.name)}</b></div><div><span>Seria</span><b>${d.streak} ${d.streak === 1 ? 'dzień' : 'dni'}</b></div></div>
+    <p class="hint">Talony: 1 za ukończenie, +2 za wygraną, +1 od 3 dni z rzędu (+2 od 7). Bez Kurnika i premii, nie zmienia rekordów ani palnika.</p>
+    <div class="actions">${d.used ? `<span class="daily-done">${d.active ? 'Dyżur w toku. Dokończ go w menu.' : `Twój wynik: <b>${fmtNum(d.score)}</b> (piętra: ${d.rounds}${d.win ? ', wygrana' : ''}). Wróć jutro.`}</span>` : '<button class="btn primary big" data-act="dailystart" data-primary>Zacznij dyżur</button>'}</div>
+    <div class="sec">Ranking dnia</div><div id="dyrank" class="lead">Ładowanie…</div>`, { narrow: true });
+  const { j } = await apiDaily(d.date), box = $('#dyrank'); if (!box) return;
+  if (!j || !j.list) { box.textContent = (j && j.err) || 'Nie udało się pobrać rankingu.'; return; }
+  if (!j.list.length) { box.textContent = 'Nikt jeszcze nie odbył dziś dyżuru. Bądź pierwszy.'; return; }
+  const me = playerNow(), mynick = me ? me.nick : '';
+  box.className = ''; box.innerHTML = `<table class="rank-list"><tbody>${j.list.slice(0, 10).map((x, i) => `<tr class="${x.nick === mynick ? 'me' : ''} ${i < 3 ? 'top' + (i + 1) : ''}"><td class="pos">${i + 1}</td><td>${esc(x.nick)}${x.ttl && D.SHOP[x.ttl] ? ` <small class="ttl">${esc(D.SHOP[x.ttl].name)}</small>` : ''}${x.win ? ' 🏆' : ''}</td><td>${x.rounds} p.</td><td style="text-align:right">${fmtNum(x.score)}</td></tr>`).join('')}</tbody></table>`;
+}
+async function startDaily() {
+  closeOverlay();
+  const j = await act('start', { daily: true }); if (!j) return;
+  snd.sfx('bulgot'); G.screen = 'run'; render();
+  if (!store.get('bulgot:intro')) showIntro();
+}
+
+// Ekran końca: Nadgodziny, rosół i wynik Dyżuru dnia.
+function endExtrasHTML(e) {
+  let h = '';
+  if (e.staz) { const s = stazOf(); h += `<div class="endstaz"><span>Nadgodziny <b>+${e.staz.gain}</b></span><span class="es-lvl">Staż ${s.level}</span>${stazBar(s)}<small>${s.into} / ${s.need}</small></div>${e.staz.ups && e.staz.ups.length ? `<p class="lead" style="color:var(--gold)"><b>Awans na Stażu: poziom ${e.staz.level}!</b> Nagrodę odbierzesz w menu (${D.STAZ.talons * e.staz.ups.length} Talony czeka w Sklepiku).</p>` : ''}`; }
+  if (e.soup) { const sp = D.SOUP_BY_ID[e.soup.id]; if (sp) h += `<div class="endsoup">${art.soupArt(sp.color)}<div><b>${e.soup.isNew ? 'Nowy rosół w Księdze!' : 'Ugotowałeś rosół'}</b><br>${esc(sp.name)}${e.soup.isNew ? '' : ` (×${e.soup.n})`}</div></div>`; }
+  if (e.daily) h += `<p class="lead">Dyżur dnia: <b>+${e.daily.talons} Talony</b>, seria <b>${e.daily.streak}</b> ${e.daily.streak === 1 ? 'dzień' : 'dni'}${e.rank ? `, miejsce dnia <b>#${e.rank}</b>` : ''}.</p>`;
+  return h;
+}
+function soupsBook(p, fresh, marks) {
+  const have = p.soups || {}, n = D.SOUPS.filter(s => have[s.id]).length;
+  return `<p class="lead">Każda wygrana gotuje rosół zależny od buildu: najpierw przepisy specjalne, potem dominujący żywioł (co najmniej 4 kafelki), na końcu postać. Odkryte: ${n} z ${D.SOUPS.length}.</p>
+    <div class="ms-grid soups">${D.SOUPS.map(s => have[s.id]
+      ? `<div class="ms-row entry soup-row">${art.soupArt(s.color)}<div><b>${esc(s.name)}</b><br><span>${esc(s.hint)}</span><br><span class="sp-n">Ugotowany ×${have[s.id].n}, najlepszy wynik ${fmtNum(have[s.id].best)}</span></div></div>`
+      : `<div class="ms-row unknown soup-row soup-lock">${art.soupArt('#4a4036')}<div><b>?</b><br><span>${s.secret ? 'Sekretny przepis.' : esc(s.hint)}</span></div></div>`).join('')}</div>`;
+}

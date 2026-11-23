@@ -1,4 +1,6 @@
 // Bulgot: teksty gry. Narrator to Kronikarz: epicka powaga, absurdalna treść.
+// Wymiana oferty (dawniej „Reroll”). Inne pomysły: Wezwij Brygadzistę, Nowa Partia, Złóż Reklamację, Zawołaj Dostawcę.
+export const REROLL = 'Przetasuj Taśmę', REROLL_BLOCKED = 'Taśma zablokowana';
 export const TAGLINE = 'Awans albo rosół';
 
 export const INTRO = [

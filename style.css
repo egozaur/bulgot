@@ -1401,3 +1401,59 @@ html.reduce .sch.near .sic { animation: none; }
 .volbox { display: inline-flex; align-items: center; gap: 10px; }
 .volbox input[type=range] { width: 160px; accent-color: var(--amber); cursor: pointer; }
 .volbox b { min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Przycisk wymiany oferty: nazwa i cena obok */
+.btn.reroll { display: inline-flex; align-items: center; gap: 12px; }
+.btn.reroll .rcost { display: inline-flex; align-items: center; gap: 5px; padding-left: 12px; border-left: 2px solid rgba(255,255,255,.18); font-variant-numeric: tabular-nums; }
+.btn.reroll .rcost.free { color: var(--good, #8fd694); }
+.btn.reroll .rcost .ico, .btn.reroll .rcost svg { width: 1.1em; height: 1.1em; }
+
+/* ---------- Staż, Sklepik Zakładowy, Dyżur dnia, Księga Rosołów ---------- */
+.staz-pill { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border-radius: 999px; background: rgba(0,0,0,.35); border: 2px solid var(--amber2); color: var(--ink); font: inherit; font-size: .88rem; cursor: pointer; }
+.staz-pill:hover { border-color: var(--amber); }
+.staz-pill b { color: var(--amber); white-space: nowrap; }
+.sp-bar { display: inline-block; width: 64px; height: 8px; border-radius: 6px; background: rgba(255,255,255,.14); overflow: hidden; vertical-align: middle; }
+.sp-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--amber2), var(--amber)); border-radius: 6px; }
+.sp-t { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.home-top { flex-wrap: wrap; }
+.home-main { display: flex; gap: 12px; align-items: stretch; justify-content: center; flex-wrap: wrap; }
+.btn.big.daily { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: .5em 1.6em; border-color: #8fd1c7; color: #d6fff7; }
+.btn.big.daily small { font-size: .72rem; font-weight: 600; opacity: .8; letter-spacing: .02em; }
+.btn.big.daily.done { border-color: var(--line); color: var(--muted); }
+.home-row.small { gap: 8px; margin-top: -2px; }
+.btn.small .tcn, .btn small { font-variant-numeric: tabular-nums; }
+.pill.dly { border-color: #8fd1c7; color: #d6fff7; }
+.reward-opts { margin-top: 10px; grid-template-columns: repeat(2, 1fr); }
+.reward-opt { text-align: center; display: grid; gap: 4px; justify-items: center; }
+.reward-opt .rw-ico { font-size: 2.2rem; line-height: 1; }
+.reward-opt h3 { margin: 0; font-size: 1.05rem; } .reward-opt p { margin: 0; font-size: .9rem; color: var(--muted); }
+.modal.shopmodal { width: min(1040px, calc(100% / var(--s, 1))); padding: 16px 22px 18px; }
+.shopmodal h2 { margin: 0 0 6px; }
+.shop-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(0,0,0,.25); border: 2px solid var(--line); }
+.shop-top small { color: var(--muted); margin-left: 6px; }
+.shop-top .talons { font-size: 1.1rem; }
+.shop-body { display: grid; grid-template-columns: 190px 1fr; gap: 16px; align-items: start; }
+.shop-me { text-align: center; display: grid; gap: 6px; justify-items: center; padding: 10px; border-radius: 14px; background: rgba(0,0,0,.22); border: 2px solid var(--line); }
+.shop-hero svg { width: 150px; height: 150px; overflow: visible; }
+.shop-nick { font-weight: 700; } .shop-ttl { font-size: .8rem; color: var(--gold); }
+.shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.shop-card { display: grid; gap: 3px; justify-items: center; text-align: center; padding: 10px; border-radius: 14px; background: var(--panel2, rgba(255,255,255,.04)); border: 3px solid var(--outline); }
+.shop-card.on { border-color: var(--amber); }
+.shop-card h3 { margin: 0; font-size: .98rem; } .shop-card p { margin: 0 0 4px; font-size: .78rem; color: var(--muted); min-height: 2.6em; }
+.sh-prev { width: 96px; height: 96px; display: grid; place-items: center; } .sh-prev svg { width: 96px; height: 96px; overflow: visible; }
+.sh-title { font-family: var(--display); color: var(--gold); font-size: 1rem; line-height: 1.1; }
+.sh-slot { font: 600 .66rem/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.ttl { color: var(--gold); font-size: .72rem; opacity: .9; }
+.daily-info { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 8px 0; }
+.daily-info div { padding: 7px 10px; border-radius: 10px; background: rgba(0,0,0,.25); border: 2px solid var(--line); display: grid; gap: 1px; }
+.daily-info span { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.daily-done { color: var(--muted); } .dy-date { color: var(--muted); font-size: .6em; margin-left: 6px; }
+.endstaz { display: flex; align-items: center; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
+.endstaz .es-lvl { color: var(--amber); font-weight: 700; } .endstaz small { color: var(--muted); }
+.endsoup { display: flex; align-items: center; gap: 10px; margin: 8px 0; padding: 6px 10px; border-radius: 12px; background: rgba(0,0,0,.25); border: 2px solid var(--line); }
+.endsoup .soup-fig { width: 56px; height: 56px; flex: none; }
+.soup-row .soup-fig { width: 64px; height: 64px; flex: none; }
+.soup-lock .soup-fig { filter: brightness(.55) saturate(0); opacity: .7; }
+.sp-n { color: var(--muted); font-size: .82rem; }
+@media (prefers-reduced-motion: no-preference) { html:not(.reduce) .wear-aura { animation: aurapulse 2.6s ease-in-out infinite alternate; transform-origin: 50% 60%; } html:not(.reduce) .soup-steam { animation: steam 3s ease-in-out infinite; } }
+@keyframes aurapulse { from { opacity: .7; transform: scale(.97); } to { opacity: 1; transform: scale(1.03); } }

@@ -62,6 +62,16 @@ export async function ranks(mode, query = '') {
   return http(P3(), 'GET', '/api/bg/ranks?mode=' + encodeURIComponent(mode) + (query ? '&' + query : ''));
 }
 
+// Ranking Dyżuru dnia (jedna lista na datę RRRR-MM-DD).
+export async function dailyRanks(date) {
+  if (LOCAL) {
+    const { ranks: r } = await localInit();
+    const res = await r.fetch(new Request('https://bg/daily-list?date=' + date));
+    return { status: res.status, j: await res.json() };
+  }
+  return http(P3(), 'GET', '/api/bg/daily?date=' + encodeURIComponent(date));
+}
+
 async function http(A, method, path, body) {
   const tok = A.token();
   let r;
