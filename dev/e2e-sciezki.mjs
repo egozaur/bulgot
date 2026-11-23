@@ -17,7 +17,7 @@ const reload = async () => { await p.reload({ waitUntil: 'networkidle0' }); awai
 
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(() => document.querySelector('[data-act=setmode][data-v=full]').click());
-await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
+await p.click('[data-act=start]'); await wait(500);
 ok((await R()).phase === 'offer', 'start runu');
 
 // --- sklepik

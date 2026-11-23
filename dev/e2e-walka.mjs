@@ -19,7 +19,7 @@ async function toFight(w, h, { mode = 'quick', round = 3, skills, tiles = ['ziar
   await p.reload({ waitUntil: 'networkidle0' }); await wait(300);
   await p.click('[data-act=new]'); await wait(200);
   await p.evaluate(m => document.querySelector(`[data-act=setmode][data-v=${m}]`).click(), mode);
-  await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
+  await p.click('[data-act=start]'); await wait(500);
   await p.evaluate(rp => { const k = 'bulgot:local:player:run'; const r = JSON.parse(localStorage.getItem(k)); Object.assign(r, rp); localStorage.setItem(k, JSON.stringify(r)); },
     { round, coins, tiles, skills: skills.map(id => ({ id, lvl: 1 })), offer: ['czujne-oko', 'jajeczny-granat', 'hazard-w-kurniku', 'opaska-rambo'], phase: 'offer' });
   await p.reload({ waitUntil: 'networkidle0' }); await wait(300); await p.click('[data-act=resume]'); await wait(400);

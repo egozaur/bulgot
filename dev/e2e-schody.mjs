@@ -29,7 +29,7 @@ for (const mode of ['quick', 'full']) {
   await p.evaluate(() => localStorage.clear()); await p.reload({ waitUntil: 'networkidle0' }); await wait(400);
   await p.click('[data-act=new]'); await wait(200);
   await p.evaluate(m => document.querySelector(`[data-act=setmode][data-v=${m}]`).click(), mode);
-  await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500); await p.click('[data-act=introgo]'); await wait(500);
+  await p.click('[data-act=start]'); await wait(500); await p.click('[data-act=introgo]'); await wait(500);
   const n = mode === 'quick' ? 10 : 20; let prevFire = 0;
   for (const rd of [1, Math.ceil(n / 2), n]) {
     if (rd > 1) await patch(rd);

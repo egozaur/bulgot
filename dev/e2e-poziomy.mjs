@@ -17,7 +17,7 @@ await p.goto('http://localhost:8090/bulgot/?local=1', { waitUntil: 'networkidle0
 await p.evaluate(() => localStorage.clear()); await p.reload({ waitUntil: 'networkidle0' }); await wait(400);
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(() => document.querySelector('[data-act=setmode][data-v=quick]').click());
-await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500); await p.click('[data-act=introgo]'); await wait(500);
+await p.click('[data-act=start]'); await wait(500); await p.click('[data-act=introgo]'); await wait(500);
 async function patchRun(src) {
   await p.evaluate(s => { const k = Object.keys(localStorage).find(x => x.endsWith(':run')); const run = JSON.parse(localStorage.getItem(k)); (new Function('run', s))(run); localStorage.setItem(k, JSON.stringify(run)); }, src);
   await p.reload({ waitUntil: 'networkidle0' }); await wait(500);

@@ -114,7 +114,7 @@ function render() {
     case 'loading': root.innerHTML = '<div class="loading"><span>Bulgocze</span> <i></i><i></i><i></i></div>'; break;
     case 'noplayer': root.innerHTML = `<div class="loading" style="flex-direction:column;gap:14px;text-align:center"><span>Do gry w Bulgot potrzebny jest nick.</span><button class="btn primary" data-act="retry">Wybierz nick</button><a class="btn ghost" href="/">← PL3Y</a></div>`; break;
     case 'home': root.innerHTML = renderHome(); setTimeout(maybeLevelUp, 120); setTimeout(maybeCasinoAsk, 500); break;
-    case 'setup': root.innerHTML = renderSetup(); fitCarousel(); requestAnimationFrame(fitCarousel); break;
+    case 'setup': root.innerHTML = renderSetup(); break;
     case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); fitTower(); fitBoard(); setTimeout(maybeCasinoAsk, 300); break;
     case 'fight': return;   // arena buduje się w startFight()
   }
@@ -168,53 +168,48 @@ function cursesHTML() {
   const chips = Object.entries(D.CURSES).map(([id, c]) => `<button class="curse-chip ${sel.includes(id) ? 'on' : ''}" data-act="curse" data-v="${id}" aria-pressed="${sel.includes(id)}" data-tip="${esc(c.name + '\n' + c.text + '\nPremia do wyniku: +' + c.pct + '%')}">${art.emo(c.icon)}<b>${esc(c.name)}</b><small>+${c.pct}%</small></button>`).join('');
   return `<div class="curses"><div class="sec">Klątwy Prezesa <small>dobrowolne, do ${D.CURSE_MAX}${sel.length ? ': wynik +' + D.cursePct(sel) + '%' : ': trudniej, ale wynik rośnie'}</small></div><div class="curse-row">${chips}</div></div>`;
 }
+// Ekran startowy w jednym kroku (makieta 11 „Arena i lista mocy”): postać (jajka), bohater ze statystykami i zdolnościami, lista mocy palnika, pasek podsumowania.
+const lockText = c => c.secret ? '???' : ((D.UNLOCK_BY_ID[c.lock] || {}).text || '');
+const burnMult = (g, s) => ((1 + g * .25) * (1 + D.cursePct(s.curses) / 100)).toFixed(2).replace('.', ',');
+const BURN_HEAT = ['#7bd37b', '#e8d34a', '#ffb347', '#ff8c2b', '#e4572e', '#d6262d'];
+const shortName = v => v.hidden ? '???' : v.name.replace(/^(Kurczak|Kura|Kogut|Indyczka) /, '').replace(/ .*/, '');
+function setupOk() { const s = G.setup, p = G.profile; return p.chars.includes(charIds()[s.cur]) && s.garnek <= p.garnek; }
 function renderSetup() {
   const p = G.profile, s = G.setup, ids = charIds();
-  if (!s.step) s.step = 1;
   if (s.cur === undefined || s.cur < 0 || s.cur >= ids.length) s.cur = Math.max(0, ids.indexOf(s.char));
-  const m = D.MODES[s.mode], ch = D.CHARS[ids[s.cur]];
-  if (s.step === 2) {
-    const g = D.GARNEK[s.garnek], thumbs = D.GARNEK.map((gg, i) => `<button class="bthumb ${s.garnek === i ? 'on' : ''} ${i > p.garnek ? 'locked' : ''}" data-act="setgarnek" data-v="${i}" ${i > p.garnek ? 'aria-disabled="true"' : ''}><span class="bth-art">${art.burnerArt(i)}</span><b>${BURNERS[i]}</b>${i > p.garnek ? '<i class="glock">🔒</i>' : ''}</button>`).join('');
-    return `<div class="setup2 step2">
-      <div class="screen-head"><h2>Wybierz poziom palnika</h2>${metaChips()}<button class="btn small ghost" data-act="setback">← Wróć</button></div>
-      <div class="burner-stage"><button class="car-arrow" data-act="gprev" aria-label="Niższy palnik">‹</button>
-        <div class="burner-main ${s.garnek > p.garnek ? 'locked' : ''}"><div class="burner-big">${art.burnerArt(s.garnek)}</div>
-          <h3>${BURNERS[s.garnek]} <small>poziom ${s.garnek} · ${esc(g.name)}</small></h3><p>${esc(g.text)}</p>
-          <div class="gmult">Mnożnik wyniku ×${((1 + s.garnek * .25) * (1 + D.cursePct(s.curses) / 100)).toFixed(2).replace('.', ',')}</div>${s.garnek > p.garnek ? `<div class="glockmsg">🔒 Zablokowany: wygraj run na poziomie ${s.garnek - 1}</div>` : ''}</div>
-        <button class="car-arrow" data-act="gnext" aria-label="Wyższy palnik">›</button></div>
-      <div class="bthumbs">${thumbs}</div>${SHOW_CURSES ? cursesHTML() : ""}
-      <div class="start-row"><div class="setsum">${esc(m.name)} · ${esc(ch.name)}</div><button class="btn primary big" data-act="start" data-primary ${s.garnek > p.garnek ? "disabled" : ""}>Do garnka!</button></div>
-      <div class="keyhint">← → poziom palnika · Enter start · Esc wróć</div></div>`;
-  }
-  const modes = Object.entries(T.MODE_INFO).map(([id, mi]) => `<button class="opt mode-opt ${s.mode === id ? 'on' : ''}" data-act="setmode" data-v="${id}"><h3>${mi.name}</h3><p>${mi.text}</p></button>`).join('');
-  const cards = ids.map((id, i) => {
-    const c = D.CHARS[id], open = p.chars.includes(id), u = c.lock && D.UNLOCK_BY_ID[c.lock], v = charView(c, open), o = i - s.cur;
-    return `<button class="opt char-opt egg-opt car-card ${s.cur === i ? 'on' : ''} ${open ? 'hatched' : 'locked'} ${v.hidden ? 'secret' : ''}" data-act="carpick" data-v="${i}" data-char="${id}" style="--o:${o};--a:${Math.abs(o)}" ${Math.abs(o) > 1 ? 'tabindex="-1" aria-hidden="true"' : ''}><div class="egg-art">${art.eggArt(id, open)}</div><h3>${esc(v.name)}</h3><div class="post">Stanowisko: <b>${esc(v.style)}</b></div><p>${esc(v.text)}</p>${open ? '' : `<div class="lockmsg">🔒 Jak odblokować: ${esc(v.hidden ? '???' : u ? u.text : '')}</div>`}</button>`;
-  }).join('');
-  return `<div class="setup2 step1">
-    <div class="screen-head"><h2>Nowy run</h2>${metaChips()}<button class="btn small ghost" data-act="home">← Menu</button></div>
-    <div class="sec">Tryb <small>↑ ↓</small></div><div class="opts modes">${modes}</div>
-    <div class="sec">Postać <small>← → · nowe odblokowujesz osiągnięciami</small></div>
-    <div class="carousel"><button class="car-arrow" data-act="cprev" aria-label="Poprzednia postać">‹</button><div class="car-track">${cards}</div><button class="car-arrow" data-act="cnext" aria-label="Następna postać">›</button></div>
-    <div class="car-dots">${ids.map((id, i) => `<i class="${i === s.cur ? 'on' : ''}"></i>`).join('')}</div>
-    ${(c => c && c.hasCode && !p.chars.includes(c.id) ? '<div class="codeask"><button class="btn small ghost" data-act="codeopen">🔑 Masz hasło?</button></div>' : '')(D.CHARS[ids[s.cur]])}
-    <div class="start-row"><button class="btn primary big" data-act="setnext" data-primary>Dalej: palnik →</button></div>
-    <div class="keyhint">Enter dalej · Esc menu</div></div>`;
+  if (s.garnek > D.GARNEK.length - 1) s.garnek = D.GARNEK.length - 1;
+  const id = ids[s.cur], c = D.CHARS[id], open = p.chars.includes(id), v = charView(c, open), cp = T.CHAR_PERKS[id] || { perks: [] };
+  const m = D.MODES[s.mode], g = D.GARNEK[s.garnek], heat = BURN_HEAT[s.garnek], gLocked = s.garnek > p.garnek;
+  const fx = k => (c.fx.find(f => f.k === k) || { v: 0 }).v;
+  const stat = (l, val) => `<div class="sbar"><span>${l}</span><div class="tr"><i class="${val < 100 ? 'd' : ''}" style="width:${Math.min(100, val / 170 * 100)}%"></i></div><b>${val}%</b></div>`;
+  const roster = ids.map((cid, i) => { const cc = D.CHARS[cid], o = p.chars.includes(cid), vv = charView(cc, o);
+    return `<button class="tl ${i === s.cur ? 'on' : ''} ${o ? '' : 'lk'}" data-act="carpick" data-v="${i}" data-char="${cid}" aria-label="${esc(vv.name)}"><div class="egg-art">${art.eggArt(cid, o)}</div><span>${esc(shortName(vv))}</span></button>`; }).join('');
+  const modes = Object.entries(T.MODE_INFO).map(([mid, mi]) => { const dm = D.MODES[mid], bf = Object.keys(dm.bosses).map(Number);
+    return `<button class="smode ${s.mode === mid ? 'on' : ''}" data-act="setmode" data-v="${mid}"><h3>${mi.name}</h3><div class="fl">${Array.from({ length: dm.rounds }, (_, i) => `<i class="${bf.includes(i + 1) ? 'b' : ''}"></i>`).join('')}</div><p>${dm.rounds} pięter${bf.length ? ' · ' + bf.length + ' bossów' : ''}</p></button>`; }).join('');
+  const burners = D.GARNEK.map((gg, i) => i).reverse().map(i => { const open2 = i <= p.garnek, gg = D.GARNEK[i];
+    return `<button class="br ${i === s.garnek ? 'on' : ''} ${open2 ? '' : 'lk'}" style="--c:${BURN_HEAT[i]}" data-act="setgarnek" data-v="${i}"><span class="bart">${art.burnerArt(i)}</span><div><b>${BURNERS[i]}${open2 ? '' : ' 🔒'}</b><span>${esc(gg.name)}</span><div class="meter">${Array.from({ length: 6 }, (_, k) => `<i style="${k <= i ? 'background:' + BURN_HEAT[i] : ''}"></i>`).join('')}</div></div><em>×${(1 + i * .25).toFixed(2).replace('.', ',')}</em></button>`; }).join('');
+  const perks = open ? cp.perks.map(([ic, sg, tx]) => `<div class="pk ${sg === '+' ? 'plus' : 'minus'}"><b>${sg === '+' ? '+' : '−'}</b>${/^[a-zA-Z]+$/.test(ic) ? art.statIcon(ic) : `<span class="pe">${ic}</span>`}<span>${esc(tx)}</span></div>`).join('') : `<div class="pk lockrow"><span>🔒 ${esc(v.hidden ? 'Zagadka. Odkryj hasło lub osiągnięcie.' : 'Jak odblokować: ' + lockText(c))}</span></div>`;
+  const note = !open ? '🔒 Ta postać jest zablokowana' : gLocked ? `🔒 Palnik zablokowany: wygraj run na poziomie ${s.garnek - 1}` : '';
+  return `<div class="setup3">
+    <div class="s3-head"><h2>Nowy run</h2><div class="s3-hr">${metaChips()}<button class="btn small ghost" data-act="home">← Menu</button></div></div>
+    <div class="s3-body">
+      <section class="s3-left"><div class="cap">1 · Postać <small>← →</small></div><div class="roster">${roster}</div>
+        <div class="smodes">${modes}</div></section>
+      <section class="s3-mid"><div class="hero"><div class="halo"></div>
+          <button class="arr l" data-act="cprev" aria-label="Poprzednia postać">‹</button><button class="arr r" data-act="cnext" aria-label="Następna postać">›</button>
+          <div class="pic ${open ? '' : 'lk'}">${art.eggArt(id, open)}</div>
+          <h2 style="--hn:${v.name.length > 14 ? Math.round(52 * 14.5 / v.name.length) : 52}px">${esc(v.name)}</h2><div class="sub">${esc(v.style)}</div>
+          ${(cc => cc && cc.hasCode && !open ? '<button class="btn small ghost codebtn" data-act="codeopen">🔑 Masz hasło?</button>' : '')(c)}</div>
+        <div class="panel"><h4>Statystyki bazowe</h4>${open ? stat('Życie', 100 + fx('hpPct')) + stat('Atak', 100 + fx('atkPct')) + stat('Szybkość ataku', 100 + fx('aspdPct')) : '<div class="pk lockrow"><span>???</span></div>'}</div></section>
+      <section class="s3-right"><div class="cap">2 · Moc palnika <small>↑ ↓</small></div><div class="blist">${burners}</div>
+        <div class="panel pks"><h4>Zdolności</h4>${perks}</div></section>
+    </div>
+    ${SHOW_CURSES ? cursesHTML() : ''}
+    <div class="s3-bar"><div class="sum"><span><i>Tryb</i> <b>${esc(m.name)}</b></span><span><i>Postać</i> <b>${esc(v.name)}</b></span><span><i>Moc palnika</i> <b style="color:${heat}">${BURNERS[s.garnek]}</b></span><span class="gm">wynik ×${burnMult(s.garnek, s)}</span>${note ? `<span class="warn">${note}</span>` : ''}</div>
+      <button class="btn primary big" data-act="start" data-primary ${setupOk() ? '' : 'disabled'}>Do garnka! →</button></div>
+    <div class="keyhint">← → postać · ↑ ↓ moc palnika · Q tryb · Enter start · Esc menu</div></div>`;
 }
 
-// Karuzela postaci i wybór palnika: te same ruchy dla strzałek, kliknięć i przycisków ‹ ›.
-// Karty postaci mają różną wysokość (długi opis, warunek odblokowania). Gdy karta nie mieści się w torze karuzeli, zmniejszamy jej ZAWARTOŚĆ
-// (zmienna --fit, CSS `zoom` na dzieciach karty), żeby nic nie było ucięte u góry ani u dołu, w żadnym oknie.
-function fitCarousel() {
-  const tr = $('.car-track'); if (!tr) return;
-  const H = tr.clientHeight - 12, PAD = 22;   // zapas na podskok jajka i ramkę karty
-  for (const c of tr.querySelectorAll('.car-card')) {
-    c.style.setProperty('--fit', 1);
-    const nat = c.offsetHeight;
-    c.style.setProperty('--fit', H > PAD && nat > H ? Math.max(0.5, (H - PAD) / (nat - PAD)).toFixed(3) : 1);
-  }
-}
-addEventListener('resize', fitCarousel);
 function carGo(i) { const n = charIds().length, s = G.setup; s.cur = Math.max(0, Math.min(n - 1, i)); const id = charIds()[s.cur]; if (G.profile.chars.includes(id)) s.char = id; render(); }
 function garGo(v) { const s = G.setup; s.garnek = Math.max(0, Math.min(D.GARNEK.length - 1, v)); render(); }
 // ---------- karty kafelków ----------
@@ -1477,21 +1472,19 @@ function confirmAbandon() {
 const ACT = {
   retry: async () => { await init(); },
   changeplayer: async () => { if (window.PL3Y && window.PL3Y.player) { await window.PL3Y.player.change(); await act('state'); render(); } },
-  new: () => { G.setup.step = 1; G.screen = 'setup'; render(); },
+  new: () => { G.screen = 'setup'; render(); },
   home: () => { closeOverlay(); stopFight(); G.fight = null; G.screen = 'home'; render(); },
   resume: () => { G.screen = 'run'; render(); },
   setmode: b => { G.setup.mode = b.dataset.v; store.set('bulgot:mode', b.dataset.v); render(); },
   setchar: b => { if (G.profile.chars.includes(b.dataset.v)) { G.setup.char = b.dataset.v; render(); } else toast('Ta postać jest zablokowana: ' + (D.CHARS[b.dataset.v].secret ? '???' : (D.UNLOCK_BY_ID[D.CHARS[b.dataset.v].lock] || {}).text)); },
   bookprev: () => bookGo(-1), booknext: () => bookGo(1),
-  setnext: () => { const id = charIds()[G.setup.cur]; if (!G.profile.chars.includes(id)) { const c = D.CHARS[id]; return toast('Ta postać jest zablokowana: ' + (c.secret ? '???' : (D.UNLOCK_BY_ID[c.lock] || {}).text)); } G.setup.char = id; G.setup.step = 2; if (G.setup.garnek > G.profile.garnek) G.setup.garnek = 0; render(); },
-  setback: () => { G.setup.step = 1; render(); },
   carpick: b => carGo(+b.dataset.v),
   cprev: () => carGo(G.setup.cur - 1), cnext: () => carGo(G.setup.cur + 1),
   gprev: () => garGo(G.setup.garnek - 1), gnext: () => garGo(G.setup.garnek + 1),
   setgarnek: b => garGo(+b.dataset.v),
   curse: b => { const s = G.setup, sel = s.curses || (s.curses = []), id = b.dataset.v, k = sel.indexOf(id); if (k >= 0) sel.splice(k, 1); else if (sel.length >= D.CURSE_MAX) return toast('Najwyżej ' + D.CURSE_MAX + ' Klątwy naraz.', true, 2400); else sel.push(id); snd.sfx('click'); render(); },
   start: async () => {
-    const s = G.setup; if (!G.profile.chars.includes(s.char)) s.char = 'pyrtek'; if (s.garnek > G.profile.garnek) return;
+    const s = G.setup; if (!setupOk()) return toast(G.profile.chars.includes(charIds()[s.cur]) ? 'Ten palnik jest zablokowany.' : 'Ta postać jest zablokowana.'); s.char = charIds()[s.cur];
     const j = await act('start', { mode: s.mode, char: s.char, garnek: s.garnek, curses: s.curses || [] }); if (!j) return;
     snd.sfx('bulgot'); G.screen = 'run'; render();
     if (!store.get('bulgot:intro')) showIntro();
@@ -1578,7 +1571,7 @@ const ACT = {
   tinv: () => { store.set('bulgot:invoice', invoiceOn() ? '0' : '1'); dismissInvoice(true); showSettings(); },
   abandon: () => confirmAbandon(),
   'abandon-yes': async () => { closeOverlay(); stopFight(); G.fight = null; const j = await act('abandon'); if (!j) return; G.screen = 'run'; showEnd(j); },
-  again: () => { closeOverlay(); G.setup.step = 1; G.screen = 'setup'; render(); },
+  again: () => { closeOverlay(); G.screen = 'setup'; render(); },
 };
 document.addEventListener('click', e => {
   const o = $('#overlay');
@@ -1625,17 +1618,13 @@ document.addEventListener('keydown', e => {
   if (k !== 'escape' && e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;   // pisanie nie uruchamia skrótów
   if (G.screen === 'setup' && !overlayOpen() && !e.shiftKey) {
     const s = G.setup, ids = charIds();
-    if (k === 'escape' || k === 'backspace') { e.preventDefault(); (s.step === 2 ? ACT.setback : ACT.home)(); return; }
-    if (s.step === 2) {
-      if (k === 'arrowleft' || k === 'arrowdown') { e.preventDefault(); garGo(s.garnek - 1); return; }
-      if (k === 'arrowright' || k === 'arrowup') { e.preventDefault(); garGo(s.garnek + 1); return; }
-      if (k === 'enter') { e.preventDefault(); ACT.start(); return; }
-    } else {
-      if (k === 'arrowleft') { e.preventDefault(); carGo(s.cur - 1); return; }
-      if (k === 'arrowright') { e.preventDefault(); carGo(s.cur + 1); return; }
-      if (k === 'arrowup' || k === 'arrowdown') { e.preventDefault(); const m = Object.keys(T.MODE_INFO), i = m.indexOf(s.mode); ACT.setmode({ dataset: { v: m[(i + (k === 'arrowup' ? m.length - 1 : 1)) % m.length] } }); return; }
-      if (k === 'enter') { e.preventDefault(); ACT.setnext(); return; }
-    }
+    if (k === 'escape' || k === 'backspace') { e.preventDefault(); ACT.home(); return; }
+    if (k === 'arrowleft') { e.preventDefault(); carGo(s.cur - 1); return; }
+    if (k === 'arrowright') { e.preventDefault(); carGo(s.cur + 1); return; }
+    if (k === 'arrowup') { e.preventDefault(); garGo(s.garnek + 1); return; }
+    if (k === 'arrowdown') { e.preventDefault(); garGo(s.garnek - 1); return; }
+    if (k === 'q') { e.preventDefault(); const m = Object.keys(T.MODE_INFO); ACT.setmode({ dataset: { v: m[(m.indexOf(s.mode) + 1) % m.length] } }); return; }
+    if (k === 'enter') { e.preventDefault(); ACT.start(); return; }
   }
   if (k === 'escape') { if (overlayOpen()) { if (!$('#overlay').dataset.force) closeOverlay(); } else if (G.screen === 'run' || (G.screen === 'fight' && G.fight && !G.fight.finishing)) { const m = $('[data-act="menu"]'); m && m.click(); } return; }
   if (overlayOpen() && $('#overlay .bookmodal') && !e.shiftKey) {

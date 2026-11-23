@@ -19,7 +19,7 @@ const st = () => p.evaluate(() => { const G = window.__bulgot; return { screen: 
 
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(() => document.querySelector('[data-act=setmode][data-v=quick]').click());
-await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
+await p.click('[data-act=start]'); await wait(500);
 await p.click('[data-act=introgo]'); await wait(300);
 
 // Podmienia stan runu w localStorage i przeładowuje stronę.

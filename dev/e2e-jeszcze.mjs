@@ -20,7 +20,7 @@ const text = sel => p.evaluate(s => [...document.querySelectorAll(s)].map(n => n
 
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(() => document.querySelector('[data-act=setmode][data-v=full]').click());
-await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
+await p.click('[data-act=start]'); await wait(500);
 await p.click('[data-act=introgo]'); await wait(300);
 
 async function patch(which, fnSrc) {
@@ -96,7 +96,7 @@ await p.screenshot({ path: OUT + '/j-testament.png' });
 const willTile = await p.evaluate(() => window.__bulgot.run.willOptions[0]);
 await p.click('.modal .will-grid [data-act=will][data-i="0"]'); await wait(500); s = await st();
 check(s.profile.will && s.profile.will.tile === willTile && /Testament spisany/.test(await text('.modal')), 'testament spisany: ' + willTile);
-await p.click('.modal [data-act=again]'); await wait(300); await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(600); s = await st();
+await p.click('.modal [data-act=again]'); await wait(300); await p.click('[data-act=start]'); await wait(600); s = await st();
 check(s.run.offer.includes(willTile) && (await p.$$('.slotcard .stamp.will')).length === 1, 'kafelek z testamentu jako karta w nowej ofercie');
 await p.screenshot({ path: OUT + '/j-testament-oferta.png' });
 

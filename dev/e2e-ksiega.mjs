@@ -14,7 +14,7 @@ for (const [w, h] of [[1920, 925], [1366, 650]]) {
   await p.setViewport({ width: w, height: h });
   await p.goto('http://localhost:8090/bulgot/?local=1', { waitUntil: 'networkidle0' });
   await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:intro', '1'); }); await p.reload({ waitUntil: 'networkidle0' }); await wait(300);
-  await p.click('[data-act=new]'); await wait(200); await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(600);
+  await p.click('[data-act=new]'); await wait(200); await p.click('[data-act=start]'); await wait(600);
   ok(!!(await p.$('.topbar [data-act=book]')) && !!(await p.$('.topbar [data-act=help]')), `${w}x${h} ikonki Księgi i zasad na górnym pasku`);
   await p.keyboard.press('k'); await wait(700);
   ok(!!(await p.$('.bookmodal')), 'klawisz K otwiera Księgę');

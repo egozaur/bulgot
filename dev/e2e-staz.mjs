@@ -58,7 +58,7 @@ await p.click('[data-act=wear][data-id=okulary]'); await wait(300);
 await p.evaluate(() => document.querySelector('[data-act=close]').click()); await wait(200);
 
 // 4. Przycisk wymiany oferty w grze + strój w walce; strój na karcie bohatera
-await p.click('[data-act=new]'); await wait(200); await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500);
+await p.click('[data-act=new]'); await wait(200); await p.click('[data-act=start]'); await wait(500);
 if (await p.$('[data-act=introgo]')) { await p.click('[data-act=introgo]'); await wait(300); }
 const rr = await p.evaluate(() => { const b = document.querySelector('[data-act=reroll]'); return b ? { t: b.textContent.split(/[ \n\t]+/).join(' ').trim(), cost: b.querySelector('.rcost') && b.querySelector('.rcost').textContent.trim() } : null; });
 ok(rr && /Przetasuj Taśmę/.test(rr.t) && !/null/.test(rr.t), 'przycisk wymiany ma nazwę z fabuły i cenę: ' + (rr && rr.t));

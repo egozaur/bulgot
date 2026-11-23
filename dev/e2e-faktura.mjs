@@ -27,7 +27,7 @@ const STRONG = "r.tiles = Array(14).fill('ziarno-mocy').concat(Array(10).fill('t
 // ---- start runu (tryb szybki)
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(() => document.querySelector('[data-act=setmode][data-v=quick]').click());
-await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(500); await p.click('[data-act=introgo]'); await wait(400);
+await p.click('[data-act=start]'); await wait(500); await p.click('[data-act=introgo]'); await wait(400);
 await p.keyboard.press('1'); await wait(500);
 
 // ---- 1. faktura po wygranej walce
@@ -119,7 +119,7 @@ ok(!(await p.evaluate(() => document.documentElement.innerHTML.includes('Zjarany
 await p.screenshot({ path: OUT + '/jajko-sekret.png' });
 
 // ---- 6. odblokowanie po zdobyciu łącznie 420 Ziaren w jednym runie
-await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(600); const intro = await p.$('[data-act=introgo]'); if (intro) { await intro.click(); await wait(300); }
+await p.click('[data-act=start]'); await wait(600); const intro = await p.$('[data-act=introgo]'); if (intro) { await intro.click(); await wait(300); }
 await p.keyboard.press('1'); await wait(500);
 await patch(STRONG + " r.round = 2; r.phase = 'fight'; r.fight = {}; r.stats.earned = 424;"); await reload();
 await fastFight();
@@ -138,7 +138,7 @@ await p.reload({ waitUntil: 'networkidle0' }); await wait(400);
 await p.click('[data-act=new]'); await wait(300);
 await p.evaluate(() => document.querySelector('[data-act=carpick][data-char=zjarany]').click()); await wait(200);
 await p.screenshot({ path: OUT + '/jajko-odblokowane.png' });
-await p.click('[data-act=setnext]'); await wait(150); await p.click('[data-act=start]'); await wait(600); const intro2 = await p.$('[data-act=introgo]'); if (intro2) { await intro2.click(); await wait(300); }
+await p.click('[data-act=start]'); await wait(600); const intro2 = await p.$('[data-act=introgo]'); if (intro2) { await intro2.click(); await wait(300); }
 await p.keyboard.press('1'); await wait(500);
 await p.click('[data-act=tofight]'); await wait(300);
 let smoke = false;
