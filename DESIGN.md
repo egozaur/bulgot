@@ -653,3 +653,17 @@ Rosołowa Fala, Lawina Segregatorów, Zwarcie w Biurze, Dziobanie Seryjne, Jajo 
 - **Ryzykowne drzwi**: elitarny wróg (`doorHp` 161%, `doorAtk` 124%), **bez leczenia po wygranej**, łup to wybór 1 z 3 rzadkich kafelków albo `doorCoins` = 10 Ziaren (`bonus {i: -1}`; tylko po ryzykownych drzwiach).
 - Cel balansu: różnica wygranych `--doors always` vs `never` ok. ±2 pp (po zmianie: szybki 48,4 vs 47,3%, pełny 36,4 vs 34,3%; przed: 38,2 vs 33,5% w pełnym).
 - **`RUN_V` zostaje 15** (zmiana nie unieważnia trwających runów). Stare runy z nagrodą `coins` nadal ją dostają (zgodność wsteczna w `fightFinish`).
+
+## 25. Memiczne kurczaki „na hardkorze” (2026-11-23)
+10 nowych postaci (razem 24), każda ma jedną wielką wadę. Dane w `CHARS` (`data.js`), skróty cech w `text.js` → `CHAR_PERKS`, grafika w `art.js` (`GIGACHAD`…`SIGMA` w `NEWBODY`), odblokowania w `UNLOCKS`/`profile.js`, rosoły `c-<id>` w `SOUPS`.
+- **Gigachad Bez Nóg** (`skillSlots: 1`, `maxSkillsOf`): +110% Ataku, -50% szybkości, -25% Życia, bez nóg i z jednym slotem umiejętności. Odblokowanie: trafienie za 100.
+- **Pan Jajeczko**: 1 punkt życia (`hpPct -98`), 75% uniku, +150% Ataku, +30% szybkości. Odblokowanie: 10 zakończonych runów.
+- **Kurczak Kryptowalutowy** (`crypto: [-55, 55]`): co piętro `allPct` losowo z ziarna runu (`loadout.seed` + `floors`, deterministyczne). Odblokowanie: 150 Ziaren naraz.
+- **Kogut Alkoholik**: +30 krytyk, +120 siły krytyka, -35% szybkości, -25% Życia. Odblokowanie: 10 przegranych runów.
+- **Kurczak Wegan**: `restHalf` i -8 pkt proc. leczenia po rundzie, -25% Życia, -15% Ataku. Odblokowanie: wygrana w obu trybach.
+- **Baba z Targu**: +25 Ziaren, ale `buyDisc -60` (kupuje drożej), -35% Ataku, -30% Życia. Odblokowanie: 80 Ziaren naraz.
+- **Kurczak Influencer**: +30 krytyk, +100 siły krytyka, -45% Życia, -25% Ataku. Odblokowanie: 5 Odznak w runie.
+- **Kurczak Skibidi** (`randomSkill: 2`): 2 losowe umiejętności na start, -45% Życia, -25% Ataku. Odblokowanie: 100 użyć umiejętności w runie.
+- **Emeryt Janusz**: -65% szybkości ataku, lekki pancerz i regeneracja. Odblokowanie: runda 15 w pełnym.
+- **Kurczak Sigma Solo** (`noSets`): zestawy i powiązania nie działają, -10% Ataku, -15% Życia, -10% szybkości. Odblokowanie: 3 bossy w jednym runie.
+Balans (bot, tryb szybki, Pyrtek ok. 47%): Gigachad 10%, Jajeczko 5%, Krypto 13%, Alkoholik 17%, Wegan ok. 10%, Baba 9%, Influencer 11%, Skibidi 17%, Emeryt 24%, Sigma 17%. `RUN_V` bez zmian (nic się nie zmienia w istniejących postaciach).

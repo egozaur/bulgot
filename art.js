@@ -159,7 +159,39 @@ const MUTANT = () => HEN({ t1: '#7b1fa2', t2: '#00e5ff', t3: '#76ff03', body: '#
 const DINOZAUR = () => HEN({ t1: '#2e7d32', t2: '#558b2f', t3: '#9ccc65', body: '#66bb6a', shade: '#43a047', comb: '#ff7043', nocomb: true, beak: '#c8e6c9' },
   '',
   `<path d="M52 27 l3 -10 l5 9 z M60 24 l4 -11 l5 10 z M68 25 l5 -9 l4 9 z" fill="#ff7043" ${S2}/><path d="M33 52 l-3 -9 l7 3 z M26 60 l-6 -6 l9 0 z" fill="#ff7043" ${S2}/><path d="M80 49 l2 4 l2 -4 l2 4 l2 -4" stroke="#fff" stroke-width="2" fill="none" stroke-linejoin="round"/>`);
-const NEWBODY = { barista: BARISTA, ges: GES, lodziarz: LODZIARZ, pielegniarka: PIELEGNIARKA, rzeznik: RZEZNIK, wrozka: WROZKA, stazysta: STAZYSTA, mutant: MUTANT, dinozaur: DINOZAUR };
+// Memiczne kurczaki „na hardkorze”.
+const GIGACHAD = () => HEN({ t1: '#8d6e63', t2: '#a1887f', t3: '#bcaaa4', body: '#d7b98e', shade: '#b8956a', comb: '#d62828', feet: 'none' },
+  `<path d="M30 64 q18 -14 36 0 q-4 20 -18 22 q-14 -2 -18 -22 z" fill="#c9a06c" opacity=".55"/><path d="M36 70 h24 M38 76 h20" stroke="#8d6e63" stroke-width="2" stroke-linecap="round"/>`,
+  `<path d="M58 32 h22" stroke="#222" stroke-width="3.5" stroke-linecap="round"/><rect x="62" y="35" width="15" height="6" rx="1" fill="#111" opacity=".85"/><path d="M34 82 q14 5 28 0" stroke="#6d4c41" stroke-width="3" fill="none" stroke-linecap="round"/>`);
+const JAJECZKO = () => HEN({ t1: '#f6e7c1', t2: '#fff3d1', t3: '#fff8e1', body: '#fff3d1', shade: '#f0dfae', comb: '#ff7043', nocomb: true },
+  `<path d="M28 58 q20 -6 40 0 l-3 6 q-17 -5 -34 0 z" fill="#fff" ${S2}/>`,
+  `<path d="M54 28 q14 -14 28 -1 q-5 3 -9 8 l-6 -4 l-6 6 z" fill="#fffdf2" ${S}/><path d="M68 18 l-3 7 l5 3 l-4 7" stroke="#8d6e63" stroke-width="1.8" fill="none" stroke-linejoin="round"/>`);
+const KRYPTO = () => HEN({ t1: '#f7b731', t2: '#ffd54f', t3: '#ffe082', body: '#ffe9a6', shade: '#f0c75e', comb: '#fb8c00' },
+  `<circle cx="46" cy="70" r="10" fill="#f7b731" ${S}/><path d="M42 74 v-8 h6 q3 0 3 3 q0 3 -3 3 h-6 M44 63 v3 M48 63 v3 M44 74 v3 M48 74 v3" stroke="#6d4c00" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
+  `<path d="M52 24 l6 -4 l5 4 l6 -8 l7 5" stroke="#43a047" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M77 12 l5 3 l-3 5" stroke="#43a047" stroke-width="2.4" fill="none"/><rect x="60" y="34" width="18" height="7" rx="2" fill="#222" ${S2}/><rect x="62" y="36" width="5" height="3" fill="#7fd3ff"/><rect x="70" y="36" width="5" height="3" fill="#7fd3ff"/>`);
+const ALKOHOLIK = () => HEN({ t1: '#7b4a2a', t2: '#a1693d', t3: '#c98f5c', body: '#c08552', shade: '#9a6638', comb: '#c0392b' },
+  `<path d="M36 60 h22 l-2 24 q-9 4 -18 0 z" fill="#d7ccc8" ${S}/><path d="M38 66 h18" stroke="#a1887f" stroke-width="2"/>`,
+  `<path d="M82 52 l5 -6 l5 6 l-2 14 h-6 z" fill="#8bc34a" ${S2}/><rect x="84" y="42" width="6" height="5" fill="#6d4c41" ${S2}/><path d="M60 29 q4 -4 8 0" stroke="#333" stroke-width="2" fill="none"/><circle cx="62" cy="49" r="3" fill="#e57373" opacity=".7"/><path d="M50 22 q-3 -4 0 -8 M56 20 q-3 -4 0 -8" stroke="#bbb" stroke-width="2" fill="none" stroke-linecap="round"/>`);
+const WEGAN = () => HEN({ t1: '#4caf50', t2: '#81c784', t3: '#a5d6a7', body: '#e8f5e9', shade: '#c8e6c9', comb: '#43a047' },
+  `<path d="M34 58 q14 -6 28 0 q2 14 -14 22 q-16 -8 -14 -22 z" fill="#66bb6a" ${S}/><path d="M48 62 v16 M42 68 l6 4 l6 -4" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+  `<path d="M54 26 q14 -10 26 0 q-8 4 -14 -2 q-6 4 -12 2 z" fill="#43a047" ${S}/><path d="M64 14 q2 -6 8 -6 q0 6 -8 6 z" fill="#81c784" ${S2}/><path d="M79 48 l9 0" stroke="#2e7d32" stroke-width="2"/>`);
+const BABA = () => HEN({ t1: '#c97b84', t2: '#e8a1a8', t3: '#f4c2c7', body: '#f7d9c0', shade: '#e3b99a', comb: '#e53950', nocomb: true },
+  `<path d="M30 56 h34 l4 28 q-21 7 -42 0 z" fill="#ef5350" ${S}/><path d="M34 62 h26 M33 70 h28 M32 78 h30" stroke="#fff" stroke-width="2" opacity=".7"/><rect x="62" y="72" width="16" height="12" rx="2" fill="#ffd54f" ${S2}/><path d="M64 72 q6 -8 12 0" fill="none" ${S2}/>`,
+  `<path d="M52 30 q16 -17 31 -2 q-1 7 -4 10 q-12 -7 -25 -2 z" fill="#e53950" ${S}/><circle cx="63" cy="22" r="3.2" fill="#ffd54f"/><circle cx="73" cy="22" r="3.2" fill="#ffd54f"/>`);
+const INFLUENCER = () => HEN({ t1: '#ec407a', t2: '#f48fb1', t3: '#f8bbd0', body: '#ffe0ec', shade: '#f6bdd2', comb: '#ab47bc' },
+  `<rect x="60" y="62" width="14" height="24" rx="3" fill="#212121" ${S2}/><rect x="62" y="65" width="10" height="16" fill="#80d8ff"/><path d="M64 70 l4 3 l-4 3 z" fill="#fff"/>`,
+  `<path d="M56 36 q10 -7 22 0 l1 6 q-12 -5 -24 0 z" fill="#212121" ${S}/><path d="M60 36 q6 -3 12 0" stroke="#80d8ff" stroke-width="2" fill="none"/><path d="M84 20 l2 5 l5 .5 l-4 3.5 l1.5 5 l-4.5 -3 l-4.5 3 l1.5 -5 l-4 -3.5 l5 -.5 z" fill="#ffd54f" ${S2}/>`);
+const SKIBIDI = () => HEN({ t1: '#7e57c2', t2: '#26c6da', t3: '#ec407a', body: '#fdd835', shade: '#f9a825', comb: '#e91e63' },
+  `<circle cx="40" cy="64" r="3" fill="#7e57c2" opacity=".8"/><circle cx="55" cy="74" r="3.6" fill="#26c6da" opacity=".8"/><circle cx="44" cy="80" r="2.4" fill="#ec407a" opacity=".8"/>`,
+  `<path d="M52 22 q-8 -6 -2 -13 M62 18 q-6 -8 2 -13" stroke="#26c6da" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M46 40 l8 -3 M46 46 l8 0" stroke="#ec407a" stroke-width="2" stroke-linecap="round"/><path d="M82 28 l6 -4 l-2 7 l6 1" stroke="#7e57c2" stroke-width="2.4" fill="none" stroke-linejoin="round"/><path d="M75 55 q6 4 12 0" stroke="#e91e63" stroke-width="3" fill="none" stroke-linecap="round"/>`);
+const EMERYT = () => HEN({ t1: '#9e9e9e', t2: '#bdbdbd', t3: '#e0e0e0', body: '#eceff1', shade: '#cfd8dc', comb: '#8d6e63', nocomb: true },
+  `<path d="M30 60 h32 l-1 18 q-15 5 -30 0 z" fill="#78909c" ${S}/><path d="M36 60 v18 M46 60 v18" stroke="#546e7a" stroke-width="1.6"/>`,
+  `<path d="M54 26 q14 -8 26 0 l-1 5 q-11 -5 -24 0 z" fill="#8d6e63" ${S}/><circle cx="69" cy="38" r="9" fill="none" ${S2}/><path d="M60 38 l-5 -1" ${S2}/><path d="M82 60 q8 0 8 8 v18" stroke="#5d4037" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M66 22 q3 -5 6 0" stroke="#bdbdbd" stroke-width="3" fill="none" stroke-linecap="round"/>`);
+const SIGMA = () => HEN({ t1: '#37474f', t2: '#546e7a', t3: '#78909c', body: '#90a4ae', shade: '#607d8b', comb: '#263238' },
+  `<path d="M34 58 h28 l-3 24 q-11 5 -22 0 z" fill="#212121" ${S}/><path d="M48 58 v24" stroke="#ffd54f" stroke-width="1.8"/>`,
+  `<rect x="56" y="32" width="22" height="8" rx="3" fill="#111" ${S2}/><path d="M58 36 h18" stroke="#80d8ff" stroke-width="2" stroke-linecap="round"/><path d="M83 52 l7 3" stroke="#222" stroke-width="2.4" stroke-linecap="round"/>`);
+const NEWBODY = { barista: BARISTA, ges: GES, lodziarz: LODZIARZ, pielegniarka: PIELEGNIARKA, rzeznik: RZEZNIK, wrozka: WROZKA, stazysta: STAZYSTA, mutant: MUTANT, dinozaur: DINOZAUR,
+  gigachad: GIGACHAD, jajeczko: JAJECZKO, krypto: KRYPTO, alkoholik: ALKOHOLIK, wegan: WEGAN, baba: BABA, influencer: INFLUENCER, skibidi: SKIBIDI, emeryt: EMERYT, sigma: SIGMA };
 
 // Akcesoria na formy postaci innych niż Pyrtek.
 const HEADS = { kwoka: [68, 40], kaczor: [66, 38], indor: [68, 40], zjarany: [66, 40] };
