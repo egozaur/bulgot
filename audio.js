@@ -49,6 +49,12 @@ const SFX = {
   hover: () => tone(740, 0.03, { type: 'sine', vol: 0.04 }),
   pick: () => { tone(440, 0.09, { type: 'triangle', vol: 0.18 }); tone(660, 0.1, { type: 'triangle', vol: 0.18, delay: 0.07 }); tone(880, 0.16, { type: 'triangle', vol: 0.16, delay: 0.14 }); },
   reroll: () => bubble(5),
+  // Tryb kasynowy: terkot walców i zatrzymania zależne od rzadkości (0 zwykły, 1 rzadki, 2 epicki, 3 legendarny)
+  reeltick: () => noise(0.03, { vol: 0.05, freq: 2600 + Math.random() * 1800, type: 'highpass' }),
+  reelstop0: () => tone(300, 0.07, { type: 'triangle', vol: 0.16 }),
+  reelstop1: () => { tone(180, 0.12, { type: 'sine', vol: 0.22, slide: 120 }); tone(990, 0.35, { type: 'sine', vol: 0.14, delay: 0.02 }); },
+  reelstop2: () => { tone(110, 0.25, { type: 'sawtooth', vol: 0.22, slide: 70 }); noise(0.18, { vol: 0.12, freq: 900, q: 2 }); [660, 990, 1320].forEach((f, i) => tone(f, 0.5, { type: 'triangle', vol: 0.14, delay: 0.03 + i * 0.05 })); },
+  reelstop3: () => { tone(90, 0.4, { type: 'sawtooth', vol: 0.25, slide: 55 }); [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, 0.28, { type: 'square', vol: 0.1, delay: 0.05 + i * 0.07 })); [1047, 1319, 1568].forEach(f => tone(f, 0.9, { type: 'triangle', vol: 0.14, delay: 0.5 })); },
   coin: () => { tone(988, 0.07, { type: 'square', vol: 0.1 }); tone(1319, 0.18, { type: 'square', vol: 0.1, delay: 0.06 }); },
   hit: () => { noise(0.09, { vol: 0.22, freq: 900, slide: -500 }); tone(180, 0.09, { type: 'square', vol: 0.12, slide: -90 }); },
   crit: () => { noise(0.12, { vol: 0.3, freq: 1400, slide: -700 }); tone(220, 0.16, { type: 'sawtooth', vol: 0.16, slide: -120 }); tone(1180, 0.18, { type: 'triangle', vol: 0.12, delay: 0.04 }); },

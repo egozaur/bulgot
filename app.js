@@ -20,6 +20,7 @@ const TILE = D.TILE_BY_ID;
 const fmtAspd = v => (v / 100).toFixed(2).replace('.', ',');
 const fmtNum = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
+const SPIN = { active: null };   // trwająca animacja automatu (tryb kasynowy)
 const G = {
   profile: null, run: null, screen: 'loading', fight: null, busy: false, unlocks: [], lastEnd: null,
   setup: { mode: store.get('bulgot:mode') === 'quick' ? 'quick' : 'full', char: 'pyrtek', garnek: 0 },
@@ -104,13 +105,14 @@ async function init() {
 }
 
 function render() {
+  if (SPIN.active) SPIN.active.abort();
   const root = $('#screen');
   switch (G.screen) {
     case 'loading': root.innerHTML = '<div class="loading"><span>Bulgocze</span> <i></i><i></i><i></i></div>'; break;
     case 'noplayer': root.innerHTML = `<div class="loading" style="flex-direction:column;gap:14px;text-align:center"><span>Do gry w Bulgot potrzebny jest nick.</span><button class="btn primary" data-act="retry">Wybierz nick</button><a class="btn ghost" href="/">← PL3Y</a></div>`; break;
-    case 'home': root.innerHTML = renderHome(); setTimeout(maybeLevelUp, 120); break;
+    case 'home': root.innerHTML = renderHome(); setTimeout(maybeLevelUp, 120); setTimeout(maybeCasinoAsk, 500); break;
     case 'setup': root.innerHTML = renderSetup(); fitCarousel(); requestAnimationFrame(fitCarousel); break;
-    case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); fitTower(); fitBoard(); break;
+    case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); fitTower(); fitBoard(); setTimeout(maybeCasinoAsk, 300); break;
     case 'fight': return;   // arena buduje się w startFight()
   }
 }
@@ -1360,6 +1362,7 @@ function showHelp() {
 function showSettings() {
   openOverlay(`<h2>Dźwięk i walka</h2><div class="setrow"><span>Efekty dźwiękowe</span><button class="toggle ${snd.settings.sfx ? 'on' : ''}" data-act="tsfx">${snd.settings.sfx ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Głośność</span><span class="volbox"><input type="range" id="set-vol" min="0" max="100" step="5" value="${snd.settings.vol}" aria-label="Głośność"><b id="set-vol-n">${snd.settings.vol}%</b></span></div>
+    ${G.profile.casino && G.profile.casino.unlocked ? `<div class="setrow"><span>Tryb kasynowy (kręcące się walce przy przetasowaniu)</span><button class="toggle ${casinoOn() || (G.profile.casino && G.profile.casino.on) ? 'on' : ''}" data-act="tcasino">${G.profile.casino.on ? 'WŁ.' : 'WYŁ.'}</button></div>` : ''}
     <div class="setrow"><span>Muzyka (bulgocząca pętla)</span><button class="toggle ${snd.settings.music ? 'on' : ''}" data-act="tmusic">${snd.settings.music ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Faktura po wygranej walce (zamiast okna wyniku)</span><button class="toggle ${invoiceOn() ? 'on' : ''}" data-act="tinv">${invoiceOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Animacje (wyłącz, jeśli ruch Ci przeszkadza)</span><button class="toggle ${animOn() ? 'on' : ''}" data-act="tanim">${animOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
@@ -1424,7 +1427,14 @@ const ACT = {
   redeem: async () => { const j = await act('redeem'); if (!j) return; snd.sfx('unlock'); toast(`Wykupiono: ${TILE[j.redeemed].name} (-${j.cost} Ziaren)`); render(); },
   will: async b => { const i = +b.dataset.i; const j = await act('will', { i }); if (!j) return; snd.sfx(i >= 0 ? 'unlock' : 'click'); showEnd({ ...G.lastEndJ, will: j.will || null }, true); },
   rest: async () => { const j = await act('rest'); if (!j) return; snd.sfx('heal'); toast('Odpoczynek: +' + j.healed + ' życia (-' + j.cost + ' Ziarna)'); render(); },
-  reroll: async () => { const j = await act('reroll'); if (j) { snd.sfx('reroll'); render(); } },
+  reroll: async () => {
+    const j = await act('reroll'); if (!j) return;
+    const spin = casinoOn() && !j.casinoAsk;   // tryb kasynowy: automat zamiast zwykłej wymiany
+    if (!spin) snd.sfx('reroll');
+    render();
+    if (j.casinoAsk) setTimeout(showCasinoAsk, 250); else if (spin) casinoSpin();
+  },
+  casinoyes: () => casinoAnswer(true), tcasino: async () => { await casinoAnswer(!(G.profile.casino && G.profile.casino.on)); showSettings(); },
   buy: b => ACT.shopgo(+b.dataset.i),
   shopgo: async (i, slot, mut) => { const t = TILE[G.run.pending.offer[i]]; if (needChoice(t, slot, mut, (s2, m2) => ACT.shopgo(i, s2, m2))) return;
     const j = await act('shop', { i, slot, mut }); if (j) { snd.sfx('coin'); render(); } },
@@ -1647,4 +1657,81 @@ function soupsBook(p, fresh, marks) {
     <div class="ms-grid soups">${D.SOUPS.map(s => have[s.id]
       ? `<div class="ms-row entry soup-row">${art.soupArt(s.color)}<div><b>${esc(s.name)}</b><br><span>${esc(s.hint)}</span><br><span class="sp-n">Ugotowany ×${have[s.id].n}, najlepszy wynik ${fmtNum(have[s.id].best)}</span></div></div>`
       : `<div class="ms-row unknown soup-row soup-lock">${art.soupArt('#4a4036')}<div><b>?</b><br><span>${s.secret ? 'Sekretny przepis.' : esc(s.hint)}</span></div></div>`).join('')}</div>`;
+}
+
+// ---------- Tryb kasynowy: przetasowanie oferty jako automat ----------
+// Odblokowuje się po 5 przetasowaniach na jednym piętrze (serwer: profile.casino). Domyślnie wyłączony; po odpowiedzi „Tak” włączony na stałe, wyłączany w ustawieniach.
+// Czysto wizualne: oferta jest już wylosowana przez serwer, walce tylko ją odsłaniają od lewej do prawej. Klik, spacja albo R przerywa.
+const casinoOn = () => !!(G.profile && G.profile.casino && G.profile.casino.on) && animOn();
+document.addEventListener('click', e => { if (SPIN.active) { e.stopPropagation(); e.preventDefault(); SPIN.active.finish(); } }, true);
+document.addEventListener('keydown', e => { if (SPIN.active && !['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) { e.stopPropagation(); e.preventDefault(); SPIN.active.finish(); } }, true);
+
+function maybeCasinoAsk() {
+  const c = G.profile && G.profile.casino;
+  if (c && c.unlocked && !c.asked && !overlayOpen() && (G.screen === 'home' || G.screen === 'run')) showCasinoAsk();
+}
+function showCasinoAsk() {
+  openOverlay(`<div class="casino-ask"><div class="ca-lamps" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div>
+    <h2>Wykryto skłonność do kręcenia</h2>
+    <p class="ca-big">Widzę, że masz skłonność do kręcenia.<br><b>Włączyć tryb kasynowy?</b></p>
+    <p class="hint">Przetasowanie taśmy będzie wyglądać jak automat do gier: kręcące się walce, brzdęk i jackpot. Włączysz i wyłączysz to w ustawieniach.</p>
+    <div class="actions"><button class="btn primary big" data-act="casinoyes" data-primary>Tak</button><button class="btn primary big" data-act="casinoyes">tak</button></div></div>`, { force: true, cls: 'casinoask' });
+  snd.sfx('unlock');
+}
+async function casinoAnswer(on) {
+  const j = await act('casino', { on }); if (!j) return;
+  closeOverlay(); snd.sfx('win');
+  toast(on ? 'Tryb kasynowy włączony. Wyłączysz go w ustawieniach.' : 'Tryb kasynowy wyłączony.', false, 3400);
+}
+const casinoIcons = (() => { let pool = null; return () => pool || (pool = D.TILES.filter(t => !t.hidden && !t.hatched && !t.boss).map(t => t.id)); })();
+function casinoSpin() {
+  const box = $('.stage .cards'); if (!box || !G.run) return;
+  const kids = [...box.children]; if (kids.length < 2) return;
+  if (SPIN.active) SPIN.active.abort();
+  const ids = G.run.offer, rar = i => (TILE[ids[i]] ? TILE[ids[i]].rarity : 0) | 0, maxR = Math.max(...kids.map((_, i) => rar(i)));
+  const lamps = () => Array.from({ length: 26 }, (_, k) => `<i style="--i:${k}"></i>`).join('');
+  const slot = document.createElement('div'); slot.className = 'slotm';
+  slot.innerHTML = `<div class="lamps top">${lamps()}</div><div class="reels"></div><div class="lamps bot">${lamps()}</div>`;
+  const reels = slot.querySelector('.reels'), pool = casinoIcons();
+  const cells = kids.map((k, i) => {
+    const c = document.createElement('div'); c.className = 'cell'; c.style.height = k.offsetHeight + 'px';
+    const six = Array.from({ length: 6 }, () => pool[Math.floor(Math.random() * pool.length)]);
+    const sym = id => `<div class="sym">${art.tileIcon(id)}</div>`;
+    const reel = document.createElement('div'); reel.className = 'reel';
+    reel.innerHTML = `<div class="strip" style="animation-delay:-${(i * 0.07).toFixed(2)}s">${six.map(sym).join('')}${six.map(sym).join('')}</div><div class="gloss"></div>`;
+    k.style.visibility = 'hidden'; c.append(k, reel); reels.append(c); return { c, k, reel, done: false };
+  });
+  box.classList.add('casino'); box.append(slot);
+  const timers = []; let tick = null, ended = false;
+  const stage = $('.stage');
+  const clear = () => { timers.forEach(clearTimeout); clearInterval(tick); };
+  const banner = (txt, cls) => { const b = document.createElement('div'); b.className = 'jpb ' + cls; b.textContent = txt; slot.append(b); timers.push(setTimeout(() => b.remove(), cls === 'gold' ? 1600 : 1000)); };
+  const reveal = (i, quiet) => {
+    const cell = cells[i]; if (cell.done) return; cell.done = true;
+    const r = rar(i); cell.reel.remove(); cell.k.style.visibility = ''; cell.c.classList.add('stopped', 'r' + r);
+    if (!quiet) {
+      snd.sfx('reelstop' + r);
+      if (r >= 2) { cell.c.classList.add('glow'); if (stage) { stage.classList.add('casino-shake'); timers.push(setTimeout(() => stage.classList.remove('casino-shake'), 380)); } banner(r >= 3 ? 'JACKPOT!' : 'EPICKI!', r >= 3 ? 'gold' : 'epic'); if (r >= 3) slot.classList.add('gold'); }
+    }
+  };
+  const unwrap = () => {
+    if (!slot.isConnected) return;
+    for (const cell of cells) { cell.c.classList.remove('stopped', 'glow'); box.insertBefore(cell.k, slot); cell.k.style.visibility = ''; }
+    slot.remove(); box.classList.remove('casino');
+  };
+  const finish = () => {
+    if (ended) return; ended = true; clear(); SPIN.active = null;
+    if (slot.isConnected) { let any = false; cells.forEach((c, i) => { if (!c.done) { any = true; reveal(i, true); } }); if (any) snd.sfx('reelstop' + maxR); }
+    unwrap();
+  };
+  const abort = () => { if (ended) return; ended = true; clear(); SPIN.active = null; };
+  SPIN.active = { finish, abort };
+  // czasy zatrzymań: od lewej do prawej, walce z rzadkim kafelkiem „zawahają się” przed końcem
+  let t = 650; const stops = cells.map((_, i) => { t += (i ? 230 : 0) + (rar(i) >= 2 ? 380 : 0); return t; });
+  tick = setInterval(() => snd.sfx('reeltick'), 85);
+  cells.forEach((cell, i) => {
+    if (rar(i) >= 2) timers.push(setTimeout(() => cell.reel.classList.add('slow'), stops[i] - 420));
+    timers.push(setTimeout(() => reveal(i), stops[i]));
+  });
+  timers.push(setTimeout(finish, stops[stops.length - 1] + (maxR >= 3 ? 1500 : maxR === 2 ? 800 : 380)));
 }

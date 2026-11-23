@@ -52,7 +52,7 @@ s = await R(p); ok(s.phase === 'fight' && s.tiles.length === 3, 'darmowy wybór 
 
 // 3. historia: zagraj do końca i sprawdź zapis
 await p.click('[data-act=tofight]'); await wait(800);
-await p.evaluate(() => { const sp = document.querySelector('[data-act=speed]'); sp.click(); sp.click(); });
+await p.evaluate(() => { const sp = document.querySelector('[data-act=speed]'); if (sp) { sp.click(); sp.click(); } });
 for (let i = 0; i < 100; i++) { await wait(400); if (await p.$('.inv, .modal')) break; }
 await p.evaluate(() => { document.querySelector('#invoice').innerHTML = ''; }); await wait(300);
 await p.click('[data-act=menu]'); await wait(200); await p.click('.modal [data-act=abandon]'); await wait(300); await p.click('[data-act=abandon-yes]'); await wait(700);
