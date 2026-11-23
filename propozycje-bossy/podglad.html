@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Propozycje: Gruszka i Pipsztal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap">
+<style>
+:root{--bg:#1d1410;--card:#2e211a;--ink:#fff3d6;--mut:#c9ab8a;--acc:#ffb02e}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#3b2519,#1d1410 70%);color:var(--ink);font:16px 'Baloo 2',system-ui,sans-serif;padding:24px 16px 60px}
+h1{font-size:34px;margin:0 0 4px;color:var(--acc)}h2{font-size:26px;margin:40px 0 4px;color:var(--acc)}
+.lead{color:var(--mut);max-width:900px;margin:0 0 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;max-width:1500px}
+.c{background:var(--card);border:2px solid #4a3326;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.c .n{font-weight:800;font-size:18px}.c .n b{color:var(--acc);margin-right:6px}
+.stage{background:linear-gradient(#52382a,#3a2619);border-radius:12px;height:230px;display:flex;align-items:flex-end;justify-content:center;padding:6px}
+.stage svg{height:100%;width:100%;overflow:visible}
+.d{color:var(--mut);font-size:14px;line-height:1.3}
+.q{background:#fff3d6;color:#2b1a12;border:2px solid #2b1a12;border-radius:12px;padding:6px 10px;font-size:14px;font-weight:600;margin-top:2px}
+</style></head><body>
+<h1>Extra bossowie: propozycje wyglądu</h1>
+<p class="lead">Po 10 wariantów każdego bossa. Podaj numery; można też łączyć elementy („głowa z 3, ubiór z 7, pies z 5”). Boss patrzy w lewo (w stronę gracza), tak jak reszta wrogów.</p>
+<h2>Runda dodatkowa na piętrze 3: GRUSZKA</h2>
+<p class="lead">Wielki kurczak z głową gruszki. Na starcie walki „mówi” zgryźliwy komentarz o buildzie gracza (przykład pod każdym wariantem). Siła: ulepszony Pies Myśliwski.</p>
+<div class="grid" id="g1"></div>
+<h2>Runda dodatkowa na piętrze 6: PIPSZTAL</h2>
+<p class="lead">Kurczak w dresach, zawsze z psem u boku. Pies sika na gracza (spowalnia), Pipsztal tnie nożem i co kilka sekund na chwilę ogłusza.</p>
+<div class="grid" id="g2"></div>
+<script>
+const O='#2b1a12',S=`stroke="${O}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`,S2=`stroke="${O}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"`,NF='fill="none"';
+const eye=(cx,cy,r=8,l=2)=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" ${S2}/><circle cx="${cx+l}" cy="${cy+1}" r="${r*.5}" fill="${O}"/><circle cx="${cx+l+r*.2}" cy="${cy-r*.25}" r="${r*.18}" fill="#fff"/>`;
+const brow=(a,b,c,d)=>`<path d="M${a} ${b} L${c} ${d}" ${S} ${NF}/>`;
+const svg=(inner,vb)=>{const v=vb.split(' ').map(Number);return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg"><ellipse cx="${v[0]+v[2]/2}" cy="${v[1]+v[3]-6}" rx="${v[2]*.36}" ry="5" fill="rgba(0,0,0,.35)"/>${inner}</svg>`};
+
+function legs(c='#e8902a'){return `<path d="M36 88 v6 m-8 0 h16 M66 88 v6 m-8 0 h16" stroke="${c}" stroke-width="5.5" stroke-linecap="round"/>`}
+function tail(c){return `<path d="M88 70 q14 -2 8 -20 q-16 6 -8 20 z" fill="${c}" ${S}/>`}
+function bodyE(c){return `<ellipse cx="52" cy="66" rx="34" ry="26" fill="${c}" ${S}/>`}
+function chickHead(h='#fff3d6',comb='#e53950',beak='#ffb02e'){return `<circle cx="40" cy="34" r="17" fill="${h}" ${S}/><path d="M30 20 q-2 -10 6 -8 q2 -8 9 -2 q8 -1 5 8 z" fill="${comb}" ${S}/><path d="M26 36 l-14 4 l14 6 z" fill="${beak}" ${S}/><path d="M32 46 q-2 10 4 10 q4 -2 0 -10z" fill="${comb}" ${S2}/>${eye(36,32,8,-2)}${brow(28,24,44,29)}`}
+function pear(c,shade,leaf='#4caf50'){return `<path d="M42 4 q-7 0 -9 9 q-15 8 -15 24 q0 15 24 15 q24 0 24 -15 q0 -16 -15 -24 q-2 -9 -9 -9z" fill="${c}" ${S}/><path d="M56 22 q8 10 4 24 q-6 6 -14 6 q12 -8 10 -30z" fill="${shade}" opacity=".55"/><circle cx="30" cy="22" r="1.4" fill="${shade}"/><circle cx="50" cy="28" r="1.4" fill="${shade}"/><circle cx="34" cy="44" r="1.4" fill="${shade}"/><path d="M42 5 q-2 -8 4 -12" stroke="#6b4423" stroke-width="3.4" ${NF} stroke-linecap="round"/><path d="M44 -2 q12 -8 20 0 q-8 8 -20 0z" fill="${leaf}" ${S2}/><path d="M24 36 l-12 3 l12 5 z" fill="#ffb02e" ${S}/>${eye(33,31,7.5,-2)}${eye(49,31,6,-2)}${brow(25,22,40,27)}`}
+
+const suit=(c,t='#c0392b')=>`<path d="M30 54 q22 -10 44 0 l-2 32 q-20 6 -40 0z" fill="${c}" ${S}/><path d="M46 52 l6 30 l6 -30z" fill="#fff" ${S2}/><path d="M52 56 l-5 8 l5 20 l5 -20z" fill="${t}" ${S2}/>`;
+const apron=(c)=>`<path d="M36 50 h32 l4 36 q-20 6 -40 0z" fill="${c}" ${S}/><path d="M36 50 l-6 -6 M68 50 l6 -6" ${S2}/><rect x="44" y="66" width="16" height="10" rx="2" fill="#fff" opacity=".55" ${S2}/>`;
+const robe=(c)=>`<path d="M26 56 q26 -14 52 0 l4 34 h-60z" fill="${c}" ${S}/><path d="M40 52 l12 40 l12 -40" ${S2} ${NF}/><path d="M28 76 q24 8 48 0" stroke="#fff3d6" stroke-width="5" ${NF}/>`;
+const armor=(c)=>`<path d="M28 52 q24 -12 48 0 l-3 34 q-21 6 -42 0z" fill="${c}" ${S}/><path d="M34 62 h36 M33 72 h38" ${S2}/><circle cx="30" cy="54" r="8" fill="#cfd8dc" ${S2}/><circle cx="74" cy="54" r="8" fill="#cfd8dc" ${S2}/>`;
+const vest=(c)=>`<path d="M30 54 q22 -10 44 0 l-2 32 q-20 6 -40 0z" fill="#6d4c2f" ${S}/><path d="M52 56 v30" ${S2}/><rect x="36" y="66" width="12" height="12" rx="2" fill="${c}" ${S2}/><rect x="56" y="66" width="12" height="12" rx="2" fill="${c}" ${S2}/>`;
+const tux=()=>`<path d="M30 54 q22 -10 44 0 l-2 32 q-20 6 -40 0z" fill="#212121" ${S}/><path d="M44 54 l8 24 l8 -24z" fill="#fff" ${S2}/><path d="M44 56 l8 4 l8 -4 l-3 8 l-5 -2 l-5 2z" fill="#c0392b" ${S2}/>`;
+const toga=(c)=>`<path d="M26 56 q26 -14 52 0 l2 34 h-56z" fill="${c}" ${S}/><path d="M30 56 q24 20 48 34" stroke="#d4af37" stroke-width="6" ${NF}/>`;
+const sweater=(c)=>`<path d="M28 54 q24 -12 48 0 l-2 34 q-22 6 -44 0z" fill="${c}" ${S}/><path d="M32 66 h40 M33 74 h38 M34 82 h36" stroke="#fff" stroke-width="3" opacity=".6"/>`;
+
+const fork=()=>`<path d="M84 40 v48" stroke="#b0bec5" stroke-width="4" stroke-linecap="round"/><path d="M76 28 v14 q8 4 16 0 v-14 M84 26 v16" stroke="#cfd8dc" stroke-width="3.4" ${NF} stroke-linecap="round"/>`;
+const ladle=()=>`<path d="M84 36 v52" stroke="#8d6e63" stroke-width="5" stroke-linecap="round"/><circle cx="84" cy="32" r="10" fill="#b0bec5" ${S2}/>`;
+const basket=()=>`<path d="M68 70 h26 l-3 16 h-20z" fill="#a47551" ${S2}/><path d="M70 70 q11 -16 22 0" ${S2} ${NF}/><circle cx="76" cy="68" r="5" fill="#cddc39" ${S2}/><circle cx="85" cy="67" r="5" fill="#8bc34a" ${S2}/>`;
+const cane=()=>`<path d="M84 42 v46" stroke="#5d4037" stroke-width="5" stroke-linecap="round"/><circle cx="84" cy="38" r="7" fill="#ffc933" ${S2}/>`;
+const glass=()=>`<path d="M78 34 h12 l-2 12 q-4 3 -8 0z" fill="#ffd9b0" ${S2}/><path d="M84 46 v14 m-5 0 h10" ${S2}/>`;
+const mega=()=>`<path d="M72 44 l18 -10 v22 l-18 -8z" fill="#e53950" ${S2}/><rect x="66" y="44" width="8" height="8" rx="2" fill="#555" ${S2}/>`;
+const rifle=()=>`<path d="M58 66 l36 -26" stroke="#5d4037" stroke-width="5" stroke-linecap="round"/><path d="M62 62 l32 -23" stroke="#455a64" stroke-width="2" ${NF}/>`;
+const sword=()=>`<path d="M84 16 v54" stroke="#eceff1" stroke-width="6" stroke-linecap="round"/><path d="M76 70 h16" ${S}/><path d="M84 70 v10" stroke="#8d6e63" stroke-width="5" stroke-linecap="round"/>`;
+const hats={
+ cap:`<path d="M24 14 q18 -16 38 -2 l-6 4 q-14 -8 -28 0z" fill="#2e7d32" ${S2}/><rect x="16" y="14" width="20" height="5" rx="2" fill="#1b5e20" ${S2}/>`,
+ chef:`<path d="M26 10 q-8 -6 -2 -14 q6 -6 12 0 q6 -8 12 0 q6 8 -2 14z" fill="#fff" ${S2}/><rect x="27" y="8" width="24" height="7" rx="2" fill="#fff" ${S2}/>`,
+ crown:`<path d="M26 12 l2 -14 l8 8 l6 -12 l6 12 l8 -8 l2 14z" fill="#ffc933" ${S2}/>`,
+ helm:`<path d="M20 14 q22 -26 44 0z" fill="#90a4ae" ${S2}/><path d="M42 -8 v-10 l8 4" stroke="#e53950" stroke-width="4" ${NF}/>`,
+ top:`<rect x="30" y="-14" width="24" height="22" fill="#212121" ${S2}/><rect x="20" y="6" width="44" height="5" rx="2" fill="#212121" ${S2}/><rect x="30" y="0" width="24" height="5" fill="#c0392b"/>`,
+ none:''};
+function gruszka(o){return svg(`<g transform="translate(0 14)">${legs()}${tail('#6b1d2a')}${bodyE('#c9a26b')}${o.outfit}${pear(o.pear,o.shade)}${hats[o.hat||'none']}${o.held||''}${o.extra||''}</g>`,'0 -10 110 120')}
+
+function dog(o={}){const b=o.b||'#a0652d',d=o.d||'#8d5524',e=o.e||'#5d3a1a';return `<g>
+<path d="M88 60 q14 -8 6 -20 q-12 4 -10 18 z" fill="${d}" ${S}/><rect x="30" y="52" width="56" height="34" rx="14" fill="${d}" ${S}/>
+${o.ears==='up'?`<path d="M16 34 l4 -22 l12 16z" fill="${e}" ${S}/><path d="M36 30 l8 -20 l4 22z" fill="${e}" ${S}/>`:`<path d="M18 34 q-6 14 4 22 q8 -4 6 -20 z" fill="${e}" ${S}/>`}
+<rect x="12" y="38" width="38" height="30" rx="12" fill="${b}" ${S}/><ellipse cx="18" cy="54" rx="10" ry="8" fill="${o.m||'#e8c9a0'}" ${S}/><circle cx="12" cy="52" r="3.2" fill="${O}"/>
+${eye(34,48,5.5,-1.5)}${brow(27,40,41,43)}<path d="M14 60 q4 4 8 0" ${S2} ${NF}/>
+${o.collar==='spike'?`<path d="M28 68 q10 6 22 0 l0 6 q-12 6 -22 0 z" fill="#555" ${S2}/><path d="M32 69 l2 -6 l3 6 M40 72 l2 -6 l3 6 M47 72 l2 -6 l3 6" fill="#ccc" stroke="${O}" stroke-width="1.6"/>`:`<path d="M28 68 q10 6 22 0 l0 5 q-12 6 -22 0 z" fill="${o.collar==='gold'?'#ffc933':(o.collar||'#c0392b')}" ${S2}/>`}
+${o.extra||''}
+<path d="M36 84 v10 m-6 0 h12 M72 84 v10 m-6 0 h12" stroke="${e}" stroke-width="5" stroke-linecap="round"/></g>`}
+const pee=()=>`<path d="M10 62 q-14 4 -16 24" stroke="#ffe55c" stroke-width="4" ${NF} stroke-linecap="round" stroke-dasharray="1 6"/>`;
+
+const knife=(l=22,c='#eceff1')=>`<g transform="translate(4 8)"><path d="M16 56 l-${l} -10 l4 -6 l${l+2} 9z" fill="${c}" ${S2}/><rect x="14" y="52" width="12" height="7" rx="2" fill="#5d4037" ${S2}/></g>`;
+const track=(c,stripe)=>`<path d="M30 54 q22 -10 44 0 l-2 32 q-20 6 -40 0z" fill="${c}" ${S}/><path d="M34 56 v30 M70 56 v30" stroke="${stripe}" stroke-width="4"/><path d="M52 52 v34" ${S2}/>`;
+const hoodie=(c)=>`<path d="M28 54 q24 -12 48 0 l-2 34 q-22 6 -44 0z" fill="${c}" ${S}/><path d="M40 52 q12 12 24 0" ${S2} ${NF}/><path d="M46 58 v12 M58 58 v12" stroke="#fff" stroke-width="2.4"/>`;
+const chain=(c='#ffc933')=>`<path d="M36 52 q16 16 32 0" stroke="${c}" stroke-width="3.6" ${NF}/><circle cx="52" cy="64" r="5" fill="${c}" ${S2}/>`;
+const shoes=(c)=>`<path d="M36 90 h-14 q-4 4 0 6 h22 v-6z M66 90 h-14 q-4 4 0 6 h22 v-6z" fill="${c}" ${S2}/>`;
+const cap=(c)=>`<path d="M24 26 q14 -22 34 -2 l-2 6 h-32z" fill="${c}" ${S2}/><path d="M24 28 h-14 q0 5 6 5 h10" fill="${c}" ${S2}/>`;
+const hood=(c)=>`<path d="M20 40 q-2 -30 22 -28 q24 0 22 28 q-4 -8 -22 -10 q-18 2 -22 10z" fill="${c}" ${S}/>`;
+const bandana=(c)=>`<path d="M23 28 q17 -12 34 0 l-2 6 q-15 -8 -30 0z" fill="${c}" ${S2}/><path d="M56 30 l12 -4 l-3 12z" fill="${c}" ${S2}/>`;
+const mohawk=(c)=>`<path d="M28 22 l-2 -16 l7 8 l4 -16 l6 14 l7 -10 l1 18z" fill="${c}" ${S2}/>`;
+const shades=()=>`<rect x="26" y="26" width="20" height="9" rx="3" fill="#212121" ${S2}/><path d="M26 28 h-6" ${S2}/>`;
+const scar=()=>`<path d="M44 22 l-8 16 M41 27 l5 2 M38 33 l5 2" stroke="#c0392b" stroke-width="2.4" ${NF} stroke-linecap="round"/>`;
+function chickenP(o){return `${legs()}${tail('#6b1d2a')}${bodyE(o.skin||'#fff3d6')}${o.outfit}${o.shoes||''}${o.chain||''}${chickHead()}${o.face||''}${o.hat||''}${knife(o.kl||22)}`}
+function pip(o){return svg(`<g transform="translate(-2 36) scale(.62)">${dog(o.dog)}${pee()}</g><g transform="translate(46 0)">${chickenP(o)}</g>`,'-12 0 160 100')}
+
+const G=[
+['Gruszka Szlachcic','Zielona gruszka, frak i cylinder, kieliszek w skrzydle.',{pear:'#a6cf3d',shade:'#6f9a1f',hat:'top',outfit:tux(),held:glass()},'Same kafelki od ręki? Rozumiem, nie stać cię na wybór.'],
+['Gruszka Szef Kuchni','Żółta gruszka w czapie kucharza, fartuch, chochla. Ocenia „smak” buildu.',{pear:'#f2d94e',shade:'#c7a620',hat:'chef',outfit:apron('#fff'),held:ladle()},'Pięć przypraw i zero mięsa. Rosół bez wywaru?'],
+['Gruszka Król','Złota gruszka z koroną, fioletowa szata, berło.',{pear:'#e8b33d',shade:'#a8761a',hat:'crown',outfit:robe('#8e24aa'),held:cane()},'Berło mam, a ty? Same plastikowe zabawki.'],
+['Gruszka Rycerz','Zielona gruszka, zbroja, hełm z piórem, wielki miecz.',{pear:'#8bc34a',shade:'#558b2f',hat:'helm',outfit:armor('#90a4ae'),held:sword()},'Tarczy brak, pancerza brak. Odważnie.'],
+['Gruszka Sadownik','Rdzawa gruszka, kamizelka z kieszeniami, czapka, kosz gruszek.',{pear:'#b97a3d',shade:'#7d4c1b',hat:'cap',outfit:vest('#8bc34a'),held:basket()},'Sam zbiór statystyk, a drzewa nie widać.'],
+['Gruszka Myśliwy','Czerwona gruszka, kamizelka, strzelba. Rodzina Psa Myśliwskiego.',{pear:'#d9463a',shade:'#8e1b1b',hat:'cap',outfit:vest('#ffb02e'),held:rifle()},'Taki build to nie polowanie, to zbieractwo.'],
+['Gruszka Mówca','Różowa gruszka w garniturze z megafonem. Komentuje głośno.',{pear:'#ef9aa8',shade:'#c25c70',outfit:suit('#37474f'),held:mega()},'SŁYSZYCIE? To dźwięk gorszego buildu na piętrze!'],
+['Gruszka Senator','Kremowa gruszka (nashi), biała toga, wieniec laurowy.',{pear:'#efe3b5',shade:'#c9b36a',outfit:toga('#f5f0e0'),held:cane(),extra:`<path d="M20 16 q22 -16 44 0" stroke="#4caf50" stroke-width="5" ${NF}/>`},'Senat przeanalizował twoje kafelki. Wniosek: śmiech.'],
+['Gruszka w Piżamie','Zaspana pomarańczowa gruszka, szlafrok, kubek.',{pear:'#f0a246',shade:'#b9701a',outfit:robe('#5c6bc0'),held:glass()},'Budzisz mnie takim buildem? Wracam spać.'],
+['Gruszka Sweterek','Ciemnozielona gruszka w swetrze w paski, wielkie okulary, widelec.',{pear:'#4f8f3a',shade:'#2e5d22',outfit:sweater('#ff7043'),held:fork(),extra:`<circle cx="33" cy="31" r="10" ${NF} stroke="${O}" stroke-width="2.4"/><circle cx="49" cy="31" r="8" ${NF} stroke="${O}" stroke-width="2.4"/>`},'Ten build to stara moda. Mój sweter ma więcej pancerza.']
+];
+const P=[
+['Pipsztal Klasyk','Czerwone dresy z białymi paskami, czapka z daszkiem, złoty łańcuch. Buldog.',{outfit:track('#c0392b','#fff'),hat:cap('#c0392b'),chain:chain(),shoes:shoes('#fff'),dog:{b:'#b9a07a',d:'#a8895d',e:'#6d5430',collar:'spike'}},'Pies: Buldożer'],
+['Pipsztal Kaptur','Szary hoodie, głęboki kaptur, ciemne buty. Rottweiler.',{outfit:hoodie('#607d8b'),hat:hood('#455a64'),shoes:shoes('#212121'),dog:{b:'#2b2118',d:'#211a12',e:'#150f09',collar:'spike',m:'#a0652d'}},'Pies: Rottek'],
+['Pipsztal Złoty Łańcuch','Biały dres, dwa złote łańcuchy, okulary. Chihuahua o wielkich uszach.',{outfit:track('#eceff1','#ffc933'),hat:shades(),chain:chain()+`<path d="M38 54 q14 22 28 0" stroke="#ffc933" stroke-width="3.6" ${NF}/>`,shoes:shoes('#ffc933'),dog:{b:'#e0b57a',d:'#d0a068',e:'#a8793c',ears:'up',collar:'gold'}},'Pies: Chichuś'],
+['Pipsztal Irokez','Zielony dres, czerwony irokez, blizna na dziobie. Doberman.',{outfit:track('#2e7d32','#ffeb3b'),hat:mohawk('#e53950'),face:scar(),shoes:shoes('#ffeb3b'),dog:{b:'#33291f',d:'#2a2118',e:'#1a130d',ears:'up',collar:'spike',m:'#a0652d'}},'Pies: Doberek'],
+['Pipsztal Bandana','Granatowy dres, czerwona bandana, wielki nóż kuchenny. Kundel.',{outfit:track('#283593','#ff7043'),hat:bandana('#e53950'),kl:32,shoes:shoes('#ff7043'),dog:{b:'#c9a46b',d:'#b88c52',e:'#7d5a2a',collar:'#ff7043'}},'Pies: Burek'],
+['Pipsztal Neon','Różowo-turkusowy dres retro, opaska, neonowy łańcuch. Husky.',{outfit:track('#e91e8c','#00e5ff'),hat:`<path d="M25 28 q16 -10 32 0" stroke="#00e5ff" stroke-width="5" ${NF}/>`,chain:chain('#00e5ff'),shoes:shoes('#00e5ff'),dog:{b:'#cfd8dc',d:'#b0bec5',e:'#546e7a',ears:'up',collar:'#e91e8c',m:'#fff'}},'Pies: Husky Disco'],
+['Pipsztal Mocarz','Żółty dres w czarne paski, czapka, kanapkowy luz. Mops.',{outfit:track('#fbc02d','#212121'),hat:cap('#212121'),shoes:shoes('#fff'),dog:{b:'#e3c7a0',d:'#d3b184',e:'#6d4c2a',collar:'#c0392b',m:'#6d4c2a'}},'Pies: Mopsior'],
+['Pipsztal Szczęka','Czarny dres, czerwona czapka, złoty ząb. Pitbull w obroży z kolcami.',{outfit:track('#212121','#e53950'),hat:cap('#e53950'),face:`<path d="M20 40 h10" stroke="#ffc933" stroke-width="3.4"/>`,chain:chain(),shoes:shoes('#e53950'),dog:{b:'#8f6a4a',d:'#7d5a3c',e:'#4a3322',collar:'spike',m:'#eacda8'}},'Pies: Pitek'],
+['Pipsztal Kibic','Klubowy dres, kibicowski szalik, daszek w barwach. Ogar.',{outfit:track('#1565c0','#fff'),hat:cap('#1565c0'),chain:`<path d="M30 54 q22 14 44 0 l0 8 q-22 14 -44 0z" fill="#e53950" ${S2}/><path d="M36 58 v6 M44 60 v6 M52 61 v6 M60 60 v6" stroke="#fff" stroke-width="2.4"/>`,shoes:shoes('#fff'),dog:{b:'#c47a3a',d:'#b36a2c',e:'#fff',collar:'#1565c0',m:'#fff'}},'Pies: Ogar Janusz'],
+['Pipsztal Elegant','Fioletowy dres z połyskiem, muszka, melonik. Pudel ze złotą obrożą.',{outfit:track('#4a148c','#ffc933'),hat:`<path d="M26 26 q14 -20 32 0z" fill="#212121" ${S2}/><rect x="22" y="24" width="40" height="4" rx="2" fill="#212121" ${S2}/>`,chain:`<path d="M44 54 l8 4 l8 -4 l-2 8 l-6 -2 l-6 2z" fill="#e53950" ${S2}/>`,shoes:shoes('#212121'),dog:{b:'#f7f2e7',d:'#efe8d6',e:'#d8cfb8',collar:'gold',m:'#fff',extra:`<circle cx="30" cy="30" r="9" fill="#fff" ${S2}/><circle cx="46" cy="34" r="6" fill="#fff" ${S2}/>`}},'Pies: Lord Fifi']
+];
+function fill(id,list,fn){document.getElementById(id).innerHTML=list.map((x,i)=>`<div class="c"><div class="n"><b>${i+1}</b>${x[0]}</div><div class="stage">${fn(x[2])}</div><div class="d">${x[1]}</div>${id==='g1'?`<div class="q">🗨 ${x[3]}</div>`:`<div class="d"><i>${x[3]}</i></div>`}</div>`).join('')}
+fill('g1',G,gruszka);fill('g2',P,pip);
+</script></body></html>

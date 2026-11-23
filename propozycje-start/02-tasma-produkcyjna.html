@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>02 Taśma produkcyjna</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Caveat:wght@700&family=Special+Elite&display=swap">
+<link rel="stylesheet" href="wspolne.css">
+<style>
+.t{position:absolute;left:44px;top:24px;font-size:46px;color:var(--amber);text-shadow:0 3px 0 var(--outline)}
+.sw{position:absolute;left:50%;top:26px;transform:translateX(-50%);display:flex;padding:6px;border-radius:99px;background:#0e0a07;border:3px solid var(--outline);box-shadow:inset 0 3px 8px #000}
+.sw button{position:relative;z-index:1;width:290px;padding:6px 0 4px;border-radius:99px;color:var(--muted);transition:.2s;text-align:center}
+.sw button b{display:block;font-family:var(--display);font-weight:400;font-size:28px;line-height:1.1}.sw button span{font-size:13px}
+.sw button.on{background:linear-gradient(#ffc766,var(--amber2));color:#2b1a12;box-shadow:0 3px 0 var(--outline)}
+.stage{position:absolute;left:44px;top:120px;width:880px;height:420px;display:flex;gap:30px;align-items:center}
+.stage .egg-art{width:300px;height:330px;flex:none;filter:drop-shadow(0 20px 30px #000)}
+.stage h2{font-size:58px;color:var(--amber);line-height:1}.stage .sub{color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-size:18px;margin:4px 0 16px}
+.stage .pk{margin-bottom:8px;font-size:18px}
+.bp{position:absolute;right:44px;top:112px;width:560px;height:430px;border-radius:24px;border:2px solid var(--line);background:linear-gradient(var(--panel),#1b140f);padding:20px 26px;text-align:center}
+.bp .bart{width:230px;height:190px;margin:0 auto}.bp h3{font-size:40px;line-height:1}.bp p{margin:6px 0 0;color:var(--muted);font-size:16px;min-height:44px}
+.th{position:relative;margin-top:16px;height:22px;border-radius:99px;background:#0e0a07;border:3px solid var(--outline);box-shadow:inset 0 2px 6px #000;overflow:hidden}
+.th i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,var(--h0),var(--h1),var(--h2),var(--h3),var(--h4),var(--h5));transition:width .25s}
+.stops{display:grid;grid-template-columns:repeat(6,1fr);margin-top:6px}
+.stops button{padding:4px 0;font-size:14px;color:var(--faint);text-align:center;border-radius:10px}
+.stops button b{display:block;font-family:var(--display);font-weight:400;font-size:20px}.stops button.on{color:var(--c);background:rgba(255,255,255,.06)}.stops button.lk{opacity:.45}
+.belt{position:absolute;left:0;right:0;top:588px;height:130px}
+.belt .band{position:absolute;left:0;right:0;top:56px;height:62px;background:repeating-linear-gradient(115deg,#241b14 0 14px,#2d2218 14px 28px);border-top:6px solid #4a3a2a;border-bottom:8px solid #0e0a07;box-shadow:0 14px 26px rgba(0,0,0,.6)}
+.belt .roll{position:absolute;top:96px;width:36px;height:36px;border-radius:50%;background:radial-gradient(#8a929b,#3a3f46);border:3px solid var(--outline)}
+.belt .eggs{position:absolute;left:0;right:0;top:-34px;display:flex;justify-content:center;gap:12px;padding:0 70px}
+.it{position:relative;flex:1;max-width:96px;height:130px;transition:.22s;opacity:.7;transform-origin:50% 100%}
+.it .egg-art{width:100%;height:100%}.it.on{opacity:1;transform:translateY(-18px) scale(1.28);z-index:2;filter:drop-shadow(0 0 16px rgba(255,179,71,.8))}
+.it.lk::after{content:'🔒';position:absolute;left:50%;bottom:6px;transform:translateX(-50%);font-size:18px}
+.lamp{position:absolute;top:-440px;height:520px;width:240px;margin-left:-120px;background:linear-gradient(rgba(255,214,140,0),rgba(255,214,140,.1));clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);pointer-events:none;transition:left .25s}
+.nav{position:absolute;width:50px;height:70px;border-radius:14px;background:var(--panel2);border:3px solid var(--outline);font-size:34px;color:var(--amber);z-index:3}
+.foot{position:absolute;left:44px;right:44px;bottom:30px;display:flex;align-items:center;justify-content:space-between}
+.foot .s{font-size:20px;color:var(--muted)}.foot .s b{color:var(--ink);font-family:var(--display);font-weight:400;font-size:28px}.foot .s i{font-style:normal;color:var(--faint)}
+</style></head><body><div id="root"></div>
+<script type="module">
+import {art,D,T,S,CH,GARNEK,MODES,BURNERS,HEAT,MAX_BURNER,egg,bart,perks,mount} from "./wspolne.js";
+mount(S=>{ const c=CH[S.cur], g=GARNEK[S.burner], m=MODES[S.mode], n=CH.length;
+ return `<h1 class="t">Nowy run</h1><button class="back" style="left:auto;right:44px;top:34px">← Menu</button>
+ <div class="sw">${Object.values(MODES).map(x=>`<button class="${x.id===S.mode?'on':''}" data-set="mode:${x.id}"><b>${x.name}</b><span>${x.floors} pięter · ${x.bosses} bossów · ok. ${x.min} min</span></button>`).join('')}</div>
+ <section class="stage">${egg(c.id)}<div><h2>${c.name}</h2><div class="sub">${c.style}</div>${c.open?perks(c.id):`<div class="pk"><span>🔒 ${c.hidden?'Zagadka. Odkryj hasło lub osiągnięcie.':c.unlock}</span></div>`}</div></section>
+ <section class="bp" style="--c:${g.heat}">${bart(g.lvl)}<h3 style="color:${g.heat}">${g.name} <small style="font-size:20px;color:var(--muted)">· ${g.mod}</small></h3><p>${g.text}</p>
+  <div class="th"><i style="width:${(g.lvl+.5)/6*100}%"></i></div><div class="stops">${GARNEK.map(x=>`<button class="${x.lvl===S.burner?'on':''} ${x.open?'':'lk'}" style="--c:${x.heat}" data-set="burner:${x.lvl}"><b>${x.lvl}</b>${x.name}${x.open?'':' 🔒'}</button>`).join('')}</div></section>
+ <div class="belt"><button class="nav" style="left:8px;top:30px" data-set="cur:${S.cur-1}">‹</button><button class="nav" style="right:8px;top:30px" data-set="cur:${S.cur+1}">›</button>
+  <div class="band"></div>${Array.from({length:22},(_,i)=>`<i class="roll" style="left:${i*76+10}px"></i>`).join('')}
+  <div class="lamp" style="left:${800+(S.cur-(n-1)/2)*108}px"></div>
+  <div class="eggs">${CH.map((x,i)=>`<button class="it ${i===S.cur?'on':''} ${x.open?'':'lk'}" data-set="cur:${i}">${egg(x.id)}</button>`).join('')}</div></div>
+ <div class="foot"><div class="s"><i>Tryb</i> <b>${m.name}</b> &nbsp; <i>Postać</i> <b>${c.name}</b> &nbsp; <i>Palnik</i> <b style="color:${g.heat}">${g.name}</b> &nbsp; <i>wynik</i> <b style="color:var(--gold)">×${g.mult}</b></div><button class="go" ${c.open&&g.open?'':'disabled'}>Do garnka! →</button></div>`;});
+</script></body></html>

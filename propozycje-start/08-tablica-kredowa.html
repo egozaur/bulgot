@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>08 Tablica kredowa</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Caveat:wght@700&family=Special+Elite&display=swap">
+<link rel="stylesheet" href="wspolne.css">
+<style>
+#root{background:#120c08}
+.board{position:absolute;left:34px;top:26px;width:1090px;bottom:26px;border-radius:14px;border:16px solid #6b4423;background:radial-gradient(800px 500px at 50% 30%,#2c3a33,#18211c 80%);box-shadow:0 0 0 4px #2b1a12,0 24px 50px #000,inset 0 0 80px rgba(0,0,0,.5);padding:14px 36px;font-family:Caveat,cursive;color:#f2efe4}
+.board::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 2px,transparent 2px 5px);pointer-events:none}
+.ti{text-align:center;font-size:62px;line-height:1;color:#fff;letter-spacing:.02em}.ti small{display:block;font-size:24px;color:#cfd6c8;margin-top:2px}
+.hh{font-size:36px;color:#ffd97a;margin:10px 0 2px;display:flex;align-items:baseline;gap:14px}.hh i{flex:1;border-bottom:3px dotted rgba(255,217,122,.4)}.hh small{font-size:20px;color:#cfd6c8}
+.dania{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.dn{position:relative;text-align:left;padding:4px 14px 6px;border-radius:14px;font-size:26px;line-height:1.1;color:#e8e6da}
+.dn b{font-size:40px;color:#fff;display:block}.dn.on{border:3px solid #ffd97a;border-radius:46% 54% 50% 50%/60% 45% 55% 40%;box-shadow:0 0 18px rgba(255,217,122,.25)}.dn.on::after{content:'★';position:absolute;right:14px;top:6px;font-size:36px;color:#ffd97a}
+.dn:not(.on){opacity:.65}
+.cols{columns:2;column-gap:46px}
+.ln{display:flex;align-items:baseline;gap:8px;width:100%;font-size:27px;line-height:1.28;color:#ece9dc;text-align:left;padding:0 8px;break-inside:avoid;position:relative}
+.ln i{flex:1;border-bottom:2px dotted rgba(255,255,255,.28);transform:translateY(-5px)}.ln em{font-style:normal;color:#b9c4b4;font-size:23px}
+.ln.on{color:#fff;background:rgba(255,217,122,.14);border-radius:12px;outline:3px solid #ffd97a;outline-offset:-1px}.ln.on b{color:#ffd97a}
+.ln.lk{opacity:.4}.ln b{font-weight:700}
+.pep{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 14px}
+.pp{display:flex;align-items:center;gap:10px;text-align:left;padding:2px 10px;border-radius:12px;color:#e8e6da;font-size:26px;line-height:1}
+.pp .bart{width:62px;height:52px;flex:none;background:rgba(0,0,0,.2);border-radius:10px}.pp small{display:block;font-size:19px;color:#b9c4b4}
+.pp .fl{display:flex;gap:2px;margin-top:2px}.pp .fl i{width:12px;height:12px;border-radius:50%;border:2px solid #ffd97a}.pp .fl i.f{background:var(--c);border-color:var(--c)}
+.pp.on{outline:3px solid var(--c);color:#fff;background:rgba(255,255,255,.06)}.pp.lk{opacity:.4}
+.rec{position:absolute;right:34px;top:34px;width:400px;height:720px;background:#fbf6e6;color:#2a2018;padding:22px 26px;font-family:'Special Elite','Courier New',monospace;box-shadow:0 20px 40px rgba(0,0,0,.7);transform:rotate(1.2deg);clip-path:polygon(0 0,100% 0,100% 100%,96% 98.5%,92% 100%,88% 98.5%,84% 100%,80% 98.5%,76% 100%,72% 98.5%,68% 100%,64% 98.5%,60% 100%,56% 98.5%,52% 100%,48% 98.5%,44% 100%,40% 98.5%,36% 100%,32% 98.5%,28% 100%,24% 98.5%,20% 100%,16% 98.5%,12% 100%,8% 98.5%,4% 100%,0 98.5%)}
+.rec h3{font-size:34px;text-align:center;letter-spacing:.08em}.rec .sm{text-align:center;font-size:12px;color:#7a6a50;margin-bottom:8px}
+.rec .pic{width:200px;height:220px;margin:6px auto 0}.rec .pic .egg-art{width:100%;height:100%}
+.rec .l{display:flex;justify-content:space-between;border-bottom:2px dashed #b8a67e;padding:6px 0;font-size:16px}.rec .l b{font-family:var(--display);font-weight:400;font-size:19px}
+.rec .tot{display:flex;justify-content:space-between;font-family:var(--display);font-size:30px;margin-top:12px;color:#7a2a12}
+.rec .go{display:flex;margin:18px auto 0;font-size:26px;width:100%}
+</style></head><body><div id="root"></div>
+<script type="module">
+import {art,D,T,S,CH,GARNEK,MODES,BURNERS,HEAT,MAX_BURNER,egg,bart,perks,mount} from "./wspolne.js";
+mount(S=>{ const c=CH[S.cur], g=GARNEK[S.burner], m=MODES[S.mode], ok=c.open&&g.open;
+ return `<button class="back" style="left:auto;right:36px;top:auto;bottom:34px;z-index:3">← Menu</button>
+ <section class="board"><div class="ti">Menu dnia<small>Rosołownia „Bulgot”. Zamów swój run.</small></div>
+  <div class="hh">Danie <i></i><small>jak długo gotujemy?</small></div>
+  <div class="dania">${Object.values(MODES).map(x=>`<button class="dn ${x.id===S.mode?'on':''}" data-set="mode:${x.id}"><b>${x.name}</b>${x.floors} pięter · ${x.bosses} bossów · ok. ${x.min} min</button>`).join('')}</div>
+  <div class="hh">Dodatek <i></i><small>kto wskoczy do garnka?</small></div>
+  <div class="cols">${CH.map((x,i)=>`<button class="ln ${i===S.cur?'on':''} ${x.open?'':'lk'}" data-set="cur:${i}"><b>${x.name}</b><i></i><em>${x.open?x.style:'🔒'}</em></button>`).join('')}</div>
+  <div class="hh">Ostrość <i></i><small>im ostrzej, tym wyższy wynik</small></div>
+  <div class="pep">${GARNEK.map(x=>`<button class="pp ${x.lvl===S.burner?'on':''} ${x.open?'':'lk'}" style="--c:${x.heat}" data-set="burner:${x.lvl}">${bart(x.lvl)}<div>${x.name}${x.open?'':' 🔒'}<small>${x.mod} · ×${x.mult}</small><div class="fl">${Array.from({length:6},(_,k)=>`<i class="${k<=x.lvl?'f':''}"></i>`).join('')}</div></div></button>`).join('')}</div>
+ </section>
+ <aside class="rec"><h3>ZAMÓWIENIE</h3><div class="sm">stolik nr 7 · kelner: Wielki Kurczak</div>
+  <div class="pic">${egg(c.id)}</div>
+  <div class="l"><span>Danie</span><b>${m.name}</b></div><div class="l"><span>Dodatek</span><b>${c.name}</b></div><div class="l"><span>Ostrość</span><b>${g.name}</b></div><div class="l"><span>Specjalność</span><b>${c.open?(c.title||c.style):'?'}</b></div>
+  <div class="tot"><span>Mnożnik</span><span>×${g.mult}</span></div>
+  <button class="go" ${ok?'':'disabled'}>Zamawiam! →</button></aside>`;});
+</script></body></html>

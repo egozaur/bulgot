@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>01 Pulpit brygadzisty</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css">
+<style>
+.t{position:absolute;left:0;right:0;top:22px;text-align:center;font-size:44px;color:var(--amber);text-shadow:0 3px 0 var(--outline)}
+.col{position:absolute;top:100px;bottom:130px;border:2px solid var(--line);border-radius:22px;background:linear-gradient(var(--panel),#1d1611);padding:22px}
+.col h4{font-size:15px;letter-spacing:.2em;color:var(--faint);text-transform:uppercase;margin-bottom:14px;display:flex;justify-content:space-between}
+#c1{left:34px;width:360px}#c2{left:418px;width:734px;text-align:center;display:flex;flex-direction:column;align-items:center}#c3{right:34px;width:394px}
+.mode{display:block;width:100%;text-align:left;padding:18px 20px;border-radius:16px;border:3px solid var(--outline);background:var(--panel2);margin-bottom:14px;opacity:.7;transition:.15s}
+.mode.on{opacity:1;border-color:var(--amber);background:#3a2b1c;box-shadow:0 0 0 3px rgba(255,179,71,.2),0 0 28px rgba(255,150,40,.2)}
+.mode h3{font-size:34px;color:var(--ink)}.mode.on h3{color:var(--amber)}
+.mode .fl{display:flex;gap:6px;margin:8px 0 10px}.mode .fl i{width:100%;height:10px;border-radius:3px;background:#4a3a2a}.mode.on .fl i{background:var(--amber)}.mode .fl i.b{background:var(--red)!important}
+.mode p{margin:0;color:var(--muted);font-size:15px}.mode small{display:block;margin-top:8px;color:var(--faint);font-size:13px}
+.big{width:300px;height:330px;margin-top:2px}.nm{font-size:50px;color:var(--amber);margin-top:2px;line-height:1.05}.nm small{display:block;font-size:19px;color:var(--muted);font-family:var(--body);letter-spacing:.14em;text-transform:uppercase}
+.pks{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.arr{position:absolute;top:190px;width:60px;height:96px;border-radius:16px;background:var(--panel2);border:3px solid var(--outline);font-size:40px;color:var(--amber)}
+.roster{position:absolute;left:22px;right:22px;bottom:18px;display:flex;gap:7px;justify-content:center}
+.rs{width:46px;height:50px;border-radius:12px;border:2px solid var(--outline);background:var(--panel2);padding:4px;position:relative;opacity:.8}
+.rs.on{border-color:var(--amber);background:#3a2b1c;opacity:1;box-shadow:0 0 14px rgba(255,179,71,.5)}.rs .egg-art{width:100%;height:100%}
+.rs.lk::after{content:'🔒';position:absolute;right:-3px;bottom:-5px;font-size:13px}
+.br{display:flex;align-items:center;gap:14px;width:100%;padding:8px 14px;border-radius:14px;border:3px solid var(--outline);background:var(--panel2);margin-bottom:9px;text-align:left}
+.br .bart{width:62px;height:52px;flex:none}.br b{display:block;font-family:var(--display);font-weight:400;font-size:22px;line-height:1}.br span{font-size:13px;color:var(--muted)}
+.br .m{margin-left:auto;font-family:var(--display);font-size:22px;color:var(--faint)}
+.br.on{border-color:var(--c);background:#3a2b1c;box-shadow:0 0 18px color-mix(in srgb,var(--c) 45%,transparent)}.br.on b,.br.on .m{color:var(--c)}
+.br.lk{opacity:.42}.br .meter{display:flex;gap:3px;margin-top:5px}.br .meter i{width:16px;height:6px;border-radius:2px;background:#4a3a2a}
+.bar{position:absolute;left:34px;right:34px;bottom:26px;height:84px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;border-radius:22px;border:2px solid var(--line);background:#1a140f}
+.sum{display:flex;gap:26px;align-items:center;font-size:19px;color:var(--muted)}.sum b{color:var(--ink);font-family:var(--display);font-weight:400;font-size:26px}.sum i{font-style:normal;color:var(--faint)}
+.gm{font-family:var(--display);font-size:30px;color:var(--gold)}
+</style></head><body><div id="root"></div>
+<script type="module">
+import {art,D,T,S,CH,GARNEK,MODES,BURNERS,HEAT,MAX_BURNER,egg,bart,perks,mount} from "./wspolne.js";
+mount(S=>{ const c=CH[S.cur], g=GARNEK[S.burner], m=MODES[S.mode];
+ return `<h1 class="t">Nowy run</h1><button class="back">← Menu</button>
+ <section class="col" id="c1"><h4>1 · Tryb</h4>${Object.values(MODES).map(x=>`<button class="mode ${x.id===S.mode?'on':''}" data-set="mode:${x.id}"><h3>${x.name}</h3><div class="fl">${Array.from({length:x.floors},(_,i)=>`<i class="${x.bf.includes(i+1)?"b":""}"></i>`).join('')}</div><p>${x.floors} pięter · ${x.bosses} bossów · ok. ${x.min} min</p><small>${x.text}</small></button>`).join('')}<div style="margin-top:22px;padding:14px 16px;border-radius:14px;border:1px dashed var(--line);color:var(--muted);font-size:14px;line-height:1.5"><b style="color:var(--amber);font-family:var(--display);font-weight:400;font-size:17px">Wskazówka</b><br>Nowy w fabryce? Zacznij od trybu Szybkiego i palnika Ognisko. Wyższe palniki dają mnożnik wyniku.</div></section>
+ <section class="col" id="c2"><h4 style="width:100%">2 · Postać <span>← → zmień</span></h4>
+  <button class="arr" style="left:22px" data-set="cur:${S.cur-1}">‹</button><button class="arr" style="right:22px" data-set="cur:${S.cur+1}">›</button>
+  <div class="big">${egg(c.id)}</div><h2 class="nm">${c.name}<small>${c.style}${c.title&&c.title.toLowerCase()!==c.style.toLowerCase()?" · "+c.title:""}</small></h2>
+  <div class="pks">${c.open?perks(c.id):`<div class="pk"><span>🔒 Jak odblokować: ${c.hidden?'???':c.unlock}</span></div>`}</div>
+  <div class="roster">${CH.map((x,i)=>`<button class="rs ${i===S.cur?'on':''} ${x.open?'':'lk'}" data-set="cur:${i}">${egg(x.id)}</button>`).join('')}</div></section>
+ <section class="col" id="c3"><h4>3 · Poziom palnika</h4>${GARNEK.slice().reverse().map(x=>`<button class="br ${x.lvl===S.burner?'on':''} ${x.open?'':'lk'}" style="--c:${x.heat}" data-set="burner:${x.lvl}">${bart(x.lvl)}<div><b>${x.name}${x.open?'':' 🔒'}</b><span>${x.mod}</span><div class="meter">${Array.from({length:6},(_,i)=>`<i style="${i<=x.lvl?'background:'+x.heat:''}"></i>`).join('')}</div></div><div class="m">×${x.mult}</div></button>`).join('')}</section>
+ <div class="bar"><div class="sum"><span><i>Tryb</i> <b>${m.name}</b></span><span><i>Postać</i> <b>${c.name}</b></span><span><i>Palnik</i> <b style="color:${g.heat}">${g.name}</b></span><span class="gm">wynik ×${g.mult}</span></div><button class="go" ${c.open&&g.open?'':'disabled'}>Do garnka! →</button></div>`;});
+
+</script></body></html>

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Podgląd schodów</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<style>
+:root{--display:'Baloo 2',Impact,system-ui,sans-serif;--mono:ui-monospace,Consolas,monospace}
+body{margin:0;background:radial-gradient(1200px 700px at 50% -10%,#2c2016,#14100d 60%);color:#f6e9cf;font:15px/1.4 system-ui,sans-serif;min-height:100vh;display:flex;gap:32px;padding:24px;box-sizing:border-box}
+.ctl{width:300px}.ctl h1{font:400 28px var(--display);color:#ffb347;margin:0 0 12px}
+select,input{width:100%;margin:4px 0 12px;padding:8px;border-radius:10px;border:2px solid #4a3a2a;background:#251d16;color:#f6e9cf;font:inherit}
+p{color:#b9a88c}
+#box{width:184px;height:814px;border:2px solid #4a3a2a;border-radius:14px;overflow:hidden;position:relative;flex:none;background:#150d08}
+</style></head><body>
+<div class="ctl"><h1>Schody: podgląd</h1>
+<label>Wariant<select id="v"></select></label><label>Tryb<select id="m"><option value="full">Pełny (20)</option><option value="quick">Szybki (10)</option></select></label>
+<label>Piętro: <b id="fl">8</b><input id="f" type="range" min="1" max="20" value="8"></label><p id="d"></p></div>
+<div id="box"></div>
+<script type="module">
+import { VARIANTS, mountTower } from './schody.js';
+const $ = id => document.getElementById(id), v = $('v');
+VARIANTS.forEach((x, i) => v.add(new Option((i + 1) + '. ' + x.name, i)));
+const draw = () => { const mode = $('m').value, n = mode === 'full' ? 20 : 10; $('f').max = n; if (+$('f').value > n) $('f').value = n; $('fl').textContent = $('f').value; $('d').textContent = VARIANTS[v.value].desc;
+  mountTower($('box'), VARIANTS[v.value], { mode, f: +$('f').value }); };
+['v', 'm', 'f'].forEach(id => $(id).addEventListener('input', draw)); draw();
+</script></body></html>

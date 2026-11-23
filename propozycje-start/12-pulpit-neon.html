@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>12 Pulpit neon</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css"><link rel="stylesheet" href="arc.css">
+<style>.strip .tl{height:96px}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import * as K from './komp.js';
+const {box,deco,title,back,strip,hero,stats,perksCard,modes,burnList,sumbar,go,mount}=K;
+mount(S=>`${deco()}${back('top:24px')}
+ ${box('left:40px;top:22px',title('Nowy run','s'))}
+ ${box('left:40px;top:100px;width:350px','<div class="cap" style="margin-bottom:8px">1 · Tryb</div>'+modes(S))}
+ ${box('left:40px;top:410px;width:350px',perksCard(S))}
+ ${box('left:430px;top:80px;width:740px',hero(S,360,56,true))}
+ ${box('left:1210px;top:596px;width:350px',stats(S))}
+ ${box('left:1210px;top:100px;width:350px','<div class="cap" style="margin-bottom:8px">3 · Moc palnika</div>'+burnList(S))}
+ ${box('left:40px;right:430px;top:684px;width:auto','<div class="cap" style="margin-bottom:6px">2 · Postać</div>'+strip(S))}
+ ${box('left:40px;right:40px;top:818px;height:64px',sumbar(S,go(S),'height:64px'))}`);
+</script></body></html>

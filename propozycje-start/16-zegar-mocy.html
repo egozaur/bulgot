@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>16 Zegar mocy</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css"><link rel="stylesheet" href="arc.css">
+</head><body><div id="root"></div>
+<script type="module">
+import * as K from './komp.js';
+const {box,deco,title,back,roster,hero,stats,modes,burnInfo,bart,sumbar,go,mount,GARNEK}=K;
+const dial=S=>{const cx=270,cy=270,R=185,A=l=>(-125+l*50)*Math.PI/180,P=(l,r)=>[cx+r*Math.sin(A(l)),cy-r*Math.cos(A(l))],g=GARNEK[S.burner];
+ const arc=(l0,l1)=>{const a=P(l0,R),b=P(l1,R);return `M${a[0]} ${a[1]} A${R} ${R} 0 0 1 ${b[0]} ${b[1]}`};
+ return `<svg viewBox="0 0 540 540" width="540" height="540" style="overflow:visible"><defs><radialGradient id="gl"><stop offset="0" stop-color="${g.heat}" stop-opacity=".4"/><stop offset="1" stop-color="${g.heat}" stop-opacity="0"/></radialGradient></defs>
+ <circle cx="${cx}" cy="${cy}" r="268" fill="url(#gl)"/>
+ ${[0,1,2,3,4,5].map(l=>{const a0=-125+l*50-23,a1=-125+l*50+23,p=(a,r)=>[cx+r*Math.sin(a*Math.PI/180),cy-r*Math.cos(a*Math.PI/180)],o=GARNEK[l];const s=p(a0,R),e=p(a1,R);const on=l<=S.burner;
+  return `<g data-set="burner:${l}" style="cursor:pointer;opacity:${o.open?1:.4}"><path d="M${s[0]} ${s[1]} A${R} ${R} 0 0 1 ${e[0]} ${e[1]}" fill="none" stroke="${on?o.heat:"#3a2b1c"}" stroke-width="${l===S.burner?44:34}" stroke-linecap="butt" ${on?`style="filter:drop-shadow(0 0 10px ${o.heat})"`:''}/><path d="M${s[0]} ${s[1]} A${R} ${R} 0 0 1 ${e[0]} ${e[1]}" fill="none" stroke="#4a3a2a" stroke-width="2" transform="translate(0 0)" opacity="0"/></g>`}).join('')}
+ ${GARNEK.map(x=>{const q=P(x.lvl,R+52),sn=Math.sin(A(x.lvl)),an=sn<-.3?'end':sn>.3?'start':'middle';return `<text x="${q[0]+(an==='end'?10:an==='start'?-10:0)}" y="${q[1]+(an==='middle'?-6:6)}" text-anchor="${an}" font-family="Baloo 2" font-size="${x.lvl===S.burner?24:18}" fill="${x.lvl===S.burner?x.heat:'#8a7a62'}">${x.name}${x.open?'':' 🔒'}</text>`}).join('')}
+ <circle cx="${cx}" cy="${cy}" r="140" fill="#14100d" stroke="#2b1a12" stroke-width="5"/>
+ <foreignObject x="${cx-110}" y="${cy-120}" width="220" height="180"><div xmlns="http://www.w3.org/1999/xhtml" style="width:220px;height:180px">${bart(S.burner)}</div></foreignObject>
+ <text x="${cx}" y="${cy+100}" text-anchor="middle" font-family="Baloo 2" font-size="30" fill="${g.heat}">MOC ${S.burner} · ×${g.mult}</text></svg>`};
+mount(S=>`${deco()}${back('top:24px')}
+ ${box('left:0;right:0;top:16px;text-align:center',title('Nowy run'))}
+ ${box('left:40px;top:100px;width:500px','<div class="cap" style="margin-bottom:8px">1 · Postać</div>'+roster(S,4))}
+ ${box('left:40px;top:640px;width:500px',modes(S,'c',true))}
+ ${box('left:570px;top:90px;width:440px',hero(S,340,52,true))}
+ ${box('left:570px;top:600px;width:440px',stats(S))}
+ ${box('left:1050px;top:96px;width:540px','<div class="cap" style="text-align:center">2 · Moc palnika</div>'+dial(S))}
+ ${box('left:1050px;top:640px;width:500px',burnInfo(S))}
+ ${box('left:40px;right:40px;top:810px;height:72px',sumbar(S,go(S),'height:72px'))}`);
+</script></body></html>

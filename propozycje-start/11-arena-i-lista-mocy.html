@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>11 Arena i lista mocy</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css"><link rel="stylesheet" href="arc.css">
+</head><body><div id="root"></div>
+<script type="module">
+import * as K from './komp.js';
+const {box,deco,title,back,roster,hero,stats,perksCard,modes,burnList,sumbar,go,mount}=K;
+mount(S=>`${deco()}${back('top:24px')}
+ ${box('left:0;right:0;top:16px;text-align:center',title('Nowy run'))}
+ ${box('left:40px;top:100px;width:500px','<div class="cap" style="margin-bottom:8px">1 · Postać</div>'+roster(S,4))}
+ ${box('left:40px;top:640px;width:500px',modes(S,'c',true))}
+ ${box('left:580px;top:96px;width:440px',hero(S,330,52,true))}
+ ${box('left:580px;top:590px;width:440px',stats(S))}
+ ${box('left:1070px;top:100px;width:490px','<div class="cap" style="margin-bottom:8px">2 · Moc palnika</div>'+burnList(S))}
+ ${box('left:1070px;top:566px;width:490px',perksCard(S))}
+ ${box('left:40px;right:40px;top:802px;height:76px',sumbar(S,go(S),'height:76px'))}`);
+</script></body></html>

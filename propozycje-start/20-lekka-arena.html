@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>20 Lekka arena</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css"><link rel="stylesheet" href="arc.css">
+<style>.strip .tl{height:84px}.strip{justify-content:center}.strip .tl{max-width:84px}
+.free .panel{background:none;border:0;padding:0}.free .panel>h4{display:none}.free .bar{font-size:16px}
+.free .pk{font-size:16px;margin-top:8px}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import * as K from './komp.js';
+const {box,deco,title,back,strip,hero,stats,perksCard,modes,seg,burnInfo,sumbar,start,mount,GARNEK}=K;
+mount(S=>{const g=GARNEK[S.burner];return `${deco()}${back('top:24px')}
+ ${box('left:40px;top:22px',title('Nowy run','s'))}
+ ${box('left:470px;top:20px;width:660px',modes(S,'c',true))}
+ ${box('left:60px;top:200px;width:380px','<div class="free"><div class="cap" style="margin-bottom:6px">Statystyki bazowe</div>'+stats(S)+'<div class="cap" style="margin:22px 0 2px">Zdolności</div>'+perksCard(S)+'</div>')}
+ ${box('left:480px;top:104px;width:640px',hero(S,370,54,true))}
+ ${box('left:1160px;top:200px;width:400px','<div class="cap" style="margin-bottom:8px">Moc palnika</div>'+burnInfo(S)+'<div style="margin-top:22px;font-family:var(--display);font-size:90px;line-height:1;color:'+g.heat+';text-shadow:0 0 30px '+g.heat+'">×'+g.mult+'</div><div style="color:var(--faint);font-size:14px">mnożnik wyniku</div>')}
+ ${box('left:60px;right:60px;top:676px',strip(S))}
+ ${box('left:60px;top:790px;width:1000px','<div class="cap" style="margin-bottom:6px">Moc palnika</div>'+seg(S,34))}
+ ${box('left:1180px;top:790px','<button class="go neon" '+(K.ok(S)?'':'disabled')+'>START</button>')}`});
+</script></body></html>

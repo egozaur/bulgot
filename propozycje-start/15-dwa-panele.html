@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>15 Dwa panele</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css"><link rel="stylesheet" href="arc.css">
+</head><body><div id="root"></div>
+<script type="module">
+import * as K from './komp.js';
+const {box,deco,title,back,roster,hero,stats,perksCard,modes,seg,burnInfo,bigBurn,sumbar,go,mount}=K;
+mount(S=>`${deco()}${back('top:24px')}
+ ${box('left:0;right:0;top:16px;text-align:center',title('Nowy run'))}
+ ${box('left:40px;top:96px;width:480px;height:690px','<div class="panel" style="height:100%"><h4>1 · Tryb i postać</h4>'+modes(S,'c',true)+'<div style="margin-top:14px">'+roster(S,4)+'</div></div>')}
+ ${box('left:560px;top:90px;width:480px',hero(S,380,54,true))}
+ ${box('left:560px;top:606px;width:480px',perksCard(S))}
+ ${box('left:1080px;top:96px;width:480px;height:690px','<div class="panel" style="height:100%"><h4>2 · Moc palnika</h4><div style="display:flex;justify-content:center;margin-bottom:6px">'+bigBurn(S,270,220)+'</div>'+burnInfo(S)+'<div style="margin:16px 0 10px">'+seg(S,38)+'</div>'+stats(S,'Bohater')+'</div>')}
+ ${box('left:40px;right:40px;top:806px;height:76px',sumbar(S,go(S),'height:76px'))}`);
+</script></body></html>

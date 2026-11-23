@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>05 Żar rośnie</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css">
+<style>
+#root{transition:background .4s}
+.bgfire{position:absolute;left:50%;bottom:-130px;width:980px;height:820px;margin-left:-490px;opacity:.3;filter:blur(1px) saturate(1.2);pointer-events:none}
+.glass{background:rgba(20,14,10,.62);backdrop-filter:blur(8px);border:2px solid rgba(255,255,255,.12);border-radius:22px}
+.t{position:absolute;left:44px;top:24px;font-size:46px;color:#fff3d6;text-shadow:0 3px 0 var(--outline)}
+.sw{position:absolute;left:50%;top:26px;transform:translateX(-50%);display:flex;gap:6px;padding:6px}
+.sw button{width:300px;padding:6px 0 4px;border-radius:16px;color:var(--muted);text-align:center;border:2px solid transparent}
+.sw button b{display:block;font-family:var(--display);font-weight:400;font-size:28px;line-height:1.1}.sw button span{font-size:13px}
+.sw button.on{background:rgba(255,255,255,.12);color:#fff;border-color:var(--c)}
+.row{position:absolute;left:0;right:0;top:130px;height:380px}
+.ce{position:absolute;bottom:0;transform-origin:50% 100%;transition:.28s}
+.ce .egg-art{width:100%;height:100%}
+.nm{position:absolute;left:0;right:0;top:508px;text-align:center}
+.nm h2{font-size:60px;color:#fff3d6;line-height:1;text-shadow:0 4px 0 var(--outline)}.nm .sub{color:var(--muted);letter-spacing:.16em;text-transform:uppercase;font-size:17px;margin:2px 0 12px}
+.pks{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:0 160px}
+.nv{position:absolute;top:290px;width:60px;height:100px;border-radius:18px;font-size:42px;color:#fff3d6}
+.heat{position:absolute;left:44px;right:44px;bottom:26px;height:112px;padding:16px 26px;display:flex;align-items:center;gap:30px}
+.hs{flex:1}.hs .lab{display:flex;justify-content:space-between;font-size:15px;color:var(--muted);margin-bottom:8px}.hs .lab b{font-family:var(--display);font-weight:400;font-size:28px;color:var(--c)}
+.track{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.track button{position:relative;height:34px;border-radius:10px;background:rgba(255,255,255,.1);border:2px solid transparent;text-align:center;font-size:14px;color:rgba(255,255,255,.55);line-height:30px}
+.track button.fill{background:var(--c);color:#2b1a12;font-weight:700}.track button.on{border-color:#fff;box-shadow:0 0 18px var(--c)}.track button.lk{opacity:.45}
+.go{white-space:nowrap}
+</style></head><body><div id="root"></div>
+<script type="module">
+import {art,D,T,S,CH,GARNEK,MODES,BURNERS,HEAT,MAX_BURNER,egg,bart,perks,mount} from "./wspolne.js";
+mount(S=>{ const c=CH[S.cur], g=GARNEK[S.burner], m=MODES[S.mode], n=CH.length, ok=c.open&&g.open;
+ document.getElementById('root').style.background=`radial-gradient(1700px 1000px at 50% 120%,${g.heat}${['55','88','aa','cc','ee','ff'][S.burner]},transparent 70%),linear-gradient(#0c0806,color-mix(in srgb,${g.heat} 14%,#0c0806))`;
+ const sizes=[300,210,150,110];
+ const items=[-3,-2,-1,0,1,2,3].map(o=>{ const i=(S.cur+o+n*3)%n, x=CH[i], a=Math.abs(o), w=sizes[a], h=w*1.1, left=800+ (o===0?0:Math.sign(o)*(120+[0,215,375,480][a]-([0,0,0,0][a])))-w/2;
+   return `<button class="ce" style="left:${left}px;width:${w}px;height:${h}px;opacity:${[1,.75,.5,.3][a]};filter:${o===0?'drop-shadow(0 0 30px rgba(255,200,120,.45))':'none'}" data-set="cur:${i}">${egg(x.id)}</button>`}).join('');
+ return `<div class="bgfire">${bart(S.burner)}</div><h1 class="t">Nowy run</h1><button class="back" style="left:auto;right:44px;top:34px">← Menu</button>
+ <div class="sw glass" style="--c:${g.heat}">${Object.values(MODES).map(x=>`<button class="${x.id===S.mode?'on':''}" data-set="mode:${x.id}"><b>${x.name}</b><span>${x.floors} pięter · ${x.bosses} bossów · ok. ${x.min} min</span></button>`).join('')}</div>
+ <div class="row">${items}<button class="nv glass" style="left:44px" data-set="cur:${S.cur-1}">‹</button><button class="nv glass" style="right:44px" data-set="cur:${S.cur+1}">›</button></div>
+ <div class="nm"><h2>${c.name}</h2><div class="sub">${c.style}${c.title&&c.title.toLowerCase()!==c.style.toLowerCase()?' · '+c.title:''}</div><div class="pks">${c.open?perks(c.id):`<div class="pk"><span>🔒 ${c.hidden?'Zagadka.':c.unlock}</span></div>`}</div></div>
+ <div class="heat glass" style="--c:${g.heat}"><div class="hs"><div class="lab"><span>Palnik: podkręć ogień. Wrogowie mocniejsi, wynik wyższy.</span><b>${g.name} · ${g.mod} · ×${g.mult}</b></div>
+  <div class="track">${GARNEK.map(x=>`<button class="${x.lvl<=S.burner?'fill':''} ${x.lvl===S.burner?'on':''} ${x.open?'':'lk'}" style="--c:${x.heat}" data-set="burner:${x.lvl}">${x.name}${x.open?'':' 🔒'}</button>`).join('')}</div></div>
+  <button class="go" ${ok?'':'disabled'}>Do garnka! →</button></div>`;});
+</script></body></html>

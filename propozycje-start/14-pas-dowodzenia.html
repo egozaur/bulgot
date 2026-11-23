@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>14 Pas dowodzenia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css"><link rel="stylesheet" href="arc.css">
+<style>.tl span{font-size:11px}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import * as K from './komp.js';
+const {box,deco,title,back,roster,hero,stats,perksCard,modes,seg,burnInfo,bigBurn,sumbar,start,mount}=K;
+mount(S=>`${deco()}${back('top:24px')}
+ ${box('left:40px;top:22px',title('Nowy run','s'))}
+ ${box('left:40px;top:100px;width:310px','<div class="cap" style="margin-bottom:8px">Postać</div>'+roster(S,3))}
+ ${box('left:390px;top:70px;width:500px',hero(S,400,56,true))}
+ ${box('left:390px;top:600px;width:500px',perksCard(S))}
+ ${box('left:930px;top:100px;width:630px','<div class="cap" style="margin-bottom:8px">Tryb</div>'+modes(S,'c',true))}
+ ${box('left:930px;top:260px;width:630px',stats(S))}
+ ${box('left:930px;top:440px;width:630px','<div class="panel" style="display:flex;gap:22px;align-items:center">'+bigBurn(S,200,165)+'<div style="flex:1"><div class="cap" style="margin-bottom:6px">Moc palnika</div>'+burnInfo(S)+'</div></div>')}
+ ${box('left:930px;top:660px;width:630px',seg(S,44))}
+ ${box('left:40px;right:40px;top:810px;height:72px',sumbar(S,start(S),'height:72px'))}`);
+</script></body></html>

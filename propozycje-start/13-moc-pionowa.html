@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>13 Moc pionowa</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css"><link rel="stylesheet" href="arc.css">
+</head><body><div id="root"></div>
+<script type="module">
+import * as K from './komp.js';
+const {box,deco,title,back,roster,hero,stats,perksCard,modes,vseg,burnInfo,sumbar,go,mount}=K;
+mount(S=>`${deco()}${back('top:24px')}
+ ${box('left:0;right:0;top:16px;text-align:center',title('Wybierz kurczaka'))}
+ ${box('left:40px;top:100px;width:540px',roster(S,5))}
+ ${box('left:40px;top:470px;width:540px',stats(S))}
+ ${box('left:620px;top:90px;width:400px',hero(S,340,54,true))}
+ ${box('left:620px;top:600px;width:400px',perksCard(S))}
+ ${box('left:1060px;top:100px;width:500px',modes(S,'c',true))}
+ ${box('left:1060px;top:236px;width:500px','<div class="cap" style="margin-bottom:8px">Moc palnika</div>'+vseg(S,60))}
+ ${box('left:1060px;top:690px;width:500px',burnInfo(S))}
+ ${box('left:40px;right:40px;top:810px;height:72px',sumbar(S,go(S),'height:72px'))}`);
+</script></body></html>

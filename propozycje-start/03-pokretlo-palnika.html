@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>03 Pokrętło palnika</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css">
+<style>
+.t{position:absolute;left:44px;top:24px;font-size:46px;color:var(--amber);text-shadow:0 3px 0 var(--outline)}
+.lever{position:absolute;left:44px;top:100px;width:700px;display:flex;gap:14px}
+.lv{flex:1;padding:14px 20px;border-radius:18px;border:3px solid var(--outline);background:var(--panel2);text-align:left;opacity:.65;position:relative}
+.lv h3{font-size:34px}.lv span{color:var(--muted);font-size:15px}.lv.on{opacity:1;border-color:var(--amber);background:#3a2b1c;box-shadow:0 0 26px rgba(255,150,40,.25)}.lv.on h3{color:var(--amber)}
+.lv .led{position:absolute;right:16px;top:16px;width:14px;height:14px;border-radius:50%;background:#2a2018}.lv.on .led{background:var(--green);box-shadow:0 0 12px var(--green)}
+.who{position:absolute;left:44px;top:200px;width:700px;height:560px;text-align:center}
+.who .main{width:310px;height:340px;margin:0 auto;filter:drop-shadow(0 20px 30px #000)}.who .main .egg-art{width:100%;height:100%}
+.who .side{position:absolute;top:100px;width:150px;height:165px;opacity:.4}.who .side .egg-art{width:100%;height:100%}
+.who .ar{position:absolute;top:130px;width:58px;height:100px;border-radius:16px;background:var(--panel2);border:3px solid var(--outline);font-size:40px;color:var(--amber);z-index:2}
+.who h2{font-size:56px;color:var(--amber);line-height:1;margin-top:4px}.who .sub{color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-size:17px;margin:2px 0 14px}
+.who .pks{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.dots{display:flex;gap:7px;justify-content:center;margin-top:16px}.dots i{width:10px;height:10px;border-radius:50%;background:#4a3a2a}.dots i.on{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.gauge{position:absolute;right:30px;top:40px;width:800px;height:700px}
+.gtxt{position:absolute;right:30px;width:800px;top:730px;text-align:center}.gtxt p{margin:0;color:var(--muted);font-size:17px}
+.foot{position:absolute;left:44px;bottom:26px;display:flex;justify-content:space-between;align-items:center;font-size:20px;color:var(--muted)}.foot b{font-family:var(--display);font-weight:400;color:var(--ink);font-size:26px}
+.go{position:absolute;left:480px;bottom:26px;white-space:nowrap}
+</style></head><body><div id="root"></div>
+<script type="module">
+import {art,D,T,S,CH,GARNEK,MODES,BURNERS,HEAT,MAX_BURNER,egg,bart,perks,mount} from "./wspolne.js";
+const gauge = (S) => { const cx=400, cy=360, R=270, A=l=>(-125+l*50)*Math.PI/180, P=(l,r)=>[cx+r*Math.sin(A(l)),cy-r*Math.cos(A(l))];
+ const arc=(l0,l1)=>{const a=P(l0,R),b=P(l1,R);return `M${a[0]} ${a[1]} A${R} ${R} 0 0 1 ${b[0]} ${b[1]}`};
+ const g=GARNEK[S.burner], ang=-125+S.burner*50;
+ return `<svg viewBox="0 0 800 700" width="800" height="700">
+  <defs><radialGradient id="k" cx="40%" cy="30%"><stop offset="0" stop-color="#6b6258"/><stop offset=".6" stop-color="#3a342d"/><stop offset="1" stop-color="#1d1915"/></radialGradient>
+  <radialGradient id="gl" cx="50%" cy="50%"><stop offset="0" stop-color="${g.heat}" stop-opacity=".4"/><stop offset="1" stop-color="${g.heat}" stop-opacity="0"/></radialGradient></defs>
+  <circle cx="${cx}" cy="${cy}" r="340" fill="url(#gl)"/>
+  <circle cx="${cx}" cy="${cy}" r="318" fill="#1a140f" stroke="#4a3a2a" stroke-width="3"/>
+  ${[0,1,2,3,4].map(l=>`<path d="${arc(l+.06,l+.94)}" fill="none" stroke="${GARNEK[l+1].heat}" stroke-width="14" stroke-linecap="round" opacity="${S.burner>l?1:.25}"/>`).join('')}
+  ${GARNEK.map(x=>{const p=P(x.lvl,R),q=P(x.lvl,R+38),t=P(x.lvl,R+38),sn=Math.sin(A(x.lvl)),an=sn<-.3?"end":sn>.3?"start":"middle";return `<g data-set="burner:${x.lvl}" style="cursor:pointer;opacity:${x.open?1:.5}"><circle cx="${p[0]}" cy="${p[1]}" r="${x.lvl===S.burner?20:13}" fill="${x.lvl<=S.burner?x.heat:'#2a2018'}" stroke="#2b1a12" stroke-width="4"/><text x="${q[0]+(an==="end"?-8:an==="start"?8:0)}" y="${q[1]+(an==="middle"?-4:8)}" text-anchor="${an}" font-family="Baloo 2" font-size="${x.lvl===S.burner?30:23}" fill="${x.lvl===S.burner?x.heat:'#b9a88c'}">${x.name}</text>${x.open?'':`<text x="${t[0]+(an==="end"?-8:an==="start"?8:0)}" y="${t[1]+(an==="middle"?-30:34)}" text-anchor="${an}" font-size="19">🔒</text>`}<circle cx="${p[0]}" cy="${p[1]}" r="48" fill="transparent"/></g>`}).join('')}
+  <circle cx="${cx}" cy="${cy}" r="205" fill="#14100d" stroke="#2b1a12" stroke-width="6"/>
+  <g style="transform:rotate(${ang}deg);transform-origin:${cx}px ${cy}px;transition:transform .35s cubic-bezier(.3,1.4,.5,1)"><circle cx="${cx}" cy="${cy}" r="190" fill="url(#k)" stroke="#2b1a12" stroke-width="5"/>
+   ${Array.from({length:36},(_,i)=>{const a=i*10*Math.PI/180;return `<line x1="${cx+170*Math.sin(a)}" y1="${cy-170*Math.cos(a)}" x2="${cx+186*Math.sin(a)}" y2="${cy-186*Math.cos(a)}" stroke="#14100d" stroke-width="6"/>`}).join('')}
+   <path d="M${cx-13} ${cy-188} L${cx} ${cy-122} L${cx+13} ${cy-188}Z" fill="${g.heat}" stroke="#2b1a12" stroke-width="4" stroke-linejoin="round"/></g>
+  <circle cx="${cx}" cy="${cy}" r="140" fill="#1d1712" stroke="#2b1a12" stroke-width="5"/>
+  <foreignObject x="${cx-100}" y="${cy-125}" width="200" height="170"><div xmlns="http://www.w3.org/1999/xhtml" style="width:200px;height:170px">${bart(S.burner)}</div></foreignObject>
+  <text x="${cx}" y="${cy+98}" text-anchor="middle" font-family="Baloo 2" font-size="28" fill="${g.heat}">wynik ×${g.mult}</text>
+ </svg>`; };
+mount(S=>{ const c=CH[S.cur], g=GARNEK[S.burner], m=MODES[S.mode], n=CH.length, L=CH[(S.cur+n-1)%n], R=CH[(S.cur+1)%n];
+ return `<h1 class="t">Nowy run</h1><button class="back" style="left:auto;right:44px;top:34px">← Menu</button>
+ <div class="lever">${Object.values(MODES).map(x=>`<button class="lv ${x.id===S.mode?'on':''}" data-set="mode:${x.id}"><i class="led"></i><h3>${x.name}</h3><span>${x.floors} pięter · ${x.bosses} bossów · ok. ${x.min} min</span></button>`).join('')}</div>
+ <section class="who"><button class="ar" style="left:0" data-set="cur:${S.cur-1}">‹</button><button class="ar" style="right:0" data-set="cur:${S.cur+1}">›</button>
+  <div class="side" style="left:70px">${egg(L.id)}</div><div class="side" style="right:70px">${egg(R.id)}</div>
+  <div class="main">${egg(c.id)}</div><h2>${c.name}</h2><div class="sub">${c.style}</div><div class="pks">${c.open?perks(c.id):`<div class="pk"><span>🔒 ${c.hidden?'Zagadka.':c.unlock}</span></div>`}</div>
+  <div class="dots">${CH.map((x,i)=>`<i class="${i===S.cur?'on':''}"></i>`).join('')}</div></section>
+ <div class="gauge">${gauge(S)}</div><div class="gtxt"><p><b style="color:${g.heat};font-family:var(--display);font-weight:400;font-size:24px">${g.mod}.</b> ${g.text}</p></div>
+ <button class="go" ${c.open&&g.open?'':'disabled'}>Do garnka! →</button>`;});
+</script></body></html>

@@ -577,7 +577,7 @@ function stageDoor() {
     <div class="kron">${esc(T.pickLine(T.DOOR_LINES, r.round))}</div>${decreeHTML(true)}<div class="cards">${cards}</div>`;
 }
 function stageShop() {
-  const r = G.run, cards = r.pending.offer.map((id, i) => tileCard(id, { i, act: 'buy', price: shopPrice(TILE[id]) })).join('');
+  const r = G.run, cards = r.pending.offer.map((id, i) => tileCard(id, { i, act: 'buy', price: Math.max(1, Math.ceil(shopPrice(TILE[id]) * D.RULES.shopPct / 100)) })).join('');
   return `<div class="stage-title"><h2>Sklepik Babci Kwoki</h2><div class="sub">Masz ${r.coins} ${art.coinIcon()} Ziaren</div></div>
     <div class="kron">Babcia nie bierze kart. Babcia bierze ziarno.</div><div class="cards">${cards}</div>
     <div class="actions"><button class="btn" data-act="leave">Wychodzę bez zakupu</button></div>`;
@@ -587,7 +587,7 @@ const setsOf = t => t.sets || (t.set ? [t.set] : []);
 function stageGamble() {
   const r = G.run, c = r.coins, q = Math.max(1, Math.floor(c / 4)), h = Math.max(1, Math.floor(c / 2));
   const bets = c > 0 ? [...new Set([1, q, h, c])].filter(x => x <= c).map(x => `<button class="btn" data-act="bet" data-v="${x}">Stawiam ${x} ${art.coinIcon()}</button>`).join('') : '<span class="hint">Nie masz czym grać.</span>';
-  return `<div class="stage-title"><h2>Hazard w Kurniku</h2><div class="sub">Rzut monetą: 50% podwajasz stawkę, 50% tracisz ją</div></div>
+  return `<div class="stage-title"><h2>Hazard w Kurniku</h2><div class="sub">Rzut monetą: ${D.RULES.betPct}% podwajasz stawkę, ${100 - D.RULES.betPct}% tracisz ją</div></div>
     <div class="kron">Zasady proste: dom zawsze wygrywa. Dom to kurnik.</div>
     <div class="gamble"><div class="bignum">${c} ${art.coinIcon('coin')}</div><div class="bets">${bets}</div><button class="btn ghost" data-act="bet" data-v="0">Nie ryzykuję</button></div>`;
 }

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>17 Pojedynek</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css"><link rel="stylesheet" href="arc.css">
+<style>.strip .tl{height:84px}.vs{width:110px;height:110px;border-radius:50%;background:radial-gradient(#ffc766,var(--amber2));border:5px solid var(--outline);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:44px;color:#2b1a12;box-shadow:0 0 40px rgba(255,150,40,.6)}</style>
+</head><body><div id="root"></div>
+<script type="module">
+import * as K from './komp.js';
+const {box,deco,title,back,strip,hero,stats,perksCard,modes,seg,burnInfo,bigBurn,sumbar,go,mount}=K;
+mount(S=>`${deco()}${back('top:24px')}
+ ${box('left:40px;top:22px',title('Nowy run','s'))}
+ ${box('left:470px;top:14px;width:660px',modes(S,'c',true))}
+ ${box('left:40px;top:150px;width:700px;height:510px','<div class="panel" style="height:100%;display:flex;gap:18px;align-items:flex-start"><div style="width:300px;flex:none">'+hero(S,270,40)+'</div><div style="flex:1"><h4 class="cap" style="margin-bottom:8px">Twój kurczak</h4>'+stats(S,'Statystyki')+'<div style="margin-top:12px">'+perksCard(S)+'</div></div></div>')}
+ ${box('left:745px;top:330px','<div class="vs">VS</div>')}
+ ${box('left:860px;top:150px;width:700px;height:510px','<div class="panel" style="height:100%"><h4>Moc palnika</h4><div style="display:flex;justify-content:center">'+bigBurn(S,330,270)+'</div><div style="margin:8px 0 18px">'+burnInfo(S)+'</div>'+seg(S,40)+'</div>')}
+ ${box('left:40px;right:40px;top:672px','<div class="cap" style="margin-bottom:5px">Wybierz kurczaka</div>'+strip(S))}
+ ${box('left:40px;right:40px;top:806px;height:70px',sumbar(S,go(S),'height:60px'))}`);
+</script></body></html>

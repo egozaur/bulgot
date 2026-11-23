@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>18 Wieża mocy</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css"><link rel="stylesheet" href="arc.css">
+</head><body><div id="root"></div>
+<script type="module">
+import * as K from './komp.js';
+const {box,deco,title,back,roster,hero,stats,perksCard,modes,vseg,sumbar,go,mount}=K;
+mount(S=>`${deco()}${back('top:24px')}
+ ${box('left:0;right:0;top:16px;text-align:center',title('Nowy run'))}
+ ${box('left:40px;top:96px;width:370px','<div class="panel" style="padding:14px"><h4>Moc palnika <span>↑ ↓</span></h4>'+vseg(S,92)+'</div>')}
+ ${box('left:450px;top:80px;width:520px',hero(S,400,56,true))}
+ ${box('left:450px;top:640px;width:520px',stats(S))}
+ ${box('left:1010px;top:100px;width:550px',modes(S,'c',true))}
+ ${box('left:1010px;top:236px;width:550px','<div class="cap" style="margin-bottom:8px">Postać <span style="color:var(--faint)">← →</span></div>'+roster(S,5))}
+ ${box('left:1010px;top:600px;width:550px',perksCard(S))}
+ ${box('left:40px;right:40px;top:810px;height:72px',sumbar(S,go(S),'height:72px'))}`);
+</script></body></html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>09 Wybór areny</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=swap">
+<link rel="stylesheet" href="wspolne.css">
+<style>
+#root{background:radial-gradient(900px 600px at 50% 45%,#3b2512,#120c08 75%)}
+.grid3d{position:absolute;left:-200px;right:-200px;bottom:0;height:380px;background:linear-gradient(transparent,rgba(255,150,40,.12)),repeating-linear-gradient(90deg,rgba(255,179,71,.22) 0 2px,transparent 2px 90px),repeating-linear-gradient(0deg,rgba(255,179,71,.22) 0 2px,transparent 2px 60px);transform:perspective(500px) rotateX(62deg);transform-origin:50% 100%;mask-image:linear-gradient(transparent,#000 60%)}
+.scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px);pointer-events:none;z-index:9}
+.ti{position:absolute;left:0;right:0;top:18px;text-align:center;font-size:54px;letter-spacing:.14em;color:var(--amber);text-shadow:0 0 28px rgba(255,150,40,.7),0 4px 0 var(--outline);text-transform:uppercase}
+.roster{position:absolute;left:40px;top:116px;width:520px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tl{position:relative;aspect-ratio:1;border-radius:10px;border:3px solid #14100d;background:linear-gradient(160deg,#3a2b1c,#1d1510);padding:4px 4px 20px;transition:.15s;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+.tl .egg-art{width:100%;height:100%}.tl span{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:12px;color:var(--muted);font-family:var(--display)}
+.tl.on{border-color:var(--amber);background:linear-gradient(160deg,#6b4720,#2a1b0e);box-shadow:0 0 22px rgba(255,160,40,.6),inset 0 0 18px rgba(255,200,100,.25);transform:scale(1.07);z-index:2}.tl.on span{color:var(--amber)}
+.tl.lk{filter:grayscale(.9) brightness(.7)}.tl.lk::after{content:'🔒';position:absolute;right:4px;top:2px;font-size:15px}
+.hero{position:absolute;left:600px;width:420px;top:96px;text-align:center}
+.hero .halo{position:absolute;left:50%;top:70px;width:420px;height:420px;margin-left:-210px;border-radius:50%;background:radial-gradient(rgba(255,170,60,.45),transparent 68%)}
+.hero .pic{position:relative;width:380px;height:416px;margin:0 auto;filter:drop-shadow(0 26px 24px #000)}.hero .pic .egg-art{width:100%;height:100%}
+.hero h2{position:relative;font-size:56px;line-height:1;color:#fff;-webkit-text-stroke:3px var(--outline);paint-order:stroke fill;text-shadow:0 5px 0 var(--outline)}
+.hero .sub{position:relative;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;font-size:18px;margin-top:4px}
+.stats{position:absolute;right:40px;top:116px;width:480px}
+.card{border-radius:18px;border:2px solid var(--line);background:rgba(20,14,10,.78);padding:16px 20px;margin-bottom:14px}
+.card h4{font-size:15px;letter-spacing:.2em;color:var(--faint);text-transform:uppercase;margin-bottom:10px}
+.bar{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:15px;color:var(--muted)}.bar span{width:130px}.bar .tr{flex:1;height:14px;border-radius:4px;background:#0e0a07;position:relative;overflow:hidden;border:2px solid #14100d}
+.bar .tr i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--amber2),var(--gold));transition:width .3s}.bar .tr i.d{background:linear-gradient(90deg,#b8321c,var(--red))}.bar b{width:50px;text-align:right;font-family:var(--display);font-weight:400;font-size:18px;color:var(--ink)}
+.card .pk{margin-top:6px;font-size:15px}
+.mode{position:absolute;left:40px;bottom:26px;display:flex;gap:10px;align-items:center}
+.mode>span{font-family:var(--display);font-size:20px;color:var(--faint);letter-spacing:.14em;margin-right:6px}
+.mode button{padding:6px 22px;border-radius:12px;border:3px solid var(--outline);background:var(--panel2);color:var(--muted);text-align:left;opacity:.75}.mode button b{display:block;font-family:var(--display);font-weight:400;font-size:24px;line-height:1.05}.mode button small{font-size:12px}
+.mode button.on{opacity:1;background:linear-gradient(#ffc766,var(--amber2));color:#2b1a12;box-shadow:0 0 22px rgba(255,150,40,.4)}
+.heat{position:absolute;left:600px;width:420px;bottom:108px;text-align:center}
+.heat .seg{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:6px}
+.heat .seg button{height:46px;border-radius:6px;background:#2a2018;border:2px solid #4a3a2a;position:relative;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.heat .seg button.f{background:var(--c);box-shadow:0 0 18px var(--c)}.heat .seg button.lk{opacity:.4}.heat .seg button.on{outline:3px solid #fff;outline-offset:2px}
+.heat .names{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;font-size:11px;color:var(--faint);margin-top:4px}.heat .names .on{color:#fff}
+.heat .cap{font-family:var(--display);font-size:20px;color:var(--faint);letter-spacing:.16em}
+.hd{margin-bottom:8px}.hd b{font-family:var(--display);font-weight:400;font-size:34px;color:var(--c)}.hd span{display:block;color:var(--muted);font-size:14px}
+.go{position:absolute;right:40px;bottom:26px;font-size:34px;padding:.4em 1.4em;letter-spacing:.12em}
+.back{left:auto;right:40px;top:24px}
+.bcard .bart{width:160px;height:130px;float:left;margin-right:14px}
+</style></head><body><div id="root"></div>
+<script type="module">
+import {art,D,T,S,CH,GARNEK,MODES,BURNERS,HEAT,MAX_BURNER,egg,bart,perks,mount} from "./wspolne.js";
+const bar=(l,v,max=170)=>`<div class="bar"><span>${l}</span><div class="tr"><i class="${v<100?'d':''}" style="width:${Math.min(100,v/max*100)}%"></i></div><b>${v}%</b></div>`;
+mount(S=>{ const c=CH[S.cur], g=GARNEK[S.burner], m=MODES[S.mode], ok=c.open&&g.open;
+ return `<div class="grid3d"></div><h1 class="ti">Wybierz kurczaka</h1><button class="back">← Menu</button>
+ <section class="roster">${CH.map((x,i)=>`<button class="tl ${i===S.cur?'on':''} ${x.open?'':'lk'}" data-set="cur:${i}">${egg(x.id)}<span>${x.hidden?'???':x.name.replace(/^(Kurczak|Kura|Kogut|Indyczka) /,'').replace(/ .*/,'')}</span></button>`).join('')}</section>
+ <section class="hero"><div class="halo"></div><div class="pic">${egg(c.id)}</div><h2>${c.name}</h2><div class="sub">${c.style}</div></section>
+ <section class="stats"><div class="card"><h4>Statystyki bazowe</h4>${bar('Życie',c.stats.hp)}${bar('Atak',c.stats.atk)}${bar('Szybkość ataku',c.stats.aspd)}</div>
+  <div class="card"><h4>Zdolności</h4>${c.open?perks(c.id):`<div class="pk"><span>🔒 ${c.hidden?'Zagadka. Odkryj hasło lub osiągnięcie.':c.unlock}</span></div>`}</div>
+  <div class="card bcard" style="--c:${g.heat}">${bart(g.lvl)}<div class="hd"><b>${g.name}</b><span>${g.mod} · wynik ×${g.mult}</span></div><div style="font-size:14px;color:var(--muted)">${g.text}</div><div style="clear:both"></div></div></section>
+ <section class="heat"><div class="cap">POZIOM PALNIKA</div><div class="seg">${GARNEK.map(x=>`<button class="${x.lvl<=S.burner?'f':''} ${x.lvl===S.burner?'on':''} ${x.open?'':'lk'}" style="--c:${x.heat}" data-set="burner:${x.lvl}"></button>`).join('')}</div>
+  <div class="names">${GARNEK.map(x=>`<span class="${x.lvl===S.burner?'on':''}">${x.name}${x.open?'':' 🔒'}</span>`).join('')}</div></section>
+ <section class="mode"><span>TRYB</span>${Object.values(MODES).map(x=>`<button class="${x.id===S.mode?'on':''}" data-set="mode:${x.id}"><b>${x.name}</b><small>${x.floors} pięter · ok. ${x.min} min</small></button>`).join('')}</section>
+ <button class="go" ${ok?'':'disabled'}>START</button><div class="scan"></div>`;});
+</script></body></html>

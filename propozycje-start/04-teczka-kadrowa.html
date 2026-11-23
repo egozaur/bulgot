@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>04 Teczka kadrowa</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Caveat:wght@700&family=Special+Elite&display=swap">
+<link rel="stylesheet" href="wspolne.css">
+<style>
+#root{background:radial-gradient(900px 600px at 50% 40%,#3a2a1b,#16100b 75%)}
+.paper{position:absolute;left:150px;right:150px;top:34px;bottom:30px;border-radius:8px;background:repeating-linear-gradient(#efe2c3 0 33px,#e6d7b3 33px 34px);color:#3a2a1a;box-shadow:0 30px 60px rgba(0,0,0,.7),inset 0 0 90px rgba(120,80,30,.25);transform:rotate(-.35deg);padding:26px 44px;font-family:'Special Elite','Courier New',monospace}
+.clip{position:absolute;left:50%;top:-14px;width:150px;height:44px;margin-left:-75px;border-radius:10px;background:linear-gradient(#8a929b,#4a4f56);border:3px solid #2b1a12}
+.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px double #3a2a1a;padding-bottom:6px}
+.hd small{font-size:13px;letter-spacing:.2em;text-transform:uppercase}.hd h1{font-size:40px;color:#7a2a12;line-height:1}
+.hd .no{font-size:14px;text-align:right}
+.sec{font-size:15px;letter-spacing:.18em;text-transform:uppercase;margin:14px 0 6px;color:#7a2a12}
+.row{display:flex;gap:44px}.c1{width:330px}.c2{flex:1}.c3{width:330px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:8px 6px;border-bottom:1px dashed #b49a6a;font-size:18px;color:#3a2a1a}
+.opt .bx{width:26px;height:26px;border:3px solid #3a2a1a;border-radius:3px;flex:none;position:relative}
+.opt.on .bx::after{content:"✕";position:absolute;left:-1px;top:-13px;font-family:Caveat,cursive;font-size:46px;color:#c1272d;line-height:1}
+.opt b{display:block;font-family:var(--display);font-weight:400;font-size:24px;line-height:1}.opt span{font-size:13px;color:#6a5638}
+.opt .bart{width:48px;height:42px;flex:none}.opt.lk{opacity:.45}
+.badge{position:relative;margin:6px auto 0;width:300px;padding:16px 16px 14px;border-radius:18px;background:#fff9e8;border:3px solid #3a2a1a;box-shadow:0 6px 0 rgba(58,42,26,.4);text-align:center;transform:rotate(1.2deg)}
+.badge::before{content:'';position:absolute;left:50%;top:-22px;width:60px;height:18px;margin-left:-30px;border-radius:6px;background:#3a2a1a}
+.badge .ph{width:200px;height:216px;margin:0 auto;background:#b9d3e2;border:3px solid #3a2a1a;border-radius:10px;overflow:hidden;padding:8px 0 0}
+.badge h2{font-size:30px;color:#3a2a1a;margin-top:8px;line-height:1}.badge .st{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:#7a2a12;margin-top:2px}
+.perks{margin-top:10px;font-size:15px;line-height:1.55;text-align:left}.perks div{display:flex;gap:8px}.perks b{font-family:Caveat,cursive;font-size:24px;line-height:1.1;width:16px}
+.perks .p b{color:#2a7a2a}.perks .m b{color:#c1272d}
+.faces{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:8px}
+.fc{position:relative;aspect-ratio:1;border:3px solid #3a2a1a;border-radius:8px;background:#b9d3e2;overflow:hidden;padding:3px}.fc .egg-art{width:100%;height:100%}
+.fc.on{outline:5px solid #c1272d;outline-offset:3px;border-radius:50%/40%}.fc.lk{filter:grayscale(1) brightness(.85)}
+.fc.lk::after{content:'🔒';position:absolute;right:2px;bottom:0;font-size:15px}
+.stamp{position:absolute;right:70px;bottom:28px;transform:rotate(-6deg);font-family:var(--display);font-size:40px;color:#c1272d;border:6px solid #c1272d;border-radius:12px;padding:6px 32px;background:rgba(255,255,255,.18);text-transform:uppercase;letter-spacing:.06em;box-shadow:0 0 0 3px rgba(193,39,45,.15)}
+.stamp[disabled]{opacity:.4}.stamp:hover:not([disabled]){background:rgba(193,39,45,.12)}
+.sig{position:absolute;left:44px;bottom:36px;font-size:15px;color:#6a5638}.sig i{display:block;width:300px;border-bottom:2px solid #3a2a1a;margin-bottom:4px;font-family:Caveat,cursive;font-style:normal;font-size:34px;color:#1f3a8a;border:0;border-bottom:2px solid #3a2a1a;line-height:1}
+.note{font-family:Caveat,cursive;font-size:24px;color:#1f3a8a;line-height:1.1;margin-top:10px}
+</style></head><body><div id="root"></div>
+<script type="module">
+import {art,D,T,S,CH,GARNEK,MODES,BURNERS,HEAT,MAX_BURNER,egg,bart,perks,mount} from "./wspolne.js";
+const contract = { quick: 'Umowa na okres próbny', full: 'Umowa o pracę na czas nieokreślony' };
+mount(S=>{ const c=CH[S.cur], g=GARNEK[S.burner], m=MODES[S.mode], ok=c.open&&g.open;
+ const pk = c.perks.map(([ic,sg,tx])=>`<div class="${sg==='+'?'p':'m'}"><b>${sg==='+'?'+':'−'}</b><span>${tx}</span></div>`).join('');
+ return `<button class="back" style="left:40px;top:46px;z-index:5;background:rgba(0,0,0,.5)">← Menu</button>
+ <div class="paper"><div class="clip"></div>
+  <div class="hd"><div><small>Korporacja Rosołowa · Dział Kadr</small><h1>Formularz zatrudnienia</h1></div><div class="no">druk nr 3/RUN<br>strony: 1 z 1</div></div>
+  <div class="row">
+   <div class="c1"><div class="sec">1 · Rodzaj umowy</div>
+    ${Object.values(MODES).map(x=>`<button class="opt ${x.id===S.mode?'on':''}" data-set="mode:${x.id}"><i class="bx"></i><div><b>${x.name}</b><span>${contract[x.id]}<br>${x.floors} pięter · ${x.bosses} bossów · ok. ${x.min} min</span></div></button>`).join('')}
+    <div class="sec" style="margin-top:22px">3 · Warunki pracy (palnik)</div>
+    ${GARNEK.map(x=>`<button class="opt ${x.lvl===S.burner?'on':''} ${x.open?'':'lk'}" data-set="burner:${x.lvl}" style="padding:4px 6px"><i class="bx"></i>${bart(x.lvl)}<div><b>${x.name}${x.open?'':' 🔒'}</b><span>${x.mod} · wynik ×${x.mult}</span></div></button>`).join('')}
+   </div>
+   <div class="c2"><div class="sec">2 · Stanowisko <span style="float:right;text-transform:none;letter-spacing:0;color:#6a5638">kliknij zdjęcie kandydata</span></div>
+    <div class="faces">${CH.map((x,i)=>`<button class="fc ${i===S.cur?'on':''} ${x.open?'':'lk'}" data-set="cur:${i}">${egg(x.id)}</button>`).join('')}</div>
+    <div class="note" style="font-size:30px;margin-top:20px">Uwagi kadr: ${c.open?(c.title||c.style):"kandydat niedostępny"}.<br>Warunki: ${g.mod}. ${g.text}<br><span style="color:#c1272d">Mnożnik wyniku ×${g.mult}</span></div>
+   </div>
+   <div class="c3"><div class="badge"><div class="ph">${egg(c.id)}</div><h2>${c.name}</h2><div class="st">${c.style}</div>
+     <div class="perks">${c.open?pk:'<div class="m"><b>🔒</b><span>'+(c.hidden?'Dane zastrzeżone.':c.unlock)+'</span></div>'}</div></div></div>
+  </div>
+  <div class="sig"><i>${c.name.split(' ')[0]}</i>podpis pracownika</div>
+  <button class="stamp" ${ok?'':'disabled'}>Zatrudnij!</button>
+ </div>`;});
+</script></body></html>
