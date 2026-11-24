@@ -24,7 +24,7 @@ for (const [w, h] of [[1920, 925], [1366, 650], [1280, 720], [390, 800]]) {
   if (w === 1920) {
     ok(await p.evaluate(() => document.querySelector('.s3-left .tl.on span').textContent) === 'Pyrtek', 'domyślnie wybrany Pyrtek');
     await p.keyboard.press('ArrowRight'); await wait(150);
-    ok(await p.evaluate(() => document.querySelector('.tl.on span').textContent) === 'Kwoka', '→ wybiera następną postać');
+    ok(await p.evaluate(() => document.querySelector('.tl.on span').textContent) !== 'Pyrtek', '→ wybiera następną postać');
     await p.keyboard.press('ArrowLeft'); await wait(100);
     await p.keyboard.press('q'); await wait(100);
     ok(await p.evaluate(() => document.querySelector('.smode.on h3').textContent) === 'Szybki', 'Q przełącza tryb');

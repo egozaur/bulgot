@@ -31,6 +31,7 @@ if (arg('grow')) { const [h, a] = arg('grow').split(',').map(Number); MODES[MODE
 if (arg('heal')) RULES.healPct = +arg('heal');
 if (arg('income')) { const [a, b2] = arg('income').split(',').map(Number); RULES.coinsRound = a; RULES.coinsBoss = b2; }
 if (arg('prices')) RULES.prices = arg('prices').split(',').map(Number);
+if (arg('rule')) for (const kv of arg('rule').split(';')) { const [k, v] = kv.split('='); RULES[k] = JSON.parse(v); }   // --rule 'k=v;k2=[1,2]': nadpisanie RULES (liczby i tablice JSON w pomiarach)
 if (arg('rw')) arg('rw').split(';').forEach((x, i) => { RARITY_WEIGHTS[i] = x.split(',').map(Number); });   // --rw '50,35,13,2;35,38,22,5;22,38,30,10'
 const MAXBUY = +arg('maxbuy', 9);
 if (arg('affix')) for (const k of Object.keys(AFFIXES)) if (k !== arg('affix')) delete AFFIXES[k];   // --affix X: elity zawsze z tą cechą
@@ -239,4 +240,10 @@ if (process.argv.includes('--tilestats')) {
   const rows = Object.entries({ ...TS, ...Object.fromEntries(Object.entries(BS).map(([k, v]) => ['badge:' + k, v])) }).sort((a, b) => b[1].w / b[1].n - a[1].w / a[1].n);
   console.log('Kafelek / umiejętność / Odznaka: runów z nim, % wygranych');
   for (const [id, x] of rows) console.log(id.padEnd(34), String(x.n).padStart(5), (x.w / x.n * 100).toFixed(0).padStart(4) + '%');
+}
+
+// Test pacing: ile walk kończy się w ≤ 2 s (bohater wygrywa, zanim cokolwiek się wydarzy). Powyżej 25% w danej grupie to sygnał, że piętra są za łatwe.
+if (process.argv.includes('--table')) {
+  const grp = (name, from, to) => { let n = 0, f = 0; for (const [r, x] of Object.entries(PER)) if (+r >= from && +r <= to) { n += x.n; f += x.fast; } if (n) console.log(`Krótkie walki (≤2 s), ${name}: ${(f / n * 100).toFixed(0)}% z ${n}${f / n > 0.25 ? '  <-- ZA ŁATWO' : ''}`); };
+  grp('piętra 1-' + rounds, 1, rounds); grp('Dogrywka', rounds + 1, 999);
 }

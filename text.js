@@ -192,7 +192,7 @@ export const CHAR_PERKS = {
   wrozka: { title: 'Lepsze oferty', perks: [['luck', '+', '+30 Szczęścia'], ['🔄', '+', '1 reroll gratis na piętro'], ['atk', '+', '+8% Ataku']] },
   stazysta: { title: 'Rośnie z piętrami', perks: [['📈', '+', '+5% statystyk za piętro (maks. +40%)'], ['atk', '-', '−22% Ataku na start'], ['maxHp', '-', '−22% Życia na start']] },
   mutant: { title: 'Mistrz umiejętności', perks: [['⏱️', '+', 'Cooldowny −25%'], ['🎲', '+', 'Start: losowa umiejętność'], ['maxHp', '-', '−15% Życia']] },
-  gigachad: { title: 'Jedna Noga, Jedna Sztuczka', perks: [['⚡', '+', 'Umiejętność ×2,5 mocy, −30% cooldownu'], ['atk', '+', '+35% Ataku'], ['🦵', '-', 'Tylko 1 slot umiejętności'], ['aspd', '-', '−10% szybkości ataku'], ['maxHp', '-', '−10% Życia']] },
+  gigachad: { title: 'Jedno Koło, Jedna Sztuczka', perks: [['⚡', '+', 'Umiejętność ×2,5 mocy, −30% cooldownu'], ['atk', '+', '+15% Ataku'], ['🎪', '-', 'Tylko 1 slot umiejętności'], ['aspd', '-', '−10% szybkości ataku'], ['maxHp', '-', '−10% Życia']] },
   jajeczko: { title: 'Szklana Kula', perks: [['evade', '+', '+75% uniku'], ['atk', '+', '+150% Ataku, +5% za każdy unik w walce'], ['aspd', '+', '+30% szybkości ataku'], ['🥚', '+', 'Start: Gniazdo Zapasowe'], ['maxHp', '-', 'Tylko 3 punkty życia']] },
   krypto: { title: 'Rynek Decyduje', perks: [['📈', '+', 'Co piętro statystyki od −30% do +55%'], ['📉', '-', 'Kurs poznasz dopiero w walce']] },
   alkoholik: { title: 'Wieczny Poniedziałek', perks: [['crit', '+', '+30% szansy na dziobnięcie'], ['🍺', '+', '+120% Mocy Dziobnięcia'], ['aspd', '-', '−25% szybkości ataku'], ['maxHp', '-', '−15% Życia']] },

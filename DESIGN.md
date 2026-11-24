@@ -716,11 +716,11 @@ Przebudowa panelu bocznego po wyborze właściciela (wariant D4 z `propozycje-uk
 - Efekt balansu (bot, pełny, Pyrtek bez stylu, 400 partii): palnik 4 29% → 20%, palnik 5 13% → 4–5%. Same kontry bossów kosztują na palniku 5 ok. 8 pp, hordy ok. 1,5 pp (rozkład: `NOCTR`/`NOBOSS`/`NOHORDE` w tymczasowych testach). Zjarany (build ognia) traci najwięcej, co jest zamierzone.
 
 ### 12 postaci-wyzwań
-Aktywne (`CHAR_IDS`): Pyrtek, Zjarany Kurczak, Kurczak Barista, Gęś Księgowa, Kogut Rzeźnik, Kurczak na Jednej Nodze (id `gigachad`), Pan Jajeczko, Emeryt Janusz oraz nowi Inspektor Sanepid, Nioska Wanda, Kogut Związkowiec i Kurczak Pacyfista. Pozostałe 16 ma `retired: true`: zostają w `CHARS` (historia, ranking, zapisy, Testament), ale nie da się nimi zacząć runu, nie odblokowują się, nie liczą się w „Cała Zagroda” i znikają z list klienta. Ich osiągnięcia `a-<postać>` są ukryte.
+Aktywne (`CHAR_IDS`): Pyrtek, Zjarany Kurczak, Kurczak Barista, Gęś Księgowa, Kogut Rzeźnik, Kurczak Monocykl (id `gigachad`, dawniej „Kurczak na Jednej Nodze”), Pan Jajeczko, Emeryt Janusz oraz nowi Inspektor Sanepid, Nioska Wanda, Kogut Związkowiec i Kurczak Pacyfista. Pozostałe 16 ma `retired: true`: zostają w `CHARS` (historia, ranking, zapisy, Testament), ale nie da się nimi zacząć runu, nie odblokowują się, nie liczą się w „Cała Zagroda” i znikają z list klienta. Ich osiągnięcia `a-<postać>` są ukryte.
 
 | Postać | Obietnica | Cena |
 |---|---|---|
-| Kurczak na Jednej Nodze | 1 slot, umiejętność ×2,5 mocy, −30% cooldownu, +35% Ataku (`skillPow`) | −10% szybkości i Życia, reszta slotów martwa |
+| Kurczak Monocykl | 1 slot, umiejętność ×2,5 mocy, −30% cooldownu, +15% Ataku (`skillPow`) | −10% szybkości i Życia, reszta slotów martwa |
 | Pan Jajeczko | 3 Życia, 75% uniku, +150% Ataku; każdy unik +5% Ataku w walce (maks. +50%, `dodgeAtk`) | pierwszy cios kończy walkę |
 | Kogut Rzeźnik | Krwawienie przy każdym ataku; zabicie krwawiącego leczy 5% (`bleedKillHeal`) | −10% Życia, −5% Ataku |
 | Gęś Księgowa | +1% Ataku za 5 Ziaren (maks. +25%, `coinAtk`) | −10% Ataku, wydane Ziarno to utracona moc |
@@ -732,3 +732,16 @@ Aktywne (`CHAR_IDS`): Pyrtek, Zjarany Kurczak, Kurczak Barista, Gęś Księgowa,
 | Kurczak Pacyfista | zero zwykłych ataków (`noAttack`), umiejętności +30% mocy i −40% cooldownu, Oparzenie/Salmonella/Krwawienie +60% (`dotPct`), towarzysz +60% (`compPow`) | bez ataku |
 
 Odblokowania nowych: Sanepid (pokonaj Brojlera), Wanda (wyklucie w Wylęgarni), Związkowiec (Pełna Kurza Seria), Pacyfista (60 użyć umiejętności w runie). Mechaniki w `stats.js` (nowe klucze `S.*`) i `sim.js`. Testy: `bulgot.suite.js` (284), e2e: `dev/e2e-postacie.mjs`.
+
+## 30. Poprawki po analizie wygranej partii test1 (2026-11-24, `RUN_V = 20`)
+Podstawa: analiza partii `test1` (Kurczak Monocykl, pełny, palnik 5, Dogrywka do piętra 30). Zmiany:
+1. **Arena Duchów**: duch z krótkiego runu nie trafia na późne piętra (`ranks.js` → `ghost-pick`: wymagane `curve.length ≥ max(3, 70% piętra)`, od piętra 4; brak ducha = Twoje Odbicie).
+2. **Postać z 1 slotem** (Monocykl; także Klątwa „Ciasne Gniazdo” przy 2 slotach): oferty nie zawierają cudzych umiejętności (`tileAvailable`), a kopia własnej wpada w `RULES.soloCopyPct` = 22% ofert (poziom 2, Mutacja). Efekt uboczny: bot z Monocyklem wygrywa znacznie częściej, więc **Monocykl ma teraz +15% Ataku** (było +35%): pełny palnik 3 / 5 / szybki palnik 3 ≈ 24 / 13 / 27% (Pyrtek 24 / 5 / 30%).
+3. **Ujemny dochód** (umowy, Klątwa Podatku) zjada oszczędności zamiast przepadać (`out.upkeep`, wiersz „Koszty umów i odsetek” na fakturze).
+4. **Późna gra**: od 60% runu i w Dogrywce podstawa wypłaty +`RULES.coinsLate` (2) Ziarna. Wpływ na % wygranych bota: w granicach błędu.
+5. **Malejące kopie** (`RULES.copyDecay`): 5. kopia tego samego kafelka daje 80% efektu, 6. 65%, 7. i dalsze 50% (tylko efekty dodatnie, `stats.js`).
+6. **Dogrywka**: skok trudności na progu (`RULES.endlessJump` = [145, 115] % życia i ataku wrogów na pierwszym piętrze ponad limit), potem jak dotąd (8% / 6% na piętro). `sim-balance --table` wypisuje „Krótkie walki (≤2 s)” dla pięter i Dogrywki (ostrzeżenie > 25%); `--rule 'k=v;k2=[1,2]'` nadpisuje `RULES` w pomiarach.
+7. **Pomocnicy bossa** (stażyści Brojlera, Lakuś, Świta, Strażacy): śmierć bossa ich już nie zabija, wygrana dopiero po zabiciu wszystkich (`sim.js`). Porażka z samym pomocnikiem zgłasza `foeLeft ≥ 1`.
+8. **Dziennik analizy**: wpisy rund mają decyzje (`door`, `route`, `adopt`, `arena`, `contract`, `shrine`, `pawn`, `redeem`), `companion`, `endless`; wpis runu ma Klątwy, Kurnik, trasy, towarzysza, Nemezis, Okólniki, wady, Odznaki, kafelki rosnące, `runStats`.
+9. `hpHealed` → **`hpAfterHeal`** (to życie po leczeniu, nie ilość); przegrana walka też ma `reward: 0` i `hpAfterHeal`.
+10. Postać `gigachad` nazywa się **Kurczak Monocykl** (w wyborze jajek „Monocykl”).

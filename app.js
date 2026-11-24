@@ -1127,6 +1127,7 @@ function invoiceData(j, floor) {
   rows.push(['Wypłata za piętro', `+${base} ${COIN}`]);
   if (j.interest) rows.push(['Odsetki w Spiżarni', `+${j.interest} ${COIN}`]);
   if (j.doorCoins) rows.push(['Premia za ryzykowne drzwi', `+${j.doorCoins} ${COIN}`]);
+  if (j.upkeep) rows.push(['Koszty umów i odsetek (z oszczędności)', `-${j.upkeep} ${COIN}`]);
   rows.push(['Leczenie (życie po leczeniu)', `${run.hp}/${run.maxHp}`]);
   const notes = [];   // { text, imp }
   if (j.nemesis) notes.push({ text: `Sprawiedliwości stało się zadość! Nemezis pokonany: Odznaka Sprawiedliwość Kurnika${j.nemesis.tile ? ' i odzyskany kafelek ' + TILE[j.nemesis.tile].name : ''}.`, imp: true });
