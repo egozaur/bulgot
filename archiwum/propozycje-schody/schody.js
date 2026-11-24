@@ -1,7 +1,7 @@
 // Makiety nowego paska pięter (schody po lewej w runie). 10 wariantów w ciepłej palecie gry.
 // Każdy wariant: { id, name, desc, css, build(c) → { html, H, yc(k) } }.  mountTower() podmienia zawartość <aside class="tower">.
-import * as art from '../art.js';
-import * as D from '../shared/data.js';
+import * as art from '../../art.js';
+import * as D from '../../shared/data.js';
 
 export const ZC = ['#49c2b1', '#ffb347', '#e4572e'];                       // strefy I, II, III
 export const zoneOf = (mode, k) => { const z = D.MODES[mode].zones; return (z.find(q => k <= q.upTo) || z[z.length - 1]).zone; };

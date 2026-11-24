@@ -691,7 +691,7 @@ Pełny audyt: 100 runów graczy z `../analizy-bulgot` (Kurczak, Zdzichu, asyplus
 
 ## 28. Panel boczny, Dziobnięcie, okólnik jako pasek (2026-11-24)
 
-Przebudowa panelu bocznego po wyborze właściciela (wariant D4 z `propozycje-uklad/`, makiety i skrypty zrzutów w tym folderze):
+Przebudowa panelu bocznego po wyborze właściciela (wariant D4 z `archiwum/propozycje-uklad/`, makiety i skrypty zrzutów w tym folderze):
 - **Karta bohatera**: portret z pierścieniem życia, zwierzak przyczepiony do portretu, ikony zestawów po bokach (kontur w kolorze progu: brąz 2, srebro 3, złoto 4; kamienie milowe różowe), trzy kółka umiejętności niżej i większe, rząd powiązań zestawów i odznak. Zamiana kolejności umiejętności: przeciąganie albo ←/→ na kółku.
 - **Statystyki** w jednej kolumnie w grupach Ofensywa / Obrona / Inne: ikona, pełna nazwa, mikropasek, liczba i jednostka w stałych kolumnach. Szybkość ataku to procent (164% = 1,64 uderzenia na sekundę), Moc Dziobnięcia procent (245%), Regeneracja zostaje „1,6 / s”. Paski Atak/Obrona są obok siebie nad listą.
 - **Okólnik** jako stały pasek pod tytułem piętra z informacją, ile twoich kafelków dotyczy (Oszczędności Energii: Ogień i Lód, Praca Zdalna: leczenie, Wyjazd Integracyjny: aktywne zestawy). Kafelki, których dotyczy, mają niebieską poświatę. Zasady okólników bez zmian.

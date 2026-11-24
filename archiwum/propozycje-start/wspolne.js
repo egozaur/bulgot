@@ -1,7 +1,7 @@
 // Wspólne dane i pomocnicy dla makiet ekranu startowego (prawdziwa grafika i dane gry, bez serwera).
-import * as art from '../art.js';
-import * as D from '../shared/data.js';
-import * as T from '../text.js';
+import * as art from '../../art.js';
+import * as D from '../../shared/data.js';
+import * as T from '../../text.js';
 export { art, D, T };
 
 const OPEN = ['pyrtek', 'kwoka', 'kaczor', 'indor', 'zjarany', 'barista', 'ges', 'lodziarz'];   // makieta: tyle postaci odblokowanych

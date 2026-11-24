@@ -1,8 +1,8 @@
 // Runda 4: tylko karta bohatera z C3. Zestawy jako duże ikony z konturem (bez tarcz i ramek), kółka umiejętności niżej i większe.
-import * as D from '../shared/data.js';
-import * as art from '../art.js';
-import * as T from '../text.js';
-import { setCounts } from '../shared/stats.js';
+import * as D from '../../shared/data.js';
+import * as art from '../../art.js';
+import * as T from '../../text.js';
+import { setCounts } from '../../shared/stats.js';
 import { statList, badges } from './dziewiec.js';
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

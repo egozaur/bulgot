@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export PATH=*)",
+      "Bash(node dev/*)",
+      "Bash(node -r ./dev/lib-prio.cjs dev/*)",
+      "Bash(node --test *)",
+      "Bash(cd ../pl3y-server && node --test *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git ls-files*)"
+    ],
+    "ask": [
+      "Bash(git push*)"
+    ]
+  }
+}

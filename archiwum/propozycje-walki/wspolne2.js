@@ -1,6 +1,6 @@
 // Runda 2: tło tarasu z D, jednostki z nową plakietką HP, kafelki skilli, Kukurydziany Grad.
-import * as art from '../art.js';
-import * as D from '../shared/data.js';
+import * as art from '../../art.js';
+import * as D from '../../shared/data.js';
 
 export const tileOf = skill => D.TILES.find(t => t.skill === skill);
 export const icon = skill => art.tileIcon(tileOf(skill).id);

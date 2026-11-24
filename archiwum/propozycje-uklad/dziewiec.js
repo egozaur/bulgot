@@ -1,9 +1,9 @@
 // Runda 3: trzy dopieszczone wersje 9C (karta pozioma): statystyki w jednej kolumnie z jednolitym zapisem wartości,
 // nazwy po zmianie (Dziobnięcie, Moc Dziobnięcia), odznaki, paski Atak/Obrona, zwierzak przyczepiony do postaci.
-import * as D from '../shared/data.js';
-import * as art from '../art.js';
-import * as T from '../text.js';
-import { setCounts } from '../shared/stats.js';
+import * as D from '../../shared/data.js';
+import * as art from '../../art.js';
+import * as T from '../../text.js';
+import { setCounts } from '../../shared/stats.js';
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const SET_ICON = { jajeczne: '🥚', zbozowe: '🌽', rambo: '💪', rosolowe: '🔥', chlodnicze: '❄️', korpo: '💼' };

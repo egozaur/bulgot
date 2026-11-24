@@ -1,10 +1,10 @@
 // Propozycje układu ekranu runu (makiety na prawdziwym DOM gry): moduł ładowany w stronie Bulgota po wstrzyknięciu migawki runu.
 // Każdy wariant `apply(n)` przebudowuje panel boczny (i ewentualnie środek) z danych `window.__bulgot.run`.
 // Nic z tego nie trafia do gry; to tylko podgląd do wyboru.
-import * as D from '../shared/data.js';
-import * as art from '../art.js';
-import * as T from '../text.js';
-import { setCounts } from '../shared/stats.js';
+import * as D from '../../shared/data.js';
+import * as art from '../../art.js';
+import * as T from '../../text.js';
+import { setCounts } from '../../shared/stats.js';
 
 const TILE = D.TILE_BY_ID;
 const $ = (s, r = document) => r.querySelector(s);

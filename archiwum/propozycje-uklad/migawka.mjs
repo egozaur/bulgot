@@ -3,14 +3,14 @@ import fs from 'node:fs';
 // Użycie (Windows: export PATH="/c/Users/Kurczak/tools/node:$PATH"):
 //   node dev/sim-balance.mjs [--mode full|quick] [--garnek 0..5] [--n 300] [--policy smart|random] [--pool starter|all] [--char pyrtek]
 // Bot używa dokładnie tych samych funkcji co serwer (rules.js, sim.js), więc liczby są prawdziwe.
-import { choose as chooseOpt, newRun, pickTile, reroll, buyOffer, rest, shopBuy, bet, bonusPick, upgrade, upgradable, fightSetup, fightFinish, view, statsOf, shopPrice, rerollCost } from '../../pl3y-server/src/games/bulgot/rules.js';
-import { Fight } from '../../pl3y-server/src/games/bulgot/sim.js';
-import { AFFIXES, RARITY_WEIGHTS, TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, BOSS_POOL, ROUTES, RULES } from '../../pl3y-server/src/games/bulgot/data.js';
-import { makeRng, mix } from '../../pl3y-server/src/games/bulgot/rng.js';
-import { heroStats } from '../../pl3y-server/src/games/bulgot/stats.js';
-import { loadoutOf } from '../../pl3y-server/src/games/bulgot/rules.js';
+import { choose as chooseOpt, newRun, pickTile, reroll, buyOffer, rest, shopBuy, bet, bonusPick, upgrade, upgradable, fightSetup, fightFinish, view, statsOf, shopPrice, rerollCost } from '../../../pl3y-server/src/games/bulgot/rules.js';
+import { Fight } from '../../../pl3y-server/src/games/bulgot/sim.js';
+import { AFFIXES, RARITY_WEIGHTS, TILES, TILE_BY_ID, STARTER_TILES, MODES, CHARS, ENEMIES, BOSSES, BOSS_POOL, ROUTES, RULES } from '../../../pl3y-server/src/games/bulgot/data.js';
+import { makeRng, mix } from '../../../pl3y-server/src/games/bulgot/rng.js';
+import { heroStats } from '../../../pl3y-server/src/games/bulgot/stats.js';
+import { loadoutOf } from '../../../pl3y-server/src/games/bulgot/rules.js';
 
-import { power } from '../dev/lib-power.mjs';
+import { power } from '../../dev/lib-power.mjs';
 
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i >= 0 ? process.argv[i + 1] : d; };
 const MODE = arg('mode', 'full'), GARNEK = +arg('garnek', 0), N = +arg('n', 300), POLICY = arg('policy', 'smart'), POOL = arg('pool', 'all'), CHAR = arg('char', 'pyrtek');

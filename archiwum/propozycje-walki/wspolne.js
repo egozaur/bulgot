@@ -1,6 +1,6 @@
-// Pomocnik makiet: prawdziwa grafika bohatera, wrogów i ikon kafelków z gry (../art.js, ../shared/data.js).
-import * as art from '../art.js';
-import * as D from '../shared/data.js';
+// Pomocnik makiet: prawdziwa grafika bohatera, wrogów i ikon kafelków z gry (../../art.js, ../shared/data.js).
+import * as art from '../../art.js';
+import * as D from '../../shared/data.js';
 
 export const tileOf = skill => D.TILES.find(t => t.skill === skill);
 export const icon = skill => art.tileIcon(tileOf(skill).id);
