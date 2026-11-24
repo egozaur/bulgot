@@ -29,6 +29,11 @@ export const VARIANTS = {
   'build: czysty ogień': ['--arch', 'burn'], 'build: czysty mróz': ['--arch', 'frost'], 'build: czysta Salmonella': ['--arch', 'poison'], 'build: czysta krew': ['--arch', 'bleed'],
   'build: same statystyki': ['--arch', 'stats'], 'build: same umiejętności': ['--arch', 'skills'], 'build: same przedmioty': ['--arch', 'items'],
   'build: ekonomia': ['--arch', 'econ'], 'build: dziobnięcia': ['--arch', 'crit'], 'build: twardziel': ['--arch', 'tank'],
+  // progi decyzji (dokładniejsze) i Klątwy Prezesa (zysk punktowy kontra spadek wygranych)
+  'dodatkowe rundy: od 30% życia': ['--extrahp', '30'], 'dodatkowe rundy: od 45% życia': ['--extrahp', '45'],
+  'odpoczynek: poniżej 65%': ['--restbelow', '65'], 'odpoczynek: zawsze (100%)': ['--restbelow', '100'],
+  'klątwa: Zakaz Wymian': ['--curses', 'zakaz-wymian'], 'klątwa: Przegrzany Piec': ['--curses', 'przegrzany-piec'], 'klątwa: Zakaz Drzemek': ['--curses', 'zakaz-drzemek'], 'klątwa: Podatek Kurzy': ['--curses', 'podatek'],
+  'klątwa: Ciasne Gniazdo': ['--curses', 'ciasne-gniazdo'], 'klątwa: Pospiech': ['--curses', 'pospiech'], 'klątwa: Mgła Zarządu': ['--curses', 'mgla'], 'klątwa: Kruche Kości': ['--curses', 'kruche-kosci'],
 };
 
 const done = new Set();
