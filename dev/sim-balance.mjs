@@ -23,7 +23,7 @@ const TRACE = process.argv.includes('--trace');
 const NOREST = process.argv.includes('--norest'), RESTBELOW = +arg('restbelow', 55);
 const NOBUY = process.argv.includes('--nobuy'), BUYMIN = +arg('buymin', 1.05);
 const GRANT = arg('grant') ? [arg('grant').split('@')[0], +arg('grant').split('@')[1] || 1] : null;
-const PER = {}, TPLS = {};   // TPLS: statystyki walk wg szablonu piętra (--tpl)
+const PER = {}, TPLS = {}, CTR = {}, KILL = {}, CTRN = {};   // CTR: walki z kontrami (n/wygrane) wg rodzaju; KILL: kto zabił; CTRN: ile razy odpaliła dana kontra   // TPLS: statystyki walk wg szablonu piętra (--tpl)
 let UPG = 0, LOOT = 0;
 // Pokrętła do strojenia (nie zmieniają plików): mnożniki życia/ataku wrogów i bossów oraz tempo wzrostu na rundę.
 const HPM = +arg('hpmul', 1), ATKM = +arg('atkmul', 1), BHPM = +arg('bosshp', 1), BATKM = +arg('bossatk', 1);
@@ -131,7 +131,7 @@ function playRun(seed) {
       // reroll, gdy oferta słaba i są Ziarna na zapas
       let i = choose(run, run.offer, rng);
       const best = tileValue(run, run.offer[i]) / power(run);
-      if (POLICY === 'smart' && best < 1.04 && run.coins >= rerollCost(run) + 2 && run.paid < 2) { reroll(run); continue; }
+      if (POLICY === 'smart' && !process.argv.includes('--noreroll') && best < 1.04 && run.coins >= rerollCost(run) + 2 && run.paid < 2) { reroll(run); continue; }
       // dokupowanie: najpierw najlepsze opłacalne kafelki z reszty oferty (wolny wybór zostaje)
       if (POLICY === 'smart' && !NOBUY) {
         const p0 = power(run);
@@ -189,6 +189,8 @@ function playRun(seed) {
       const before = { hp: run.hp, coins: run.coins };
       const out = fightFinish(run, botInputs(setup));
       if (setup.extra) { XS.fights++; const b = (XS.byId[setup.extra] = XS.byId[setup.extra] || { n: 0, w: 0 }); b.n++; if (out.result.win) { XS.wins++; b.w++; } }
+      if (setup.boss || setup.elite || setup.extra) { const kk = (setup.extra ? 'extra' : setup.boss ? 'boss' : 'elita') + ':' + ((out.result.counters || 0) > 0 ? 'kontra' : 'bez'); const c = (CTR[kk] = CTR[kk] || { n: 0, w: 0 }); c.n++; if (out.result.win) c.w++; }
+      if (!out.result.win && out.result.hp <= 0) { const kn = (setup.boss ? '[BOSS] ' : setup.elite ? '[elita] ' : setup.tpl ? '[' + setup.tpl + '] ' : '') + (setup.boss ? setup.enemies.find(e => e.boss).name : setup.enemies.map(e => e.name).slice(0, 2).join(' + ')); KILL[kn] = (KILL[kn] || 0) + 1; }
       const S0 = statsOf(run);
       const row = (PER[setup.round] = PER[setup.round] || { n: 0, win: 0, loss: 0, ticks: 0, fast: 0 }); row.ticks += out.result.ticks; if (out.result.ticks <= 20) row.fast++;
       if (!setup.boss && !setup.extra && !setup.arena) { const tk = (setup.elite ? 'elita:' : '') + (setup.tpl || 'zwykle'), tr = (TPLS[tk] = TPLS[tk] || { n: 0, win: 0, loss: 0, ticks: 0 }); tr.n++; tr.ticks += out.result.ticks; if (out.result.win) { tr.win++; tr.loss += Math.max(0, before.hp - out.result.hp) / S0.maxHp; } }
@@ -226,6 +228,7 @@ console.log(line);
 if (ENDLESS) console.log(`Dogrywka: ${clearedN} z ${N} runów pokonało Prezesa; średnio ${(deepSum / Math.max(1, clearedN)).toFixed(1)} pięter ponad limit, najgłębiej +${deepMax}`);
 if (XS.offers) console.log(`Dodatkowe rundy: ofert ${XS.offers}, walk ${XS.fights}, wygranych ${XS.wins}; ` + Object.entries(XS.byId).map(([k, v]) => k + ' ' + v.w + '/' + v.n + ' (' + (v.w / v.n * 100).toFixed(0) + '%)').join(', '));
 console.log(`Ulepszeń na run: ${(UPG / N).toFixed(2)}   łupów z bossów na run: ${(LOOT / N).toFixed(2)}`);
+if (process.argv.includes('--json')) console.log('JSON ' + JSON.stringify({ mode: MODE, garnek: GARNEK, char: CHAR, n: N, wins, win: wins / N, score: scoreSum / N, rounds: roundsSum / N, died: died.map((x, i) => [i, x]).filter(x => x[1]), kill: KILL, ctr: CTR, tpl: Object.fromEntries(Object.entries(TPLS).map(([k, x]) => [k, { n: x.n, w: x.win, loss: x.win ? x.loss / x.win : 0 }])), extra: XS }));
 if (process.argv.includes('--tpl')) { console.log('Szablon       walk  wygr%  strata życia  śr.czas (s)'); for (const [k, x] of Object.entries(TPLS)) console.log(k.padEnd(12), String(x.n).padStart(6), (x.win / x.n * 100).toFixed(0).padStart(5) + '%', (x.win ? x.loss / x.win * 100 : 0).toFixed(0).padStart(8) + '%', (x.ticks / x.n / 10).toFixed(1).padStart(9)); }
 if (process.argv.includes('--table')) {
   console.log('Runda  walk  wygr%  śr.strata życia przy wygranej  śr.czas walki (s)  walki ≤2 s');

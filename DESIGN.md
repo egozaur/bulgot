@@ -711,16 +711,16 @@ Przebudowa panelu bocznego po wyborze właściciela (wariant D4 z `propozycje-uk
 - `buildProfile(run)` (rules.js) liczy punkty stylów: ogień, mróz, Salmonella, krew, mocne dziobnięcia, Pancerz, leczenie, umiejętności, jaja. Wygrywa najsilniejszy powyżej progu 4,5. Czysta funkcja wyposażenia, bez losowania.
 - `counterPlan(run, kind)` wybiera kontry (`COUNTERS` w data.js): Straż Pożarna (ogień), Piec Przemysłowy (mróz), Płukanie Żołądka (Salmonella), Apteczka Zakładowa (krew), Kask Ochronny (mocne dziobnięcia), Wiertło Dyrektora (Pancerz), Nożyce Budżetowe (leczenie), Cisza w Biurze (umiejętności), Wielka Patelnia (jaja) i Świta Zarządu (pomocnicy, gdy build nie ma wyraźnego stylu albo jako druga kontra bossa od palnika 3).
 - Kontra uruchamia się jednorazowo, gdy wróg spadnie poniżej progu Życia (`at`: boss 50% na palnikach 0–2, 55/60/65% na 3–5; druga kontra bossa przy 30%). To stan symulacji, nie losowanie, więc powtórka walki na serwerze jest zgodna. Każda kontra jest czasowa (`dur`), więc zawsze zostaje okno na odpowiedź. Przykład ognia: wróg leczy się, `noUntil.burn` blokuje Oparzenie na czas okna, wchodzą Strażacy.
-- Skalowanie: `COUNTER_K` = 45/52/60/68/78/90% bazowej siły i długości na palnikach 0–5; elita ×0,4 (jedna kontra, bez kontr na wczesnych piętrach), dodatkowy boss ×0,3 (bez pomocników i bez kontry, gdy build nie ma stylu). Pomocnicy kontr mają 45–60% statystyk pomocnika.
+- Skalowanie: `COUNTER_K` = 45/52/58/64/70/75% bazowej siły i długości na palnikach 0–5, razy `COUNTER_SLOT_K` wg miejsca bossa (Brojler ×0,5, Skubarka ×0,8, Prezes ×1: pierwszy boss zabijał 40% wszystkich partii na palnikach 4–5, więc dostał najlżejsze kontry); elita ×0,4 (jedna kontra, bez kontr na wczesnych piętrach), dodatkowy boss ×0,3 (bez pomocników i bez kontry, gdy build nie ma stylu). Bossowie z własnymi pomocnikami (mech `summon`) nie dostają Świty. Pomocnicy kontr mają 45–60% statystyk pomocnika; Świta staje za bossem (nie zasłania go), Strażacy przed nim.
 - Widok (`view().intel`) zapowiada tylko nazwę stylu („Zarząd cię obserwuje. Widzą, że grasz na: Ogień”), bez kontry. Klient: zdarzenie `counter` (baner z ikoną, nazwą i opisem).
-- Efekt balansu (bot, pełny, Pyrtek bez stylu): palnik 0 43% → 40%, palnik 4 29% → 13%. Zjarany (build ognia) traci najwięcej (48% → 33% na palniku 0), co jest zamierzone.
+- Efekt balansu (bot, pełny, Pyrtek bez stylu, 400 partii): palnik 4 29% → 20%, palnik 5 13% → 4–5%. Same kontry bossów kosztują na palniku 5 ok. 8 pp, hordy ok. 1,5 pp (rozkład: `NOCTR`/`NOBOSS`/`NOHORDE` w tymczasowych testach). Zjarany (build ognia) traci najwięcej, co jest zamierzone.
 
 ### 12 postaci-wyzwań
 Aktywne (`CHAR_IDS`): Pyrtek, Zjarany Kurczak, Kurczak Barista, Gęś Księgowa, Kogut Rzeźnik, Kurczak na Jednej Nodze (id `gigachad`), Pan Jajeczko, Emeryt Janusz oraz nowi Inspektor Sanepid, Nioska Wanda, Kogut Związkowiec i Kurczak Pacyfista. Pozostałe 16 ma `retired: true`: zostają w `CHARS` (historia, ranking, zapisy, Testament), ale nie da się nimi zacząć runu, nie odblokowują się, nie liczą się w „Cała Zagroda” i znikają z list klienta. Ich osiągnięcia `a-<postać>` są ukryte.
 
 | Postać | Obietnica | Cena |
 |---|---|---|
-| Kurczak na Jednej Nodze | 1 slot, umiejętność ×2,25 mocy, −25% cooldownu, +25% Ataku (`skillPow`) | −10% szybkości i Życia, reszta slotów martwa |
+| Kurczak na Jednej Nodze | 1 slot, umiejętność ×2,5 mocy, −30% cooldownu, +35% Ataku (`skillPow`) | −10% szybkości i Życia, reszta slotów martwa |
 | Pan Jajeczko | 3 Życia, 75% uniku, +150% Ataku; każdy unik +5% Ataku w walce (maks. +50%, `dodgeAtk`) | pierwszy cios kończy walkę |
 | Kogut Rzeźnik | Krwawienie przy każdym ataku; zabicie krwawiącego leczy 5% (`bleedKillHeal`) | −10% Życia, −5% Ataku |
 | Gęś Księgowa | +1% Ataku za 5 Ziaren (maks. +25%, `coinAtk`) | −10% Ataku, wydane Ziarno to utracona moc |
