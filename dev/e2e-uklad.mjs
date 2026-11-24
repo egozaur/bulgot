@@ -63,7 +63,7 @@ if (tof) {
   }
   await p.setViewport({ width: 1440, height: 900 });
   // tempo walki jest stałe (×1): brak wyboru tempa i przycisku w walce
-  const sp = await p.evaluate(() => ({ pick: !!document.querySelector('[data-act=setspeed], .speedpick'), icons: document.querySelectorAll('.stats .stico').length }));
+  const sp = await p.evaluate(() => ({ pick: !!document.querySelector('[data-act=setspeed], .speedpick'), icons: document.querySelectorAll('.slr .stico').length }));
   if (sp.pick) fail('wybór tempa wciąż jest na ekranie'); else console.log('OK: brak wyboru tempa');
   if (sp.icons < 8) fail('brak ikonek statystyk: ' + sp.icons); else console.log('OK: ikonki statystyk', sp.icons);
   await p.screenshot({ path: `${OUT}/przed-walka.png` });

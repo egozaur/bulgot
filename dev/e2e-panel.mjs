@@ -1,5 +1,5 @@
-// Bulgot: test panelu bocznego i Lombardu: zamiana kolejności umiejętności (strzałki), odznaki w karcie bohatera (bez osobnego panelu),
-// krótka etykieta krytyka w jednej linii, okno Lombardu bez przewijania przy wielu kafelkach.
+// Bulgot: test panelu bocznego i Lombardu: kółka umiejętności (przeciąganie i strzałki ←/→), odznaki w karcie bohatera (bez osobnego panelu),
+// statystyki w jednej kolumnie z wyrównanymi jednostkami, okno Lombardu bez przewijania przy wielu kafelkach.
 // Użycie: cd C:\Users\Kurczak\tools\pt && node C:\Users\Kurczak\pl3y\bulgot\dev\e2e-panel.mjs [katalog na zrzuty]
 import puppeteer from 'file:///C:/Users/Kurczak/tools/pt/node_modules/puppeteer-core/lib/esm/puppeteer/puppeteer-core.js';
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
@@ -38,27 +38,43 @@ if (!(await p.evaluate(() => { const t = document.querySelector('#tip'); return 
 await p.mouse.move(5, 5);
 await p.screenshot({ path: `${OUT}/panel-odznaki.png` });
 
-// 2. etykieta krytyka w jednej linii
-const crit = await p.evaluate(() => { const dt = [...document.querySelectorAll('.stats dt')].find(d => /Fortun/i.test(d.textContent)); const r = dt.getBoundingClientRect(); const s = dt.querySelector('span'); const lh = parseFloat(getComputedStyle(s).lineHeight) || 20; return { text: dt.textContent.trim(), h: Math.round(r.height), lines: Math.round(s.getBoundingClientRect().height / lh) }; });
-if (crit.lines > 1) fail('etykieta krytyka w więcej niż jednej linii: ' + JSON.stringify(crit)); else ok('krytyk w jednej linii: ' + crit.text);
+// 2. statystyki w jednej kolumnie: nazwy po zmianie, jednostki w jednej linii, procenty dla szybkości ataku i Mocy Dziobnięcia
+const st = await p.evaluate(() => {
+  const rows = [...document.querySelectorAll('.slr')];
+  const xs = rows.map(r => Math.round(r.querySelector('.slv b').getBoundingClientRect().right)), ux = rows.map(r => Math.round(r.querySelector('.slv i').getBoundingClientRect().left));
+  return { names: rows.map(r => r.querySelector('.sln').textContent.trim()), vals: rows.map(r => r.querySelector('.slv').textContent.replace(/\s+/g, '')), aligned: new Set(xs).size === 1 && new Set(ux).size === 1, oneLine: rows.every(r => r.getBoundingClientRect().height <= 26), groups: document.querySelectorAll('.slg').length };
+});
+if (!st.names.includes('Dziobnięcie') || !st.names.includes('Moc Dziobnięcia') || st.names.some(n => /Fortun|Krytyk/i.test(n))) fail('nazwy statystyk: ' + st.names.join(', ')); else ok('nazwy statystyk: ' + st.names.join(', '));
+if (!st.aligned || !st.oneLine) fail('liczby i jednostki nie stoją w jednej linii: ' + JSON.stringify(st)); else ok('liczby i jednostki wyrównane, każdy wiersz w jednej linii');
+const asp = st.vals[st.names.indexOf('Szybkość ataku')], mult = st.vals[st.names.indexOf('Moc Dziobnięcia')];
+if (!/^\d+%$/.test(asp) || !/^\d+%$/.test(mult)) fail('szybkość ataku i Moc Dziobnięcia powinny być w %: ' + asp + ', ' + mult); else ok(`szybkość ${asp}, Moc Dziobnięcia ${mult}`);
+if (!/\/s$/.test(st.vals[st.names.indexOf('Regeneracja')])) fail('regeneracja bez „/ s”'); else ok('regeneracja zostaje w Życiu na sekundę');
+await p.screenshot({ path: `${OUT}/panel-statystyki.png` });
 
-// 3. zamiana kolejności umiejętności
-const order = () => p.evaluate(() => [...document.querySelectorAll('.slot .sn')].map(e => e.textContent.replace(/^\d\.\s*/, '').replace(/POZ\. 2|Mutacja.*/, '').trim()));
+// 3. zamiana kolejności umiejętności: strzałki ←/→ na aktywnym kółku i przeciąganie
+const order = () => p.evaluate(() => [...document.querySelectorAll('.sring[data-slot] em')].map(e => e.textContent.trim()));
 const o0 = await order();
-await p.click('.slot[data-slot="0"] [data-act=skillmove][data-d="1"]'); await wait(500);
+if (await p.$('[data-act=skillmove]')) fail('strzałki ▲▼ nie powinny już istnieć');
+await p.focus('.sring[data-slot="0"]'); await p.keyboard.press('ArrowRight'); await wait(500);
 const o1 = await order();
-if (!(o1[0] === o0[1] && o1[1] === o0[0] && o1[2] === o0[2])) fail('strzałka ▼ nie zamieniła slotów: ' + JSON.stringify([o0, o1])); else ok('strzałką zamieniono sloty: ' + o0.join(', ') + ' → ' + o1.join(', '));
-const first = await p.evaluate(() => !!document.querySelector('.slot[data-slot="0"] [data-act=skillmove][data-d="-1"]:disabled'));
-if (!first) fail('pierwszy slot powinien mieć wyłączoną strzałkę ▲');
-// przeciągnięcie slotu 2 na slot 0 (zdarzenia drag and drop wywołane programowo)
-await p.evaluate(() => { const dt = new DataTransfer(), a = document.querySelector('.slot[data-slot="2"]'), t = document.querySelector('.slot[data-slot="0"]'); a.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt })); t.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dt })); t.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt })); });
+if (!(o1[0] === o0[1] && o1[1] === o0[0] && o1[2] === o0[2])) fail('strzałka → nie zamieniła kółek: ' + JSON.stringify([o0, o1])); else ok('strzałką zamieniono kółka: ' + o0.join(', ') + ' → ' + o1.join(', '));
+const foc = await p.evaluate(() => document.activeElement && document.activeElement.dataset && document.activeElement.dataset.slot);
+if (foc !== '1') fail('po zamianie fokus powinien zostać na przesuniętym kółku, jest: ' + foc); else ok('fokus idzie za przesuniętym kółkiem');
+await p.focus('.sring[data-slot="0"]'); await p.keyboard.press('ArrowLeft'); await wait(300);
+if (JSON.stringify(await order()) !== JSON.stringify(o1)) fail('← na pierwszym kółku nie powinno nic zmieniać'); else ok('← na pierwszym kółku nic nie zmienia');
+// przeciągnięcie kółka 2 na kółko 0 (zdarzenia drag and drop wywołane programowo)
+const o1b = o1;
+await p.evaluate(() => { const dt = new DataTransfer(), a = document.querySelector('.sring[data-slot="2"]'), t = document.querySelector('.sring[data-slot="0"]'); a.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt })); t.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dt })); t.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt })); });
 await wait(500);
 const o2 = await order();
-if (!(o2[0] === o1[2] && o2[2] === o1[0])) fail('przeciągnięcie nie zamieniło slotów: ' + JSON.stringify([o1, o2])); else ok('przeciągnięciem zamieniono sloty: ' + o2.join(', '));
+if (!(o2[0] === o1b[2] && o2[2] === o1b[0])) fail('przeciągnięcie nie zamieniło kółek: ' + JSON.stringify([o1b, o2])); else ok('przeciągnięciem zamieniono kółka: ' + o2.join(', '));
 // kolejność jest na serwerze: po przeładowaniu ta sama
 await p.reload({ waitUntil: 'networkidle0' }); await wait(500); await p.evaluate(() => { const c = document.querySelector('[data-act=resume]'); c && c.click(); }); await wait(500);
 const o3 = await order();
 if (JSON.stringify(o3) !== JSON.stringify(o2)) fail('kolejność nie przetrwała przeładowania: ' + JSON.stringify([o2, o3])); else ok('kolejność zapisana na serwerze');
+// kółka nie nachodzą na siebie ani na ikony zestawów
+const ov = await p.evaluate(() => { const r = [...document.querySelectorAll('.sring')].map(e => e.getBoundingClientRect()), s = [...document.querySelectorAll('.six')].map(e => e.getBoundingClientRect()); const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom; let bad = 0; for (let i = 0; i < r.length; i++) { for (let j = i + 1; j < r.length; j++) if (hit(r[i], r[j])) bad++; for (const q of s) if (hit(r[i], q)) bad++; } return bad; });
+if (ov) fail('kółka umiejętności na coś nachodzą: ' + ov); else ok('kółka umiejętności nie nachodzą na siebie ani na ikony zestawów');
 
 // 4. Lombard bez przewijania (wiele kafelków)
 for (const [w, h] of [[1920, 925], [1366, 650]]) {

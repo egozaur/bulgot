@@ -28,7 +28,7 @@ const click = async sel => { await p.click(sel); await wait(450); };
 // ---------- Klątwy w ekranie startowym ----------
 await click('[data-act=new]'); await p.keyboard.press('Enter'); await wait(400);
 ok(await count('.curse-chip') === 0, 'klątwy ukryte na ekranie startowym (SHOW_CURSES = false)');
-await click('[data-act=start]'); await wait(800);
+if (await p.$('[data-act=start]')) await click('[data-act=start]'); await wait(800);
 ok(await count('.pill.curse') === 0, 'bez klątw nie ma plakietki Klątw na pasku');
 ok(await p.evaluate(() => !!document.querySelector('.preview.fog, .preview .tplnote')), 'Mgła Zarządu: skład piętra ukryty (zaparowana szyba)');
 
@@ -45,7 +45,7 @@ await setRun(r => { r.phase = 'event'; r.offer = []; r.pending = { kind: 'adopt'
 ok(await count('.tile.choice') === 3 && await count('.tile.choice .comp-fig') === 3, 'Schronisko: trzy karty z figurkami');
 await p.screenshot({ path: `${OUT}/nowosci-schronisko.png` });
 await click('.tile.choice[data-i="0"]');
-ok(await count('.comp-panel') === 1 && /Pisklę Bojowe/.test(await text('.comp-panel')), 'panel towarzysza w panelu bocznym');
+ok(await count('.hero-card .pet') === 1 && /Pisklę Bojowe/.test(await p.evaluate(() => document.querySelector('.hero-card .pet').dataset.tip)), 'towarzysz przyczepiony do portretu bohatera');
 
 // ---------- Arena Duchów i walka z Duchem ----------
 await setRun(r => { r.round = 4; r.phase = 'offer'; r.pending = null; r.offer = ['arena-duchow', 'ziarno-mocy', 'twardy-grzebien', 'czujne-oko']; r.flawAt = -1; r.tiles = [...Array(40).fill('ziarno-mocy'), ...Array(40).fill('twardy-grzebien')]; r.hp = 99999; r.curses = []; });

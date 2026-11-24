@@ -62,7 +62,7 @@ await p.click('[data-act=new]'); await wait(200); await p.click('[data-act=start
 if (await p.$('[data-act=introgo]')) { await p.click('[data-act=introgo]'); await wait(300); }
 const rr = await p.evaluate(() => { const b = document.querySelector('[data-act=reroll]'); return b ? { t: b.textContent.split(/[ \n\t]+/).join(' ').trim(), cost: b.querySelector('.rcost') && b.querySelector('.rcost').textContent.trim() } : null; });
 ok(rr && /Przetasuj Taśmę/.test(rr.t) && !/null/.test(rr.t), 'przycisk wymiany ma nazwę z fabuły i cenę: ' + (rr && rr.t));
-ok(await p.evaluate(() => document.querySelector('.hc-head svg').innerHTML.includes('#15151c')), 'karta bohatera pokazuje strój');
+ok(await p.evaluate(() => document.querySelector('.h4-fig svg').innerHTML.includes('#15151c')), 'karta bohatera pokazuje strój');
 await p.screenshot({ path: OUT + '/staz-oferta.png' });
 // Klątwa Zakaz Wymian: przycisk zablokowany, bez „null”
 await p.evaluate(async () => { const m = await import('/bulgot/api.js'); await m.call('abandon'); });

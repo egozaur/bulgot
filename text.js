@@ -105,9 +105,23 @@ export const MODE_INFO = {
 export const fmtRegen = v => String(Math.round(v) / 10).replace('.', ',');
 
 export const STAT_LABELS = [
-  ['maxHp', 'Życie'], ['atk', 'Atak'], ['aspd', 'Szybkość ataku', v => (v / 100).toFixed(2).replace('.', ',') + ' / s'], ['armor', 'Pancerz'],
-  ['crit', 'Kurza Fortuna', v => v + '%'], ['evade', 'Unik', v => v + '%'], ['regen', 'Regeneracja', v => fmtRegen(v) + ' / s'], ['luck', 'Szczęście'],
+  ['maxHp', 'Życie'], ['atk', 'Atak'], ['aspd', 'Szybkość ataku', v => v + '%'], ['armor', 'Pancerz'],
+  ['crit', 'Dziobnięcie', v => v + '%'], ['evade', 'Unik', v => v + '%'], ['regen', 'Regeneracja', v => fmtRegen(v) + ' / s'], ['luck', 'Szczęście'],
 ];
+// Panel statystyk: grupy i jednolity zapis wartości (liczba + jednostka w osobnej kolumnie). Szybkość ataku i Moc Dziobnięcia to procenty (100% = 1 atak na sekundę / zwykły cios), Regeneracja zostaje w Życiu na sekundę.
+export const STAT_GROUPS = [
+  ['Ofensywa', [['atk', 'Atak'], ['aspd', 'Szybkość ataku'], ['crit', 'Dziobnięcie'], ['critMult', 'Moc Dziobnięcia'], ['dmg', 'Obrażenia']]],
+  ['Obrona', [['maxHp', 'Życie'], ['armor', 'Pancerz'], ['evade', 'Unik'], ['regen', 'Regeneracja']]],
+  ['Inne', [['luck', 'Szczęście']]],
+];
+export function statValue(k, S) {
+  switch (k) {
+    case 'aspd': case 'crit': case 'critMult': case 'evade': return [String(S[k]), '%'];
+    case 'dmg': return ['+' + S.dmg, '%'];
+    case 'regen': return [fmtRegen(S.regen), '/ s'];
+    default: return [String(S[k]), ''];
+  }
+}
 
 export const HELP = [
   ['Cel', 'Wejdź na szczyt fabryki rosołu: pokonaj wszystkie piętra i Prezesa Rosołu. W trybie szybkim to 10 pięter, w pełnym 20.'],
@@ -164,9 +178,9 @@ export const CHAR_PERKS = {
   pyrtek: { title: 'Bez fanaberii', perks: [['atk', '+', '+7% Ataku'], ['maxHp', '+', '+7% Życia']] },
   kwoka: { title: 'Czołg', perks: [['maxHp', '+', '+12% Życia'], ['🌾', '+', 'Start: Zagrzebanie w Sianie'], ['aspd', '-', '−25% szybkości ataku']] },
   kaczor: { title: 'Ryzyko i Odsetki', perks: [['🪙', '+', '+10 Ziaren, Odsetki do 5'], ['🔄', '+', '1 reroll gratis na piętro'], ['🎲', '+', 'Więcej kafelków ryzyka']] },
-  indor: { title: 'Ciężkie ciosy', perks: [['atk', '+', '+55% Ataku'], ['crit', '+', '+10% szansy na krytyk'], ['aspd', '-', '−30% szybkości ataku']] },
+  indor: { title: 'Ciężkie ciosy', perks: [['atk', '+', '+55% Ataku'], ['crit', '+', '+10% szansy na dziobnięcie'], ['aspd', '-', '−30% szybkości ataku']] },
   zjarany: { title: 'Podpala wrogów', perks: [['🔥', '+', '30% Oparzenia przy ataku'], ['☁️', '+', 'Chmura Dymu co 4 s'], ['aspd', '-', '−45% szybkości ataku'], ['atk', '-', '−10% Ataku']] },
-  barista: { title: 'Szybkie ciosy', perks: [['aspd', '+', '+35% szybkości ataku'], ['⚡', '+', 'Start: Dziobnięcie Szału'], ['maxHp', '-', '−25% Życia'], ['atk', '-', '−5% Ataku']] },
+  barista: { title: 'Szybkie ciosy', perks: [['aspd', '+', '+35% szybkości ataku'], ['⚡', '+', 'Start: Szał Dziobów'], ['maxHp', '-', '−25% Życia'], ['atk', '-', '−5% Ataku']] },
   ges: { title: 'Wygrywa portfelem', perks: [['🪙', '+', '+15 Ziaren na start'], ['💰', '+', '+1 Ziarno za wygraną, Odsetki do 6'], ['atk', '-', '−15% Ataku']] },
   lodziarz: { title: 'Mróz', perks: [['❄️', '+', '15% Mrozu przy ataku'], ['🧊', '+', 'Zmrożeni zadają −10%'], ['aspd', '-', '−25% szybkości ataku']] },
   pielegniarka: { title: 'Leczenie', perks: [['regen', '+', 'Regeneracja +0,8 / s'], ['💚', '+', 'Leczenie po rundzie +5 pkt proc.'], ['atk', '-', '−25% Ataku']] },
@@ -177,10 +191,10 @@ export const CHAR_PERKS = {
   gigachad: { title: 'Bez Nóg, Bez Litości', perks: [['atk', '+', '+110% Ataku'], ['aspd', '-', '−25% szybkości ataku'], ['maxHp', '-', '−10% Życia'], ['🦵', '-', 'Tylko 1 slot umiejętności']] },
   jajeczko: { title: 'Szklana Kula', perks: [['evade', '+', '+75% uniku'], ['atk', '+', '+150% Ataku'], ['aspd', '+', '+30% szybkości ataku'], ['🥚', '+', 'Start: Gniazdo Zapasowe'], ['maxHp', '-', 'Tylko 3 punkty życia']] },
   krypto: { title: 'Rynek Decyduje', perks: [['📈', '+', 'Co piętro statystyki od −30% do +55%'], ['📉', '-', 'Kurs poznasz dopiero w walce']] },
-  alkoholik: { title: 'Wieczny Poniedziałek', perks: [['crit', '+', '+30% szansy na krytyk'], ['🍺', '+', '+120% siły krytyka'], ['aspd', '-', '−25% szybkości ataku'], ['maxHp', '-', '−15% Życia']] },
+  alkoholik: { title: 'Wieczny Poniedziałek', perks: [['crit', '+', '+30% szansy na dziobnięcie'], ['🍺', '+', '+120% Mocy Dziobnięcia'], ['aspd', '-', '−25% szybkości ataku'], ['maxHp', '-', '−15% Życia']] },
   wegan: { title: 'Bez Mięsa', perks: [['🥬', '-', 'Odpoczynek leczy o połowę mniej'], ['maxHp', '-', '−10% Życia']] },
   baba: { title: 'Drogi Targ', perks: [['🪙', '+', '+25 Ziaren na start'], ['🛒', '-', 'Kupuje o 30% drożej'], ['atk', '-', '−12% Ataku'], ['maxHp', '-', '−12% Życia']] },
-  influencer: { title: 'Zasięgi', perks: [['crit', '+', '+35% szansy na krytyk'], ['🤳', '+', '+100% siły krytyka'], ['maxHp', '-', '−25% Życia'], ['atk', '-', '−15% Ataku']] },
+  influencer: { title: 'Zasięgi', perks: [['crit', '+', '+35% szansy na dziobnięcie'], ['🤳', '+', '+100% Mocy Dziobnięcia'], ['maxHp', '-', '−25% Życia'], ['atk', '-', '−15% Ataku']] },
   skibidi: { title: 'Chaos', perks: [['🎲', '+', 'Start: 2 losowe umiejętności'], ['⏱️', '+', 'Cooldowny −10%'], ['maxHp', '-', '−25% Życia'], ['atk', '-', '−12% Ataku']] },
   emeryt: { title: 'Twardy Staruszek', perks: [['maxHp', '+', '+10% Życia, +4 Pancerza'], ['regen', '+', 'Regeneracja +1 / s'], ['aspd', '-', '−50% szybkości ataku']] },
   sigma: { title: 'Samotny Wilk', perks: [['atk', '+', '+3% Ataku'], ['maxHp', '+', '+3% Życia'], ['🐺', '-', 'Bonusy zestawów i powiązań nie działają']] },
@@ -195,7 +209,7 @@ export function gruszkaTaunt(r) {
   L.push([sk === 1 ? 55 : 0, 'Jedna umiejętność. Jedna! U mnie na podwórzu i kura ma więcej sztuczek.']);
   L.push([S.armor <= 1 ? 80 : S.armor <= 4 ? 45 : 0, `Pancerz ${S.armor}? Przez ten dziurawy kubraczek widać nawet pestki.`]);
   L.push([S.evade <= 0 ? 50 : 0, 'Unik 0%? Stoisz jak gruszka w sadzie. Tylko mniej smaczny.']);
-  L.push([S.crit < 8 ? 65 : S.crit < 15 ? 40 : 0, `Szansa na krytyk ${S.crit}%. Tyle trafień to ja mam w skórce od jednego uderzenia.`]);
+  L.push([S.crit < 8 ? 65 : S.crit < 15 ? 40 : 0, `Szansa na dziobnięcie ${S.crit}%. Tyle trafień to ja mam w skórce od jednego uderzenia.`]);
   L.push([S.aspd < 85 ? 70 : S.aspd < 100 ? 35 : 0, `Szybkość ${f1(S.aspd)} na sekundę? Moje pestki szybciej spadają z drzewa.`]);
   L.push([S.maxHp < 85 ? 60 : 0, `${S.maxHp} punktów życia? Rosół z ciebie wyjdzie rzadki.`]);
   L.push([S.atk < 12 ? 55 : 0, `Atak ${S.atk}? Łaskoczesz mnie, kurczaku, i to bez przekonania.`]);

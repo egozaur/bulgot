@@ -37,7 +37,7 @@ async function patch(which, fnSrc) {
 // 1. Rozwidlenie Korytarza
 await patch('run', `v.round = 2; v.phase = 'door'; v.offer = []; v.pending = { kind: 'door', affix: 'szybki', reward: 'rare', coins: 8 }; v.decrees = ['audyt', 'pilny', 'premia'];`);
 let s = await st();
-check(s.phase === 'door' && (await p.$$('.cards [data-act=choose]')).length === 2 && /Audyt/.test(await text('.decree')), 'ekran drzwi z dwiema kartami i okólnikiem');
+check(s.phase === 'door' && (await p.$$('.cards [data-act=choose]')).length === 2 && /Audyt/.test(await text('.decbar')), 'ekran drzwi z dwiema kartami i okólnikiem');
 check((await text('.tower .floor.door, .tower .fp.door')).length > 0, 'pasek pięter oznacza drzwi');
 await p.screenshot({ path: OUT + '/j-drzwi.png' });
 await p.keyboard.press('2'); await wait(500); s = await st();

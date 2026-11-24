@@ -1,5 +1,5 @@
 // Bulgot: ciekawostki na ekranie końca. Jedna, najbardziej „bolesna” obserwacja o przebiegu runu: ma wkurzyć na tyle, żeby odpalić następny run.
-// Dane: wynik ostatniej walki (obrażenia, krytyki, umiejętności), statystyki runu (rerolle, dokupienia, Ziarna), rekord i ranking gracza,
+// Dane: wynik ostatniej walki (obrażenia, mocne dziobnięcia, umiejętności), statystyki runu (rerolle, dokupienia, Ziarna), rekord i ranking gracza,
 // anonimowe liczniki pięter z serwera (ilu graczy dociera na piętro i ilu na nim odpada). Żadnych wymyślonych liczb.
 
 const pct = n => String(n).replace('.', ',');
@@ -26,10 +26,10 @@ export function failFacts(c) {
         `Do wygranej brakło ok. ${num(miss)} obrażeń (${res.foeLeft}% życia wroga). Rosół mógł jeszcze poczekać.`,
       ], c.seed));
     }
-    // 2. Krytyki: pech policzony. Dotyczy tylko losowanych krytyków (bez wymuszonych).
+    // 2. Dziobnięcia: pech policzony. Dotyczy tylko losowanych mocnych dziobnięć (bez wymuszonych).
     if (res.critRolls >= 12 && res.critPct > 0 && res.critPct < 100) {
       const luck = Math.pow(1 - res.critPct / 100, res.critRolls) * 100;
-      if (res.critHits === 0 && luck <= 25) add(luck < 8 ? 95 : 86, 'crit', `W tej walce krytyk losował się ${res.critRolls} ${pl(res.critRolls, 'raz', 'razy', 'razy')} przy szansie ${res.critPct}% i nie wypadł ani razu. Takiego pecha ma ok. ${pct(luck < 1 ? '<1' : luck.toFixed(luck < 10 ? 1 : 0))}% walk.`);
+      if (res.critHits === 0 && luck <= 25) add(luck < 8 ? 95 : 86, 'crit', `W tej walce mocne dziobnięcie losowało się ${res.critRolls} ${pl(res.critRolls, 'raz', 'razy', 'razy')} przy szansie ${res.critPct}% i nie wypadło ani razu. Takiego pecha ma ok. ${pct(luck < 1 ? '<1' : luck.toFixed(luck < 10 ? 1 : 0))}% walk.`);
     }
     // 3. Nieużyte umiejętności.
     if (c.hasSkills && res.skillsUsed === 0) add(91, 'skills', 'Nie użyłeś ani jednej umiejętności w tej walce. Kurczak zastanawia się, po co je nosił.');

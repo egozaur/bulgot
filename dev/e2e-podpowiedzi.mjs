@@ -35,13 +35,13 @@ const check = async (sel, name, size) => {
 for (const [w, h] of [[1920, 925], [1440, 780], [1366, 650]]) {
   await p.setViewport({ width: w, height: h }); await wait(300);
   const sz = `${w}x${h}`;
-  await check('.chips .chip, .slot[data-tipk]', 'kafelek/umiejętność', sz);
+  await check('.chips .chip, .sring[data-tipk]', 'kafelek/umiejętność', sz);
   await p.screenshot({ path: `${OUT}/tip-kafelek-${sz}.png` });
-  await check('.stats dt', 'statystyka (Życie)', sz);
-  await check('.stats dt:nth-of-type(2)', 'statystyka (Atak)', sz);
+  await check('.slr', 'statystyka (Atak)', sz);
+  await check('.slr:nth-of-type(2)', 'statystyka (Szybkość ataku)', sz);
   await p.screenshot({ path: `${OUT}/tip-atak-${sz}.png` });
-  await check('.stats dt:nth-of-type(5)', 'statystyka (Krytyk)', sz);
-  if (await p.$('.setline[data-tipk]')) await check('.setline[data-tipk]', 'zestaw', sz);
+  await check('.slr:nth-of-type(3)', 'statystyka (Dziobnięcie)', sz);
+  if (await p.$('.six[data-tipk]')) await check('.six[data-tipk]', 'zestaw', sz);
   await p.mouse.move(5, 5); await wait(150);
   const gone = await p.evaluate(() => document.querySelector('#tip').hidden);
   if (!gone) fail(`${sz}: podpowiedź nie znika po zjechaniu myszką`);

@@ -115,7 +115,7 @@ function render() {
     case 'noplayer': root.innerHTML = `<div class="loading" style="flex-direction:column;gap:14px;text-align:center"><span>Do gry w Bulgot potrzebny jest nick.</span><button class="btn primary" data-act="retry">Wybierz nick</button><a class="btn ghost" href="/">← PL3Y</a></div>`; break;
     case 'home': root.innerHTML = renderHome(); setTimeout(maybeLevelUp, 120); setTimeout(maybeCasinoAsk, 500); break;
     case 'setup': root.innerHTML = renderSetup(); break;
-    case 'run': root.innerHTML = renderRun(); rollCounters(); armLetter(); fitTower(); fitBoard(); setTimeout(maybeCasinoAsk, 300); break;
+    case 'run': root.innerHTML = renderRun(); rollCounters(); fitTower(); fitBoard(); setTimeout(maybeCasinoAsk, 300); break;
     case 'fight': return;   // arena buduje się w startFight()
   }
 }
@@ -280,14 +280,23 @@ function previewHTML() {
   }
   return `<div class="preview doorview ${nem ? 'nem' : ''} ${r.boss ? 'bossdoor' : ''}"><div class="lab">${lab}</div><div class="glass">${items}</div>${aff}${tp}</div>`;
 }
-// Okólnik Zarządu bieżącej strefy: pełna ramka na pierwszym piętrze strefy (i przy drzwiach), potem tylko nazwa w podtytule i pigułka na pasku.
 const zoneAt = (mode, n) => { for (const z of D.MODES[mode].zones) if (n <= z.upTo) return z.zone; return 2; };
-function decreeHTML(always = false) {
+// Wpływ bieżącego okólnika na build gracza (tylko podpowiedź na ekranie, nie zmienia reguł).
+function decreeImpact(r) {
+  const tiles = [...new Set(r.tiles)].map(id => TILE[id]).filter(Boolean);
+  const has = (t, re) => (t.fx || []).some(f => re.test(f.k)), tag = (t, ...a) => (t.tags || []).some(x => a.includes(x));
+  const own = pred => r.tiles.filter(id => TILE[id] && pred(TILE[id])).length;
+  if (r.decree === 'oszczednosci') { const p = t => tag(t, 'ogien', 'lod') || has(t, /burn|frost|freeze|shatter|pressure/); return { ids: tiles.filter(p).map(t => t.id), line: `Twoje kafelki Ognia i Lodu: ${own(p)}` }; }
+  if (r.decree === 'homeoffice') { const p = t => has(t, /rest|heal|regen|hpPct|hpFlat/); return { ids: tiles.filter(p).map(t => t.id), line: `Twoje kafelki leczące: ${own(p)}` }; }
+  if (r.decree === 'integracja') { const sc = setCounts(r.tiles, r.decree); return { ids: [], line: `Aktywne zestawy: ${Object.values(sc).filter(n => n >= 2).length}` }; }
+  return { ids: [], line: '' };
+}
+// Okólnik Zarządu: stały pasek pod tytułem piętra (nazwa, skutek i, gdy ma sens, ile twoich kafelków dotyczy).
+function decreeHTML() {
   const r = G.run, d = r.decree && D.DECREES[r.decree];
-  if (!d || !(always || r.round === 1 || zoneAt(r.mode, r.round - 1) !== zoneAt(r.mode, r.round))) return '';
-  if ((G.tucked || {})[r.id + ':' + r.decree]) return '';
-  // pismo Zarządu z pieczątką: wjeżdża przy wejściu do strefy, po chwili (albo po „Zwiń”) chowa się do pigułki Okólnik na pasku
-  return `<div class="decree letter" data-k="${r.id}:${r.decree}"><div class="lhead">Korporacja Rosołowa S.A. · Zarząd · Okólnik nr ${r.zone + 1}</div><div class="lbody">${art.decreeIcon()}<div><b>Nowy Okólnik Zarządu: ${esc(d.name)}.</b> ${esc(d.text)}</div></div><span class="stamp" aria-hidden="true">ZATWIERDZONO<small>ZARZĄD</small></span><button class="ltuck" data-act="tuck" title="Schowaj pismo (zostaje w pigułce Okólnik na pasku)">Zwiń</button></div>`;
+  if (!d) return '';
+  const im = decreeImpact(r);
+  return `<div class="decbar" tabindex="0" data-tip="${esc(d.name + '\n' + d.text)}"><span class="di">${art.decreeIcon()}</span><b>Okólnik: ${esc(d.name)}</b><span class="dt">${esc(d.text)}</span>${im.line ? `<span class="dl">${esc(im.line)}</span>` : ''}</div>`;
 }
 const decreeSub = () => { const d = G.run.decree && D.DECREES[G.run.decree]; return d ? ` · <span class="dsub" title="${esc(d.text)}">Okólnik: ${esc(d.name)}</span>` : ''; };
 // ---------- klatka schodowa (komputer): zygzakowate schody, kurczak wchodzi piętro wyżej, płomień rośnie od dołu ----------
@@ -336,48 +345,66 @@ function towerHTML() {
   G.cabFrom = r.phase === 'over' ? 0 : r.round;
   return `<aside class="tower shaft" aria-label="Postęp: szyb windy"><h4>Piętra</h4>${rows}<div class="pot"></div></aside>`;
 }
-function companionPanel() {
-  const c = G.run.companion; if (!c) return '';
-  const d = D.COMPANIONS[c.id];
-  return `<div class="panel comp-panel" data-tip="${esc(compForm(c) + ' (poziom ' + c.lvl + ' z 3)\n' + companionBlurb(c.id, c.lvl) + '\nRośnie po każdym pokonanym bossie.')}" tabindex="0">${art.companionArt(c.id)}<div><div class="nm">${esc(compForm(c))}</div><div class="fm">Towarzysz · poziom ${c.lvl}/3</div><div class="hint" style="text-align:left">${esc(d.text)}</div></div></div>`;
+// Zestawy i kamienie milowe jako duże ikony z konturem w kolorze progu (po bokach portretu); kropki = progi 2/3/4/6.
+function setIconsHTML() {
+  const r = G.run, sc = setCounts(r.tiles, r.decree);
+  const sets = Object.keys(D.SETS).filter(id => sc[id]).map(id => {
+    const n = sc[id], step = D.SET_STEPS.filter(s => n >= s).length;
+    return `<div class="six t${step}" tabindex="0" data-tipk="set:${id}"><span class="si-i">${SET_ICON[id] || '⭐'}</span><b class="si-n">${n}</b><u>${D.SET_STEPS.map(s => `<i class="${n >= s ? 'on' : ''}"></i>`).join('')}</u></div>`;
+  });
+  const ms = Object.entries(D.MILESTONES).map(([id, m]) => ({ m, n: Math.floor(r.tiles.filter(x => x === id).length / D.MILESTONE_EVERY) })).filter(x => x.n)
+    .map(x => `<div class="six ms" tabindex="0" data-tip="${esc(x.m.name + '\n' + x.m.text)}"><span class="si-i">⭐</span><b class="si-n">${x.n}</b></div>`);
+  return [...sets, ...ms];
+}
+// Trzy kółka umiejętności (klawisze 1–3): symbol, poziom, nazwa pod spodem; kolejność zmienia się przeciąganiem albo strzałkami ←/→ na aktywnym kółku.
+function skillRingsHTML() {
+  const r = G.run, mv = r.skills.length > 1 && r.phase !== 'over';
+  return `<div class="srings">${Array.from({ length: r.maxSkills || D.RULES.maxSkills }, (_, i) => {
+    const s = r.skills[i];
+    if (!s) return '<div class="sring empty" data-tip="Wolny slot umiejętności\nKolejna umiejętność trafi tu sama."><span>+</span></div>';
+    const def = D.SKILLS[s.id], tile = D.TILES.find(t => t.skill === s.id);
+    return `<div class="sring ${s.lvl >= 3 ? 'l3' : s.lvl === 2 ? 'l2' : ''} ${mv ? 'mv' : ''}" tabindex="0" data-tipk="tile:${tile.id}" ${mv ? `data-tipx="Zmiana kolejności (klawisz w walce): przeciągnij kółko albo użyj strzałek ←/→." draggable="true" data-slot="${i}"` : ''}><span class="rk">${i + 1}</span>${art.tileIcon(tile.id)}${s.lvl >= 2 ? `<b class="rl">${s.lvl >= 3 ? 'M' : s.lvl}</b>` : ''}<em>${esc(def.name.split(' ')[0])}</em></div>`;
+  }).join('')}</div>`;
+}
+// Statystyki w jednej kolumnie: ikona, nazwa, liczba i jednostka w stałych kolumnach; mikropasek to tylko orientacyjna skala.
+const BAR_CAP = { atk: 100, aspd: 300, crit: 100, critMult: 400, dmg: 300, maxHp: 150, armor: 80, evade: 75, regen: 50, luck: 100 };
+function statListHTML() {
+  const S = G.run.hero; let z = 0;
+  return `<div class="sl">${T.STAT_GROUPS.map(([gname, keys]) => {
+    const rows = keys.filter(([k]) => k !== 'dmg' || S.dmg).map(([k, label]) => {
+      const [num, unit] = T.statValue(k, S); z++;
+      return `<div class="slr ${z % 2 ? 'z' : ''}" tabindex="0" data-tipk="stat:${k}">${art.statIcon(k)}<span class="sln">${label}</span><span class="slb"><i style="width:${Math.max(4, Math.min(100, S[k] / BAR_CAP[k] * 100))}%"></i></span><span class="slv"><b>${num}</b><i>${unit}</i></span></div>`;
+    }).join('');
+    return `<div class="slg">${gname}</div>${rows}`;
+  }).join('')}</div>`;
 }
 function sideHTML() {
-  const r = G.run, S = r.hero, ch = D.CHARS[r.char], form = D.FORMS.find(f => f.id === r.form) || D.FORMS[0];
-  const slots = Array.from({ length: r.maxSkills || D.RULES.maxSkills }, (_, i) => {
-    const s = r.skills[i];
-    if (!s) return '<div class="slot empty">wolny slot umiejętności</div>';
-    const def = D.SKILLS[s.id], tile = D.TILES.find(t => t.skill === s.id);
-    const mu = s.lvl >= 3 && def.muts[(s.mut || 1) - 1];
-    const mv = r.skills.length > 1 && r.phase !== 'over';   // kolejność wolno zmieniać przed walką (strzałki albo przeciągnięcie)
-    return `<div class="slot ${mv ? 'mv' : ''}" data-tipk="tile:${tile.id}" tabindex="0" ${mv ? `draggable="true" data-slot="${i}"` : ''}>${art.tileIcon(tile.id)}<div><div class="sn">${i + 1}. ${esc(def.name)}${mu ? `<span class="lv mut">${esc(mu.name)}</span>` : s.lvl >= 2 ? '<span class="lv">POZ. 2</span>' : ''}</div><div class="sd">${esc(def.text)}${s.lvl >= 2 ? ' (+30% mocy, -20% cooldownu)' : ''}${mu ? ' Mutacja: ' + esc(mu.text) : ''}</div></div>${mv ? `<div class="swp"><button class="swb" data-act="skillmove" data-v="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''} aria-label="Przesuń wyżej" title="Przesuń wyżej (zmienia klawisz)">▲</button><button class="swb" data-act="skillmove" data-v="${i}" data-d="1" ${i === r.skills.length - 1 ? 'disabled' : ''} aria-label="Przesuń niżej" title="Przesuń niżej (zmienia klawisz)">▼</button></div>` : ''}</div>`;
-  }).join('');
-  const srow = (k, label, val) => `<dt data-tipk="stat:${k}" tabindex="0">${art.statIcon(k)}<span>${label}</span></dt><dd data-tipk="stat:${k}">${val}</dd>`;
-  const rows = T.STAT_LABELS.map(([k, label, f]) => srow(k, label, f ? f(S[k]) : S[k])).join('')
-    + (S.dmg ? srow('dmg', 'Obrażenia', `+${S.dmg}%`) : '') + (S.critMult !== 150 ? srow('critMult', 'Moc Fortuny', `×${(S.critMult / 100).toFixed(2).replace('.', ',')}`) : '');
+  const r = G.run, S = r.hero, ch = D.CHARS[r.char], cp = T.CHAR_PERKS[r.char] || { title: '', perks: [] };
+  const pct = Math.max(0, Math.min(100, r.hp / S.maxHp * 100));
+  const items = setIconsHTML(), half = Math.ceil(items.length / 2), im = decreeImpact(r);
+  const perkTip = cp.perks.map(([, sg, tx]) => (sg === '+' ? '＋ ' : '− ') + tx).join('\n');
+  const heroTip = esc(ch.name + ' · ' + (cp.role || ch.style) + '\n' + ch.text + (perkTip ? '\n' + perkTip : ''));
+  const pet = r.companion ? (() => { const c = r.companion, d = D.COMPANIONS[c.id]; return `<span class="pet" tabindex="0" data-tip="${esc(compForm(c) + ' (poziom ' + c.lvl + ' z 3)\n' + companionBlurb(c.id, c.lvl) + '\nRośnie po każdym pokonanym bossie.')}">${art.companionArt(c.id)}<b>${c.lvl}</b></span>`; })() : '';
+  const bd = r.badges && r.badges.length ? `<div class="bdgs">${r.badges.map(bdg => `<div class="chip badge" tabindex="0" data-tipk="badge:${bdg}">${art.badgeIcon(bdg)}</div>`).join('')}</div>` : '';
+  const links = linkChipsHTML();
   const counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
-  const chips = Object.entries(counts).map(([id, n]) => {
+  const chips = Object.entries(counts).sort((a, b) => TILE[b[0]].rarity - TILE[a[0]].rarity || b[1] - a[1]).map(([id, n]) => {
     const t = TILE[id], g = t.grow ? Math.min(t.grow.max, (r.grow || {})[id] || 0) : 0, fw = (r.flawed || []).find(w => w.id === id);
     const tip = fw ? 'Wada fabryczna (+50% efektów): ' + (fw.flaw ? D.FLAWS[fw.flaw].name + '. ' + D.FLAWS[fw.flaw].text : 'ujawni się po walce') : '';
-    return `<div class="chip r${t.rarity} ${fw ? 'flawed' : ''} ${id === G.upFresh ? 'fresh' : ''}" tabindex="0" data-tipk="tile:${id}" data-tipx="${esc(tip)}">${lvlTag(t)}${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : t.grow && g ? `<sup class="gr">+${g}</sup>` : ''}</div>`;
+    return `<div class="chip r${t.rarity} ${fw ? 'flawed' : ''} ${im.ids.includes(id) ? 'dhit' : ''} ${id === G.upFresh ? 'fresh' : ''}" tabindex="0" data-tipk="tile:${id}" data-tipx="${esc(tip)}">${lvlTag(t)}${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : t.grow && g ? `<sup class="gr">+${g}</sup>` : ''}</div>`;
   }).join('');
   const pawnLine = r.pawned ? `<div class="setline pawn">W lombardzie: ${esc(TILE[r.pawned.id].name)}${r.pawned.canRedeem ? ` (wykup za ${r.pawned.cost} Ziaren tylko na tym piętrze)` : ' (wykup na następnym piętrze)'}</div>` : '';
   const foxLine = r.foxDebt ? `<div class="setline pawn">Lisy Windykatory silniejsze o ${r.foxDebt * D.RULES.pawnFox}% (przepadłe zastawy)</div>` : '';
-  const sc = setCounts(r.tiles, r.decree);
-  const sets = Object.entries(D.SETS).map(([id, st]) => { const n = sc[id] || 0; if (!n) return ''; const total = setTotal(id); return `<div class="setline" data-tipk="set:${id}" tabindex="0">Zestaw ${st.name} ${n}/${total}${D.SET_STEPS.filter(s => n >= s).map(s => (s === 2 ? ': ' : '; ') + st['b' + s]).join('')}${n >= 5 && st.x ? '; Nadwyżka ' + (n - 4) + '×: ' + st.x : ''}</div>`; }).join('');
-  const mss = Object.entries(D.MILESTONES).map(([id, m]) => { const n = Math.floor(r.tiles.filter(x => x === id).length / D.MILESTONE_EVERY); return n ? `<div class="setline ms">${esc(m.name)}${n > 1 ? ' ×' + n : ''}: ${esc(m.text)}</div>` : ''; }).join('');
-  const pct = Math.max(0, Math.min(100, r.hp / S.maxHp * 100));
-  const cp = T.CHAR_PERKS[r.char] || { title: "", perks: [] };
-  const perks = cp.perks.map(([ic, sg, tx]) => `<span class="pk ${sg === "+" ? "plus" : "minus"}">${/^[a-zA-Z]+$/.test(ic) ? art.statIcon(ic) : `<span class="pe">${ic}</span>`}${esc(tx)}</span>`).join("");
   return `<aside class="side">
-    <div class="panel hero-card" tabindex="0" data-tip="${esc(ch.name + " · " + (cp.role || ch.style) + '\n' + ch.text)}">
-      <div class="hc-head">${art.heroArt(r.char, r.form)}<div class="hc-id"><div class="nm">${esc(ch.name)}</div><div class="fm">${esc(cp.role || ch.style)}</div></div><span class="hc-num"><span data-ctr="hp">${r.hp}</span>/${S.maxHp}</span></div>
-      <div class="hpbar"><i style="width:${pct}%"></i></div>
-      <div class="hc-trait"><span>${cp.title ? "★ " + esc(cp.title) : ""}</span>${r.badges && r.badges.length ? `<div class="bdgs" aria-label="Odznaki (${r.badges.length})">${r.badges.map(bd => `<div class="chip badge" tabindex="0" data-tipk="badge:${bd}">${art.badgeIcon(bd)}</div>`).join("")}</div>` : ""}</div>
-      ${cp.perks.length ? `<div class="hc-perks">${perks}</div>` : ""}</div>
-    ${companionPanel()}
-    <div class="panel"><h4>Umiejętności aktywne</h4><div class="slots">${slots}</div></div>
-    <div class="panel"><h4>Statystyki</h4>${zoneCompareHTML()}<dl class="stats">${rows}</dl></div>
-    <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${sets}${mss}${pawnLine}${foxLine}</div></aside>`;
+    <div class="panel hero-card hero4" tabindex="0" data-tip="${heroTip}">
+      <div class="h4-top"><div class="h4-col l">${items.slice(0, half).join('')}</div>
+        <div class="h4-mid"><div class="h4-fig" style="--p:${pct}"><div class="kin">${art.heroArt(r.char, r.form)}</div><span class="hpnum"><span data-ctr="hp">${r.hp}</span> / ${S.maxHp}</span>${pet}</div>
+          <div class="nm">${esc(ch.name)}</div><div class="fm">${esc(cp.title ? '★ ' + cp.title : cp.role || ch.style)}</div></div>
+        <div class="h4-col r">${items.slice(half).join('')}</div></div>
+      ${skillRingsHTML()}
+      ${links || bd ? `<div class="h4-mix">${links}${bd}</div>` : ''}</div>
+    <div class="panel"><h4>Statystyki</h4>${zoneCompareHTML()}${statListHTML()}</div>
+    <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${pawnLine}${foxLine}</div></aside>`;
 }
 // Liczniki tablicy rozdzielczej: licznik odcinkowy wyniku i przewijanie wartości przy zmianie (zielony / czerwony błysk).
 const odoHTML = (n, len) => String(Math.max(0, n | 0)).padStart(len, '0').split('').map(d => `<i>${d}</i>`).join('');
@@ -394,7 +421,7 @@ function rollCounters() {
     const k = el.dataset.ctr, to = k === 'score' ? G.run.score : k === 'coins' ? G.run.coins : G.run.hp, from = prev[k];
     prev[k] = to;
     if (from === undefined || from === to) continue;
-    const cell = el.closest('.disp, .hpbar, .hc-num') || el;
+    const cell = el.closest('.disp, .hpbar, .hc-num, .hpnum') || el;
     cell.classList.remove('flash-up', 'flash-down'); void cell.offsetWidth; cell.classList.add(to > from ? 'flash-up' : 'flash-down');
     if (REDUCED.matches) continue;
     const fmt = v => el.dataset.odo ? odoHTML(v, +el.dataset.odo) : String(v), t0 = performance.now(), dur = Math.min(900, 300 + Math.abs(to - from) * 6);
@@ -430,33 +457,11 @@ function linkChipsHTML() {
   const html = st.map(l => { const L = D.SET_LINKS.find(x => x.id === l.id); return `<div class="lnk ${l.kind} ${l.fixed ? 'fixed' : ''}" tabindex="0" data-tipk="link:${l.id}"><span class="lic">${l.kind === 'conflict' ? (l.fixed ? '☮' : '⚔') : '✚'}</span><span class="lnm">${esc(L.name)}</span></div>`; }).join('');
   return html ? `<div class="zlinks" aria-label="Powiązania zestawów">${html}</div>` : '';
 }
-function setChipsHTML() {
-  if (!G.run) return '';
-  const sc = setCounts(G.run.tiles, G.run.decree);
-  const chips = Object.entries(D.SETS).map(([id, st]) => {
-    const n = sc[id] || 0; if (!n) return '';
-    const total = Math.max(n, setTotal(id)), next = D.SET_STEPS.find(x => n < x);
-    const dots = Array.from({ length: Math.min(total, 8) }, (_, i) => `<i class="${i < n ? 'on' : ''}${D.SET_STEPS.includes(i + 1) ? ' th' : ''}"></i>`).join('');
-    return `<div class="sch ${n >= 2 ? 'act' : ''} ${next && next - n === 1 ? 'near' : ''}" tabindex="0" data-tipk="set:${id}"><span class="sic">${SET_ICON[id] || '★'}</span><span class="snm">${esc(st.name)}</span><b>${n}/${total}</b><span class="sdots">${dots}</span></div>`;
-  }).join('');
-  return chips ? `<div class="zsets" aria-label="Zestawy">${chips}</div>${linkChipsHTML()}` : '';
-}
 function zoneCompareHTML() {
-  const c = zoneCompare(); if (!c) { const z = setChipsHTML(); return z ? `<div class="zcmp">${z}</div>` : ''; }
+  const c = zoneCompare(); if (!c) return '';
   const bar = (k, label, v, tip) => { const lv = v < 0.75 ? 'lo' : v > 1.3 ? 'hi' : 'ok', word = { lo: 'słabo', ok: 'OK', hi: 'mocno' }[lv];
     return `<div class="zc ${lv}" tabindex="0" data-tip="${esc(tip)}">${art.statIcon(k)}<span class="zl">${label}</span><span class="zb"><i style="width:${Math.round(Math.min(1, v / 2) * 100)}%"></i><u></u></span><b>${word}</b></div>`; };
-  return `<div class="zcmp" aria-label="Porównanie z wrogami strefy">${bar('atk', 'Atak', c.off, 'Jak szybko pokonasz typową grupę wrogów tej strefy (Atak, Szybkość ataku, Kryt, Obrażenia kontra ich Życie i Pancerz).')}${bar('armor', 'Obrona', c.def, 'Jak długo wytrzymasz ciosy typowej grupy wrogów tej strefy (Życie, Pancerz, Unik, Regeneracja kontra ich Atak).')}${setChipsHTML()}</div>`;
-}
-function tuckLetter(el) {
-  if (!el || el.classList.contains('tucked')) return;
-  (G.tucked || (G.tucked = {}))[el.dataset.k] = true;
-  const pill = $('.pill.dec'); if (pill) { pill.classList.remove('ping'); void pill.offsetWidth; pill.classList.add('ping'); }
-  if (REDUCED.matches) { el.remove(); return; }
-  el.classList.add('tucked'); setTimeout(() => el.remove(), 650);
-}
-function armLetter() {
-  const el = $('.decree.letter'); if (!el) return;
-  clearTimeout(G.letterT); G.letterT = setTimeout(() => tuckLetter($('.decree.letter')), 9000);
+  return `<div class="zcmp" aria-label="Porównanie z wrogami strefy">${bar('atk', 'Atak', c.off, 'Jak szybko pokonasz typową grupę wrogów tej strefy (Atak, Szybkość ataku, Dziobnięcie, Obrażenia kontra ich Życie i Pancerz).')}${bar('armor', 'Obrona', c.def, 'Jak długo wytrzymasz ciosy typowej grupy wrogów tej strefy (Życie, Pancerz, Unik, Regeneracja kontra ich Atak).')}</div>`;
 }
 // Plakietki na pasku: Dogrywka, Klątwy, trasa strefy.
 function topPills() {
@@ -534,10 +539,10 @@ async function swapSlots(a, b) {
   const j = await act('skillorder', { a, b }); if (!j) return;
   snd.sfx('click'); render();
 }
-document.addEventListener('dragstart', e => { const s = e.target.closest && e.target.closest('.slot[data-slot]'); if (!s) return; G.dragSlot = +s.dataset.slot; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(G.dragSlot)); } catch (x) {} s.classList.add('drag'); });
-document.addEventListener('dragover', e => { const s = e.target.closest && e.target.closest('.slot[data-slot]'); if (s && G.dragSlot != null) { e.preventDefault(); document.querySelectorAll('.slot.over').forEach(x => x !== s && x.classList.remove('over')); s.classList.add('over'); } });
-document.addEventListener('dragend', () => { G.dragSlot = null; document.querySelectorAll('.slot.drag, .slot.over').forEach(x => x.classList.remove('drag', 'over')); });
-document.addEventListener('drop', e => { const s = e.target.closest && e.target.closest('.slot[data-slot]'); if (!s || G.dragSlot == null) return; e.preventDefault(); const a = G.dragSlot, b = +s.dataset.slot; G.dragSlot = null; if (a !== b) swapSlots(a, b); });
+document.addEventListener('dragstart', e => { const s = e.target.closest && e.target.closest('.sring[data-slot]'); if (!s) return; G.dragSlot = +s.dataset.slot; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(G.dragSlot)); } catch (x) {} s.classList.add('drag'); });
+document.addEventListener('dragover', e => { const s = e.target.closest && e.target.closest('.sring[data-slot]'); if (s && G.dragSlot != null) { e.preventDefault(); document.querySelectorAll('.sring.over').forEach(x => x !== s && x.classList.remove('over')); s.classList.add('over'); } });
+document.addEventListener('dragend', () => { G.dragSlot = null; document.querySelectorAll('.sring.drag, .sring.over').forEach(x => x.classList.remove('drag', 'over')); });
+document.addEventListener('drop', e => { const s = e.target.closest && e.target.closest('.sring[data-slot]'); if (!s || G.dragSlot == null) return; e.preventDefault(); const a = G.dragSlot, b = +s.dataset.slot; G.dragSlot = null; if (a !== b) swapSlots(a, b); });
 function showPawn() {
   const P = D.RULES.prices, back = D.RULES.pawnBack, fox = D.RULES.pawnFox, coin = art.coinIcon();
   // kompaktowe kafelki w jednym rzędzie (pełny opis w dużej podpowiedzi po najechaniu), żeby okno nie wymagało przewijania
@@ -563,8 +568,7 @@ function stageOffer() {
   return `<div class="stage-title"><h2>Piętro ${r.round}${r.boss ? ' · BOSS' : ''}</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${r.elite ? ' · elitarny wróg' : ''}${decreeSub()}</div></div>
     <div class="kron">${esc(r.nemesisRound ? T.pickLine(T.NEMESIS_LINES, r.round) : floorKron())}</div>${decreeHTML()}${previewHTML()}
     <div class="cards">${cards}</div>
-    <div class="actions">${rerollBtn(cost, free, blocked, r.coins)}${restBtn()}${pawnBtn()}${upgradeBtn()}</div>${lost}
-    <div class="hint">Jeden kafelek bierzesz za darmo (klawisze 1–${r.offer.length}), pozostałe możesz dokupić (Shift + cyfra). R przelosowuje ofertę, L otwiera Lombard, U zlewa kafelki. Strzałki i Enter też działają.</div>`;
+    <div class="actions">${rerollBtn(cost, free, blocked, r.coins)}${restBtn()}${pawnBtn()}${upgradeBtn()}</div>${lost}`;
 }
 function stageDoor() {
   const r = G.run, P = r.pending, a = D.AFFIXES[P.affix];
@@ -646,13 +650,13 @@ function stageArena() {
   ].join('');
   return `<div class="stage-title"><h2>Arena Duchów</h2><div class="sub">${g.mirror ? 'Nikt jeszcze nie zostawił tu ducha, więc czeka twoje Odbicie.' : 'Duch gracza <b>' + esc(g.nick) + '</b> (' + esc(ch ? ch.name : '') + ', ' + g.floors + ' pięter)'}</div></div>
     <div class="kron">Kto nie dotarł do Prezesa, ten krąży po arenie i bije następnych.</div>
-    <div class="ghostcard"><div class="gfig">${art.ghostArt(g.char, g.wear)}</div><div class="gst"><b>Statystyki Ducha na tym piętrze</b><span>Życie ${st.hp}</span><span>Atak ${st.atk}</span><span>Szybkość ${(st.aspd / 100).toFixed(2).replace('.', ',')} / s</span><span>Pancerz ${st.armor}</span><span>Krytyk ${st.crit}%</span><span>Unik ${st.evade}%</span><div class="gtiles">${tiles}</div></div></div>
+    <div class="ghostcard"><div class="gfig">${art.ghostArt(g.char, g.wear)}</div><div class="gst"><b>Statystyki Ducha na tym piętrze</b><span>Życie ${st.hp}</span><span>Atak ${st.atk}</span><span>Szybkość ${(st.aspd / 100).toFixed(2).replace('.', ',')} / s</span><span>Pancerz ${st.armor}</span><span>Dziobnięcie ${st.crit}%</span><span>Unik ${st.evade}%</span><div class="gtiles">${tiles}</div></div></div>
     <div class="cards">${cards}</div>`;
 }
 // Dodatkowa runda po wygranej na piętrze 3 (Gruszka) i 6 (Pipsztal): opcjonalna walka z życiem, które ci zostało.
 const EXTRA_INFO = {
   gruszka: { title: 'Gruszka czeka w sadzie', sub: 'Wielki kurczak z głową gruszki wyszedł z cienia i wygląda na obrażonego, że jeszcze stoisz.', kron: 'Zacznie od docinków. Skończy na obieraniu.' },
-  pipsztal: { title: 'Pipsztal wchodzi z psem', sub: 'Kurczak w dresie, nóż w skrzydle i pies, który nie trzyma moczu. Pytanie o pięć złotych to dopiero początek.', kron: 'Pies sika, Pipsztal tnie. Ty ogłuszony.' },
+  pipsztal: { title: 'Pipsztal wchodzi z Lakusiem', sub: 'Kurczak w dresie, nóż w skrzydle i pies Lakuś, który nie trzyma moczu. Pytanie o pięć złotych to dopiero początek.', kron: 'Lakuś sika, Pipsztal tnie. Ty ogłuszony.' },
 };
 function stageExtra() {
   const r = G.run, id = r.pending.boss, X = EXTRA_INFO[id], d = D.BOSSES[id], hpPct = Math.round(r.hp * 100 / r.maxHp);
@@ -662,7 +666,7 @@ function stageExtra() {
   ].join('');
   return `<div class="stage-title"><h2>Dodatkowa runda: ${esc(d.name)}</h2><div class="sub">${esc(X.title)}. Opcjonalna, możesz odpuścić.</div></div>
     <div class="kron">${esc(X.kron)}</div>
-    <div class="ghostcard"><div class="gfig">${art.enemyArt(d.art)}</div><div class="gst"><b>${esc(d.name)}, ${esc(d.title)}</b><span>${esc(X.sub)}</span><span>${esc(d.text)}</span><span>Twoje życie: ${r.hp} / ${r.maxHp} (${hpPct}%)</span></div></div>
+    <div class="ghostcard"><div class="gfig">${art.enemyArt(d.art)}</div><div class="gst"><b>${esc(d.name)}, ${esc(d.title)}</b><span>${esc(X.sub)}</span><span>${esc(d.text)}</span><span>Twoje życie: ${r.hp} / ${r.maxHp} (${hpPct}%)</span>${hpPct < 60 ? '<span style="color:#ff9f80"><b>Uwaga:</b> masz mało życia. Przegrana kończy cały run, więc rozsądniej odpuścić.</span>' : ''}</div></div>
     <div class="cards">${cards}</div>`;
 }
 function stageContract() {
@@ -1527,7 +1531,6 @@ const ACT = {
   pawnmenu: () => showPawn(),
   upgrademenu: () => showUpgrade(),
   upgrade: async b => { const id = b.dataset.v; const j = await act('upgrade', { id }); if (!j) return; closeOverlay(); snd.sfx('unlock'); G.upFresh = j.upgraded.to; toast(`Zlano ${D.RULES.upgradeCost}× ${TILE[id].name} w ${TILE[j.upgraded.to].name}!`, false, 3600); render(); setTimeout(() => { G.upFresh = null; document.querySelectorAll('.chip.fresh').forEach(e => e.classList.remove('fresh')); }, 1800); },
-  tuck: b => tuckLetter(b.closest('.decree')),
   pawn: async b => { const id = b.dataset.v; const j = await act('pawn', { id }); if (!j) return; closeOverlay(); snd.sfx('coin'); toast(`Lis wziął ${TILE[id].name} i dał ${j.price} Ziaren. Wykup na następnym piętrze.`, false, 4200); render(); },
   codeopen: () => {   // Hasło do ukrytej postaci: tylko tutaj, z ekranu wyboru postaci. Hasło sprawdza serwer.
     openOverlay(`<h2>Masz hasło?</h2><p class="lead">Ktoś szepnął Ci słówko? Wpisz je, a ukryta postać wykluje się od razu.</p>
@@ -1588,7 +1591,6 @@ const ACT = {
   profile: () => showProfile(), achbook: () => { closeOverlay(); showBook('ach'); },
   book: () => showBook(), booktab: b => showBook(b.dataset.v, true),
   history: () => showHistory(),
-  skillmove: b => swapSlots(+b.dataset.v, +b.dataset.v + +b.dataset.d),
   analyze: b => showAnalyzeDialog(b.dataset.id, b.closest('tr') ? 'hist' : 'end'),
   atag: b => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); },
   acancel: () => backFromAnalyze(),
@@ -1648,6 +1650,12 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const F = G.fight, k = e.key.toLowerCase();
   if (k !== 'escape' && e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;   // pisanie nie uruchamia skrótów
+  const ringEl = e.target && e.target.closest && e.target.closest('.sring[data-slot]');   // ←/→ na aktywnym kółku umiejętności zamienia je z sąsiednim (klawisz w walce)
+  if (ringEl && (k === 'arrowleft' || k === 'arrowright') && G.screen === 'run' && !overlayOpen() && !e.shiftKey) {
+    e.preventDefault(); const i = +ringEl.dataset.slot, j = i + (k === 'arrowright' ? 1 : -1);
+    if (G.run && j >= 0 && j < G.run.skills.length) swapSlots(i, j).then(() => { const n = $('.sring[data-slot="' + j + '"]'); if (n) n.focus(); });
+    return;
+  }
   if (G.screen === 'setup' && !overlayOpen() && !e.shiftKey) {
     const s = G.setup, ids = charIds();
     if (k === 'escape' || k === 'backspace') { e.preventDefault(); ACT.home(); return; }
