@@ -7,6 +7,7 @@ import * as T from '../text.js';
 import { maybeCasinoAsk } from './casino.js';
 import { $, G, SPIN, TILE, act, charView, esc, fmtNum } from './core.js';
 import { startFight } from './fight.js';
+import { duelBtn, hudTick, resumeDuel } from './duel.js';
 import { fitBoard } from './invoice.js';
 import { maybeLevelUp, stazOf, stazPill } from './meta.js';
 import { renderRun } from './run.js';
@@ -22,6 +23,7 @@ export async function init() {
   const j = await act('state');
   if (!j) { G.screen = 'noplayer'; return render(); }
   G.screen = 'home'; render();
+  resumeDuel();   // trwający pojedynek (odświeżona strona) wraca na ekran
 }
 
 export function render() {
@@ -32,7 +34,7 @@ export function render() {
     case 'noplayer': root.innerHTML = `<div class="loading" style="flex-direction:column;gap:14px;text-align:center"><span>Do gry w Bulgot potrzebny jest nick.</span><button class="btn primary" data-act="retry">Wybierz nick</button><a class="btn ghost" href="/">← PL3Y</a></div>`; break;
     case 'home': root.innerHTML = renderHome(); setTimeout(maybeLevelUp, 120); setTimeout(maybeCasinoAsk, 500); break;
     case 'setup': root.innerHTML = renderSetup(); break;
-    case 'run': root.innerHTML = renderRun(); rollCounters(); fitTower(); fitBoard(); setTimeout(maybeCasinoAsk, 300); break;
+    case 'run': root.innerHTML = renderRun(); rollCounters(); fitTower(); fitBoard(); if (G.duelRun) hudTick(); setTimeout(maybeCasinoAsk, 300); break;
     case 'fight': return;   // arena buduje się w startFight()
   }
 }
@@ -62,7 +64,7 @@ export function renderHome() {
     <div class="home-actions">
       ${run ? `<div class="resume">Trwa run: <b>${esc(D.MODES[run.mode].name)}</b>, piętro ${run.round}/${run.rounds}, ${run.coins} ${art.coinIcon()} Ziaren</div>
         <button class="btn primary big" data-act="resume" data-primary>Kontynuuj</button><button class="btn small ghost" data-act="abandon">Porzuć run</button>`
-      : `<div class="home-main"><button class="btn primary big" data-act="new" data-primary>Graj</button>${dailyBtn()}</div>`}
+      : `<div class="home-main"><button class="btn primary big" data-act="new" data-primary>Graj</button>${dailyBtn()}${duelBtn()}</div>`}
       <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="kurnik" title="Trwałe ulepszenia za Pióra">${art.emo('pisklecarnia')} Kurnik <small>${G.profile.feathers | 0}</small></button><button class="btn" data-act="shop">Sklepik <small>🎟️ ${stazOf().talons}</small></button><button class="btn" data-act="profile">Profil</button><button class="btn" data-act="book">Księga Kurnika</button></div>
       <div class="home-row small"><button class="btn small" data-act="help">Jak grać</button><button class="btn small" data-act="settings">Dźwięk</button><button class="btn small ghost" data-act="history">Historia (test)</button></div>
       ${bestLine ? `<div class="best">Najlepsze wyniki. ${bestLine}</div>` : ''}

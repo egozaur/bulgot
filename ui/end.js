@@ -8,6 +8,7 @@ import { failFacts, pickFacts, winFacts } from '../fakty.js';
 import { $, G, TILE, act, closeOverlay, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js';
 import { cls, feathers } from './fight.js';
 import { BURNERS, render } from './home.js';
+import { showDuelEnd } from './duel.js';
 import { dismissInvoice } from './invoice.js';
 import { endExtrasHTML } from './meta.js';
 import { setOwned, tileCard } from './run.js';
@@ -92,6 +93,7 @@ export function endFacts(j, win) {
   });
 }
 export function showEnd(j, quiet = false) {
+  if (G.duelRun) return showDuelEnd();   // pojedynek ma własny ekran końca (bez rekordów, Stażu i analizy)
   const r = G.run, e = j.end || (G.lastEndJ && G.lastEndJ.end) || {}, win = r.ended === 'win', un = takeUnlocks();
   const mult = (100 + D.RULES.garnekScore * r.garnek) / 100;
   G.lastEnd = e; G.lastEndJ = j.result || !G.lastEndJ ? j : { ...j, result: G.lastEndJ.result };

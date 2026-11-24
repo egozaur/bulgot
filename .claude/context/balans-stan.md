@@ -37,3 +37,7 @@ Wcześniejsze punkty odniesienia (inne wersje reguł): `DESIGN.md` sekcje 9, 17 
 - Jedna konfiguracja: `node -r ./dev/lib-prio.cjs dev/sim-balance.mjs --mode full --garnek 4 --char <id> --n 200 --table`.
 - Cała siatka (postacie × palniki × warianty decyzji): `dev/analiza-ev.mjs` (wznawialny, niski priorytet, własny limit czasu, max 6 procesów); wynik jako `.jsonl`.
 - Po odświeżeniu zaktualizuj tabelę, datę i `RUN_V` w tym pliku (jedno miejsce, bez kopii w innych dokumentach).
+
+## Pomiar do pojedynku (2026-11-24, `RUN_V = 20`)
+
+Tryb Szybki, palnik 5, bot `smart`, 300 partii na postać (±3 pp). Wygrane: gigachad 14,0%, jajeczko 13,7%, rzeznik 13,0%, ges 11,0%, barista 10,3%, zwiazkowiec 8,3%, pyrtek 7,0%, emeryt 6,0%, wanda 4,7%, sanepid 2,7%, pacyfista 2,7%, zjarany 1,7%. Średnio ukończonych pięter: najgorzej zjarany 3,05, emeryt 3,78, wanda 3,91. Trzy najsłabsze wg wygranych (zjarany, sanepid, pacyfista) trafiły do `DUEL.weak` w `duel.js`; po zmianie balansu odśwież listę.

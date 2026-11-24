@@ -25,3 +25,15 @@ Format wpisu: **cel**, **gdzie**, **gotowe, gdy**, **najpierw** (co musi się wy
 - **Gdzie:** `onEvent`/`frame` w `ui/fight.js`, `F.stopUntil`, `fx.js`, `fight.css`.
 - **Gotowe, gdy:** efekt tylko na obrazie (silnik i wejścia bez zmian, wynik i powtórka identyczne), wyłączany przez `html.reduce`; `e2e-walka`, `e2e-efekty`.
 - **Najpierw:** nic, można zaczynać (ustal czas trwania: propozycja 1,2 s, pomijalne klawiszem).
+
+## 5. Pojedynek: wdrożenie i próba na żywo
+- **Cel:** sprawdzić pojedynek na prawdziwym serwerze z dwiema osobami (w `?local=1` jest jeden gracz).
+- **Gdzie:** `pl3y-server` (`duel.js`, `ranks.js`, `player.js`, `index.js`) i klient (`ui/duel.js`); zmiana serwera = push w obu repo.
+- **Gotowe, gdy:** dwa konta przechodzą lobby, głosowanie (zgoda i niezgoda), 60 s terminy, koniec obu runów i okno z obietnicą; budzik DO faktycznie rozlicza gracza, który zamknął kartę.
+- **Najpierw:** zgoda właściciela na push (serwer = deploy).
+
+## 6. Pojedynek: nagrody i seria
+- **Cel:** prawdziwe nagrody za wygraną (obecnie tylko okno „podwyżki po nowym roku”) i ewentualnie seria do 3 wygranych.
+- **Gdzie:** `duel.js`, `player.js` (po zakończeniu meczu), `profile.js`; klient `ui/duel.js`.
+- **Gotowe, gdy:** nagroda (Ziarna na podsumowaniu rocznym, Talony albo Pióra) przyznawana raz za mecz, bez pętli farmienia; test serwera.
+- **Najpierw:** decyzja właściciela, co jest nagrodą i czy seria ma być.

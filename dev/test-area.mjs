@@ -30,12 +30,13 @@ const AREAS = {
   podpowiedzi: ['e2e-podpowiedzi'],
   staz: ['e2e-staz'],
   kasyno: ['e2e-kasyno'],
+  pojedynek: ['e2e-pojedynek'],
   ksiega: ['e2e-ksiega'],
   kafelki: ['e2e-poziomy', 'e2e-ikony'],
   nowosci: ['e2e-nowosci', 'e2e-extra'],
   jeszcze: ['e2e-jeszcze'],
   smoke: ['smoke'],
-  wszystko: ['srv', 'smoke', 'e2e-ui', 'e2e-sciezki', 'e2e-odpoczynek', 'e2e-rozbudowa', 'e2e-strzalki', 'e2e-jeszcze', 'e2e-uklad', 'e2e-ukryte', 'e2e-efekty', 'e2e-podpowiedzi', 'e2e-analiza', 'e2e-schody', 'e2e-panel', 'e2e-faktura', 'e2e-start', 'e2e-staz', 'e2e-kasyno', 'e2e-ksiega', 'e2e-poziomy', 'e2e-ikony', 'e2e-postacie', 'e2e-nowosci', 'e2e-extra', 'e2e-walka'],
+  wszystko: ['srv', 'smoke', 'e2e-ui', 'e2e-sciezki', 'e2e-odpoczynek', 'e2e-rozbudowa', 'e2e-strzalki', 'e2e-jeszcze', 'e2e-uklad', 'e2e-ukryte', 'e2e-efekty', 'e2e-podpowiedzi', 'e2e-analiza', 'e2e-schody', 'e2e-panel', 'e2e-faktura', 'e2e-start', 'e2e-staz', 'e2e-kasyno', 'e2e-pojedynek', 'e2e-ksiega', 'e2e-poziomy', 'e2e-ikony', 'e2e-postacie', 'e2e-nowosci', 'e2e-extra', 'e2e-walka'],
 };
 
 if (process.argv.includes('--list') || process.argv.length < 3) {

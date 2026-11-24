@@ -58,6 +58,8 @@ export async function act(path, body) {
     const { j } = await call(path, body || {});
     if (j && j.profile) { G.profile = j.profile; art.setOutfit(j.profile.wardrobe && j.profile.wardrobe.eq); }
     if (j && j.daily) G.daily = j.daily;
+    if (j && 'duelRun' in j) { G.duelRun = j.duelRun; if (j.duelRun) G.duelOff = j.duelRun.now - Date.now(); }   // pojedynek: termin i obrażenia mojego runu
+    if (j && 'duel' in j) { G.duel = j.duel; if (j.duel) G.duelOff = j.duel.now - Date.now(); }   // pojedynek: stan meczu
     if (j && 'run' in j) G.run = j.run;
     if (j && j.myGhost !== undefined) G.myGhost = j.myGhost;
     if (!j || j.err) { toast((j && j.err) || 'Coś poszło nie tak. Spróbuj jeszcze raz.', true, 3600); if (j && 'run' in j && G.screen !== 'fight') render(); return null; }

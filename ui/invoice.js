@@ -13,7 +13,7 @@ import { REDUCED } from './side.js';
 // Po wygranej walce faktura Korporacji Rosołowej spada na ekran, młotek przybija ją gwoździem, po czym leci na Tablicę Zarządu
 // (korek na dole środkowej kolumny) i zostaje tam jako karteczka do końca runu. Klik w karteczkę otwiera fakturę.
 // Faktura nie blokuje gry (klik i klawisze przechodzą przez nią), a pierwsza akcja gracza skraca animację. Opcja w ustawieniach.
-export const invoiceOn = () => store.get('bulgot:invoice') !== '0';
+export const invoiceOn = () => !G.duelRun && store.get('bulgot:invoice') !== '0';   // w pojedynku bez faktury: liczy się czas
 export const INV = { el: null, ham: null, t0: 0, timers: [], floor: 0, pending: 0 };
 export const COIN = '¤';                                   // w zapisanych pozycjach znacznik ikony Ziarna
 export const coinHTML = s => String(s).replace(/¤/g, art.coinIcon());

@@ -225,3 +225,9 @@ export function gruszkaTaunt(r) {
   L.sort((a, b) => b[0] - a[0] || a[1].length - b[1].length);
   return L[0][1];
 }
+
+// ---------- Pojedynek dla 2 osób ----------
+export const DUEL_NO_AGREE_BURNER = 'Nie zgodziliście się co do palnika, więc będzie najgorętszy: palnik 5.';
+export const DUEL_NO_AGREE_CHAR = 'Nie mogliście się zdecydować… więc została tylko padlina.';
+export const DUEL_PROMISE_BIG = 'Kurczak obiecał podwyżki… po nowym roku.';
+export const DUEL_PROMISE_SMALL = '(Nagrody za wygranie zostaną wypłacone w Ziarnach na podsumowaniu rocznym firmy.)';

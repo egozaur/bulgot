@@ -29,6 +29,7 @@ Komendy sprawdzone 2026-11-24. Node jest przenośny: `export PATH="/c/Users/Kurc
 | podpowiedzi | `e2e-podpowiedzi` |
 | Staż, Sklepik, Dyżur | `e2e-staz` |
 | kasyno | `e2e-kasyno` |
+| pojedynek | `e2e-pojedynek` (+ testy serwera „Pojedynek…”) |
 | Księga | `e2e-ksiega` |
 | poziomy kafelków, ikony | `e2e-poziomy`, `e2e-ikony` |
 | nowości (trasy, Klątwy, Dogrywka) | `e2e-nowosci`; dodatkowe rundy: `e2e-extra` |

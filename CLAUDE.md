@@ -14,6 +14,7 @@ Zawsze odpowiadaj po polsku. Teksty UI i komentarze po polsku. Do właściciela 
 - Balans: `dev/sim-balance.mjs`; analizy graczy: `dev/podsumuj-analizy.mjs`. Komendy i tabela „który test do jakiej zmiany”: `.claude/context/development-workflow.md`.
 
 ## Architektura w skrócie
+- **Pojedynek dla 2 osób** (kod, głosowanie, wspólne ziarno, 60 s na decyzje): `duel.js` na serwerze + `ui/duel.js`; opis w `DESIGN.md` 31 i `protocol.md`; test `node dev/test-area.mjs pojedynek`.
 - **Serwer liczy wszystko, co ma znaczenie** (oferty z ziarna runu, rerolle, zakupy, nagrody, wynik walki, odblokowania, ranking). Klient tylko rysuje i prowadzi walkę na żywo tym samym silnikiem (`shared/sim.js`), a wejścia gracza `[tick, slot]` serwer powtarza i wydaje wynik.
 - Walka jest **deterministyczna** (tick 100 ms, `rng.js`; bez `Math.random`, `Date`, trygonometrii).
 - Dane (kafelki, wrogowie, bossowie, postacie…) to moduł `data.js` na serwerze, nie JSON. Zmiana silnika = zmiana w `pl3y-server/src/games/bulgot/` + `node dev/sync-engine.mjs` + commit w **obu** repo + (przy zmianie spotkań lub powtórki walki) podbicie `RUN_V` w `rules.js`.

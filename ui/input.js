@@ -4,6 +4,7 @@ import { playerNow } from '../api.js';
 import * as D from '../shared/data.js';
 import * as snd from '../audio.js';
 import { casinoAnswer, casinoOn, casinoSpin, showCasinoAsk } from './casino.js';
+import { DUEL_ACT } from './duel.js';
 import { $, G, TILE, act, closeOverlay, openOverlay, overlayOpen, store, toast } from './core.js';
 import { backFromAnalyze, sendAnalysis, showAnalyzeDialog, showEnd } from './end.js';
 import { banner, startFight, stopFight, useSkill } from './fight.js';
@@ -16,6 +17,7 @@ import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showIntro,
 
 // ---------- obsługa kliknięć i klawiszy ----------
 export const ACT = {
+  ...DUEL_ACT,
   retry: async () => { await init(); },
   changeplayer: async () => { if (window.PL3Y && window.PL3Y.player) { await window.PL3Y.player.change(); await act('state'); render(); } },
   new: () => { G.screen = 'setup'; render(); },

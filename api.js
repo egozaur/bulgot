@@ -31,6 +31,8 @@ function localInit() {
   return localReady;
 }
 const LOCAL_PLAYER = { n: 'lokalny', nick: 'Lokalny', avatar: 1, pt: 'local' };
+// Tylko do testów: lokalny BgRanks (w testach pojedynku drugi gracz dołącza do meczu bezpośrednio, bo w trybie lokalnym jest jeden gracz).
+export const devRanks = async () => (await localInit()).ranks;
 
 // ---------- publiczne API ----------
 // Zwraca gracza (z tokenem) albo null, gdy gracz pominął ekran nicka.
