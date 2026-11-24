@@ -1555,20 +1555,24 @@ html.reduce .slotm .lamps i, html.reduce .slotm .reel .strip, html.reduce .stage
 /* statystyki w jednej kolumnie: ikona | nazwa | mikropasek | liczba i jednostka w osobnych kolumnach */
 .sl { display: flex; flex-direction: column; margin-top: 4px; }
 .slg { font: 700 8.5px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--faint); margin: 4px 0 1px 4px; } .slg:first-child { margin-top: 0; }
-.slr { display: flex; align-items: center; gap: 7px; height: 20px; padding: 0 8px; border-radius: 7px; cursor: help; }
+/* wiersze nigdy się nie ściskają ani nie nachodzą (wąskie okno, zoom przeglądarki): nazwa skraca się wielokropkiem, pasek znika pierwszy */
+.sl > * { flex: none; }
+.slr { display: flex; align-items: center; gap: 7px; min-height: 22px; padding: 1px 8px; border-radius: 7px; cursor: help; box-sizing: border-box; }
 .slr.z { background: rgba(255,255,255,.045); } .slr:hover { background: rgba(255,179,71,.12); }
 .slr .stico { width: 18px; height: 18px; flex: none; }
-.slr .sln { flex: 0 0 104px; font-size: .82rem; white-space: nowrap; }
-.slb { flex: 1; height: 5px; border-radius: 3px; background: rgba(255,255,255,.1); overflow: hidden; } .slb i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #ffb347, #ffd23f); }
-.slv { display: grid; grid-template-columns: auto 24px; align-items: baseline; font-family: var(--mono); }
+.slr .sln { flex: 1 1 104px; min-width: 0; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slb { flex: 0 1 60px; min-width: 14px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.1); overflow: hidden; } .slb i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #ffb347, #ffd23f); }
+.slv { flex: none; display: grid; grid-template-columns: minmax(2.2ch, auto) 2.4ch; align-items: baseline; font-family: var(--mono); white-space: nowrap; }
 .slv b { text-align: right; font-weight: 800; font-size: .86rem; } .slv i { font-style: normal; font-size: .68rem; font-weight: 700; color: var(--faint); padding-left: 3px; }
+/* panele i elementy środkowej kolumny nie kurczą się pod nacisk wysokości: kolumna się przewija, nic nie nachodzi na sąsiada */
+.side > *, .stage > * { flex-shrink: 0; }
 /* kafelki: mniejsze ikony; niebieska poświata = dotyczy ich bieżący okólnik */
 .side .chips { gap: 3px; } .side .chips .chip { width: 28px; height: 28px; } .side .chips .chip .ico { width: 21px; height: 21px; }
 .chip.dhit { box-shadow: 0 0 0 2px #7ec8ff, 0 0 10px 2px rgba(126,200,255,.6); }
 /* okólnik: stały pasek pod tytułem piętra */
-.decbar { display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; padding: 5px 12px; border-radius: 10px; background: rgba(255,179,71,.12); border: 2px solid rgba(255,179,71,.55); font-size: .86rem; cursor: help; }
-.decbar .di .ico { width: 24px; height: 24px; flex: none; } .decbar b { color: var(--amber); white-space: nowrap; } .decbar .dt { color: #eadfcb; } .decbar .dl { margin-left: auto; color: #9ad4ff; font-weight: 700; white-space: nowrap; }
-@media (max-width: 760px) { .decbar { flex-wrap: wrap; } .decbar .dl { margin-left: 0; } }
+.decbar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; width: 100%; box-sizing: border-box; padding: 5px 12px; border-radius: 10px; background: rgba(255,179,71,.12); border: 2px solid rgba(255,179,71,.55); font-size: .86rem; line-height: 1.3; cursor: help; text-align: left; }
+.decbar .di .ico { width: 24px; height: 24px; flex: none; } .decbar b { color: var(--amber); white-space: nowrap; } .decbar .dt { color: #eadfcb; flex: 1 1 220px; min-width: 0; } .decbar .dl { margin-left: auto; color: #9ad4ff; font-weight: 700; white-space: nowrap; }
+@media (max-width: 760px) { .decbar .dl { margin-left: 0; } }
 
 /* okna wyboru umiejętności (Pełne sloty, Mutacja): wiersz z ikoną i opisem */
 .slot { display: grid; grid-template-columns: 44px 1fr; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 12px; background: rgba(0,0,0,.28); border: 2px solid var(--line); min-height: 56px; }
