@@ -1569,3 +1569,11 @@ html.reduce .slotm .lamps i, html.reduce .slotm .reel .strip, html.reduce .stage
 .decbar { display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; padding: 5px 12px; border-radius: 10px; background: rgba(255,179,71,.12); border: 2px solid rgba(255,179,71,.55); font-size: .86rem; cursor: help; }
 .decbar .di .ico { width: 24px; height: 24px; flex: none; } .decbar b { color: var(--amber); white-space: nowrap; } .decbar .dt { color: #eadfcb; } .decbar .dl { margin-left: auto; color: #9ad4ff; font-weight: 700; white-space: nowrap; }
 @media (max-width: 760px) { .decbar { flex-wrap: wrap; } .decbar .dl { margin-left: 0; } }
+
+/* okna wyboru umiejętności (Pełne sloty, Mutacja): wiersz z ikoną i opisem */
+.slot { display: grid; grid-template-columns: 44px 1fr; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 12px; background: rgba(0,0,0,.28); border: 2px solid var(--line); min-height: 56px; }
+.slot .ico { width: 40px; height: 40px; }
+.slot .sn { font-weight: 700; font-size: .92rem; line-height: 1.15; }
+.slot .sd { font-size: .74rem; color: var(--muted); line-height: 1.2; }
+.slot .lv { color: #1c1100; background: var(--gold); border-radius: 5px; padding: 0 .4em; font: 700 10px/1.6 var(--mono); margin-left: .3em; }
+.slot:hover { border-color: var(--amber); }
