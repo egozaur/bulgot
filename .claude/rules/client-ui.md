@@ -1,6 +1,7 @@
 ---
 paths:
   - "app.js"
+  - "ui/**"
   - "style.css"
   - "fight.css"
   - "art.js"
@@ -24,5 +25,5 @@ paths:
 - Nowa ikona, umiejętność lub postać wymaga wpisu w `art.js` (`ICON` / `NEWBODY`), a umiejętność także w `fx.js` (`RECIPES`); lista kroków w skillu `bulgot-feature`.
 - Wstawiaj tekst dynamiczny przez `esc()`; `localStorage` tylko przez `store.get/set` (może rzucać).
 - Pisanie w `input`/`textarea` nie uruchamia skrótów klawiszowych (guard w `keydown`).
-- Nie czytaj `app.js`, `art.js`, `style.css` w całości: `Grep` po nazwie funkcji lub klasy, potem `Read` z `offset`/`limit`. Indeks: `.claude/context/systems-index.md`; szczegóły historyczne: `.claude/context/notatki-klient.md` (`Grep` po tytule).
-- Po zmianie `app.js`/`style.css` rozważ podbicie `?v=` w `index.html` (cache przeglądarki); sprawdź, czy poprzednie commity tak robiły (`git log -p -3 -- index.html`).
+- Interfejs jest podzielony na moduły `ui/*.js` (kilkadziesiąt do ok. 400 linii; mapa w `systems-index.md`), więc czytaj konkretny moduł. `art.js` i `style.css` nie czytaj w całości: `Grep` po nazwie funkcji lub klasy, potem `Read` z `offset`/`limit`. Indeks: `.claude/context/systems-index.md`; szczegóły historyczne: `.claude/context/notatki-klient.md` (`Grep` po tytule).
+- Po zmianie `app.js`, `ui/*.js` lub `style.css` rozważ podbicie `?v=` w `index.html` (cache przeglądarki); sprawdź, czy poprzednie commity tak robiły (`git log -p -3 -- index.html`).

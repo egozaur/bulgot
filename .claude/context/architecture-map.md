@@ -13,9 +13,9 @@ Stan zweryfikowany w repozytorium 2026-11-24. Bez builda: czyste ES modules w pr
 ## Przepływ danych
 
 ```
-gracz → app.js (render, kliknięcia) → api.js → POST /api/bg/<akcja> → BgPlayer.handle (player.js)
+gracz → ui/*.js (render, kliknięcia: `ACT` w ui/input.js) → api.js → POST /api/bg/<akcja> → BgPlayer.handle (player.js)
       → rules.js (newRun, pickTile, choose, fightSetup, fightFinish, view...) → zapis w DO → { ok, profile, run }
-walka: app.js: Fight(setup) z shared/sim.js, tick 100 ms, zapis wejść [tick, slot]
+walka: ui/fight.js: Fight(setup) z shared/sim.js, tick 100 ms, zapis wejść [tick, slot]
        → /fightfinish {inputs} → serwer powtarza walkę (sim.js) i wydaje wynik (to on jest źródłem prawdy)
 koniec runu: rules.endRun → profile.onRunEnd (Staż, odblokowania, osiągnięcia) → ranks.js (BgRanks: ranking, duchy, liczniki pięter, analizy)
 ```
@@ -42,7 +42,8 @@ koniec runu: rules.endRun → profile.onRunEnd (Staż, odblokowania, osiągnięc
 
 | Plik | Rozmiar | Odpowiedzialność |
 |---|---|---|
-| `app.js` | 187 KB, ~1830 linii | cały interfejs i walka na żywo (indeks funkcji w `systems-index.md`) |
+| `app.js` | ok. 100 linii | punkt wejścia: importy modułów `ui/`, rejestracja nasłuchiwaczy, `init()` |
+| `ui/*.js` | 12 modułów, 50–400 linii każdy | cały interfejs i walka na żywo (podział w tabeli klienta w `systems-index.md`; `core.js` = wspólne narzędzia i stan `G`) |
 | `art.js` | 140 KB | grafika SVG w kodzie: ikony (`ICON`, `ICON_OF`), jajka postaci, schody, tablica, młotek, postacie (`NEWBODY`) |
 | `style.css` | 167 KB | styl całej gry poza walką |
 | `fx.js` | 40 KB | animacje umiejętności (`RECIPES[id]`, `castFx`, `markHit`, `SK_COLOR`) |
@@ -55,7 +56,7 @@ koniec runu: rules.endRun → profile.onRunEnd (Staż, odblokowania, osiągnięc
 | `api.js` | 4,5 KB | serwer albo tryb lokalny |
 | `index.html` | 1,4 KB | punkt wejścia (`app.js` jako moduł, `style.css`, `fight.css`; adresy mają `?v=` do cache-bustingu) |
 
-Punkt wejścia klienta: `index.html` → `app.js` → `init()` → `render()`. Obsługa kliknięć i klawiszy: sekcja „obsługa kliknięć i klawiszy” w `app.js` (tablica `ACT`, `keydown`).
+Punkt wejścia klienta: `index.html` → `app.js` → `init()` → `render()` (oba w `ui/home.js`). Obsługa kliknięć i klawiszy: sekcja „obsługa kliknięć i klawiszy” w `app.js` (tablica `ACT`, `keydown`).
 
 ## Zależności zewnętrzne
 

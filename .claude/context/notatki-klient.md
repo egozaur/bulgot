@@ -1,6 +1,6 @@
 # Bulgot: notatki o kliencie (interfejs, walka na ekranie, układ)
 
-Przeniesione 1:1 z dawnego `CLAUDE.md` (2026-11-24). **Nie czytaj całości**: znajdź wpis przez `Grep` po pogrubionym tytule (np. `Grep "Panel boczny" notatki-klient.md`) albo po nazwie funkcji/klasy CSS. Notatki o silniku i serwerze: `notatki-silnik.md`.
+Przeniesione 1:1 z dawnego `CLAUDE.md` (2026-11-24). **Nie czytaj całości**: znajdź wpis przez `Grep` po pogrubionym tytule (np. `Grep "Panel boczny" notatki-klient.md`) albo po nazwie funkcji/klasy CSS. Notatki o silniku i serwerze: `notatki-silnik.md`. **Funkcje wymieniane niżej jako „w `app.js`” leżą od 2026-11-24 w `ui/*.js`** (mapa funkcja → moduł w `systems-index.md`).
 
 - Interfejs skaluje się z rozmiarem okna (`applyScale()` w `app.js`: CSS `zoom` + zmienna `--vh`); nie używaj `100vh` w CSS, tylko `var(--vh, 100vh)`. Na komputerze (od 1121 px) skala dopasowuje się też w dół (min. 0,62) do wysokości projektowej `DESIGN_H = 980`, więc ekran gry mieści się w oknie bez przewijania (np. 1920×925, 1366×650). Jeśli któraś kolumna urośnie powyżej ~980 jednostek, podnieś `DESIGN_H` albo ją odchudź i sprawdź `dev/e2e-uklad.mjs`.
 - Wyciszenie lobby (`localStorage.pl3y_mute === '1'`) wycisza też efekty Bulgota. Ustawienia gry: `bulgot:sfx`, `bulgot:music`, `bulgot:mode`. Tempo walki jest stałe (×1): nie ma wyboru tempa, przycisku w walce ani klawisza F (usunięte 2026-11-23).

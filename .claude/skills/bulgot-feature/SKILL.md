@@ -18,7 +18,7 @@ Nowa treść (kafelek, umiejętność, postać, wróg, boss, wydarzenie), nowa a
 - **Postać:** `CHARS` + `UNLOCKS` (`data.js`), `CHECKS` (`profile.js`), `CHAR_PERKS` (`text.js`, zgodne z `CHARS`), ciało w `art.js` `NEWBODY`, rosół `c-<id>` w `SOUPS`; dodaj do `CHAR_IDS`, jeśli aktywna. Starych postaci nie usuwaj (`retired: true`).
 - **Wróg/boss:** `ENEMIES` / `BOSSES` / `BOSS_POOL` (mechaniki to lista `mech`); intro `T.BOSS_INTRO` tylko dla oryginałów; strój symulatorem (skill `bulgot-balance`).
 - **Akcja serwera:** funkcja w `rules.js`, `case` w `player.js`, wpis w `.claude/context/protocol.md`, wywołanie w kliencie (`act()` / `ACT`), test w `bulgot.suite.js`. Pamiętaj o `view()` (bez `seed`).
-- **Ekran/okno w kliencie:** funkcja `show…`/`stage…` w `app.js`, wpis w `ACT`, styl w `style.css`, test `e2e-*` z tabeli w `development-workflow.md`.
+- **Ekran/okno w kliencie:** funkcja `show…`/`stage…` we właściwym module `ui/` (mapa w `systems-index.md`), wpis w `ACT` (`ui/input.js`), styl w `style.css`, test `e2e-*` z tabeli w `development-workflow.md`.
 
 ## Po zmianie silnika (kolejność)
 1. Testy serwera Bulgota (ok. 3 s): `cd ../pl3y-server && node --test --test-name-pattern="bulgot" test/all.test.js`.

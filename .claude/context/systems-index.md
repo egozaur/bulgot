@@ -34,22 +34,27 @@ Zasada: znajdź wiersz → przeczytaj **tylko** wskazaną sekcję `DESIGN.md` (`
 | Ranking, duchy, liczniki pięter, analizy | `ranks.js`; trasy w `pl3y-server/src/index.js` | 18 |
 | Trasy HTTP i limity | `pl3y-server/src/index.js` (`/api/bg/*`), `wrangler.toml` | 7 |
 
-## Klient (indeks `app.js`; numery linii orientacyjne, szukaj przez `Grep "function <nazwa>"`)
+## Klient (moduły w `ui/`; `app.js` to tylko punkt wejścia ~100 linii; szukaj przez `Grep "function <nazwa>"` w `ui/`)
 
-| Obszar | Funkcje / pliki |
+| Obszar | Moduł (funkcje) |
 |---|---|
-| Start, wywołania serwera | `init`, `render`, `act` (wywołuje `api.call`), `renderHome`, `renderSetup` (dwa kroki: tryb+postać, palnik), `art.eggArt`, `art.burnerArt` |
-| Ekran runu | `renderRun`, `topbarHTML`, `stageHTML`, `stageOffer`/`stageDoor`/`stageShop`/`stageRoute`/`stageVictory`/… (po jednej na fazę), `tileCard`, `offerCard` |
-| Panel boczny | `sideHTML`, `setIconsHTML`, `skillRingsHTML`, `statListHTML`, `zoneCompareHTML`, `linkChipsHTML` |
-| Wieża / schody | `stairsHTML`, `fitTower`, `towerHTML`, `art.stairs*` |
-| Walka na żywo | `startFight`, `frame`, `stepOnce`, `useSkill`, `onEvent`, `finishFight`, `skillFx` → `fx.js`; tła `scenes.js`; CSS `fight.css` |
-| Faktura i Tablica Zarządu | `showInvoice`, `boardHTML`, `flyToBoard`, `fitBoard`, `showSlip` |
-| Ekran końca | `showEnd`, `endFacts` (`fakty.js`), `showAnalyzeDialog` |
-| Okna | `showRanking`, `showBook` (Księga), `showProfile`, `showKurnik`, `showHistory`, `showHelp`, `showSettings`, `showMenu` |
-| Klawisze i kliknięcia | tablica `ACT`, `document.addEventListener('keydown'…)`, nawigacja strzałkami `navItems`/`navMove` |
+| Wspólne narzędzia, stan `G`, skalowanie, nakładki, wywołanie serwera | `ui/core.js` (`$`, `esc`, `store`, `G`, `applyScale`, `toast`, `openOverlay`, `act`, `charView`) |
+| Start, render, ekran startowy, wybór trybu/postaci/palnika | `ui/home.js` (`init`, `render`, `renderHome`, `renderSetup`, `metaChips`; `art.eggArt`, `art.burnerArt`) |
+| Ekran runu: karty kafelków, okólnik, górny pasek, sceny faz, wybór i dokup | `ui/run.js` (`tileCard`, `offerCard`, `renderRun`, `topbarHTML`, `stageHTML`, `stageOffer`/`stageDoor`/`stageShop`/`stageRoute`/`stageVictory`/…, `doPick`, `doBuy`, `swapSlots`) |
+| Wieża / schody | `ui/tower.js` (`stairsHTML`, `fitTower`, `towerHTML`; `art.stairs*`) |
+| Panel boczny bohatera | `ui/side.js` (`sideHTML`, `setIconsHTML`, `skillRingsHTML`, `statListHTML`, `zoneCompareHTML`, `linkChipsHTML`, `animOn`, `applyAnim`) |
+| Walka na żywo | `ui/fight.js` (`startFight`, `frame`, `stepOnce`, `useSkill`, `onEvent`, `finishFight`, `skillFx` → `fx.js`; tła `scenes.js`; CSS `fight.css`) |
+| Faktura i Tablica Zarządu | `ui/invoice.js` (`showInvoice`, `boardHTML`, `flyToBoard`, `fitBoard`, `showSlip`) |
+| Ekran końca | `ui/end.js` (`showEnd`, `endFacts` → `fakty.js`, `showAnalyzeDialog`) |
+| Okna: ranking, Księga, profil, historia, pomoc, ustawienia, menu | `ui/windows.js` (`showRanking`, `showBook`, `showProfile`, `showKurnik`, `showHistory`, `showHelp`, `showSettings`, `showMenu`) |
+| Kliknięcia i klawisze | `ui/input.js` (tablica `ACT`, nawigacja strzałkami `navItems`/`navMove`); sam `document.addEventListener('keydown'…)` jest w `app.js` |
+| Staż, Sklepik, Dyżur dnia | `ui/meta.js` (`showLevelUp`, `showShop`, `showDaily`, `startDaily`) |
+| Tryb kasynowy | `ui/casino.js` (`casinoSpin`, `showCasinoAsk`) |
 | Podpowiedzi | `tip.js` + `statTip()`; atrybuty `data-tipk`, `data-tip` |
 | Teksty | `text.js` (Kronikarz, `CHAR_PERKS`, `BOSS_INTRO`, `STAT_GROUPS`) |
 | Grafika | `art.js`: `ICON`, `ICON_OF`, `NEWBODY` (postacie) |
+
+Moduły `ui/` importują się nawzajem cyklicznie (dozwolone dla funkcji); stałe najwyższego poziomu nie mogą używać cudzych stałych w momencie ładowania modułu.
 
 ## Indeks sekcji `DESIGN.md` (86 KB; nigdy nie czytaj całości)
 

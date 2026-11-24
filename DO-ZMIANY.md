@@ -4,7 +4,7 @@ Format wpisu: **cel**, **gdzie**, **gotowe, gdy**, **najpierw** (co musi się wy
 
 ## 1. Czytelniejszy typ kafelka
 - **Cel:** kafelek od razu pokazuje, czym jest (umiejętność, statystyka, przedmiot), zamiast „ściany tekstu”.
-- **Gdzie:** `tileCard`/`offerCard` w `app.js`, `style.css` (`.tile`), `tip.js` (szczegóły w podpowiedzi).
+- **Gdzie:** `tileCard`/`offerCard` w `ui/run.js`, `style.css` (`.tile`), `tip.js` (szczegóły w podpowiedzi).
 - **Gotowe, gdy:** wyraźna plakietka/ikona typu, jednozdaniowy opis na karcie, pełny opis w podpowiedzi; testy `e2e-podpowiedzi`, `e2e-uklad`, `e2e-ikony`.
 - **Najpierw:** makieta do akceptacji (wygląd `.tile` jest zamrożony decyzją właściciela).
 
@@ -22,6 +22,6 @@ Format wpisu: **cel**, **gdzie**, **gotowe, gdy**, **najpierw** (co musi się wy
 
 ## 4. Slow motion ostatniego ciosu
 - **Cel:** filmowe spowolnienie i zbliżenie przy dobiciu ostatniego wroga (boss, Prezes).
-- **Gdzie:** `onEvent`/`frame` w `app.js`, `F.stopUntil`, `fx.js`, `fight.css`.
+- **Gdzie:** `onEvent`/`frame` w `ui/fight.js`, `F.stopUntil`, `fx.js`, `fight.css`.
 - **Gotowe, gdy:** efekt tylko na obrazie (silnik i wejścia bez zmian, wynik i powtórka identyczne), wyłączany przez `html.reduce`; `e2e-walka`, `e2e-efekty`.
 - **Najpierw:** nic, można zaczynać (ustal czas trwania: propozycja 1,2 s, pomijalne klawiszem).

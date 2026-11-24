@@ -5,7 +5,7 @@ Zawsze odpowiadaj po polsku. Teksty UI i komentarze po polsku. Do właściciela 
 ## Szybki start
 - **Bulgot** („Awans albo rosół”): solo roguelike w przeglądarce (gra nr 7 na pl3y.pl). Kurczak wspina się po piętrach fabryki rosołu (tryb Szybki 10 pięter, Pełny 20), co piętro wybiera 1 z 4 kafelków i walczy (auto-walka + 3 umiejętności aktywne). Pełny projekt: `DESIGN.md` (czytaj sekcjami).
 - Technologia: czysty HTML/CSS/JS (ES modules), **bez builda**; GitHub Pages `https://pl3y.pl/bulgot/`. Backend: Cloudflare Worker + Durable Objects w `../pl3y-server/src/games/bulgot/` (`BgPlayer`, `BgRanks`, trasy `/api/bg/*`).
-- Pliki klienta: `index.html`, `app.js` (cały interfejs i walka na żywo), `fx.js` (animacje umiejętności), `scenes.js` (tła walki), `fight.css`, `art.js` (grafika SVG w kodzie), `audio.js`, `api.js` (serwer albo tryb lokalny), `text.js`, `tip.js`, `fakty.js`, `style.css`.
+- Pliki klienta: `index.html`, `app.js` (punkt wejścia, nasłuchiwacze) + `ui/*.js` (cały interfejs i walka na żywo, podział w `.claude/context/systems-index.md`), `fx.js` (animacje umiejętności), `scenes.js` (tła walki), `fight.css`, `art.js` (grafika SVG w kodzie), `audio.js`, `api.js` (serwer albo tryb lokalny), `text.js`, `tip.js`, `fakty.js`, `style.css`.
 - **`shared/*.js` jest GENEROWANE** (kopia silnika z serwera): `node dev/sync-engine.mjs`. Nie edytuj ręcznie.
 - Node: `export PATH="/c/Users/Kurczak/tools/node:$PATH"` (przenośny, nie jest w PATH).
 - Testy Bulgota na serwerze (ok. 3 s): `cd ../pl3y-server && node --test --test-name-pattern="bulgot" test/all.test.js`. Pełny zestaw serwera (ok. 40 s) tylko przy zmianie kodu wspólnego.
@@ -38,7 +38,7 @@ Archiwum (`archiwum/`: dawne dokumenty przekazania, makiety `propozycje-*`, prez
 
 ## Jak pracować (oszczędność kontekstu)
 1. Nazwij zadanie i obszar, znajdź wiersz w `systems-index.md`, czytaj tylko wskazane pliki.
-2. **Szukaj, nie czytaj**: `app.js` (187 KB), `art.js` (140 KB), `style.css` (167 KB), `DESIGN.md` (86 KB) i notatki tylko przez `Grep` + `Read` z `offset`/`limit`. Nie skanuj całego repozytorium.
+2. **Szukaj, nie czytaj**: `art.js` (140 KB), `style.css` (167 KB), `DESIGN.md` (86 KB) i notatki tylko przez `Grep` + `Read` z `offset`/`limit`. Nie skanuj całego repozytorium.
 3. Nie czytaj ponownie niezmienionych plików i nie powtarzaj tych samych wyszukiwań.
 4. Uruchamiaj tylko testy zakresu zmiany (skill `bulgot-test`).
 5. Przy długim zadaniu zapisuj krótką notatkę postępu (format w `development-workflow.md`); `/compact` po zamkniętym podzadaniu, nowa sesja przy zmianie obszaru.

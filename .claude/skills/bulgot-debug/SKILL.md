@@ -25,7 +25,7 @@ Zgłoszenie błędu, nieoczekiwany wynik, wyjątek w konsoli, błąd serwera, ro
 5. Uruchom test, który padał, i testy obszaru (`development-workflow.md`).
 
 ## Unikaj
-Skanowania całego `app.js`; poprawek w `shared/` (źródło na serwerze); poprawek „na wszelki wypadek” w niezwiązanym kodzie; powtarzania tych samych wyszukiwań.
+Skanowania wszystkich modułów `ui/`; poprawek w `shared/` (źródło na serwerze); poprawek „na wszelki wypadek” w niezwiązanym kodzie; powtarzania tych samych wyszukiwań.
 
 ## Gotowe, gdy
 Jest test lub e2e odtwarzający błąd (zielony po poprawce), przyczyna opisana jednym zdaniem, brak regresji w testach obszaru.
