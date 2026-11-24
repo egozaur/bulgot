@@ -1642,3 +1642,19 @@ html.reduce .btn.big.duelbtn.on, html.reduce #duelhud.urgent, html.reduce .dots:
 .pill.duelt.urgent { border-color: var(--red); animation: duelurgent .7s ease-in-out infinite; }
 .pill.duelt.urgent b { color: #ff7a5a; }
 html.reduce .pill.duelt.urgent { animation: none; }
+
+/* losowanie okólnika na starcie runu (showDecreeRoll): maszyna losująca, po zatrzymaniu karta zostaje do kliknięcia */
+.decroll { margin: 14px auto 0; padding: 18px 16px 16px; border-radius: 14px; background: rgba(255,179,71,.1); border: 3px solid rgba(255,179,71,.55); text-align: center; min-height: 150px; box-sizing: border-box; }
+.decroll .dr-ico { display: flex; justify-content: center; } .decroll .dr-ico .ico { width: 56px; height: 56px; }
+.decroll .dr-name { font: 400 1.7rem/1.15 var(--display); color: var(--amber); margin-top: 8px; min-height: 1.15em; }
+.decroll .dr-text { margin-top: 8px; font-size: 1.05rem; line-height: 1.35; color: #eadfcb; min-height: 2.7em; }
+.decroll.spin { border-style: dashed; animation: decpulse .5s ease-in-out infinite alternate; } .decroll.spin .dr-name { color: #fff; filter: blur(.6px); } .decroll.spin .dr-ico .ico { animation: decwob .3s ease-in-out infinite alternate; }
+.decroll.done { animation: decpop .5s cubic-bezier(.2,1.6,.4,1); border-color: var(--gold); box-shadow: 0 0 22px rgba(255,210,63,.45); }
+@keyframes decpulse { from { box-shadow: 0 0 6px rgba(255,179,71,.2); } to { box-shadow: 0 0 22px rgba(255,179,71,.55); } }
+@keyframes decwob { from { transform: rotate(-9deg) scale(.95); } to { transform: rotate(9deg) scale(1.08); } }
+@keyframes decpop { 0% { transform: scale(.85); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+html.reduce .decroll, html.reduce .decroll .ico { animation: none !important; }
+/* długie plansze (kontry bossów): szybkie wejście, długie trzymanie, czytelny opis */
+.banner.long { animation-name: bannerlong; }
+.banner.long small { max-width: 78%; margin: .4em auto 0; font-size: 1.15rem; line-height: 1.3; }
+@keyframes bannerlong { 0% { opacity: 0; transform: scale(1.4); } 4% { opacity: 1; transform: scale(1); } 90% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }

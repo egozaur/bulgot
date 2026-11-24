@@ -89,7 +89,7 @@ export function showBook(tab = 'tiles', turn = false) {
     body = `<p class="lead">Dwa różne efekty na jednym wrogu łączą się w reakcję. Odkryte: ${known.length} z ${Object.keys(D.REACTIONS).length}.</p><div class="ms-grid">${Object.values(D.REACTIONS).map(R => known.includes(R.id)
       ? `<div class="ms-row entry ${fresh('x:' + R.id) ? 'fresh' : ''}">${fresh('x:' + R.id) ? '<span class="newtag">Nowy wpis!</span>' : ''}${art.statusIcon(R.of[0])}${art.statusIcon(R.of[1])}<div><b>${esc(R.name)}</b><br><span>${esc(R.text)}</span></div></div>`
       : `<div class="ms-row unknown">${art.statusIcon(R.of[0])}${art.statusIcon(R.of[1])}<div><b>?</b><br><span>${esc(D.STATUS[R.of[0]].name)} + ${esc(D.STATUS[R.of[1]].name)}: jeszcze nie odkryto.</span></div></div>`).join('')}</div>
-      <div class="sec">Okólniki Zarządu</div><p class="lead">Każda strefa w runie ma inny okólnik, który zmienia zasady.</p><div class="ms-grid">${Object.values(D.DECREES).map(d => `<div class="ms-row">${art.decreeIcon()}<div><b>${esc(d.name)}</b><br><span>${esc(d.text)}</span></div></div>`).join('')}</div>
+      <div class="sec">Okólniki Zarządu</div><p class="lead">Na starcie runu losuje się jeden okólnik, który zmienia zasady do końca runu.</p><div class="ms-grid">${Object.values(D.DECREES).map(d => `<div class="ms-row">${art.decreeIcon()}<div><b>${esc(d.name)}</b><br><span>${esc(d.text)}</span></div></div>`).join('')}</div>
       <div class="sec">Wady fabryczne</div><p class="lead">Kafelek z pieczątką „Wada fabryczna” jest o 50% mocniejszy, ale po następnej walce ujawnia jedną z wad:</p><div class="ms-grid">${Object.values(D.FLAWS).map(f => `<div class="ms-row"><div><b>${esc(f.name)}</b><br><span>${esc(f.text)}</span></div></div>`).join('')}</div>
       ${p.nemesis ? `<div class="sec">Twój Nemezis</div><p class="lead">${esc(p.nemesis.name)}, cecha ${esc(D.AFFIXES[p.nemesis.affix].name)}${p.nemesis.tile ? ', ukradł ' + esc(TILE[p.nemesis.tile].name) : ''}. Pokonane Nemezis: ${p.counters.nemesisKills || 0}.</p>` : ''}`;
   } else if (tab === 'more') {
@@ -172,6 +172,29 @@ export function showIntro(then) {
   store.set('bulgot:intro', '1');
   openOverlay(`<h2>Bulgot</h2>${T.INTRO.map(l => `<p class="lead" style="font-size:1.05rem">${esc(l)}</p>`).join('')}<div class="actions" style="margin-top:14px"><button class="btn primary big" data-act="introgo" data-primary>Zaczynamy</button></div>`, { narrow: true, force: true });
   G.introCb = then;
+}
+// Losowanie okólnika na starcie runu: maszyna losująca przewija nazwy (coraz wolniej), zatrzymuje się na okólniku z serwera
+// i zostaje na ekranie, dopóki gracz nie kliknie „Rozumiem” (ma czas przeczytać). Bez animacji (`bulgot:anim` = '0') od razu wynik.
+export function showDecreeRoll() {
+  const id = G.run && G.run.decree, d = id && D.DECREES[id]; if (!d) return;
+  if (navigator.webdriver && !/[?&]decroll=1/.test(location.search)) return;   // testy e2e (puppeteer) pomijają okno; wymusza je ?decroll=1
+  const ids = Object.keys(D.DECREES), anim = animOn();
+  openOverlay(`<h2>Okólnik Zarządu</h2><p class="lead">Zarząd losuje zasadę, która obowiązuje do końca tego runu.</p>
+    <div class="decroll ${anim ? 'spin' : 'done'}" id="decroll"><div class="dr-ico">${art.decreeIcon()}</div><div class="dr-name" id="drname">${anim ? '…' : esc(d.name)}</div><div class="dr-text" id="drtext">${anim ? '' : esc(d.text)}</div></div>
+    <div class="actions" id="dractions" style="margin-top:14px;${anim ? 'visibility:hidden' : ''}"><button class="btn primary big" data-act="introgo" data-primary>Rozumiem</button></div>`, { narrow: true, force: true });
+  const box = $('#decroll'), name = $('#drname'), text = $('#drtext'), acts = $('#dractions');
+  const reveal = () => { if (!box || !box.isConnected) return; name.textContent = d.name; text.textContent = d.text; box.classList.remove('spin'); box.classList.add('done'); acts.style.visibility = ''; snd.sfx('unlock'); };
+  if (!anim) return;
+  const seq = ids.slice().sort(() => Math.random() - 0.5);   // tylko wygląd przewijania, wynik jest z serwera
+  const steps = 18 + ids.length; let i = 0;
+  const tick = () => {
+    if (!box.isConnected) return;
+    if (i >= steps) return reveal();
+    name.textContent = D.DECREES[seq[i % seq.length]].name;
+    snd.sfx('click'); i++;
+    setTimeout(tick, 55 + Math.pow(i / steps, 3) * 420);
+  };
+  tick();
 }
 export function confirmAbandon() {
   openOverlay('<h2>Porzucić run?</h2><p class="lead">Run zostanie zakończony jako porażka, a wynik trafi do rankingu, jeśli ukończyłeś choć jedno piętro.</p><div class="actions"><button class="btn danger" data-act="abandon-yes">Tak, porzuć</button><button class="btn" data-act="close" data-primary>Wróć do gry</button></div>', { narrow: true });

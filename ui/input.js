@@ -13,7 +13,7 @@ import { dismissInvoice, invoiceOn, showSlip } from './invoice.js';
 import { lvlPick, shopAct, showDaily, showShop, startDaily } from './meta.js';
 import { compForm, doBuy, doPick, needChoice, showPawn, showUpgrade } from './run.js';
 import { animOn, applyAnim } from './side.js';
-import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showIntro, showKurnik, showMenu, showProfile, showRanking, showSettings } from './windows.js';
+import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showDecreeRoll, showIntro, showKurnik, showMenu, showProfile, showRanking, showSettings } from './windows.js';
 
 // ---------- obsługa kliknięć i klawiszy ----------
 export const ACT = {
@@ -35,9 +35,9 @@ export const ACT = {
     const s = G.setup; if (!setupOk()) return toast(G.profile.chars.includes(charIds()[s.cur]) ? 'Ten palnik jest zablokowany.' : 'Ta postać jest zablokowana.'); s.char = charIds()[s.cur];
     const j = await act('start', { mode: s.mode, char: s.char, garnek: s.garnek, curses: s.curses || [] }); if (!j) return;
     snd.sfx('bulgot'); G.screen = 'run'; render();
-    if (!store.get('bulgot:intro')) showIntro();
+    if (!store.get('bulgot:intro')) showIntro(showDecreeRoll); else showDecreeRoll();
   },
-  introgo: () => { closeOverlay(); },
+  introgo: () => { const cb = G.introCb; G.introCb = null; closeOverlay(); if (cb) cb(); },
   pick: b => doPick(+b.dataset.i),
   buyoffer: b => doBuy(+b.dataset.i),
   pawnmenu: () => showPawn(),

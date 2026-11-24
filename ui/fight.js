@@ -93,10 +93,12 @@ export function buildSkillbar() {
   $('#skillbar').innerHTML = html;
 }
 
-export function banner(text, sub, bad) {
-  const b = document.createElement('div'); b.className = 'banner' + (bad ? ' bad' : '');
+// ms: jak długo plansza zostaje na ekranie (domyślnie 1,85 s; kontry bossów i inne ważne komunikaty trzymamy dłużej, żeby dało się je przeczytać)
+export function banner(text, sub, bad, ms = 1850) {
+  const b = document.createElement('div'); b.className = 'banner' + (bad ? ' bad' : '') + (ms > 2000 ? ' long' : '');
+  if (ms !== 1850) b.style.animationDuration = ms / 1000 + 's';
   b.innerHTML = `<b>${esc(text)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}`;
-  $('#arena').appendChild(b); setTimeout(() => b.remove(), 1850);
+  $('#arena').appendChild(b); setTimeout(() => b.remove(), ms + 50);
 }
 export function pop(text, cls, x, bottom = 46) {
   const d = document.createElement('div'); d.className = 'dmg ' + cls; d.textContent = text;
@@ -215,7 +217,7 @@ export function onEvent(e) {
     case 'revive': banner('Gniazdo Zapasowe!', 'Kurczak wstaje z kolan', false); snd.sfx('heal'); break;
     case 'fury': banner('FURIA!', 'Wrogowie wpadają w szał', true); snd.sfx('fury'); F.arena.classList.add('furious'); if (!F.arena.querySelector('.beacons')) F.arena.insertAdjacentHTML('beforeend', '<div class="beacons" aria-hidden="true"><i></i><i></i></div>'); break;
     case 'herostun': { banner('Ogłuszony!', 'Nie atakujesz i nie używasz umiejętności', true); snd.sfx('stun'); cls(hero, 'hurtshake', 500); pop('OGŁUSZONY', 'crit', HX, 76); break; }
-    case 'counter': { const C = D.COUNTERS[e.id]; if (C) { banner(C.icon + ' ' + C.name, C.text, true); snd.sfx('boss'); const u = tu(e.uid); if (u && u.el) { u.el.classList.add('hit'); setTimeout(() => u.el.classList.remove('hit'), 500); } } break; }
+    case 'counter': { const C = D.COUNTERS[e.id]; if (C) { banner(C.icon + ' ' + C.name, C.text, true, 6500); snd.sfx('boss'); const u = tu(e.uid); if (u && u.el) { u.el.classList.add('hit'); setTimeout(() => u.el.classList.remove('hit'), 500); } } break; }
     case 'arrive': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: enemyFig(en) }); layoutUnits(); if (!F.waveBanner || F.waveBanner !== f.tick) { F.waveBanner = f.tick; banner('Nadciąga kolejna fala!', '', true); snd.sfx('boss'); } } break; }
     case 'summon': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: enemyFig(en) }); layoutUnits(); } break; }
     case 'phase': banner('Faza ' + e.n, '', true); snd.sfx('phase'); shake(); break;
