@@ -696,3 +696,39 @@ Przebudowa panelu bocznego po wyborze właściciela (wariant D4 z `propozycje-uk
 - **Statystyki** w jednej kolumnie w grupach Ofensywa / Obrona / Inne: ikona, pełna nazwa, mikropasek, liczba i jednostka w stałych kolumnach. Szybkość ataku to procent (164% = 1,64 uderzenia na sekundę), Moc Dziobnięcia procent (245%), Regeneracja zostaje „1,6 / s”. Paski Atak/Obrona są obok siebie nad listą.
 - **Okólnik** jako stały pasek pod tytułem piętra z informacją, ile twoich kafelków dotyczy (Oszczędności Energii: Ogień i Lód, Praca Zdalna: leczenie, Wyjazd Integracyjny: aktywne zestawy). Kafelki, których dotyczy, mają niebieską poświatę. Zasady okólników bez zmian.
 - **Nazwy**: Kurza Fortuna → **Dziobnięcie**, Moc Fortuny → **Moc Dziobnięcia**, trafienie krytyczne → **mocne dziobnięcie**, umiejętność Dziobnięcie Szału → **Szał Dziobów**. Pies Pipsztala ma na imię **Lakuś** (`EXTRA_DOG.name`). Zmienione tylko napisy (klucze w kodzie bez zmian, `RUN_V` bez zmian).
+
+## 29. Hordy i fale, bossowie dopasowani do buildu, 12 postaci-wyzwań (2026-11-24)
+
+`RUN_V = 19`. Trzy zmiany jednej aktualizacji (decyzje właściciela: limit wrogów 5 + 2 za towarzysza, wielu wrogów tylko w nowych szablonach, wejście mieszane, adaptacja od palnika 0 ze skalowaniem, 12 bardzo wyrazistych postaci).
+
+### Hordy i fale
+- Nowe szablony pięter `horda` (waga 12, 62% Życia i 78% Ataku wroga) i `armia` (waga 8, od strefy II, dowódca 150% Życia plus świta po 38% Życia i 50% Ataku). Reszta pięter bez zmian.
+- Limit wrogów w jednej walce: `enemyCap(run) = RULES.foeCap (5) + RULES.foePerPet (2) × towarzysze` (dziś najwyżej 1 towarzysz, więc 5 albo 7). Horda ma 4 + strefa (+1 z towarzyszem), Armia pełny limit.
+- Wejście mieszane: pierwsza grupa od razu (połowa Hordy, dowódca z dwoma wrogami w Armii), reszta falami po `RULES.waveSize` (2) co `RULES.waveGap` (60 ticków = 6 s). W setupie wróg z polem `arrive` (tick) czeka w `Fight.pending`; `spawn()` dodaje go z zegarami względem bieżącego ticku i `RULES.waveIdle` (1 s bez ataku). Gdy plansza jest pusta, najbliższa fala wchodzi od razu. Zwycięstwo dopiero po ostatniej fali. Klient: zdarzenie `arrive` (jak `summon`, plus baner „Nadciąga kolejna fala!”), układ 6 i 7 jednostek w `ENEMY_LAYOUT`.
+- Pomiar bota (pełny, palnik 2): Horda i Armia ok. 90% wygranych, strata życia 11–18%. `dev/sim-balance.mjs --tpl` pokazuje wyniki wg szablonu.
+
+### Bossowie, elity i dodatkowi bossowie dopasowani do buildu
+- `buildProfile(run)` (rules.js) liczy punkty stylów: ogień, mróz, Salmonella, krew, mocne dziobnięcia, Pancerz, leczenie, umiejętności, jaja. Wygrywa najsilniejszy powyżej progu 4,5. Czysta funkcja wyposażenia, bez losowania.
+- `counterPlan(run, kind)` wybiera kontry (`COUNTERS` w data.js): Straż Pożarna (ogień), Piec Przemysłowy (mróz), Płukanie Żołądka (Salmonella), Apteczka Zakładowa (krew), Kask Ochronny (mocne dziobnięcia), Wiertło Dyrektora (Pancerz), Nożyce Budżetowe (leczenie), Cisza w Biurze (umiejętności), Wielka Patelnia (jaja) i Świta Zarządu (pomocnicy, gdy build nie ma wyraźnego stylu albo jako druga kontra bossa od palnika 3).
+- Kontra uruchamia się jednorazowo, gdy wróg spadnie poniżej progu Życia (`at`: boss 50% na palnikach 0–2, 55/60/65% na 3–5; druga kontra bossa przy 30%). To stan symulacji, nie losowanie, więc powtórka walki na serwerze jest zgodna. Każda kontra jest czasowa (`dur`), więc zawsze zostaje okno na odpowiedź. Przykład ognia: wróg leczy się, `noUntil.burn` blokuje Oparzenie na czas okna, wchodzą Strażacy.
+- Skalowanie: `COUNTER_K` = 45/52/60/68/78/90% bazowej siły i długości na palnikach 0–5; elita ×0,4 (jedna kontra, bez kontr na wczesnych piętrach), dodatkowy boss ×0,3 (bez pomocników i bez kontry, gdy build nie ma stylu). Pomocnicy kontr mają 45–60% statystyk pomocnika.
+- Widok (`view().intel`) zapowiada tylko nazwę stylu („Zarząd cię obserwuje. Widzą, że grasz na: Ogień”), bez kontry. Klient: zdarzenie `counter` (baner z ikoną, nazwą i opisem).
+- Efekt balansu (bot, pełny, Pyrtek bez stylu): palnik 0 43% → 40%, palnik 4 29% → 13%. Zjarany (build ognia) traci najwięcej (48% → 33% na palniku 0), co jest zamierzone.
+
+### 12 postaci-wyzwań
+Aktywne (`CHAR_IDS`): Pyrtek, Zjarany Kurczak, Kurczak Barista, Gęś Księgowa, Kogut Rzeźnik, Kurczak na Jednej Nodze (id `gigachad`), Pan Jajeczko, Emeryt Janusz oraz nowi Inspektor Sanepid, Nioska Wanda, Kogut Związkowiec i Kurczak Pacyfista. Pozostałe 16 ma `retired: true`: zostają w `CHARS` (historia, ranking, zapisy, Testament), ale nie da się nimi zacząć runu, nie odblokowują się, nie liczą się w „Cała Zagroda” i znikają z list klienta. Ich osiągnięcia `a-<postać>` są ukryte.
+
+| Postać | Obietnica | Cena |
+|---|---|---|
+| Kurczak na Jednej Nodze | 1 slot, umiejętność ×2,25 mocy, −25% cooldownu, +25% Ataku (`skillPow`) | −10% szybkości i Życia, reszta slotów martwa |
+| Pan Jajeczko | 3 Życia, 75% uniku, +150% Ataku; każdy unik +5% Ataku w walce (maks. +50%, `dodgeAtk`) | pierwszy cios kończy walkę |
+| Kogut Rzeźnik | Krwawienie przy każdym ataku; zabicie krwawiącego leczy 5% (`bleedKillHeal`) | −10% Życia, −5% Ataku |
+| Gęś Księgowa | +1% Ataku za 5 Ziaren (maks. +25%, `coinAtk`) | −10% Ataku, wydane Ziarno to utracona moc |
+| Kurczak Barista | +5% szybkości za każdy cios w walce (maks. +60%, `ramp`) | −20% Życia, zimny start |
+| Emeryt Janusz | każde 4 Pancerza = +3% Ataku (maks. +45%, `armorAtk`) | −35% szybkości |
+| Inspektor Sanepid | 25% Salmonelli; 5+ stosów = wróg +25% obrażeń i −20% szybkości (`sanepid`) | −20% Ataku, −10% Życia |
+| Nioska Wanda | start z Tykającym Jajem, jaja bija wszystkich i rosną 4% za piętro (`eggGrow`), Jajeczny +1 sztuka (`setBonus`) | −15% Ataku |
+| Kogut Związkowiec | wrogowie startują ogłuszeni 1,8 s (także fale, `strike`), +25% obrażeń w ogłuszonych (`vsStun`) | −20% Ataku, −12% Życia |
+| Kurczak Pacyfista | zero zwykłych ataków (`noAttack`), umiejętności +30% mocy i −40% cooldownu, Oparzenie/Salmonella/Krwawienie +60% (`dotPct`), towarzysz +60% (`compPow`) | bez ataku |
+
+Odblokowania nowych: Sanepid (pokonaj Brojlera), Wanda (wyklucie w Wylęgarni), Związkowiec (Pełna Kurza Seria), Pacyfista (60 użyć umiejętności w runie). Mechaniki w `stats.js` (nowe klucze `S.*`) i `sim.js`. Testy: `bulgot.suite.js` (284), e2e: `dev/e2e-postacie.mjs`.

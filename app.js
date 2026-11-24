@@ -159,7 +159,7 @@ function metaChips() {
   return out.length ? `<div class="meta-chips">${out.join('')}</div>` : '';
 }
 const BURNERS = ['Ognisko', 'Gazówka', 'Kuchenka', 'Piec', 'Kuźnia', 'Wulkan'];
-const charIds = () => Object.keys(D.CHARS);
+const charIds = () => Object.keys(D.CHARS).filter(id => !D.CHARS[id].retired);
 // Klątwy Prezesa: dobrowolne utrudnienia za premię do wyniku (do D.CURSE_MAX naraz).
 // Na razie UKRYTE na ekranie startowym (decyzja właściciela, 2026-11-23). Cały mechanizm zostaje; żeby przywrócić, ustaw true.
 const SHOW_CURSES = false;
@@ -273,12 +273,13 @@ function previewHTML() {
   const lab = r.boss ? 'Boss tego piętra' : nem ? 'Twój Nemezis! Nagroda: Odznaka Sprawiedliwość Kurnika' + loot : r.elite ? 'Elitarny wróg na piętrze (nagroda: Odznaka)'
     : risky ? 'Drzwi dla personelu. Nagroda: ' + (r.door.reward === 'rare' ? 'wybór rzadkiego kafelka' : '+' + D.RULES.doorCoins + ' Ziaren') : 'Na tym piętrze czekają';
   const tp = r.tpl && D.FLOOR_TPL[r.tpl] ? `<div class="tplnote"><b>${esc(D.FLOOR_TPL[r.tpl].name)}.</b> ${esc(D.FLOOR_TPL[r.tpl].text)}</div>` : '';
+  const intel = r.intel ? `<div class="tplnote intel"><b>Zarząd cię obserwuje.</b> Widzą, że grasz na: ${esc(r.intel)}. Przygotowali na to odpowiedź.</div>` : '';
   // Od Garnka 1 serwer nie zdradza składu piętra: zaparowana szyba z jedną sylwetką (bez nazw i liczby wrogów).
   if (r.hidden && !nem) {
     const fogLab = r.elite ? 'Elitarny wróg za zaparowaną szybą (nagroda: Odznaka)' : risky ? lab : 'Szyba zaparowana: nie wiesz, kto czeka';
-    return `<div class="preview doorview fog"><div class="lab">${fogLab}</div><div class="glass"><div class="pv">${art.mysteryArt()}<span>?</span></div></div>${risky ? aff : ''}<div class="tplnote">Od Garnka 1 skład pięter jest tajemnicą. Bossów zapowiada pasek pięter.</div></div>`;
+    return `<div class="preview doorview fog"><div class="lab">${fogLab}</div><div class="glass"><div class="pv">${art.mysteryArt()}<span>?</span></div></div>${risky ? aff : ''}<div class="tplnote">Od Garnka 1 skład pięter jest tajemnicą. Bossów zapowiada pasek pięter.</div>${intel}</div>`;
   }
-  return `<div class="preview doorview ${nem ? 'nem' : ''} ${r.boss ? 'bossdoor' : ''}"><div class="lab">${lab}</div><div class="glass">${items}</div>${aff}${tp}</div>`;
+  return `<div class="preview doorview ${nem ? 'nem' : ''} ${r.boss ? 'bossdoor' : ''}"><div class="lab">${lab}</div><div class="glass">${items}</div>${aff}${tp}${intel}</div>`;
 }
 const zoneAt = (mode, n) => { for (const z of D.MODES[mode].zones) if (n <= z.upTo) return z.zone; return 2; };
 // Wpływ bieżącego okólnika na build gracza (tylko podpowiedź na ekranie, nie zmienia reguł).
@@ -767,6 +768,8 @@ const ENEMY_LAYOUT = {
   3: [[56, 32, 20], [73, 26, 26], [89, 32, 17]],
   4: [[50, 34, 16], [64, 28, 20], [77, 24, 23], [91, 31, 16]],
   5: [[46, 35, 14], [58, 30, 17], [70, 26, 20], [82, 23, 22], [93, 31, 14]],
+  6: [[38, 36, 12], [50, 31, 14], [61, 27, 16], [72, 24, 18], [83, 30, 14], [94, 26, 14]],
+  7: [[35, 37, 11], [45, 32, 12], [55, 28, 14], [65, 25, 15], [75, 31, 13], [85, 27, 14], [95, 33, 11]],
 };
 const BOSS_POS = [82, 20, 39], MINION_POS = [[50, 31, 13], [62, 25, 13], [44, 24, 12], [56, 34, 12], [68, 29, 12]];
 const RING = 2 * Math.PI * 36;
@@ -816,7 +819,7 @@ function layoutUnits() {
     for (const e of alive) { const u = F.units.get(e.uid); if (!u) continue; const pos = e.boss ? BOSS_POS : MINION_POS[Math.min(k++, MINION_POS.length - 1)]; u.x = placeUnit(u.el, pos); }
     return;
   }
-  const L = ENEMY_LAYOUT[Math.max(1, Math.min(5, alive.length))];
+  const L = ENEMY_LAYOUT[Math.max(1, Math.min(7, alive.length))];
   alive.forEach((e, i) => { const u = F.units.get(e.uid); if (!u) return; const pos = L[Math.min(i, L.length - 1)]; u.x = placeUnit(u.el, pos); });
 }
 function buildSkillbar() {
@@ -954,6 +957,8 @@ function onEvent(e) {
     case 'revive': banner('Gniazdo Zapasowe!', 'Kurczak wstaje z kolan', false); snd.sfx('heal'); break;
     case 'fury': banner('FURIA!', 'Wrogowie wpadają w szał', true); snd.sfx('fury'); F.arena.classList.add('furious'); if (!F.arena.querySelector('.beacons')) F.arena.insertAdjacentHTML('beforeend', '<div class="beacons" aria-hidden="true"><i></i><i></i></div>'); break;
     case 'herostun': { banner('Ogłuszony!', 'Nie atakujesz i nie używasz umiejętności', true); snd.sfx('stun'); cls(hero, 'hurtshake', 500); pop('OGŁUSZONY', 'crit', HX, 76); break; }
+    case 'counter': { const C = D.COUNTERS[e.id]; if (C) { banner(C.icon + ' ' + C.name, C.text, true); snd.sfx('boss'); const u = tu(e.uid); if (u && u.el) { u.el.classList.add('hit'); setTimeout(() => u.el.classList.remove('hit'), 500); } } break; }
+    case 'arrive': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: enemyFig(en) }); layoutUnits(); if (!F.waveBanner || F.waveBanner !== f.tick) { F.waveBanner = f.tick; banner('Nadciąga kolejna fala!', '', true); snd.sfx('boss'); } } break; }
     case 'summon': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: enemyFig(en) }); layoutUnits(); } break; }
     case 'phase': banner('Faza ' + e.n, '', true); snd.sfx('phase'); shake(); break;
     case 'skubanie': banner('Skubanie!', 'Wyłączony kafelek: ' + TILE[e.tile].name, true); snd.sfx('phase'); break;
@@ -1348,7 +1353,7 @@ async function showRanking(mode, keep) {
   mode = mode || G.setup.mode;
   if (!keep) Object.assign(RK, { char: '', garnek: '', nick: '', deep: false });
   RK.mode = mode;
-  const chars = Object.values(D.CHARS).filter(c => !c.secret || G.profile.chars.includes(c.id));
+  const chars = Object.values(D.CHARS).filter(c => !c.retired && (!c.secret || G.profile.chars.includes(c.id)));
   const maxG = Math.max(G.profile.garnek | 0, 0);
   const sel = (id, label, opts, val) => `<label class="rkf"><span>${label}</span><select id="${id}" >${opts.map(([v, n]) => `<option value="${esc(v)}" ${String(v) === String(val) ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`;
   openOverlay(`<h2>Ranking</h2><div class="tabs">${['quick', 'full'].map(m => `<button class="tab ${m === mode && !RK.deep ? 'on' : ''}" data-act="ranktab" data-v="${m}">${D.MODES[m].name}</button>`).join('')}<button class="tab ${RK.deep ? 'on' : ''}" data-act="rkdeep" title="Ranking Dogrywki w trybie: ${esc(D.MODES[mode].name)}">♾ Dogrywka</button></div>
@@ -1450,14 +1455,14 @@ function showBook(tab = 'tiles', turn = false) {
       return `<div class="entry ${nw ? 'fresh' : ''}" style="--i:${i}">${tileCard(t.id, { static: true, mini: true, i, locked: !open, lockText: open ? '' : t.boss ? 'Łup z bossa: pokonaj bossa i wybierz go z trzech' : (u && u.text) })}${nw ? '<span class="newtag">Nowy wpis!</span>' : ''}</div>`;
     }).join('')}</div>`;
   } else if (tab === 'chars') {
-    body = `<div class="opts">${Object.values(D.CHARS).map(c => { const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock], v = charView(c, open);
+    body = `<div class="opts">${Object.values(D.CHARS).filter(c => !c.retired).map(c => { const open = p.chars.includes(c.id), u = c.lock && D.UNLOCK_BY_ID[c.lock], v = charView(c, open);
       return `<div class="opt char-opt ${open ? '' : 'locked'}">${v.hidden ? art.eggArt(c.id, false) : art.portrait(c.id)}<div><h3>${esc(v.name)}</h3><p>${esc(v.style)}. ${esc(v.text)}</p>${open ? '' : `<div class="lockmsg">Zablokowana: ${esc(v.hidden ? '???' : u ? u.text : '')}</div>`}</div></div>`; }).join('')}</div>
       <div class="sec">Formy kurczaka</div><div class="opts">${D.FORMS.map(f => `<div class="opt char-opt">${art.heroArt('pyrtek', f.id, { plain: true })}<div><h3>${f.name}</h3><p>Od ${Math.round(f.from * 100)}% runu.</p></div></div>`).join('')}</div>`;
   } else if (tab === 'foes') {
     const all = [...Object.values(D.ENEMIES), ...Object.values(D.BOSSES)];
     body = `<div class="opts">${all.map(d => `<div class="opt char-opt">${art.enemyArt(d.art)}<div><h3>${esc(d.name)}</h3><p>${d.title ? esc(d.title) + '. ' : ''}${esc(d.text)}</p><p style="color:var(--faint)">${d.zone != null && !d.minion ? 'Strefa ' + D.ZONES[d.zone].tag : d.minion ? 'Przywoływany przez bossa' : 'Boss'}</p></div></div>`).join('')}</div>`;
   } else {
-    body = `<div class="help-list">${D.UNLOCKS.map(u => { const done = p.unlocked.includes(u.id), sec = u.secret && !done; return `<div><b>${done ? '✓' : '○'} ${esc(sec ? '???' : unlockName(u))}</b><p>${esc(sec ? '???' : u.text)}${done ? ' (zdobyte)' : ''}</p></div>`; }).join('')}</div>`;
+    body = `<div class="help-list">${D.UNLOCKS.filter(u => !(u.kind === 'char' && D.CHARS[u.target] && D.CHARS[u.target].retired)).map(u => { const done = p.unlocked.includes(u.id), sec = u.secret && !done; return `<div><b>${done ? '✓' : '○'} ${esc(sec ? '???' : unlockName(u))}</b><p>${esc(sec ? '???' : u.text)}${done ? ' (zdobyte)' : ''}</p></div>`; }).join('')}</div>`;
   }
   // księga: okładka, zakładki-przekładki, strona z wklejanymi wpisami
   openOverlay(`<div class="bookpage${turn ? ' turn' : ''}"><h2>Księga Kurnika</h2><div class="bookview"><div class="bookflow">${body}</div></div><div class="bookpager"><button class="btn small ghost" data-act="bookprev" aria-label="Poprzednia strona">‹ Wstecz</button><span class="bookno"></span><button class="btn small ghost" data-act="booknext" aria-label="Następna strona">Dalej ›</button></div></div><div class="booktabs tabs">${tabs.map(([id, n], i) => `<button class="tab ${id === tab ? 'on' : ''}" data-act="booktab" data-v="${id}" style="--t:${i}">${n}</button>`).join('')}</div>`, { cls: 'bookmodal' });

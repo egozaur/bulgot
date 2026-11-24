@@ -12,12 +12,12 @@ await p.setViewport({ width: 1500, height: 800 });
 await p.goto('http://localhost:8090/bulgot/?local=1', { waitUntil: 'networkidle0' });
 const n = await p.evaluate(async () => {
   const D = await import('./shared/data.js'), art = await import('./art.js');
-  const ids = Object.keys(D.CHARS);
+  const ids = D.CHAR_IDS;
   document.body.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:10px;padding:10px;background:#231a12;color:#eee;font:12px sans-serif">${ids.map(id => `<div style="width:150px;text-align:center"><div style="height:140px">${art.portrait(id).replace('class="fig"', 'style="height:140px"')}</div>${D.CHARS[id].name}</div>`).join('')}</div><div style="display:flex;flex-wrap:wrap;gap:10px;padding:10px;background:#231a12">${ids.map(id => `<div style="width:150px">${art.eggArt(id, true)}</div><div style="width:150px">${art.eggArt(id, false)}</div>`).join('')}</div>`;
   return ids.length;
 });
-console.log(n === 24 ? 'OK: 24 postacie' : 'BŁĄD: postaci ' + n);
+console.log(n === 12 ? 'OK: 12 postaci' : 'BŁĄD: postaci ' + n);
 await p.screenshot({ path: `${OUT}/postacie.png`, fullPage: true });
 await b.close();
 for (const e of errs) { console.error('BŁĄD:', e); process.exitCode = 1; }
-if (n !== 24) process.exitCode = 1;
+if (n !== 12) process.exitCode = 1;

@@ -97,7 +97,8 @@ const willTile = await p.evaluate(() => window.__bulgot.run.willOptions[0]);
 await p.click('.modal .will-grid [data-act=will][data-i="0"]'); await wait(500); s = await st();
 check(s.profile.will && s.profile.will.tile === willTile && /Testament spisany/.test(await text('.modal')), 'testament spisany: ' + willTile);
 await p.click('.modal [data-act=again]'); await wait(300); await p.click('[data-act=start]'); await wait(600); s = await st();
-check(s.run.offer.includes(willTile) && (await p.$$('.slotcard .stamp.will')).length === 1, 'kafelek z testamentu jako karta w nowej ofercie');
+// Testament czeka na INNĄ postać, gdy gracz ma odblokowaną więcej niż jedną (w walkach testu może się odblokować Związkowiec).
+check((s.run.offer.includes(willTile) && (await p.$$('.slotcard .stamp.will')).length === 1) || (s.profile.chars.length > 1 && s.profile.will && s.profile.will.tile === willTile), 'kafelek z testamentu jako karta w nowej ofercie (lub czeka na inną postać)');
 await p.screenshot({ path: OUT + '/j-testament-oferta.png' });
 
 // 7. Księga: Reakcje i Okólniki

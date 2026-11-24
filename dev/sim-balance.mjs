@@ -23,7 +23,7 @@ const TRACE = process.argv.includes('--trace');
 const NOREST = process.argv.includes('--norest'), RESTBELOW = +arg('restbelow', 55);
 const NOBUY = process.argv.includes('--nobuy'), BUYMIN = +arg('buymin', 1.05);
 const GRANT = arg('grant') ? [arg('grant').split('@')[0], +arg('grant').split('@')[1] || 1] : null;
-const PER = {};
+const PER = {}, TPLS = {};   // TPLS: statystyki walk wg szablonu piętra (--tpl)
 let UPG = 0, LOOT = 0;
 // Pokrętła do strojenia (nie zmieniają plików): mnożniki życia/ataku wrogów i bossów oraz tempo wzrostu na rundę.
 const HPM = +arg('hpmul', 1), ATKM = +arg('atkmul', 1), BHPM = +arg('bosshp', 1), BATKM = +arg('bossatk', 1);
@@ -191,6 +191,7 @@ function playRun(seed) {
       if (setup.extra) { XS.fights++; const b = (XS.byId[setup.extra] = XS.byId[setup.extra] || { n: 0, w: 0 }); b.n++; if (out.result.win) { XS.wins++; b.w++; } }
       const S0 = statsOf(run);
       const row = (PER[setup.round] = PER[setup.round] || { n: 0, win: 0, loss: 0, ticks: 0, fast: 0 }); row.ticks += out.result.ticks; if (out.result.ticks <= 20) row.fast++;
+      if (!setup.boss && !setup.extra && !setup.arena) { const tk = (setup.elite ? 'elita:' : '') + (setup.tpl || 'zwykle'), tr = (TPLS[tk] = TPLS[tk] || { n: 0, win: 0, loss: 0, ticks: 0 }); tr.n++; tr.ticks += out.result.ticks; if (out.result.win) { tr.win++; tr.loss += Math.max(0, before.hp - out.result.hp) / S0.maxHp; } }
       row.n++; if (out.result.win) { row.win++; row.loss += Math.max(0, before.hp - out.result.hp) / S0.maxHp; }
       if (TRACE) {
         const S = statsOf(run);
@@ -225,6 +226,7 @@ console.log(line);
 if (ENDLESS) console.log(`Dogrywka: ${clearedN} z ${N} runów pokonało Prezesa; średnio ${(deepSum / Math.max(1, clearedN)).toFixed(1)} pięter ponad limit, najgłębiej +${deepMax}`);
 if (XS.offers) console.log(`Dodatkowe rundy: ofert ${XS.offers}, walk ${XS.fights}, wygranych ${XS.wins}; ` + Object.entries(XS.byId).map(([k, v]) => k + ' ' + v.w + '/' + v.n + ' (' + (v.w / v.n * 100).toFixed(0) + '%)').join(', '));
 console.log(`Ulepszeń na run: ${(UPG / N).toFixed(2)}   łupów z bossów na run: ${(LOOT / N).toFixed(2)}`);
+if (process.argv.includes('--tpl')) { console.log('Szablon       walk  wygr%  strata życia  śr.czas (s)'); for (const [k, x] of Object.entries(TPLS)) console.log(k.padEnd(12), String(x.n).padStart(6), (x.win / x.n * 100).toFixed(0).padStart(5) + '%', (x.win ? x.loss / x.win * 100 : 0).toFixed(0).padStart(8) + '%', (x.ticks / x.n / 10).toFixed(1).padStart(9)); }
 if (process.argv.includes('--table')) {
   console.log('Runda  walk  wygr%  śr.strata życia przy wygranej  śr.czas walki (s)  walki ≤2 s');
   for (const r of Object.keys(PER).map(Number).sort((a, b) => a - b)) { const x = PER[r]; console.log(String(r).padStart(4), String(x.n).padStart(5), (x.win / x.n * 100).toFixed(0).padStart(5) + '%', x.win ? (x.loss / x.win * 100).toFixed(0).padStart(6) + '%' : '    -', ((x.ticks / x.n) / 10).toFixed(1).padStart(8), (x.fast / x.n * 100).toFixed(0).padStart(8) + '%'); }

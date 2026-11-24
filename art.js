@@ -190,8 +190,21 @@ const EMERYT = () => HEN({ t1: '#9e9e9e', t2: '#bdbdbd', t3: '#e0e0e0', body: '#
 const SIGMA = () => HEN({ t1: '#37474f', t2: '#546e7a', t3: '#78909c', body: '#90a4ae', shade: '#607d8b', comb: '#263238' },
   `<path d="M34 58 h28 l-3 24 q-11 5 -22 0 z" fill="#212121" ${S}/><path d="M48 58 v24" stroke="#ffd54f" stroke-width="1.8"/>`,
   `<rect x="56" y="32" width="22" height="8" rx="3" fill="#111" ${S2}/><path d="M58 36 h18" stroke="#80d8ff" stroke-width="2" stroke-linecap="round"/><path d="M83 52 l7 3" stroke="#222" stroke-width="2.4" stroke-linecap="round"/>`);
+// Cztery postacie-wyzwania (2026-11-24).
+const SANEPID = () => HEN({ t1: '#a5d6a7', t2: '#c8e6c9', t3: '#81c784', body: '#f1f8e9', shade: '#dcedc8', comb: '#e53935' },
+  `<path d="M31 58 h31 l-2 27 q-13 5 -27 0 z" fill="#fff" ${S}/><path d="M46 63 v14 M39 70 h14" stroke="#43a047" stroke-width="3.2" stroke-linecap="round"/>`,
+  `<path d="M55 28 q11 -13 24 -2 l-1 7 q-11 -4 -22 0 z" fill="#fff" ${S}/><path d="M67 18 v8 M63 22 h8" stroke="#43a047" stroke-width="2.6" stroke-linecap="round"/><path d="M71 44 q9 -3 17 3 l-1 8 q-8 4 -17 0 z" fill="#b3e5fc" ${S2}/><rect x="79" y="60" width="12" height="16" rx="1.5" fill="#fff" ${S2}/><path d="M82 65 h6 M82 69 h6 M82 73 h4" stroke="#78909c" stroke-width="1.6"/>`);
+const WANDA = () => HEN({ t1: '#b8860b', t2: '#d4a017', t3: '#f0c14b', body: '#e8b96a', shade: '#c9953f', comb: '#c62828' },
+  `<ellipse cx="46" cy="76" rx="9.5" ry="11.5" fill="#ffd54f" ${S}/><path d="M42 70 q3 -4 7 -2" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/>`,
+  `<path d="M88 22 l1.8 4.5 l4.5 1.8 l-4.5 1.8 l-1.8 4.5 l-1.8 -4.5 l-4.5 -1.8 l4.5 -1.8z" fill="#ffd23f" ${S2}/><path d="M30 80 q16 7 32 0" stroke="#8d6e63" stroke-width="3" fill="none" stroke-linecap="round"/>`);
+const ZWIAZKOWIEC = () => HEN({ t1: '#8d2b1f', t2: '#c0392b', t3: '#e74c3c', body: '#c68642', shade: '#a0692f', comb: '#d62828' },
+  `<path d="M32 58 h29 l-2 27 q-12 5 -25 0 z" fill="#ffd600" ${S}/><path d="M46 58 v27" stroke="#f9a825" stroke-width="2"/><path d="M36 66 h8 M48 66 h8 M36 72 h8" stroke="#212121" stroke-width="1.6"/>`,
+  `<path d="M54 28 q13 -17 28 -2 l0 5 q-14 -4 -28 0 z" fill="#ffd600" ${S}/><rect x="52" y="29" width="32" height="4" rx="2" fill="#f9a825" ${S2}/><path d="M76 58 l13 -7 v17 l-13 -6 z" fill="#e53935" ${S2}/><rect x="70" y="59" width="8" height="8" fill="#455a64" ${S2}/>`);
+const PACYFISTA = () => HEN({ t1: '#ce93d8', t2: '#e1bee7', t3: '#f3e5f5', body: '#fff9e6', shade: '#f1e4c3', comb: '#ec407a', nocomb: true },
+  `<circle cx="46" cy="70" r="9.5" fill="none" stroke="#7e57c2" stroke-width="2.4"/><path d="M46 60.5 v19 M46 70 l-6.5 6.5 M46 70 l6.5 6.5" stroke="#7e57c2" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
+  `<circle cx="57" cy="29" r="4" fill="#ff80ab" ${S2}/><circle cx="66" cy="24" r="4.2" fill="#fff59d" ${S2}/><circle cx="76" cy="27" r="4" fill="#80d8ff" ${S2}/><path d="M55 32 q11 -7 24 -2" stroke="#66bb6a" stroke-width="2.4" fill="none"/>`);
 const NEWBODY = { barista: BARISTA, ges: GES, lodziarz: LODZIARZ, pielegniarka: PIELEGNIARKA, rzeznik: RZEZNIK, wrozka: WROZKA, stazysta: STAZYSTA, mutant: MUTANT, dinozaur: DINOZAUR,
-  gigachad: GIGACHAD, jajeczko: JAJECZKO, krypto: KRYPTO, alkoholik: ALKOHOLIK, wegan: WEGAN, baba: BABA, influencer: INFLUENCER, skibidi: SKIBIDI, emeryt: EMERYT, sigma: SIGMA };
+  sanepid: SANEPID, wanda: WANDA, zwiazkowiec: ZWIAZKOWIEC, pacyfista: PACYFISTA, gigachad: GIGACHAD, jajeczko: JAJECZKO, krypto: KRYPTO, alkoholik: ALKOHOLIK, wegan: WEGAN, baba: BABA, influencer: INFLUENCER, skibidi: SKIBIDI, emeryt: EMERYT, sigma: SIGMA };
 
 // Akcesoria na formy postaci innych niż Pyrtek.
 const HEADS = { kwoka: [68, 40], kaczor: [66, 38], indor: [68, 40], zjarany: [66, 40] };
