@@ -114,13 +114,28 @@ export const STAT_GROUPS = [
   ['Obrona', [['maxHp', 'Życie'], ['armor', 'Pancerz'], ['evade', 'Unik'], ['regen', 'Regeneracja']]],
   ['Inne', [['luck', 'Szczęście']]],
 ];
+// Szybkość ataku w uderzeniach na sekundę (100 = 1,0 / s), Moc Dziobnięcia jako mnożnik (150 = ×1,5).
+export const fmtPerSec = v => { const x = Math.round(v) / 100; return (Math.round(x * 100) % 10 === 0 ? x.toFixed(1) : x.toFixed(2)).replace('.', ','); };
+export const fmtMult = v => '×' + String(Math.round(v) / 100).replace('.', ',');
+// Każdy typ statystyki ma własny znak: liczba (Atak, Życie, Pancerz, Szczęście), „/ s” (Szybkość, Regeneracja), „%” (Dziobnięcie, Unik, Obrażenia), „×” (Moc Dziobnięcia).
 export function statValue(k, S) {
   switch (k) {
-    case 'aspd': case 'crit': case 'critMult': case 'evade': return [String(S[k]), '%'];
-    case 'dmg': return ['+' + S.dmg, '%'];
+    case 'aspd': return [fmtPerSec(S.aspd), '/ s'];
+    case 'critMult': return [fmtMult(S.critMult), ''];
+    case 'crit': case 'evade': return [String(S[k]), '%'];
+    case 'dmg': return [S.dmg > 0 ? '+' + S.dmg : String(S.dmg), '%'];
     case 'regen': return [fmtRegen(S.regen), '/ s'];
     default: return [String(S[k]), ''];
   }
+}
+// Premia ponad bazę bohatera (kafelki, zestawy, postać, Odznaki), zapisana w jednostce statystyki; '' gdy brak. Obrażenia to z natury sama premia, więc bez rozbicia.
+export function statBonus(k, S, base) {
+  const key = k === 'maxHp' ? 'hp' : k;
+  if (!base || k === 'dmg' || base[key] == null) return { txt: '', neg: false, d: 0 };
+  const d = S[k] - base[key];
+  if (!d) return { txt: '', neg: false, d: 0 };
+  const a = Math.abs(d), body = k === 'aspd' ? fmtPerSec(a) : k === 'regen' ? fmtRegen(a) : k === 'critMult' ? fmtMult(a).slice(1) : String(a);
+  return { txt: (d > 0 ? '+' : '−') + body, neg: d < 0, d };
 }
 
 export const HELP = [

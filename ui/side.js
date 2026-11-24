@@ -31,11 +31,12 @@ export function skillRingsHTML() {
 // Statystyki w jednej kolumnie: ikona, nazwa, liczba i jednostka w stałych kolumnach; mikropasek to tylko orientacyjna skala.
 export const BAR_CAP = { atk: 100, aspd: 300, crit: 100, critMult: 400, dmg: 300, maxHp: 150, armor: 80, evade: 75, regen: 50, luck: 100 };
 export function statListHTML() {
-  const S = G.run.hero; let z = 0;
+  const S = G.run.hero, base = (D.CHARS[G.run.char] || {}).base; let z = 0;
+  // Wszystkie statystyki są zawsze widoczne (także zero); zielona liczba z prawej to premia ponad bazę, czerwona to kara.
   return `<div class="sl">${T.STAT_GROUPS.map(([gname, keys]) => {
-    const rows = keys.filter(([k]) => k !== 'dmg' || S.dmg).map(([k, label]) => {
-      const [num, unit] = T.statValue(k, S); z++;
-      return `<div class="slr ${z % 2 ? 'z' : ''}" tabindex="0" data-tipk="stat:${k}">${art.statIcon(k)}<span class="sln">${label}</span><span class="slb"><i style="width:${Math.max(4, Math.min(100, S[k] / BAR_CAP[k] * 100))}%"></i></span><span class="slv"><b>${num}</b><i>${unit}</i></span></div>`;
+    const rows = keys.map(([k, label]) => {
+      const [num, unit] = T.statValue(k, S), bn = T.statBonus(k, S, base); z++;
+      return `<div class="slr ${z % 2 ? 'z' : ''}" tabindex="0" data-tipk="stat:${k}">${art.statIcon(k)}<span class="sln">${label}</span><span class="slb"><i style="width:${Math.max(4, Math.min(100, S[k] / BAR_CAP[k] * 100))}%"></i></span><span class="slv"><b>${num}</b><i>${unit}</i><em class="${bn.neg ? 'neg' : ''}">${bn.txt}</em></span></div>`;
     }).join('');
     return `<div class="slg">${gname}</div>${rows}`;
   }).join('')}</div>`;

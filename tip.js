@@ -5,6 +5,7 @@
 import * as D from './shared/data.js';
 import * as art from './art.js';
 import { setCounts, activeLinks } from './shared/stats.js';
+import * as T from './text.js';
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const TILE = D.TILE_BY_ID;
@@ -84,25 +85,30 @@ function statTip(k) {
   const dmg = S.dmg || 0, base = fl(S.atk * (100 + dmg) / 100), cm = S.critMult || 150, critHit = fl(base * cm / 100);
   const dps = S.atk * (100 + dmg) / 100 * S.aspd / 100;
   const each = (a, b) => `<div class="tp-ex">${a}<b>${b}</b></div>`;
+  // Rozbicie: baza bohatera + premie (kafelki, zestawy, postać, Odznaki) = suma. Obrażenia to sama premia.
+  const baseOf = (D.CHARS[r.char] || {}).base, bn = T.statBonus(k, S, baseOf);
+  const fmtVal = v => { const [n, u] = T.statValue(k, { ...S, [k]: v }); return n + (u ? ' ' + u : ''); };
+  const split = baseOf && baseOf[k === 'maxHp' ? 'hp' : k] != null && k !== 'dmg'
+    ? each('Baza: ', fmtVal(baseOf[k === 'maxHp' ? 'hp' : k])) + each('Premie (kafelki, zestawy, postać): ', bn.txt || '0') + each('Razem: ', fmtVal(S[k])) : '';
   let title = '', body = '', ex = '';
   switch (k) {
     case 'maxHp': title = 'Życie'; body = 'Tyle obrażeń możesz przyjąć w walce. Gdy spadnie do zera, run się kończy. Po wygranej walce odzyskujesz część Życia, a Odpoczynek leczy za Ziarna.'; ex = each('Maksymalne Życie: ', S.maxHp) + each('Teraz: ', `${r.hp} / ${S.maxHp}`); break;
     case 'atk': title = 'Atak'; body = `To bazowe obrażenia jednego uderzenia, zanim zadziałają bonusy i pancerz wroga. Tyle zadaje zwykły atak bez mocnego dziobnięcia i bez premii.\nUmiejętności liczą się jako procent Ataku (np. 250% to 2,5 × Atak).\nCios = Atak × (1 + premia do obrażeń) × (Moc Dziobnięcia, gdy trafi mocne dziobnięcie) × 100 / (100 + pancerz wroga).`;
       ex = each('Zwykły cios w wroga bez pancerza: ', base) + each('Mocne dziobnięcie: ', critHit) + each('Wróg z 10 pancerza przyjmie: ', `${fl(base * 100 / 110)} / mocne dziobnięcie ${fl(critHit * 100 / 110)}`) + (dmg ? each('Premia do obrażeń: ', `+${dmg}%`) : ''); break;
-    case 'aspd': title = 'Szybkość ataku'; body = `100% oznacza jedno uderzenie na sekundę. Twoje ${S.aspd}% to ${pl((S.aspd / 100).toFixed(2))} uderzenia na sekundę. Im wyższe, tym częściej bijesz zwykłym atakiem (nie przyspiesza umiejętności, tylko zwykłe ataki).`;
+    case 'aspd': title = 'Szybkość ataku'; body = `Ile razy na sekundę uderzasz zwykłym atakiem: ${T.fmtPerSec(S.aspd)} / s. Kafelki podają ją w procentach (+30% to +0,3 / s przy bazie 1,0 / s). Nie przyspiesza umiejętności, tylko zwykłe ataki.`;
       ex = each('Uderzenie co: ', pl((100 / S.aspd).toFixed(2)) + ' s') + each('Zwykłe ataki: ', '≈ ' + pl((dps).toFixed(1)) + ' obrażeń / s (bez mocnych dziobnięć i pancerza)'); break;
     case 'armor': title = 'Pancerz'; body = 'Zmniejsza obrażenia każdego ciosu, który dostajesz: cios × 100 / (100 + Pancerz). Działa na każdy cios z osobna, więc najlepiej chroni przed wieloma słabymi uderzeniami.';
       ex = each('Przy Twoim pancerzu ciosy są słabsze o: ', Math.round(S.armor / (100 + S.armor) * 100) + '%'); break;
-    case 'crit': title = 'Dziobnięcie'; body = `Dziobnięcie to szansa, że zwykły atak jest mocnym dziobnięciem i zadaje ${cm}% zwykłego ciosu (Moc Dziobnięcia). Dotyczy zwykłych ataków; umiejętności same z siebie nie zadają mocnych dziobnięć.`;
+    case 'crit': title = 'Dziobnięcie'; body = `Dziobnięcie to szansa, że zwykły atak jest mocnym dziobnięciem i zadaje ${T.fmtMult(cm)} zwykłego ciosu (Moc Dziobnięcia). Dotyczy zwykłych ataków; umiejętności same z siebie nie zadają mocnych dziobnięć.`;
       ex = each('Szansa: ', S.crit + '%') + each('Mocne dziobnięcie zadaje: ', critHit) + each('Średnio dzięki dziobnięciom: ', '+' + Math.round(S.crit * (cm - 100) / 100) + '% obrażeń zwykłych ataków'); break;
-    case 'critMult': title = 'Moc Dziobnięcia'; body = 'O ile mocniejsze jest mocne dziobnięcie. Bazowo 150% zwykłego ciosu.'; ex = each('Twoja Moc Dziobnięcia: ', cm + '%') + each('Zwykły cios / mocne dziobnięcie: ', `${base} / ${critHit}`); break;
+    case 'critMult': title = 'Moc Dziobnięcia'; body = 'Ile razy mocniejsze jest mocne dziobnięcie od zwykłego ciosu. Bazowo ×1,5; kafelki dodają punkty procentowe (+30% to +0,3).'; ex = each('Twoja Moc Dziobnięcia: ', T.fmtMult(cm)) + each('Zwykły cios / mocne dziobnięcie: ', `${base} / ${critHit}`); break;
     case 'evade': title = 'Unik'; body = 'Szansa, że cios wroga w ogóle Cię nie trafi (zero obrażeń). Maksymalnie 75%.'; ex = each('Szansa uniku: ', S.evade + '%'); break;
     case 'regen': title = 'Regeneracja'; body = 'Tyle Życia odzyskujesz co sekundę w czasie walki.'; ex = each('Teraz: ', pl(String(Math.round(S.regen) / 10)) + ' / s'); break;
     case 'luck': title = 'Szczęście'; body = 'Wpływa na to, jakie kafelki trafiają do ofert: im więcej Szczęścia, tym częściej pojawiają się rzadsze (rzadkie, epickie, legendarne).'; ex = each('Szczęście: ', S.luck); break;
     case 'dmg': title = 'Obrażenia'; body = 'Procentowa premia do wszystkich obrażeń, które zadajesz: zwykłych ataków i umiejętności. Dodaje się do Ataku jako mnożnik.'; ex = each('Premia: ', '+' + dmg + '%'); break;
     default: return '';
   }
-  return `<div class="tp-head r0"><span class="tp-ico">${art.statIcon(k)}</span><div><div class="tp-name">${esc(title)}</div><div class="tp-tags"><span class="tag">Statystyka</span></div></div></div><div class="tp-text">${nl(body)}</div>${ex ? `<div class="tp-exs">${ex}</div>` : ''}`;
+  return `<div class="tp-head r0"><span class="tp-ico">${art.statIcon(k)}</span><div><div class="tp-name">${esc(title)}</div><div class="tp-tags"><span class="tag">Statystyka</span></div></div></div><div class="tp-text">${nl(body)}</div>${ex || split ? `<div class="tp-exs">${split}${ex}</div>` : ''}`;
 }
 
 function build(el) {

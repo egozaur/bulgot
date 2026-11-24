@@ -1561,8 +1561,9 @@ html.reduce .slotm .lamps i, html.reduce .slotm .reel .strip, html.reduce .stage
 .slr.z { background: rgba(255,255,255,.045); } .slr:hover { background: rgba(255,179,71,.12); }
 .slr .stico { width: 18px; height: 18px; flex: none; }
 .slr .sln { flex: 1 1 104px; min-width: 0; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.slb { flex: 0 1 60px; min-width: 14px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.1); overflow: hidden; } .slb i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #ffb347, #ffd23f); }
-.slv { flex: none; display: grid; grid-template-columns: minmax(2.2ch, auto) 2.4ch; align-items: baseline; font-family: var(--mono); white-space: nowrap; }
+.slb { flex: 0 1 40px; min-width: 14px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.1); overflow: hidden; } .slb i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #ffb347, #ffd23f); }
+.slv { flex: none; display: grid; grid-template-columns: minmax(2.2ch, auto) 2.9ch 4.2ch; align-items: baseline; font-family: var(--mono); white-space: nowrap; }
+.slv em { font-style: normal; font-size: .68rem; font-weight: 800; color: #7bd88f; text-align: right; } .slv em.neg { color: #ff8a8a; }
 .slv b { text-align: right; font-weight: 800; font-size: .86rem; } .slv i { font-style: normal; font-size: .68rem; font-weight: 700; color: var(--faint); padding-left: 3px; }
 /* panele i elementy środkowej kolumny nie kurczą się pod nacisk wysokości: kolumna się przewija, nic nie nachodzi na sąsiada */
 .side > *, .stage > * { flex-shrink: 0; }

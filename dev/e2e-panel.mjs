@@ -47,8 +47,10 @@ const st = await p.evaluate(() => {
 if (!st.names.includes('Dziobnięcie') || !st.names.includes('Moc Dziobnięcia') || st.names.some(n => /Fortun|Krytyk/i.test(n))) fail('nazwy statystyk: ' + st.names.join(', ')); else ok('nazwy statystyk: ' + st.names.join(', '));
 if (!st.aligned || !st.oneLine) fail('liczby i jednostki nie stoją w jednej linii: ' + JSON.stringify(st)); else ok('liczby i jednostki wyrównane, każdy wiersz w jednej linii');
 const asp = st.vals[st.names.indexOf('Szybkość ataku')], mult = st.vals[st.names.indexOf('Moc Dziobnięcia')];
-if (!/^\d+%$/.test(asp) || !/^\d+%$/.test(mult)) fail('szybkość ataku i Moc Dziobnięcia powinny być w %: ' + asp + ', ' + mult); else ok(`szybkość ${asp}, Moc Dziobnięcia ${mult}`);
-if (!/\/s$/.test(st.vals[st.names.indexOf('Regeneracja')])) fail('regeneracja bez „/ s”'); else ok('regeneracja zostaje w Życiu na sekundę');
+if (!/^\d+,\d+\/s/.test(asp) || !/^×\d+(,\d+)?/.test(mult)) fail('szybkość ataku powinna być w „/ s”, a Moc Dziobnięcia jako ×: ' + asp + ', ' + mult); else ok(`szybkość ${asp}, Moc Dziobnięcia ${mult}`);
+for (const n of ['Atak', 'Szybkość ataku', 'Dziobnięcie', 'Moc Dziobnięcia', 'Obrażenia', 'Życie', 'Pancerz', 'Unik', 'Regeneracja', 'Szczęście']) if (!st.names.includes(n)) fail('brak stale widocznej statystyki: ' + n);
+ok('wszystkie statystyki widoczne zawsze: ' + st.names.length);
+if (!/\/s/.test(st.vals[st.names.indexOf('Regeneracja')])) fail('regeneracja bez „/ s”'); else ok('regeneracja zostaje w Życiu na sekundę');
 await p.screenshot({ path: `${OUT}/panel-statystyki.png` });
 
 // 3. zamiana kolejności umiejętności: strzałki ←/→ na aktywnym kółku i przeciąganie
