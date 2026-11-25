@@ -80,6 +80,13 @@ await p.reload({ waitUntil: 'networkidle0' }); await wait(500);
 if (await count('[data-act=home]')) { await click('[data-act=home]'); }
 await click('[data-act=kurnik]');
 ok(await count('.kb') === 7, '7 budynków Kurnika');
+ok(await count('.klock') === 1 && await count('.kb.locked') === 7 && await count('.kb [data-act=kbuy]') === 0, 'poniżej 20. poziomu Stażu Kurnik jest tylko podglądem (baner, brak przycisków kupna)');
+await click('[data-act=close]');
+await p.evaluate(k => { const pr = JSON.parse(localStorage.getItem(k)); pr.xp = 6145; localStorage.setItem(k, JSON.stringify(pr)); }, K('profile'));   // dokładnie 20. poziom Stażu
+await p.reload({ waitUntil: 'networkidle0' }); await wait(500);
+if (await count('[data-act=home]')) { await click('[data-act=home]'); }
+await click('[data-act=kurnik]');
+ok(await count('.klock') === 0 && await count('.kb.locked') === 0, 'od 20. poziomu Stażu Kurnik jest otwarty');
 ok(/Pióra: 100/.test(await text('.kfeathers')), 'Pióra w nagłówku');
 await click('.kb [data-act=kbuy][data-v=spizarnia]');
 ok(/Pióra: 88/.test(await text('.kfeathers')) && await count('.kb .kbl i.on') === 1, 'zakup poziomu Spiżarni (-12 Piór)');

@@ -1315,6 +1315,8 @@ html.reduce .logo img { animation: none; }
 .kb .kbl i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); background: transparent; }
 .kb .kbl i.on { background: var(--gold); border-color: #b8860b; box-shadow: 0 0 6px rgba(255,210,63,.6); }
 .kb.max { border-color: var(--gold); }
+.kb.locked { opacity: .6; filter: grayscale(.5); }
+.kurnikmodal .klock { margin: 6px 0 8px; padding: 8px 12px; border-radius: 12px; border: 2px solid var(--line); background: rgba(0,0,0,.3); text-align: center; font-size: .92rem; }
 .kb .kbm { color: var(--gold); font-weight: 800; text-align: center; font-size: .86rem; }
 .kghost { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: center; margin: 6px 0; }
 .kghost .ghostfig svg { width: 48px; height: 48px; }

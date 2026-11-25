@@ -168,7 +168,7 @@ export const HELP = [
   ['Trasy', 'Na początku drugiej i trzeciej strefy wybierasz jedną z dwóch dróg. Trasa zmienia wrogów i ekonomię do końca strefy.'],
   ['Dogrywka', 'Po pokonaniu Prezesa wygrana jest już twoja, ale możesz zostać w fabryce. Wrogowie rosną szybciej, co pięć pięter czeka super-boss, a osobny ranking liczy, jak głęboko dotarłeś.'],
   ['Arena Duchów i towarzysze', 'Kafelek Arena Duchów to walka z buildem innego gracza z końca jego runu (albo z twoim Odbiciem). Schronisko dla Piskląt daje towarzysza, który walczy obok i rośnie po bossach.'],
-  ['Kurnik', 'Za każdy run dostajesz Pióra, które wydajesz na trwałe, niewielkie ulepszenia w Kurniku (menu główne).'],
+  ['Kurnik', 'Za każdy run dostajesz Pióra, które wydajesz na trwałe, niewielkie ulepszenia w Kurniku (menu główne). Kurnik odblokowuje się na 20. poziomie Stażu; wcześniej możesz tylko oglądać budynki, a Pióra się zbierają.'],
 ];
 
 // Wybór deterministyczny (ta sama runda, ta sama linia).

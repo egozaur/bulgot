@@ -54,11 +54,15 @@ export function ghostBlock() {
 }
 export function showKurnik() {
   const p = G.profile, ku = p.kurnik || {}, fe = p.feathers | 0;
+  // Kurnik kupuje się od 20. poziomu Stażu; wcześniej to tylko podgląd (budynki i ceny widać, przyciski wyłączone).
+  const need = p.kurnikNeed || D.KURNIK_MIN_STAZ, open = p.kurnikOpen !== false, lvl = p.staz ? p.staz.level | 0 : 0;
   const cards = Object.entries(D.KURNIK).map(([id, b]) => {
-    const lv = ku[id] | 0, max = lv >= D.KURNIK_MAX, cost = max ? 0 : b.cost[lv];
-    return `<div class="kb ${max ? 'max' : ''}">${art.emo(b.icon)}<div class="kbn"><b>${esc(b.name)}</b><span class="kbl">${[0, 1, 2].map(i => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</span></div><p>${esc(b.text)}</p>${max ? '<div class="kbm">Maksymalny poziom</div>' : `<button class="btn small ${fe >= cost ? 'primary' : ''}" data-act="kbuy" data-v="${id}" ${fe < cost ? 'disabled' : ''}>Ulepsz za ${cost} ${art.emo('pioro')}</button>`}</div>`;
+    const lv = ku[id] | 0, max = lv >= D.KURNIK_MAX, cost = max ? 0 : b.cost[lv], can = open && fe >= cost;
+    const btn = !open ? `<button class="btn small" disabled title="Kurnik odblokuje się na ${need}. poziomie Stażu">🔒 ${cost} ${art.emo('pioro')}</button>` : `<button class="btn small ${can ? 'primary' : ''}" data-act="kbuy" data-v="${id}" ${can ? '' : 'disabled'}>Ulepsz za ${cost} ${art.emo('pioro')}</button>`;
+    return `<div class="kb ${max ? 'max' : ''} ${open ? '' : 'locked'}">${art.emo(b.icon)}<div class="kbn"><b>${esc(b.name)}</b><span class="kbl">${[0, 1, 2].map(i => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</span></div><p>${esc(b.text)}</p>${max ? '<div class="kbm">Maksymalny poziom</div>' : btn}</div>`;
   }).join('');
-  openOverlay(`<h2>Kurnik</h2><p class="lead">Za każdy run dostajesz Pióra: piętra, premię za wygraną (z palnikiem) i za piętra Dogrywki. Wydaj je na trwałe, niewielkie ulepszenia dla wszystkich postaci.</p>
+  const lockBox = open ? '' : `<div class="klock">🔒 Kurnik odblokuje się na <b>${need}. poziomie Stażu</b> (masz ${lvl}, brakuje ${Math.max(0, need - lvl)}). Do tego czasu możesz tylko oglądać budynki; Pióra z runów się zbierają.</div>`;
+  openOverlay(`<h2>Kurnik</h2><p class="lead">Za każdy run dostajesz Pióra: piętra, premię za wygraną (z palnikiem) i za piętra Dogrywki. Wydaj je na trwałe, niewielkie ulepszenia dla wszystkich postaci.</p>${lockBox}
     <div class="kfeathers">${art.emo('pioro')} Pióra: <b>${fe}</b></div><div class="kgrid">${cards}</div>${ghostBlock()}<div class="actions" style="margin-top:12px"><button class="btn ghost" data-act="close">Zamknij</button></div>`, { cls: 'kurnikmodal' });
 }
 export function showProfile() {
