@@ -23,7 +23,6 @@ export const VARIANTS = {
   'odpoczynek: nigdy': ['--norest'], 'odpoczynek: poniżej 80%': ['--restbelow', '80'],
   'dokup: nigdy': ['--nobuy'], 'dokup: wszystko co nie szkodzi': ['--buymin', '1.0'],
   'ulepszanie: wyłączone': ['--noupgrade'], 'reroll: wyłączony': ['--noreroll'],
-  'drzwi: zawsze ryzykowne': ['--doors', 'always'], 'drzwi: nigdy ryzykowne': ['--doors', 'never'],
   'dodatkowe rundy: nigdy': ['--extra', 'never'], 'dodatkowe rundy: zawsze': ['--extra', 'always'], 'dodatkowe rundy: od 85% życia': ['--extrahp', '85'],
   'trasa: Chłodnia': ['--route', 'chlodnia'], 'trasa: Kotłownia': ['--route', 'kotlownia'], 'trasa: Magazyn': ['--route', 'magazyn'], 'trasa: Kanały': ['--route', 'kanaly'], 'trasa: Sortownia': ['--route', 'sortownia'],
   'build: czysty ogień': ['--arch', 'burn'], 'build: czysty mróz': ['--arch', 'frost'], 'build: czysta Salmonella': ['--arch', 'poison'], 'build: czysta krew': ['--arch', 'bleed'],

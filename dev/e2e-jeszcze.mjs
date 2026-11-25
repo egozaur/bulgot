@@ -34,15 +34,11 @@ async function patch(which, fnSrc) {
   await p.evaluate(() => { const c = document.querySelector('[data-act=resume]'); c && c.click(); }); await wait(400);
 }
 
-// 1. Rozwidlenie Korytarza
-await patch('run', `v.round = 2; v.phase = 'door'; v.offer = []; v.pending = { kind: 'door', affix: 'szybki', reward: 'rare', coins: 8 }; v.decrees = ['audyt', 'pilny', 'premia'];`);
+// 1. (Rozwidlenie Korytarza usunięte w Patchu 1.1) piętro 2: od razu oferta, okólnik widoczny, bez drzwi na pasku pięter
+await patch('run', `v.round = 2; v.decrees = ['audyt', 'pilny', 'premia'];`);
 let s = await st();
-check(s.phase === 'door' && (await p.$$('.cards [data-act=choose]')).length === 2 && /Audyt/.test(await text('.decbar')), 'ekran drzwi z dwiema kartami i okólnikiem');
-check((await text('.tower .floor.door, .tower .fp.door')).length > 0, 'pasek pięter oznacza drzwi');
-await p.screenshot({ path: OUT + '/j-drzwi.png' });
-await p.keyboard.press('2'); await wait(500); s = await st();
-check(s.phase === 'offer' && s.run.door && s.run.door.risky, 'ryzykowne drzwi wybrane klawiszem 2');
-check(/personelu/.test(await text('.preview .lab')), 'podgląd: drzwi dla personelu');
+check(s.phase === 'offer' && (await p.$$('.tower .floor.door, .tower .fp.door')).length === 0, 'piętro 2: od razu oferta, pasek pięter bez drzwi');
+await p.screenshot({ path: OUT + '/j-oferta.png' });
 // 2. Okólnik (Audyt) i ceny
 check(/Audyt/.test(await text('.sub .dsub')) && (await p.$$('.pill.dec')).length === 0, 'okólnik w podtytule piętra, bez pigułki na pasku (Patch 1.1)');
 const buy = await text('.cards [data-act=buyoffer]');
@@ -104,7 +100,8 @@ await p.screenshot({ path: OUT + '/j-testament-oferta.png' });
 // 7. Księga: Reakcje i Okólniki
 await p.click('[data-act=menu]'); await wait(200); await p.click('.modal [data-act=book]'); await wait(300);
 await p.click('[data-act=booktab][data-v=react]'); await wait(300);
-check(/Okólniki Zarządu/.test(await text('.modal')) && /Gorączka/.test(await text('.modal')), 'Księga: zakładka Reakcje i Okólniki (odkryta Gorączka)');
+const bookTxt = await text('.modal');
+check(/Okólniki Zarządu/.test(bookTxt) && /Gorączka/.test(bookTxt), 'Księga: zakładka Reakcje i Okólniki (odkryta Gorączka) [' + bookTxt.replace(/\s+/g, ' ').slice(0, 300) + ']');
 await p.screenshot({ path: OUT + '/j-ksiega.png' });
 
 check(!errs.length, 'bez błędów w konsoli' + (errs.length ? ': ' + errs.join('; ') : ''));

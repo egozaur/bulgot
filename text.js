@@ -149,7 +149,6 @@ export const HELP = [
   ['Piętra', 'Zwykłe piętra mają szablony: Czempion (jeden wróg z +80% Życia), Rój (trzech osłabionych), Zwiad (wróg z następnej strefy) i Para (dwa gatunki, które się wspierają). Na Garnku 0 podgląd pokazuje wrogów i szablon. Od Garnka 1 szyba jest zaparowana: dowiesz się dopiero w walce. Bossów zapowiada pasek pięter.'],
   ['Reakcje', 'Dwa różne efekty na jednym wrogu łączą się w reakcję. Oparzenie + Mróz = Szok Termiczny (wybuch zależny od stosów), Salmonella + Krwawienie = Gorączka (efekty bolą mocniej, a śmierć zaraża resztę), Mróz + Krwawienie = Kruchość (następne trafienie jest krytyczne). Odkryte reakcje trafiają do Księgi Kurnika.'],
   ['Seria (Okno Gdakania)', 'Umiejętność użyta do 1,5 s po poprzedniej trafia mocniej: druga w serii +20%, trzecia +50%. Trzy różne umiejętności w jednej serii to Pełna Kurza Seria: wszyscy wrogowie wpadają w Popłoch (ogłuszenie na 1 s). Czasem warto przytrzymać umiejętność i odpalić wszystko naraz.'],
-  ['Rozwidlenie Korytarza', 'Na niektórych piętrach (znak drzwi na pasku pięter) wybierasz drzwi. Zwykłe prowadzą na spokojne piętro. Za drzwiami „Tylko dla personelu” pierwszy wróg ma cechę elity i jest dużo silniejszy, ale nagroda to dodatkowe Ziarna albo wybór 1 z 3 rzadkich kafelków.'],
   ['Lombard Lisa', 'Przed wyborem kafelka możesz zastawić u Lisa jeden kafelek z budowy (nie umiejętność) i od razu dostać jego pełną cenę w Ziarnach. Wykupisz go tylko na następnym piętrze, za 150% ceny. Jeśli nie wykupisz, Lis zatrzymuje kafelek, a wszystkie Lisy Windykatory w tym runie są o 25% silniejsze.'],
   ['Odsetki w Spiżarni', 'Po każdej wygranej walce dostajesz +1 Ziarno za każde 10 niewydanych Ziaren, najwyżej +3 (Kaczor Hazardzista +5). Oszczędzanie też jest strategią.'],
   ['Okólniki Zarządu', 'Na starcie runu Zarząd losuje jeden okólnik, który zmienia zasady (np. Audyt Wydatków: darmowe rerolle, droższe dokupowanie). Obowiązuje do końca runu. Widać go nad ofertą i na górnym pasku.'],
@@ -174,12 +173,7 @@ export const HELP = [
 ];
 
 // Wybór deterministyczny (ta sama runda, ta sama linia).
-// Rozwidlenie Korytarza i Awans Wroga.
-export const DOOR_LINES = [
-  'Korytarz rozwidlał się. Jedne drzwi skrzypiały zwyczajnie, drugie nosiły napis „Tylko dla personelu”.',
-  'Z lewej pachniało spokojem, z prawej premią i kłopotami.',
-  'Kronikarz zawahał się. Pyrtek nie.',
-];
+// Awans Wroga.
 export const NEMESIS_LINES = [
   'Pamiętasz go? On ciebie pamięta. Awansował na twoich piórach.',
   'Czas wyrównać rachunki. Z odsetkami.',

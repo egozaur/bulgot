@@ -167,10 +167,6 @@ function playRun(seed) {
       chooseOpt(run, ri < 0 ? (arg('route') ? 1 : 0) : ri);
     } else if (run.phase === 'victory') {
       chooseOpt(run, ENDLESS ? 0 : 1);
-    } else if (run.phase === 'door') {
-      // Rozwidlenie: ryzykowne drzwi, gdy życie jest wysokie (--doors never|always|smart)
-      const S = statsOf(run), d = arg('doors', 'smart');
-      chooseOpt(run, d === 'always' ? 1 : d === 'never' ? 0 : run.hp * 100 >= S.maxHp * 80 ? 1 : 0);
     } else if (run.phase === 'badge') {
       let bi = 0, bv = -1;
       run.pending.offer.forEach((b, k) => { const tr = JSON.parse(JSON.stringify(run)); tr.badges.push(b); const v = power(tr) * (1 + rng.next() * 0.02); if (v > bv) { bv = v; bi = k; } });

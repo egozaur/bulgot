@@ -64,21 +64,20 @@ export function previewHTML() {
   let ids = r.enemies || [];
   const bdef = r.boss && D.BOSSES[r.boss];
   if (bdef && bdef.guards) ids = [...Array(bdef.guards).fill('kot-ochroniarz'), r.boss];
-  const nem = r.nemesisRound && r.nemesis, risky = r.door && r.door.risky;
-  const items = ids.map((id, i) => { const d = enemyDef(id); const boss = !!D.BOSSES[id], big = i === 0 && (nem || risky);
-    const name = i === 0 && nem ? r.nemesis.name : id === 'kot-ochroniarz' && bdef && bdef.guards ? 'Ochroniarz' : (i === 0 && risky ? 'Elitarny ' : '') + d.name;
+  const nem = r.nemesisRound && r.nemesis;
+  const items = ids.map((id, i) => { const d = enemyDef(id); const boss = !!D.BOSSES[id], big = i === 0 && nem;
+    const name = i === 0 && nem ? r.nemesis.name : id === 'kot-ochroniarz' && bdef && bdef.guards ? 'Ochroniarz' : d.name;
     return `<div class="pv ${boss ? 'boss' : ''} ${big ? 'boss nemesis' : ''}">${art.enemyArt(d.art, d.tint)}<span>${esc(name)}</span></div>`; }).join('');
-  const affs = r.elite && r.affixes ? r.affixes : nem ? [r.nemesis.affix] : risky ? [r.door.affix] : null;
+  const affs = r.elite && r.affixes ? r.affixes : nem ? [r.nemesis.affix] : null;
   const aff = affs ? `<div class="affixes">${affs.map(a => `<span class="tag aff" title="${esc(D.AFFIXES[a].text)}">${esc(D.AFFIXES[a].name)}: ${esc(D.AFFIXES[a].text)}</span>`).join('')}</div>` : '';
   const loot = nem && r.nemesis.tile && TILE[r.nemesis.tile] ? ` · odzyskasz: ${esc(TILE[r.nemesis.tile].name)}` : '';
-  const lab = r.boss ? 'Boss tego piętra' : nem ? 'Twój Nemezis! Nagroda: Odznaka Sprawiedliwość Kurnika' + loot : r.elite ? 'Elitarny wróg na piętrze (nagroda: Odznaka)'
-    : risky ? 'Drzwi dla personelu. Nagroda: ' + (r.door.reward === 'rare' ? 'wybór rzadkiego kafelka' : '+' + D.RULES.doorCoins + ' Ziaren') : 'Na tym piętrze czekają';
+  const lab = r.boss ? 'Boss tego piętra' : nem ? 'Twój Nemezis! Nagroda: Odznaka Sprawiedliwość Kurnika' + loot : r.elite ? 'Elitarny wróg na piętrze (nagroda: Odznaka)' : 'Na tym piętrze czekają';
   const tp = r.tpl && D.FLOOR_TPL[r.tpl] ? `<div class="tplnote"><b>${esc(D.FLOOR_TPL[r.tpl].name)}.</b> ${esc(D.FLOOR_TPL[r.tpl].text)}</div>` : '';
   const intel = r.intel ? `<div class="tplnote intel"><b>Zarząd cię obserwuje.</b> Widzą, że grasz na: ${esc(r.intel)}. Przygotowali na to odpowiedź.</div>` : '';
   // Od Garnka 1 serwer nie zdradza składu piętra: zaparowana szyba z jedną sylwetką (bez nazw i liczby wrogów).
   if (r.hidden && !nem) {
-    const fogLab = r.elite ? 'Elitarny wróg za zaparowaną szybą (nagroda: Odznaka)' : risky ? lab : 'Szyba zaparowana: nie wiesz, kto czeka';
-    return `<div class="preview doorview fog"><div class="lab">${fogLab}</div><div class="glass"><div class="pv">${art.mysteryArt()}<span>?</span></div></div>${risky ? aff : ''}<div class="tplnote">Od Garnka 1 skład pięter jest tajemnicą. Bossów zapowiada pasek pięter.</div>${intel}</div>`;
+    const fogLab = r.elite ? 'Elitarny wróg za zaparowaną szybą (nagroda: Odznaka)' : 'Szyba zaparowana: nie wiesz, kto czeka';
+    return `<div class="preview doorview fog"><div class="lab">${fogLab}</div><div class="glass"><div class="pv">${art.mysteryArt()}<span>?</span></div></div><div class="tplnote">Od Garnka 1 skład pięter jest tajemnicą. Bossów zapowiada pasek pięter.</div>${intel}</div>`;
   }
   return `<div class="preview doorview ${nem ? 'nem' : ''} ${r.boss ? 'bossdoor' : ''}"><div class="lab">${lab}</div><div class="glass">${items}</div>${aff}${tp}${intel}</div>`;
 }
@@ -124,7 +123,6 @@ export function stageHTML() {
   if (r.phase === 'event') { const kd = r.pending.kind; return kd === 'shop' ? stageShop() : kd === 'contract' ? stageContract() : kd === 'shrine' ? stageShrine() : kd === 'adopt' ? stageAdopt() : kd === 'crate' ? stageCrate() : kd === 'arena' ? stageArena() : kd === 'extra' ? stageExtra() : stageGamble(); }
   if (r.phase === 'badge') return stageBadge();
   if (r.phase === 'loot') return stageLoot();
-  if (r.phase === 'door') return stageDoor();
   if (r.phase === 'route') return stageRoute();
   if (r.phase === 'victory') return stageVictory();
   if (r.phase === 'bonus') return stageBonus();
@@ -213,16 +211,6 @@ export function stageOffer() {
     ${r.nemesisRound ? `<div class="kron">${esc(T.pickLine(T.NEMESIS_LINES, r.round))}</div>` : floorKronHTML()}${decreeHTML()}${previewHTML()}
     <div class="cards">${cards}</div>
     <div class="actions">${rerollBtn(cost, free, blocked, r.coins)}${restBtn()}${pawnBtn()}${upgradeBtn()}</div>${lost}`;
-}
-export function stageDoor() {
-  const r = G.run, P = r.pending, a = D.AFFIXES[P.affix];
-  const reward = `wybór 1 z 3 rzadkich kafelków albo +${P.coins} Ziaren`;
-  const cards = [
-    choiceCard(0, art.doorIcon(false), 'Zwykłe drzwi', 'Spokojne piętro: zwykli wrogowie i darmowy Odpoczynek na wejściu (leczy jak zwykły).'),
-    choiceCard(1, art.doorIcon(true), 'Tylko dla personelu', `Pierwszy wróg ma cechę ${a.name} (${a.text}) i jest dużo silniejszy. Przychodzi najwyżej z jednym pomocnikiem. Po tej walce nie leczysz się.`, `<div class="tmeta"><span class="tag up">Nagroda: ${esc(reward)}</span></div>`),
-  ].join('');
-  return `<div class="stage-title"><h2>Piętro ${r.round}: Rozwidlenie Korytarza</h2><div class="sub">Masz ${r.hp} / ${r.maxHp} Życia. Wybierz drzwi.</div></div>
-    <div class="kron">${esc(T.pickLine(T.DOOR_LINES, r.round))}</div>${decreeHTML(true)}<div class="cards">${cards}</div>`;
 }
 export function stageShop() {
   const r = G.run, cards = r.pending.offer.map((id, i) => tileCard(id, { i, act: 'buy', price: Math.max(1, Math.ceil(shopPrice(TILE[id]) * D.RULES.shopPct / 100)) })).join('');
@@ -330,9 +318,8 @@ export function stageShrine() {
 }
 export function stageBonus() {
   const r = G.run, cards = r.offer.map((id, i) => tileCard(id, { i, act: 'bonuspick' })).join('');
-  const fromDoor = !r.boss && r.door && r.door.risky;
-  return `<div class="stage-title"><h2>${fromDoor ? 'Łup zza drzwi dla personelu' : 'Nagroda za pokonanie bossa'}</h2><div class="sub">Wybierz jeden z trzech rzadkich lub lepszych kafelków${fromDoor ? ` albo weź ${D.RULES.doorCoins} Ziaren` : ''}</div></div>
-    <div class="kron">${esc(fromDoor ? 'Ryzyko się opłaciło. Tym razem.' : T.BOSS_WIN_LINES[lastBoss()] || 'Boss padł, a łup czeka.')}</div><div class="cards">${cards}</div>${fromDoor ? `<div class="actions"><button class="btn" data-act="bonuscoins">Wolę ${D.RULES.doorCoins} Ziaren</button></div>` : ''}`;
+  return `<div class="stage-title"><h2>Nagroda za pokonanie bossa</h2><div class="sub">Wybierz jeden z trzech rzadkich lub lepszych kafelków</div></div>
+    <div class="kron">${esc(T.BOSS_WIN_LINES[lastBoss()] || 'Boss padł, a łup czeka.')}</div><div class="cards">${cards}</div>`;
 }
 export const lastBoss = () => { const b = G.run && G.run.stats.bossKills; return b && b[b.length - 1]; };
 export function stagePrep() {

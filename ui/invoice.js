@@ -49,12 +49,11 @@ export function invoiceInner(d) {
 // Wiersze i uwagi faktury po wygranej walce: ważne uwagi (Nemezis, wada, odblokowania) zapalają na karteczce czerwony wykrzyknik.
 export function invoiceData(j, floor) {
   const r = j.result || {}, run = G.run, boss = j.boss, un = takeUnlocks(), I = T.INVOICE, f = floor || run.round;
-  const base = j.reward - (j.interest || 0) - (j.doorCoins || 0), rows = [];
+  const base = j.reward - (j.interest || 0), rows = [];
   rows.push([`${boss ? 'Pokonanie bossa' : 'Pokonanie piętra ' + f} (czas walki ${secStr(r.ticks)} s)`, boss ? 'boss' : 'zaliczone']);
   rows.push(['Zadane obrażenia', fmtNum(r.dealt)]);
   rows.push(['Wypłata za piętro', `+${base} ${COIN}`]);
   if (j.interest) rows.push(['Odsetki w Spiżarni', `+${j.interest} ${COIN}`]);
-  if (j.doorCoins) rows.push(['Premia za ryzykowne drzwi', `+${j.doorCoins} ${COIN}`]);
   if (j.upkeep) rows.push(['Koszty umów i odsetek (z oszczędności)', `-${j.upkeep} ${COIN}`]);
   rows.push(['Leczenie (życie po leczeniu)', `${run.hp}/${run.maxHp}`]);
   const notes = [];   // { text, imp }

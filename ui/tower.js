@@ -15,10 +15,10 @@ export function stairsHTML() {
   const over = r.phase === 'over', up = !over && f0 && f0 < f;
   let plates = '';
   for (let k = 1; k <= n; k++) {
-    const nem = r.nemesis && !r.nemesis.beaten && r.nemesis.round === k, door = (r.doors || []).includes(k);
-    const cls = ['fp', k < f || (over && k <= r.done) ? 'done' : '', k === f && !over ? 'now' : '', M.bosses[k] ? 'boss' : '', nem ? 'nem' : '', door ? 'door' : ''].join(' ');
-    const tip = 'Piętro ' + k + (M.bosses[k] ? ': boss' : '') + (nem ? ': ' + r.nemesis.name : door ? ': Rozwidlenie Korytarza (Tylko dla personelu)' : '');
-    plates += `<div class="${cls}" style="top:${g.y(k) - 21}px" data-tip="${esc(tip)}">${M.bosses[k] || nem ? art.skullIcon() : ''}${nem ? '<i class="alarm" aria-hidden="true"></i>' : ''}<span class="fn">${k}</span>${door && !nem ? '<span class="staff" aria-hidden="true">P</span>' : ''}</div>`;
+    const nem = r.nemesis && !r.nemesis.beaten && r.nemesis.round === k;
+    const cls = ['fp', k < f || (over && k <= r.done) ? 'done' : '', k === f && !over ? 'now' : '', M.bosses[k] ? 'boss' : '', nem ? 'nem' : ''].join(' ');
+    const tip = 'Piętro ' + k + (M.bosses[k] ? ': boss' : '') + (nem ? ': ' + r.nemesis.name : '');
+    plates += `<div class="${cls}" style="top:${g.y(k) - 21}px" data-tip="${esc(tip)}">${M.bosses[k] || nem ? art.skullIcon() : ''}${nem ? '<i class="alarm" aria-hidden="true"></i>' : ''}<span class="fn">${k}</span></div>`;
   }
   const heat = k => n > 1 ? Math.max(0, Math.min(1, (k - 1) / (n - 1))) : 1;
   const face = k => (k % 2 ? 1 : -1);          // po nieparzystym piętrze (podest lewy) następny bieg idzie w prawo
@@ -42,11 +42,11 @@ export function towerHTML() {
   const r = G.run, M = D.MODES[r.mode];
   let rows = '';
   for (let n = M.rounds; n >= 1; n--) {
-    const nem = r.nemesis && !r.nemesis.beaten && r.nemesis.round === n, door = (r.doors || []).includes(n);
-    const cls = ['floor', n < r.round || r.phase === 'over' && n <= r.done ? 'done' : '', n === r.round && r.phase !== 'over' ? 'now' : '', M.bosses[n] ? 'boss' : '', nem ? 'nem' : '', door ? 'door' : ''].join(' ');
-    const tip = 'Piętro ' + n + (M.bosses[n] ? ': boss' : '') + (nem ? ': ' + r.nemesis.name : door ? ': Rozwidlenie Korytarza (Tylko dla personelu)' : '');
+    const nem = r.nemesis && !r.nemesis.beaten && r.nemesis.round === n;
+    const cls = ['floor', n < r.round || r.phase === 'over' && n <= r.done ? 'done' : '', n === r.round && r.phase !== 'over' ? 'now' : '', M.bosses[n] ? 'boss' : '', nem ? 'nem' : ''].join(' ');
+    const tip = 'Piętro ' + n + (M.bosses[n] ? ': boss' : '') + (nem ? ': ' + r.nemesis.name : '');
     const isNow = n === r.round && r.phase !== 'over', up = isNow && G.cabFrom && G.cabFrom < n;
-    rows += `<div class="${cls}" title="${esc(tip)}">${isNow ? `<span class="cab${up ? ' up' : ''}" aria-hidden="true">${art.portrait(r.char, r.form)}</span>` : ''}${M.bosses[n] || nem ? art.skullIcon() : ''}${nem ? '<i class="alarm" aria-hidden="true"></i>!' : ''}${door && !nem ? '<span class="staff" aria-hidden="true">P</span>' : ''}<span class="fn">${n}</span></div>`;
+    rows += `<div class="${cls}" title="${esc(tip)}">${isNow ? `<span class="cab${up ? ' up' : ''}" aria-hidden="true">${art.portrait(r.char, r.form)}</span>` : ''}${M.bosses[n] || nem ? art.skullIcon() : ''}${nem ? '<i class="alarm" aria-hidden="true"></i>!' : ''}<span class="fn">${n}</span></div>`;
   }
   G.cabFrom = r.phase === 'over' ? 0 : r.round;
   return `<aside class="tower shaft" aria-label="Postęp: szyb windy"><h4>Piętra</h4>${rows}<div class="pot"></div></aside>`;

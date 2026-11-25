@@ -73,7 +73,6 @@ export const ACT = {
   leave: async () => { const j = await act('shop', { i: -1 }); if (j) render(); },
   bet: async b => { const j = await act('bet', { amount: +b.dataset.v }); if (!j) return; if (j.bet) { snd.sfx(j.won ? 'win' : 'lose'); toast(j.won ? `Wygrana! +${j.bet} Ziaren` : `Pudło. -${j.bet} Ziaren`, !j.won); } render(); },
   bonuspick: b => ACT.bonusgo(+b.dataset.i),
-  bonuscoins: async () => { const j = await act('bonus', { i: -1 }); if (j) { snd.sfx('coin'); render(); } },
   choose: async b => { const j = await act('choose', { i: +b.dataset.i }); if (j) { if (G.run && G.run.phase === 'over') { G.screen = 'run'; return showEnd(j); } if (j.companion) toast('Adoptowano: ' + compForm(j.companion) + '!', false, 3600); snd.sfx(j.looted ? 'unlock' : 'pick'); if (j.looted) toast(`Łup: ${TILE[j.looted].name}!`, false, 3200); render(); } },
   bonusgo: async (i, slot, mut) => { const t = TILE[G.run.offer[i]]; if (needChoice(t, slot, mut, (s2, m2) => ACT.bonusgo(i, s2, m2))) return;
     const j = await act('bonus', { i, slot, mut }); if (j) { snd.sfx('pick'); render(); } },
