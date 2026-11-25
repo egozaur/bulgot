@@ -12,7 +12,7 @@ async function open(w, h, mode, rp) {
   p.on('pageerror', e => errs.push('PAGEERR ' + e.message)); p.on('console', m => { if (m.type() === 'error' && !/404/.test(m.text())) errs.push('CONSOLE ' + m.text()); });
   await p.setViewport({ width: w, height: h });
   await p.goto('http://localhost:8090/bulgot/?local=1', { waitUntil: 'networkidle0' });
-  await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:intro', '1'); });
+  await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:intro', '2'); });
   await p.reload({ waitUntil: 'networkidle0' }); await wait(300);
   await p.click('[data-act=new]'); await wait(200);
   await p.evaluate(m => document.querySelector(`[data-act=setmode][data-v=${m}]`).click(), mode);

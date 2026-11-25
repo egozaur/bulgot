@@ -139,6 +139,8 @@ export const TECZKI = {
 };
 
 // ---------- Intro (plansze z kamerą, narrator: Kronikarz) ----------
+// Wersja intro: kto ma w pamięci inną wartość `bulgot:intro` (albo żadnej), zobaczy pełną scenę przy następnym runie. Podbij, by wymusić ją u wszystkich.
+export const INTRO_VER = '2';
 export const INTRO_PLANSZE = [
   'Zapisano, że Korporacja Rosołowa kochała swój drób. Szczególnie w garnku.',
   'Wchodziło się tu na własnych nogach. Wychodziło się zwykle w słoiku.',

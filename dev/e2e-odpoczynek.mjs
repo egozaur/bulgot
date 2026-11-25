@@ -10,7 +10,7 @@ const p = await b.newPage();
 p.on('pageerror', e => errs.push('PAGEERR ' + e.message)); p.on('console', m => { if (m.type() === 'error' && !/404/.test(m.text())) errs.push('CONSOLE ' + m.text()); });
 await p.setViewport({ width: 1600, height: 900 });
 await p.goto('http://localhost:8090/bulgot/?local=1', { waitUntil: 'networkidle0' });
-await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:intro', '1'); });
+await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:intro', '2'); });
 await p.reload({ waitUntil: 'networkidle0' }); await wait(300);
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(() => document.querySelector('[data-act=setmode][data-v=full]').click());

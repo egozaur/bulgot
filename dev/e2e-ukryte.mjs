@@ -10,7 +10,7 @@ const p = await b.newPage();
 const errs = []; p.on('pageerror', e => errs.push(e.message));
 await p.setViewport({ width: 1440, height: 900 });
 await p.goto('http://localhost:8090/bulgot/?local=1', { waitUntil: 'networkidle0' });
-await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:intro', '1'); });
+await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:intro', '2'); });
 await p.reload({ waitUntil: 'networkidle0' }); await wait(300);
 const K = 'bulgot:local:player:';
 const patchRun = fn => p.evaluate((K, src) => { const r = JSON.parse(localStorage.getItem(K + 'run')); (new Function('r', src))(r); localStorage.setItem(K + 'run', JSON.stringify(r)); }, K, fn);

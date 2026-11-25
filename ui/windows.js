@@ -176,12 +176,12 @@ export function showMenu() {
 // Intro: pierwszy raz scena z kamerą (Kronikarz mówi, kamera jedzie od bramy do biura Zarządu); potem tylko jedno zdanie.
 // Jeden przycisk `introgo` jest od razu: „Pomiń ▸”, a po scenie „Zaczynamy”. Bez animacji (`bulgot:anim` = '0') widać całą listę zdań.
 export function startIntro(then) {
-  if (!store.get('bulgot:intro')) return showIntro(then);
+  if (store.get('bulgot:intro') !== F.INTRO_VER) return showIntro(then);
   toast(F.INTRO_KROTKIE[Math.floor(Math.random() * F.INTRO_KROTKIE.length)]);
   then();
 }
 export function showIntro(then) {
-  store.set('bulgot:intro', '1');
+  store.set('bulgot:intro', F.INTRO_VER);
   const r = G.run, lines = F.INTRO_PLANSZE, anim = animOn();
   openOverlay(`<div class="in-stage" id="instage"><div class="in-logo">KORPORACJA ROSOŁOWA S.A.</div><div class="in-world" id="inworld">${art.introSceneArt()}</div><div class="in-hero">${r ? art.portrait(r.char, r.form) : ''}</div>
     <div class="in-cap" id="incap">${anim ? esc(lines[0]) : ''}</div></div>

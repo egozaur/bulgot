@@ -153,7 +153,7 @@ async function beginRun() {
   try {
     for (let i = 0; i < 6; i++) {
       const j = await act('start', { duel: true });
-      if (j) { closeOverlay(); snd.sfx('bulgot'); G.screen = 'run'; render(); if (!store.get('bulgot:intro')) store.set('bulgot:intro', '1'); ensureLoops(); return; }
+      if (j) { closeOverlay(); snd.sfx('bulgot'); G.screen = 'run'; render(); ensureLoops(); return; }
       if (G.run && G.run.phase !== 'over') { closeOverlay(); G.screen = 'run'; render(); return; }
       await sleep(900);
     }

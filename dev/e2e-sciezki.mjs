@@ -9,7 +9,7 @@ const p = await b.newPage();
 p.on('pageerror', e => errs.push('PAGEERR ' + e.message)); p.on('console', m => { if (m.type() === 'error' && !/404/.test(m.text())) errs.push('CONSOLE ' + m.text()); });
 await p.setViewport({ width: 1440, height: 900 });
 await p.goto('http://localhost:8090/bulgot/?local=1', { waitUntil: 'networkidle0' });
-await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:intro', '1'); });
+await p.evaluate(() => { localStorage.clear(); localStorage.setItem('bulgot:intro', '2'); });
 await p.reload({ waitUntil: 'networkidle0' }); await wait(300);
 const R = () => p.evaluate(() => { const r = window.__bulgot.run; return r && { phase: r.phase, round: r.round, coins: r.coins, tiles: r.tiles, skills: r.skills, offer: r.offer, pending: r.pending, hp: r.hp, maxHp: r.maxHp, ended: r.ended }; });
 const patch = fn => p.evaluate(fnSrc => { const k = 'bulgot:local:player:run'; const r = JSON.parse(localStorage.getItem(k)); (new Function('r', fnSrc))(r); localStorage.setItem(k, JSON.stringify(r)); }, fn);
