@@ -44,7 +44,7 @@ await p.keyboard.press('2'); await wait(500); s = await st();
 check(s.phase === 'offer' && s.run.door && s.run.door.risky, 'ryzykowne drzwi wybrane klawiszem 2');
 check(/personelu/.test(await text('.preview .lab')), 'podgląd: drzwi dla personelu');
 // 2. Okólnik (Audyt) i ceny
-check(/Audyt/.test(await text('.sub .dsub')) && (await p.$$('.pill.dec')).length === 1, 'okólnik w podtytule piętra i na pasku');
+check(/Audyt/.test(await text('.sub .dsub')) && (await p.$$('.pill.dec')).length === 0, 'okólnik w podtytule piętra, bez pigułki na pasku (Patch 1.1)');
 const buy = await text('.cards [data-act=buyoffer]');
 check(/Dokup za (9|18|30|45)/.test(buy), 'Audyt: ceny dokupienia +50% (' + buy.slice(0, 60) + ')');
 check(/za darmo|gratis/.test(await text('[data-act=reroll]')), 'Audyt: darmowy reroll');

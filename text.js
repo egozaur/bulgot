@@ -109,6 +109,8 @@ export const STAT_LABELS = [
   ['crit', 'Dziobnięcie', v => v + '%'], ['evade', 'Unik', v => v + '%'], ['regen', 'Regeneracja', v => fmtRegen(v) + ' / s'], ['luck', 'Szczęście'],
 ];
 // Panel statystyk: 8 statystyk, zawsze widocznych; zapis wartości: liczba + jednostka w osobnej kolumnie. Szybkość ataku w uderzeniach na sekundę, Regeneracja w Życiu na sekundę. Obrażeń i Mocy Dziobnięcia nie ma: Atak jest jednym mnożnikiem mocy, a mocne dziobnięcie zawsze zadaje podwójny cios.
+// Numer wydania gry (pokazywany na ekranie startowym). Patch 1.1: „Mniej drzwi, więcej decyzji”.
+export const PATCH = '1.1';
 export const STAT_GROUPS = [
   ['Ofensywa', [['atk', 'Atak'], ['aspd', 'Szybkość ataku'], ['crit', 'Dziobnięcie']]],
   ['Obrona', [['maxHp', 'Życie'], ['armor', 'Pancerz'], ['evade', 'Unik'], ['regen', 'Regeneracja']]],

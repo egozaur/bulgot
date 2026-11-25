@@ -61,7 +61,7 @@ export function renderHome() {
     <div class="home-top"><div class="me-badge" ${LOCAL ? '' : 'data-act="changeplayer" style="cursor:pointer"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>${stazPill()}${metaChips()}</div>
     ${art.towerArt(G.profile.garnek || 0)}
     <h1 class="logo" aria-label="Bulgot"><img src="logo.png?v=1" alt="Bulgot"></h1>
-    <div class="tagline">${esc(T.TAGLINE)}</div>
+    <div class="tagline">${esc(T.TAGLINE)} <span class="patchtag" title="Numer wydania gry">Patch ${T.PATCH}</span></div>
     <div class="home-actions">
       ${run ? `<div class="resume">Trwa run: <b>${esc(D.MODES[run.mode].name)}</b>, piętro ${run.round}/${run.rounds}, ${run.coins} ${art.coinIcon()} Ziaren</div>
         <button class="btn primary big" data-act="resume" data-primary>Kontynuuj</button><button class="btn small ghost" data-act="abandon">Porzuć run</button>`
