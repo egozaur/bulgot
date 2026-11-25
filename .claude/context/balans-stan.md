@@ -1,23 +1,23 @@
 # Bulgot: aktualny stan balansu (punkt odniesienia)
 
-Źródło: pomiar 2026-11-24 przy `RUN_V = 19` (`archiwum/propozycje-raporty/raport-2026-11-24.md`, surowe dane `wyniki-ev-2026-11-24.jsonl`). Bot `dev/sim-balance.mjs`, tryb pełny, 300 partii na komórkę (błąd ok. ±2,2 pp przy 15% wygranych). **Od tego czasu `RUN_V = 20`** (pomocnicy bossa nie giną z bossem, `gigachad` = Kurczak Monocykl, upkeep, `copyDecay`, `endlessJump`, `coinsLate`), więc liczby są orientacyjne, a wiersz `gigachad` jest nieaktualny. Przed strojeniem zmierz stan „przed” na `--n 200`, zamiast ufać tej tabeli.
+Źródło: pomiar 2026-11-25 przy `RUN_V = 22` (po scaleniu Ataku z Obrażeniami, Dziobnięcie ×2, kontry tylko od palnika 4; `DESIGN.md` sekcja 32). Bot `dev/sim-balance.mjs`, tryb pełny, 400 partii na komórkę (błąd ok. ±2 pp), te same ziarna co pomiar „przed”. Dla porównania: przed zmianą średnia 12 postaci wynosiła 24,7% (palnik 3), 19,2% (palnik 4), 5,7% (palnik 5); po zmianie 32,6% / 22,0% / 6,1%. Palniki 0–3 nie mają już kontr, więc są łatwiejsze.
 
 ## Wygrane bota, polityka bazowa (tryb pełny)
 
-| Postać | Palnik 4 | śr. rund | Palnik 5 | śr. rund |
-|---|---|---|---|---|
-| rzeznik | 28,0% | 10,8 | 7,3% | 7,0 |
-| barista | 22,7% | 9,8 | 6,3% | 6,8 |
-| emeryt | 22,3% | 8,9 | 3,7% | 5,1 |
-| ges | 19,3% | 8,5 | 5,0% | 6,0 |
-| pyrtek | 18,0% | 8,5 | 5,0% | 6,2 |
-| zwiazkowiec | 18,0% | 8,1 | 5,3% | 5,5 |
-| wanda | 17,0% | 8,1 | 3,7% | 5,5 |
-| sanepid | 16,3% | 8,1 | 3,7% | 5,8 |
-| zjarany | 16,0% | 7,2 | 1,0% | 3,9 |
-| jajeczko | 14,0% | 7,0 | 7,0% | 5,5 |
-| pacyfista | 13,0% | 8,5 | 1,7% | 5,6 |
-| gigachad (przed RUN_V 20) | 10,3% | 7,3 | 4,7% | 5,9 |
+| Postać | Palnik 3 | śr. rund | Palnik 4 | śr. rund | Palnik 5 | śr. rund |
+|---|---|---|---|---|---|---|
+| rzeznik | 49,8% | 13,5 | 34,8% | 11,7 | 9,0% | 7,6 |
+| barista | 34,3% | 11,4 | 26,0% | 10,6 | 8,0% | 7,2 |
+| gigachad | 30,0% | 9,5 | 25,0% | 8,8 | 11,0% | 6,4 |
+| ges | 35,8% | 10,8 | 24,3% | 9,5 | 8,8% | 7,0 |
+| emeryt | 34,8% | 10,4 | 24,8% | 9,3 | 4,3% | 5,2 |
+| pyrtek | 30,8% | 10,3 | 22,8% | 9,6 | 4,8% | 6,6 |
+| zwiazkowiec | 35,5% | 10,8 | 22,5% | 9,0 | 6,8% | 5,9 |
+| zjarany | 37,3% | 11,1 | 20,0% | 8,1 | 2,8% | 4,3 |
+| sanepid | 39,5% | 12,3 | 17,8% | 8,6 | 5,3% | 6,0 |
+| wanda | 25,5% | 9,3 | 16,5% | 8,2 | 3,5% | 5,6 |
+| pacyfista | 21,3% | 10,2 | 16,5% | 9,0 | 3,0% | 6,0 |
+| jajeczko | 16,0% | 7,2 | 12,8% | 6,5 | 5,8% | 5,5 |
 
 Wcześniejsze punkty odniesienia (inne wersje reguł): `DESIGN.md` sekcje 9, 17 (palniki 0–5, Pyrtek 1000 runów), 27 (audyt).
 

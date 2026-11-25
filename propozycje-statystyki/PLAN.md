@@ -1,6 +1,6 @@
 # Plan: uporządkowanie statystyk bohatera (2026-11-25)
 
-Status: **tylko plan i makieta** (decyzja Wielkiego Kurczaka). Nic w kodzie, dopóki makieta panelu (`makieta-panelu.html`) nie zostanie zatwierdzona. Push tylko po wyraźnym OK.
+Status (2026-11-25): **etapy 1–3 wykonane lokalnie** (commity w `bulgot` i `pl3y-server`, `RUN_V = 22`), **niewypchnięte**; push dopiero po wyraźnym OK. Opis wyniku i pomiarów: `DESIGN.md` sekcja 32, `.claude/context/balans-stan.md`.
 
 ## Decyzje właściciela
 1. **Atak + Obrażenia → jeden Atak.** Znika statystyka `dmg`; 5 kafelków „+% obrażeń” dostaje „+% Ataku” (wartości przeliczone). Warunkowe bonusy (vs Mróz, vs Oparzenie, Nadgodziny itd.) zostają mechaniką opisaną na kafelku, nie statystyką.

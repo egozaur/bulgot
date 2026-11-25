@@ -14,13 +14,13 @@ Zasada: znajdź wiersz → przeczytaj **tylko** wskazaną sekcję `DESIGN.md` (`
 | Zestawy, synergie, progi | `data.js` `SETS`, `SET_LINKS`; `stats.js` | 14, 23 | |
 | Postacie (12 aktywnych) | `data.js` `CHARS`, `CHAR_IDS`, `UNLOCKS`; `profile.js` `CHECKS` | 16, 25, 29 | `dev/e2e-postacie.mjs` |
 | Wrogowie, bossowie, elity, szablony pięter | `data.js` `ENEMIES`, `BOSSES`, `FLOOR_TPL`, `AFFIXES`; `rules.js` `encounterIds`, `buildSetup` | 5, 12, 18, 26, 29 | |
-| Hordy, kontry bossów (`buildProfile`, `counterPlan`) | `rules.js`, `data.js` `COUNTERS` | 29 | `RUN_V = 20` |
+| Hordy, kontry bossów (`buildProfile`, `counterPlan`; kontry tylko od palnika `RULES.counterFrom` = 4) | `rules.js`, `data.js` `COUNTERS` | 29, 32 | |
 | Okólniki, Wadliwa Partia, Nemezis, Testament | `data.js` `DECREES`, `FLAWS`; `rules.js` | 11 | `dev/e2e-jeszcze.mjs` |
 | Trasy, Klątwy, Dogrywka, Towarzysz, Arena Duchów | `data.js` `ROUTES`, `CURSES`, `COMPANIONS`; `rules.js` `choose` | 18 | `dev/e2e-nowosci.mjs` |
 | Rozwidlenie Korytarza, Lombard, Odsetki | `rules.js` (`choose`, `pawn`, `redeem`) | 11, 24 | |
 | Dodatkowe rundy (Gruszka, Pipsztal) | `data.js` `EXTRA_AT`; `rules.js` | 26 | `dev/e2e-extra.mjs` |
 | Balans i audyty | `dev/sim-balance.mjs` | 9, 17, 27, 30 | skill `bulgot-balance` |
-| Wersja reguł (unieważnianie runów) | `rules.js` `RUN_V` (= 20) | 12 | podbij przy zmianie spotkań/walki |
+| Wersja reguł (unieważnianie runów) | `rules.js` `RUN_V` (= 22) | 12 | podbij przy zmianie spotkań/walki |
 
 ## Meta, profil, serwer
 
@@ -60,7 +60,7 @@ Moduły `ui/` importują się nawzajem cyklicznie (dozwolone dla funkcji); stał
 
 ## Indeks sekcji `DESIGN.md` (86 KB; nigdy nie czytaj całości)
 
-1 wizja · 2 pętla · 3 walka · 4 kafelki startowe · 5 bossowie i wrogowie · 6 postacie, meta, trudność · 7 architektura techniczna · 8 plan i ryzyka · 9 balans po dokupowaniu · 10 efekty/Mutacje/Odznaki · 11 „jeszcze jedna partia” · 12 szablony pięter, ukryty podgląd · 13 poziomy kafelków, Ulepszanie, łup · 14 etap 2 · 15 etap 3 · 16 nowe postacie · 17 wielki balans · 18 siedem nowości · 19 Ulepszanie z premią · 20 Staż, Sklepik, Dyżur · 21 kasyno · 22 pełnoekranowa walka · 23 Zestawy 2.0 · 24 Rozwidlenie · 25 memiczne kurczaki · 26 dodatkowe rundy · 27 audyt balansu · 28 panel boczny, Dziobnięcie · 29 hordy, kontry, 12 postaci · 30 poprawki po analizie test1 · 31 pojedynek dla 2 osób.
+1 wizja · 2 pętla · 3 walka · 4 kafelki startowe · 5 bossowie i wrogowie · 6 postacie, meta, trudność · 7 architektura techniczna · 8 plan i ryzyka · 9 balans po dokupowaniu · 10 efekty/Mutacje/Odznaki · 11 „jeszcze jedna partia” · 12 szablony pięter, ukryty podgląd · 13 poziomy kafelków, Ulepszanie, łup · 14 etap 2 · 15 etap 3 · 16 nowe postacie · 17 wielki balans · 18 siedem nowości · 19 Ulepszanie z premią · 20 Staż, Sklepik, Dyżur · 21 kasyno · 22 pełnoekranowa walka · 23 Zestawy 2.0 · 24 Rozwidlenie · 25 memiczne kurczaki · 26 dodatkowe rundy · 27 audyt balansu · 28 panel boczny, Dziobnięcie · 29 hordy, kontry, 12 postaci · 30 poprawki po analizie test1 · 31 pojedynek dla 2 osób · 32 uporządkowanie statystyk (Atak = jedna statystyka, Dziobnięcie ×2), kontry od palnika 4.
 
 Szukaj: `Grep -n "^## 2[0-9]" DESIGN.md` → numer linii → `Read` z `offset` i `limit` ≈ 60.
 

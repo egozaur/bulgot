@@ -23,7 +23,7 @@ async function patchRun(src) {
   await p.reload({ waitUntil: 'networkidle0' }); await wait(500);
   await p.evaluate(() => { const c = document.querySelector('[data-act=resume]'); c && c.click(); }); await wait(500);
 }
-const TILES = ['ziarno-mocy', 'czujne-oko', 'ostry-dziob', 'twardy-grzebien', 'pancerz-z-pierza', 'szybki-dziob', 'opaska-rambo', 'okulary-aviatory', 'lubczyk', 'kostka-rosolowa', 'zamrazarka', 'chochla', 'teczka', 'krawat', 'polisa', 'kolczatka', 'trofeum-z-pior', 'kamizelka-kuloodporna', 'tykajace-jajo', 'garnek-cisnieniowy'];
+const TILES = ['ziarno-mocy', 'czujne-oko', 'zezowate-oko', 'twardy-grzebien', 'pancerz-z-pierza', 'szybki-dziob', 'opaska-rambo', 'okulary-aviatory', 'lubczyk', 'kostka-rosolowa', 'zamrazarka', 'chochla', 'teczka', 'krawat', 'polisa', 'kolczatka', 'trofeum-z-pior', 'kamizelka-kuloodporna', 'tykajace-jajo', 'garnek-cisnieniowy'];
 await patchRun(`run.round = 6; run.phase = 'offer'; run.hp = 60; run.coins = 40; run.skills = [{ id: 'grad', lvl: 1 }, { id: 'pianie', lvl: 1 }, { id: 'lodowy', lvl: 1 }]; run.tiles = ${JSON.stringify(TILES)}.concat(['kukurydziany-grad', 'pianie-grozy', 'lodowy-dziob']);`);
 // odznaki: weź prawdziwe id z danych gry
 const bd = await p.evaluate(async () => { const D = await import('./shared/data.js'); return Object.keys(D.BADGES).slice(0, 5); });
@@ -38,17 +38,17 @@ if (!(await p.evaluate(() => { const t = document.querySelector('#tip'); return 
 await p.mouse.move(5, 5);
 await p.screenshot({ path: `${OUT}/panel-odznaki.png` });
 
-// 2. statystyki w jednej kolumnie: nazwy po zmianie, jednostki w jednej linii, procenty dla szybkości ataku i Mocy Dziobnięcia
+// 2. statystyki w jednej kolumnie: 8 statystyk zawsze widocznych, jednostki w jednej linii, szybkość ataku w „/ s”, brak Obrażeń i Mocy Dziobnięcia
 const st = await p.evaluate(() => {
   const rows = [...document.querySelectorAll('.slr')];
   const xs = rows.map(r => Math.round(r.querySelector('.slv b').getBoundingClientRect().right)), ux = rows.map(r => Math.round(r.querySelector('.slv i').getBoundingClientRect().left));
   return { names: rows.map(r => r.querySelector('.sln').textContent.trim()), vals: rows.map(r => r.querySelector('.slv').textContent.replace(/\s+/g, '')), aligned: new Set(xs).size === 1 && new Set(ux).size === 1, oneLine: rows.every(r => r.getBoundingClientRect().height <= 26), groups: document.querySelectorAll('.slg').length };
 });
-if (!st.names.includes('Dziobnięcie') || !st.names.includes('Moc Dziobnięcia') || st.names.some(n => /Fortun|Krytyk/i.test(n))) fail('nazwy statystyk: ' + st.names.join(', ')); else ok('nazwy statystyk: ' + st.names.join(', '));
+if (!st.names.includes('Dziobnięcie') || st.names.some(n => /Fortun|Krytyk|Moc Dziobnięcia|Obrażenia/i.test(n))) fail('nazwy statystyk: ' + st.names.join(', ')); else ok('nazwy statystyk: ' + st.names.join(', '));
 if (!st.aligned || !st.oneLine) fail('liczby i jednostki nie stoją w jednej linii: ' + JSON.stringify(st)); else ok('liczby i jednostki wyrównane, każdy wiersz w jednej linii');
-const asp = st.vals[st.names.indexOf('Szybkość ataku')], mult = st.vals[st.names.indexOf('Moc Dziobnięcia')];
-if (!/^\d+,\d+\/s/.test(asp) || !/^×\d+(,\d+)?/.test(mult)) fail('szybkość ataku powinna być w „/ s”, a Moc Dziobnięcia jako ×: ' + asp + ', ' + mult); else ok(`szybkość ${asp}, Moc Dziobnięcia ${mult}`);
-for (const n of ['Atak', 'Szybkość ataku', 'Dziobnięcie', 'Moc Dziobnięcia', 'Obrażenia', 'Życie', 'Pancerz', 'Unik', 'Regeneracja', 'Szczęście']) if (!st.names.includes(n)) fail('brak stale widocznej statystyki: ' + n);
+const asp = st.vals[st.names.indexOf('Szybkość ataku')];
+if (!/^\d+,\d+\/s/.test(asp)) fail('szybkość ataku powinna być w „/ s”: ' + asp); else ok('szybkość ' + asp);
+for (const n of ['Atak', 'Szybkość ataku', 'Dziobnięcie', 'Życie', 'Pancerz', 'Unik', 'Regeneracja', 'Szczęście']) if (!st.names.includes(n)) fail('brak stale widocznej statystyki: ' + n);
 ok('wszystkie statystyki widoczne zawsze: ' + st.names.length);
 if (!/\/s/.test(st.vals[st.names.indexOf('Regeneracja')])) fail('regeneracja bez „/ s”'); else ok('regeneracja zostaje w Życiu na sekundę');
 await p.screenshot({ path: `${OUT}/panel-statystyki.png` });

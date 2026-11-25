@@ -50,7 +50,7 @@ check(/Dokup za (9|18|30|45)/.test(buy), 'Audyt: ceny dokupienia +50% (' + buy.s
 check(/za darmo|gratis/.test(await text('[data-act=reroll]')), 'Audyt: darmowy reroll');
 
 // 3. Wadliwa Partia i Lombard
-await patch('run', `v.offer = ['ziarno-mocy', 'twardy-grzebien', 'szybki-dziob', 'ostry-dziob']; v.flawAt = 0; v.tiles = ['opaska-rambo']; v.coins = 0;`);
+await patch('run', `v.offer = ['ziarno-mocy', 'twardy-grzebien', 'szybki-dziob', 'zezowate-oko']; v.flawAt = 0; v.tiles = ['opaska-rambo']; v.coins = 0;`);
 check((await p.$$('.slotcard .stamp.flaw')).length === 1, 'pieczątka wady fabrycznej');
 await p.screenshot({ path: OUT + '/j-wada.png' });
 await p.click('[data-act=pawnmenu]'); await wait(300);
@@ -84,7 +84,7 @@ check(/Wada ujawniona/.test(res) || (await st()).phase === 'over', 'wynik walki 
 await p.evaluate(() => { const c = document.querySelector('.modal [data-act=close]'); c && c.click(); document.querySelector('#invoice').innerHTML = ''; }); await wait(300);
 
 // 5. Nemezis na bieżącym piętrze
-await patch('run', `v.phase = 'offer'; v.offer = ['ziarno-mocy', 'twardy-grzebien', 'szybki-dziob', 'ostry-dziob']; v.nemesis = { enemy: 'szczur-pasz', title: 'Kierownik', given: 'Zbigniew', affix: 'szybki', tile: 'opaska-rambo', lvl: 2, round: v.round, beaten: false };`);
+await patch('run', `v.phase = 'offer'; v.offer = ['ziarno-mocy', 'twardy-grzebien', 'szybki-dziob', 'zezowate-oko']; v.nemesis = { enemy: 'szczur-pasz', title: 'Kierownik', given: 'Zbigniew', affix: 'szybki', tile: 'opaska-rambo', lvl: 2, round: v.round, beaten: false };`);
 check(/Nemezis/.test(await text('.preview .lab')) && /Kierownik Szczur Pasz Zbigniew/.test(await text('.preview')), 'podgląd: Nemezis z imieniem');
 check((await p.$$('.tower .floor.nem, .tower .fp.nem')).length === 1, 'pasek pięter oznacza Nemezis');
 await p.screenshot({ path: OUT + '/j-nemezis.png' });

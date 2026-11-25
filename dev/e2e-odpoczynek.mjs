@@ -15,7 +15,7 @@ await p.reload({ waitUntil: 'networkidle0' }); await wait(300);
 await p.click('[data-act=new]'); await wait(200);
 await p.evaluate(() => document.querySelector('[data-act=setmode][data-v=full]').click());
 await p.click('[data-act=start]'); await wait(500);
-await p.evaluate(() => { const k = 'bulgot:local:player:run'; const r = JSON.parse(localStorage.getItem(k)); Object.assign(r, { round: 5, coins: 20, hp: 20, tiles: ['ziarno-mocy', 'ostry-dziob'], offer: ['ostry-dziob', 'jajeczny-granat', 'czujne-oko', 'pianie-grozy'] }); localStorage.setItem(k, JSON.stringify(r)); });
+await p.evaluate(() => { const k = 'bulgot:local:player:run'; const r = JSON.parse(localStorage.getItem(k)); Object.assign(r, { round: 5, coins: 20, hp: 20, tiles: ['ziarno-mocy', 'zezowate-oko'], offer: ['zezowate-oko', 'jajeczny-granat', 'czujne-oko', 'pianie-grozy'] }); localStorage.setItem(k, JSON.stringify(r)); });
 await p.reload({ waitUntil: 'networkidle0' }); await wait(300); await p.click('[data-act=resume]'); await wait(400);
 await p.screenshot({ path: out + '/v-oferta-odpoczynek.png' });
 const R = () => p.evaluate(() => { const r = window.__bulgot.run; return { hp: r.hp, coins: r.coins, rested: r.rested, phase: r.phase }; });

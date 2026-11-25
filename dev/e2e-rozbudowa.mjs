@@ -109,7 +109,7 @@ if ((await st()).phase !== 'over') {
   const hh = await p.evaluate(() => [window.__bulgot.run.hp, window.__bulgot.run.maxHp]);
   hh[0] === hh[1] ? ok('Kapliczka leczy') : fail('Kapliczka: ' + hh);
   // elita z cechami na piętrze 3 (szybki tryb)
-  await patchRun("run.phase = 'offer'; run.round = 4; run.offer = ['ziarno-mocy', 'twardy-grzebien', 'szybki-dziob', 'ostry-dziob']; run.pending = null;");
+  await patchRun("run.phase = 'offer'; run.round = 4; run.offer = ['ziarno-mocy', 'twardy-grzebien', 'szybki-dziob', 'zezowate-oko']; run.pending = null;");
   const aff = await p.$$eval('.preview .tag.aff', n => n.length); aff ? ok('podgląd elity z cechami') : fail('brak cech elity w podglądzie');
   await p.screenshot({ path: OUT + '/rozb-elita.png' });
 }

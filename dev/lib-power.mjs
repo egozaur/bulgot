@@ -11,7 +11,7 @@ export function power(run) {
   const bleed = S.bleed ? (S.bleed + S.atk * 0.08) * Math.min(3 + S.bleedMax, hps * 3) : 0;
   const frost = S.frostHit ? Math.min(1, hps * S.frostHit / 100 * 0.8) : 0;   // ułamek czasu, przez który wrogowie mają Mróz
   const cold = 1 + frost * (S.vsCold / 100 + 0.15 + (S.shatter ? 0.25 : 0) + (S.freezePct ? 0.1 : 0));
-  const dps = (S.atk * hps * (1 + crit) * (1 + S.dmg / 100) + (S.egg ? 1.2 * S.atk / (S.egg / 10) : 0) + burn + poison + bleed) * cold + S.startBurn * S.atk * 0.05;
+  const dps = (S.atk * hps * (1 + crit) + (S.egg ? 1.2 * S.atk / (S.egg / 10) : 0) + burn + poison + bleed) * cold + S.startBurn * S.atk * 0.05;
   const ehp = (S.maxHp * (1 + S.regen / 120)) * (1 + S.armor / 100) / (1 - Math.min(75, S.evade) / 100);
   const skills = run.skills.reduce((a, s) => a + (s.lvl >= 3 ? 0.22 : s.lvl >= 2 ? 0.16 : 0.1), 0);
   const econ = 1 + (S.coinFlat + S.bossCoins / 4 + S.freeReroll * 1.5 + S.restDisc / 2) * 0.012 + (S.noSteal ? 0.02 : 0) + S.buyDisc * 0.002;

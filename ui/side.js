@@ -29,7 +29,7 @@ export function skillRingsHTML() {
   }).join('')}</div>`;
 }
 // Statystyki w jednej kolumnie: ikona, nazwa, liczba i jednostka w stałych kolumnach; mikropasek to tylko orientacyjna skala.
-export const BAR_CAP = { atk: 100, aspd: 300, crit: 100, critMult: 400, dmg: 300, maxHp: 150, armor: 80, evade: 75, regen: 50, luck: 100 };
+export const BAR_CAP = { atk: 100, aspd: 300, crit: 100, maxHp: 150, armor: 80, evade: 75, regen: 50, luck: 100 };
 export function statListHTML() {
   const S = G.run.hero, base = (D.CHARS[G.run.char] || {}).base; let z = 0;
   // Wszystkie statystyki są zawsze widoczne (także zero); zielona liczba z prawej to premia ponad bazę, czerwona to kara.
@@ -104,8 +104,8 @@ export function zoneCompare() {
   const rp = D.garnekRamp(r.mode, r.round) / 100;
   h *= (100 + Math.floor((gm.enemyHp || 0) * rp)) / 100; a *= (100 + Math.floor((gm.enemyAtk || 0) * rp)) / 100;
   const n = r.zone === 0 ? 1.5 : 2, eHp = avg('hp') * h * n, eArm = avg('armor'), eDps = avg('atk') * a * avg('aspd') / 100 * n * (100 - avg('evade')) / 100;
-  const crit = 1 + (S.crit || 0) * ((S.critMult || 150) - 100) / 10000;
-  const dps = Math.max(0.1, S.atk * (100 + (S.dmg || 0)) / 100 * S.aspd / 100 * crit * 100 / (100 + eArm));
+  const crit = 1 + (S.crit || 0) * ((S.critMult || 200) - 100) / 10000;
+  const dps = Math.max(0.1, S.atk * S.aspd / 100 * crit * 100 / (100 + eArm));
   const taken = Math.max(0.05, eDps * 100 / (100 + S.armor) * (100 - Math.min(75, S.evade || 0)) / 100 - (S.regen || 0) / 10);
   return { off: 10 / (eHp / dps), def: (S.maxHp / taken) / 20 };
 }
@@ -123,5 +123,5 @@ export function zoneCompareHTML() {
   const c = zoneCompare(); if (!c) return '';
   const bar = (k, label, v, tip) => { const lv = v < 0.75 ? 'lo' : v > 1.3 ? 'hi' : 'ok', word = { lo: 'słabo', ok: 'OK', hi: 'mocno' }[lv];
     return `<div class="zc ${lv}" tabindex="0" data-tip="${esc(tip)}">${art.statIcon(k)}<span class="zl">${label}</span><span class="zb"><i style="width:${Math.round(Math.min(1, v / 2) * 100)}%"></i><u></u></span><b>${word}</b></div>`; };
-  return `<div class="zcmp" aria-label="Porównanie z wrogami strefy">${bar('atk', 'Atak', c.off, 'Jak szybko pokonasz typową grupę wrogów tej strefy (Atak, Szybkość ataku, Dziobnięcie, Obrażenia kontra ich Życie i Pancerz).')}${bar('armor', 'Obrona', c.def, 'Jak długo wytrzymasz ciosy typowej grupy wrogów tej strefy (Życie, Pancerz, Unik, Regeneracja kontra ich Atak).')}</div>`;
+  return `<div class="zcmp" aria-label="Porównanie z wrogami strefy">${bar('atk', 'Atak', c.off, 'Jak szybko pokonasz typową grupę wrogów tej strefy (Atak, Szybkość ataku i Dziobnięcie kontra ich Życie i Pancerz).')}${bar('armor', 'Obrona', c.def, 'Jak długo wytrzymasz ciosy typowej grupy wrogów tej strefy (Życie, Pancerz, Unik, Regeneracja kontra ich Atak).')}</div>`;
 }

@@ -27,7 +27,7 @@ for (let round = 5; round <= 11 && !found; round++) {
   if (v.tpl) found = { round, ...v };
 }
 check(found, 'Garnek 0: znaleziono piętro z szablonem ' + (found && found.tpl + ' (piętro ' + found.round + ')'));
-if (found) check(/Czempion|Rój|Zwiad|Para/.test(found.txt) && found.enemies.length >= 1, 'Garnek 0: podgląd pokazuje wrogów i opis szablonu');
+if (found) check(/Czempion|Rój|Zwiad|Para|Horda|Armia/.test(found.txt) && found.enemies.length >= 1, 'Garnek 0: podgląd pokazuje wrogów i opis szablonu');
 await p.screenshot({ path: `${OUT}/ukryte-g0.png` });
 
 // 2) Garnek 1: serwer nie wysyła składu, w podglądzie jest zaparowana szyba

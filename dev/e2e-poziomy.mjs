@@ -83,7 +83,7 @@ await p.keyboard.press('1'); await wait(600);
 // Księga: legendarne zablokowane lub poznane
 await p.evaluate(() => document.querySelector('[data-act=bookopen], [data-act=book]') && document.querySelector('[data-act=bookopen], [data-act=book]').click()); await wait(500);
 const book = await p.evaluate(() => ({ cards: document.querySelectorAll('.book-grid .tile').length, lvls: document.querySelectorAll('.book-grid .tile .lvl').length, locked: document.querySelectorAll('.book-grid .tile.locked').length, boss: [...document.querySelectorAll('.book-grid .lockbox')].filter(e => /Łup z bossa/.test(e.textContent)).length }));
-if (book.lvls !== 36 || book.boss !== 8) fail('Księga: ' + JSON.stringify(book)); else ok('Księga: ' + JSON.stringify(book));
+if (book.lvls !== 32 || book.boss !== 7) fail('Księga: ' + JSON.stringify(book)); else ok('Księga: ' + JSON.stringify(book));
 await p.screenshot({ path: OUT + '/poziomy-ksiega.png' });
 await b.close();
 if (errs.length) { for (const e of errs) fail(e); }

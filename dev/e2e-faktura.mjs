@@ -76,7 +76,7 @@ ok(none && !(await p.$('#invoice .inv')), 'z wyłączoną fakturą jest tylko kr
 await p.evaluate(() => localStorage.removeItem('bulgot:invoice'));
 
 // ---- 3. porażka: pełny ekran, ciekawostki
-await patch("r.phase = 'fight'; r.fight = {}; r.round = 2; r.hp = 1; r.tiles = ['ziarno-mocy','twardy-grzebien','szybki-dziob','ostry-dziob']; r.skills = [];"); await reload();
+await patch("r.phase = 'fight'; r.fight = {}; r.round = 2; r.hp = 1; r.tiles = ['ziarno-mocy','twardy-grzebien','szybki-dziob','zezowate-oko']; r.skills = [];"); await reload();
 await fastFight();
 ok(await waitFor('.modal.endfull', 300), 'ekran końca działa na pełnym ekranie');
 await wait(1800);

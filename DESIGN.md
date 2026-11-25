@@ -756,3 +756,15 @@ Dwóch graczy, jeden run w trybie Szybkim na wspólnym ziarnie (te same piętra,
 4. **Nagroda.** Na razie tylko pełnoekranowe okno dla obu graczy: „Kurczak obiecał podwyżki… po nowym roku. (Nagrody za wygranie zostaną wypłacone w Ziarnach na podsumowaniu rocznym firmy.)”.
 
 Kod: `duel.js` (czysta logika, `autoStep`), `ranks.js` `duel()` (stan `du:<kod>`, `dp:<gracz>`), `player.js` (`duel`, `start {duel}`, `duelTick`, `alarm`), klient `ui/duel.js`. Protokół: `.claude/context/protocol.md`. Testy: `bulgot.suite.js` („Pojedynek…”, 5 testów) i `dev/e2e-pojedynek.mjs`. W trybie `?local=1` jest jeden gracz, więc pełny pojedynek działa dopiero na wdrożonym serwerze (test e2e gra rywala przez `api.js` `devRanks`).
+
+## 32. Uporządkowanie statystyk bohatera i kontry od palnika 4 (2026-11-25, `RUN_V = 22`)
+
+Decyzje właściciela (plan i makieta: `propozycje-statystyki/`):
+- **Atak i Obrażenia scalone w jeden Atak.** Znika statystyka `dmg` (i rodzina kafelków `obrazenia`: Nadpiłowany Dziób, Dziób Szlifowany, Ostry Dziób, Dziób Prezesa; rodzin statystyk jest 8, pula kafelków 152). Kafelki i bonusy z „% obrażeń” (Opaska Rambo, Krawat, Nadgodziny, Spojrzenie Rambo, Nadwyżka zestawu Rambo) dają teraz „% Ataku”. Warunkowe bonusy (vs Mróz, Nadgodziny w walce itd.) zostają mechaniką w sim.js, nie statystyką.
+- **Dziobnięcie to jedna statystyka (szansa).** Siła mocnego dziobnięcia jest stała **×2** (`BASE.critMult = 200`, było 150 i premie). Kafelki z Mocą Dziobnięcia przeliczono na szansę: Okulary Aviatory +4%, Dziób Mistrza +15%, Spojrzenie Rambo +21%, Sokole Oko (3× Czujne Oko) +8%; rodzina Oko: 3/7/17/26% (było 5/12/28/44). Dziób Brzytwa (3× Ostry Dziób) usunięty razem z rodziną. Postacie wycofane Alkoholik i Influencer tracą tylko premię do Mocy.
+- **Panel statystyk:** 8 stale widocznych wierszy (Atak, Szybkość ataku, Dziobnięcie / Życie, Pancerz, Unik, Regeneracja / Szczęście); szybkość w uderzeniach na sekundę („1,3 / s”), obok wartości zielona premia ponad bazę (czerwona kara), w podpowiedzi baza + premie = suma. `text.js` (`statValue`, `statBonus`, `fmtPerSec`), `tip.js`, `ui/side.js`.
+- **Kontry bossów i elit tylko na palnikach 4 i 5** (`RULES.counterFrom = 4`): niższe palniki bez kontr, bez Świty Zarządu i bez zapowiedzi stylu (`view().intel`). Skala siły na 4 i 5 bez zmian (`COUNTER_K` 70% i 75%). `buildProfile`: styl „mocne dziobnięcia” liczy samą szansę, `(crit − 9) / 3,6`.
+
+Pomiar bota (pełny, 400 partii na komórkę, ±2 pp; `.claude/context/balans-stan.md`): palnik 4 średnio z 19,2% do 22,0%, palnik 5 z 5,7% do 6,1%, palnik 3 z ok. 24,7% do 32,6% (brak kontr, zgodnie z decyzją). Styl na dziobnięciach (`--arch crit`, palnik 4) 16,8% wobec 22,8% dla bota bazowego, więc nie jest przesadzony.
+
+Pułapka: `dev/lib-power.mjs` (ocena kafelków przez bota) używał `S.dmg`; po usunięciu statystyki dawał NaN i wygrane bota spadały do ~0%. Nowe narzędzia tego typu nie mogą czytać nieistniejących pól.
