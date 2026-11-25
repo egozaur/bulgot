@@ -175,9 +175,14 @@ export function upgradeBtn() {
   return `<button class="btn ${up.length ? 'upg' : ''}" data-act="upgrademenu" ${up.length ? '' : 'disabled'} title="${up.length ? 'Zlej ${D.RULES.upgradeCost} takie same kafelki w jeden wyższego poziomu (klawisz U)' : 'Potrzebujesz 3 takich samych statystyk poziomu 1 lub 2 (zlewają się w wyższy poziom)'}">${art.upgradeIcon()} Zlej kafelki${up.length ? ` (${up.length})` : ''}</button>`;
 }
 export function showUpgrade() {
+  // Patch 1.1: zlew poziomu 2 → 3 ma wybór: „czysty” albo „przegrzany” (+flawBoost% efektu, ale ukryta wada fabryczna ujawniana po walce).
   const rows = (G.run.up || []).map(id => { const t = TILE[id], nx = TILE[t.next], n = G.run.tiles.filter(x => x === id).length;
-    return `<button class="upg-row" data-act="upgrade" data-v="${id}"><span class="upg-from r${t.rarity}" data-tipk="tile:${id}"><span class="pi">${lvlTag(t)}${art.tileIcon(id)}</span><b>${D.RULES.upgradeCost}×</b> ${esc(t.name)}${n > D.RULES.upgradeCost ? ` <small>(masz ${n})</small>` : ''}</span><span class="upg-arrow">→</span><span class="upg-to r${nx.rarity}" data-tipk="tile:${nx.id}"><span class="pi">${lvlTag(nx)}${art.tileIcon(nx.id)}</span>${esc(nx.name)}<small>${esc(nx.text)}</small></span></button>`; }).join('');
-  openOverlay(`<h2>Zlewanie kafelków</h2><p class="lead">Dwie takie same statystyki poziomu 1 lub 2 zlewasz za darmo w jedną następnego poziomu. Kosztem są dwa kafelki, nie Ziarna.</p><div class="upg-list">${rows || '<p class="hint">Nie masz trzech takich samych kafelków do zlania.</p>'}</div>`, { cls: 'upgmodal' });
+    const pair = `<span class="upg-from r${t.rarity}" data-tipk="tile:${id}"><span class="pi">${lvlTag(t)}${art.tileIcon(id)}</span><b>${D.RULES.upgradeCost}×</b> ${esc(t.name)}${n > D.RULES.upgradeCost ? ` <small>(masz ${n})</small>` : ''}</span><span class="upg-arrow">→</span><span class="upg-to r${nx.rarity}" data-tipk="tile:${nx.id}"><span class="pi">${lvlTag(nx)}${art.tileIcon(nx.id)}</span>${esc(nx.name)}<small>${esc(nx.text)}</small></span>`;
+    if (t.lvl !== 2) return `<button class="upg-row" data-act="upgrade" data-v="${id}">${pair}</button>`;
+    return `<div class="upg-row two"><div class="upg-pair">${pair}</div><div class="upg-choice">
+      <button class="btn" data-act="upgrade" data-v="${id}">Czysty<small>bez ryzyka, tak jak zwykle</small></button>
+      <button class="btn hot" data-act="upgrade" data-v="${id}" data-hot="1">Przegrzany<small>+${D.RULES.flawBoost}% efektu, ale ukryta wada ujawni się po walce</small></button></div></div>`; }).join('');
+  openOverlay(`<h2>Zlewanie kafelków</h2><p class="lead">Dwie takie same statystyki poziomu 1 lub 2 zlewasz za darmo w jedną następnego poziomu. Kosztem są dwa kafelki, nie Ziarna. Przy zlewie 2 → 3 wybierasz: czysty albo przegrzany (mocniejszy, z wadą fabryczną).</p><div class="upg-list">${rows || '<p class="hint">Nie masz trzech takich samych kafelków do zlania.</p>'}</div>`, { cls: 'upgmodal' });
 }
 export const pawnable = () => { const r = G.run; return [...new Set(r.tiles)].filter(id => { const t = TILE[id]; return t && t.type !== 'skill' && !t.hidden && !t.noPawn && !(r.flawed || []).some(w => w.id === id); }); };
 // Zamiana kolejności umiejętności (slot = klawisz w walce). Serwer zapisuje kolejność, więc powtórka walki się zgadza.

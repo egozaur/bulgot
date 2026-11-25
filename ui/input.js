@@ -42,7 +42,7 @@ export const ACT = {
   buyoffer: b => doBuy(+b.dataset.i),
   pawnmenu: () => showPawn(),
   upgrademenu: () => showUpgrade(),
-  upgrade: async b => { const id = b.dataset.v; const j = await act('upgrade', { id }); if (!j) return; closeOverlay(); snd.sfx('unlock'); G.upFresh = j.upgraded.to; toast(`Zlano ${D.RULES.upgradeCost}× ${TILE[id].name} w ${TILE[j.upgraded.to].name}!`, false, 3600); render(); setTimeout(() => { G.upFresh = null; document.querySelectorAll('.chip.fresh').forEach(e => e.classList.remove('fresh')); }, 1800); },
+  upgrade: async b => { const id = b.dataset.v, hot = !!b.dataset.hot; const j = await act('upgrade', hot ? { id, hot: true } : { id }); if (!j) return; closeOverlay(); snd.sfx('unlock'); G.upFresh = j.upgraded.to; toast(`Zlano ${D.RULES.upgradeCost}× ${TILE[id].name} w ${TILE[j.upgraded.to].name}${j.upgraded.hot ? ' (przegrzany: ukryta wada ujawni się po walce)' : ''}!`, false, 3600); render(); setTimeout(() => { G.upFresh = null; document.querySelectorAll('.chip.fresh').forEach(e => e.classList.remove('fresh')); }, 1800); },
   pawn: async b => { const id = b.dataset.v; const j = await act('pawn', { id }); if (!j) return; closeOverlay(); snd.sfx('coin'); toast(`Lis wziął ${TILE[id].name} i dał ${j.price} Ziaren. Wykup na następnym piętrze.`, false, 4200); render(); },
   codeopen: () => {   // Hasło do ukrytej postaci: tylko tutaj, z ekranu wyboru postaci. Hasło sprawdza serwer.
     openOverlay(`<h2>Masz hasło?</h2><p class="lead">Ktoś szepnął Ci słówko? Wpisz je, a ukryta postać wykluje się od razu.</p>

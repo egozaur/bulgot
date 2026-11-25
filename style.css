@@ -1697,3 +1697,12 @@ html.reduce .decroll, html.reduce .decroll .ico { animation: none !important; }
 @keyframes bannerlong { 0% { opacity: 0; transform: scale(1.4); } 4% { opacity: 1; transform: scale(1); } 90% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
 /* numer wydania na ekranie startowym */
 .patchtag { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 8px; border: 2px solid var(--line); color: var(--faint); font: 700 .7rem var(--mono); letter-spacing: .08em; vertical-align: middle; }
+/* zlew 2 → 3: wybór czysty / przegrzany */
+.upg-row.two { flex-direction: column; align-items: stretch; cursor: default; gap: 8px; }
+.upg-row.two:hover { border-color: var(--line); box-shadow: none; }
+.upg-pair { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.upg-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.upg-choice .btn { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 10px; }
+.upg-choice .btn small { font: 500 .7rem/1.25 var(--body, inherit); color: var(--muted); text-align: center; }
+.upg-choice .btn:hover, .upg-choice .btn:focus-visible { border-color: #7bd88f; }
+.upg-choice .btn.hot { border-color: var(--amber2); } .upg-choice .btn.hot:hover, .upg-choice .btn.hot:focus-visible { border-color: var(--red); box-shadow: 0 0 14px rgba(228,87,46,.5); }
