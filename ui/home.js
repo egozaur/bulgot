@@ -75,7 +75,6 @@ export function renderHome() {
 export function metaChips() {
   const p = G.profile, out = [];
   if (p.nemesis) { const n = p.nemesis, t = n.tile && TILE[n.tile]; out.push(`<span class="meta-chip nem" tabindex="-1" data-tip="${esc('Twój Nemezis: ' + n.name + (n.lvl > 1 ? ' (awans ' + n.lvl + '.)' : '') + '\n' + (t ? 'Ukradł ci ' + t.name + '. ' : '') + 'Czeka na ciebie w następnym runie.')}">${art.skullIcon()}</span>`); }
-  if (p.will && TILE[p.will.tile]) { const ch = D.CHARS[p.will.char], multi = p.chars.length > 1; out.push(`<span class="meta-chip will" tabindex="-1" data-tip="${esc('Testament: ' + TILE[p.will.tile].name + '\nCzeka w pierwszej ofercie' + (multi ? ' następnego runu postacią inną niż ' + (ch ? ch.name : '') : ' następnego runu') + '.')}">${art.tileIcon(p.will.tile)}</span>`); }
   return out.length ? `<div class="meta-chips">${out.join('')}</div>` : '';
 }
 export const BURNERS = ['Ognisko', 'Gazówka', 'Kuchenka', 'Piec', 'Kuźnia', 'Wulkan'];

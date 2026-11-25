@@ -28,16 +28,11 @@ export function unlocksHTML(list) {
   return list.map(u => `<div class="unlock-box"><b>Odblokowano ${u.kind === 'char' ? 'postać' : 'kafelek'}: ${esc(unlockName(u))}</b><div class="hint" style="text-align:left">${esc(u.text)}</div></div>`).join('');
 }
 
-// Po przegranej: kto awansował (Nemezis) i Testament Pyrtka (wybór kafelka do następnego runu).
+// Po przegranej: kto awansował (Nemezis).
 export function endMeta(j) {
   const r = G.run, p = G.profile, out = [];
   if (r.ended !== 'lose') return '';
   if (j.result && p.nemesis) { const n = p.nemesis, t = n.tile && TILE[n.tile]; out.push(`<div class="unlock-box nembox"><b>Awans Wroga: ${esc(n.name)}${n.lvl > 1 ? ' (awans ' + n.lvl + '.)' : ''}</b><div class="hint" style="text-align:left">${n.lvl > 1 ? 'Znowu wygrał i awansował wyżej.' : 'Twój zabójca dostał awans i cechę ' + esc(D.AFFIXES[n.affix].name) + '.'}${t ? ' Ukradł ci: ' + esc(t.name) + '.' : ''} Czeka na ciebie w następnym runie.</div></div>`); }
-  if (r.willOptions && r.willOptions.length) {
-    out.push(`<div class="sec">Testament Pyrtka</div><p class="lead">Zapisz jeden kafelek następnemu kurczakowi. Pojawi się jako piąta karta pierwszej oferty${p.chars.length > 1 ? ' w runie inną postacią' : ''}.</p>
-      <div class="cards will-grid">${r.willOptions.map((id, i) => `<div class="slotcard">${tileCard(id, { i, static: true, mini: true })}<button class="btn small buy" data-act="will" data-i="${i}">Zapisz</button></div>`).join('')}</div>
-      <div class="actions"><button class="btn small ghost" data-act="will" data-i="-1">Bez testamentu</button></div>`);
-  } else if (p.will && j.will) out.push(`<div class="unlock-box"><b>Testament spisany: ${esc(TILE[p.will.tile].name)}</b><div class="hint" style="text-align:left">Czeka w pierwszej ofercie następnego runu.</div></div>`);
   return out.join('');
 }
 // Wynik na ekranie końca nabija się od zera (licznik jak w automacie); bez animacji przy prefers-reduced-motion.

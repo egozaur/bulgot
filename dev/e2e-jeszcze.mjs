@@ -1,4 +1,4 @@
-// Bulgot: test e2e rozbudowy „jeszcze jedna partia” (Rozwidlenie, Wadliwa Partia, Okólnik, Lombard, Seria i Reakcje, Nemezis, Testament, Księga)
+// Bulgot: test e2e rozbudowy „jeszcze jedna partia” (Rozwidlenie, Wadliwa Partia, Okólnik, Lombard, Seria i Reakcje, Nemezis, Księga)
 // w prawdziwej przeglądarce (Edge + puppeteer-core). Stan runu w localStorage (tryb lokalny) jest podmieniany na konkretne układy.
 // Użycie: cd C:\Users\Kurczak\tools\pt && node C:\Users\Kurczak\pl3y\bulgot\dev\e2e-jeszcze.mjs [katalog na zrzuty]
 import puppeteer from 'file:///C:/Users/Kurczak/tools/pt/node_modules/puppeteer-core/lib/esm/puppeteer/puppeteer-core.js';
@@ -85,17 +85,11 @@ check(/Nemezis/.test(await text('.preview .lab')) && /Kierownik Szczur Pasz Zbig
 check((await p.$$('.tower .floor.nem, .tower .fp.nem')).length === 1, 'pasek pięter oznacza Nemezis');
 await p.screenshot({ path: OUT + '/j-nemezis.png' });
 
-// 6. Testament po przegranej
+// 6. Po przegranej: ekran końca bez testamentu (funkcja usunięta), nowy run startuje normalnie
 await p.click('[data-act=menu]'); await wait(200); await p.click('.modal [data-act=abandon]'); await wait(200); await p.click('[data-act=abandon-yes]'); await wait(1500);
-check((await p.$$('.modal [data-act=will]')).length >= 2, 'ekran końca: wybór testamentu');
-await p.screenshot({ path: OUT + '/j-testament.png' });
-const willTile = await p.evaluate(() => window.__bulgot.run.willOptions[0]);
-await p.click('.modal .will-grid [data-act=will][data-i="0"]'); await wait(500); s = await st();
-check(s.profile.will && s.profile.will.tile === willTile && /Testament spisany/.test(await text('.modal')), 'testament spisany: ' + willTile);
+check((await p.$$('.modal [data-act=will]')).length === 0 && !/Testament/.test(await text('.modal')), 'ekran końca: brak testamentu');
 await p.click('.modal [data-act=again]'); await wait(300); await p.click('[data-act=start]'); await wait(600); s = await st();
-// Testament czeka na INNĄ postać, gdy gracz ma odblokowaną więcej niż jedną (w walkach testu może się odblokować Związkowiec).
-check((s.run.offer.includes(willTile) && (await p.$$('.slotcard .stamp.will')).length === 1) || (s.profile.chars.length > 1 && s.profile.will && s.profile.will.tile === willTile), 'kafelek z testamentu jako karta w nowej ofercie (lub czeka na inną postać)');
-await p.screenshot({ path: OUT + '/j-testament-oferta.png' });
+check((await p.$$('.slotcard .stamp.will')).length === 0 && !s.profile.will, 'brak testamentu w nowej ofercie i profilu');
 
 // 7. Księga: Reakcje i Okólniki
 await p.click('[data-act=menu]'); await wait(200); await p.click('.modal [data-act=book]'); await wait(300);

@@ -392,22 +392,20 @@ html.reduce *, html.reduce *::before, html.reduce *::after { animation-duration:
 button:focus-visible, [data-act][tabindex]:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .tile:focus-visible { outline: 4px solid var(--gold); outline-offset: 4px; transform: translateY(-4px); box-shadow: 0 0 0 2px #000, 0 10px 30px rgba(255, 201, 51, .35); }
 
-/* ---------- Rozbudowa: drzwi, Lombard, Okólniki, wady, Testament, Nemezis, reakcje, serie ---------- */
+/* ---------- Rozbudowa: drzwi, Lombard, Okólniki, wady, Nemezis, reakcje, serie ---------- */
 .pill.dec { font-size: 1rem; border-color: #607d8b; color: #cfd8dc; cursor: help; }
 .pill.dec .ico { width: 20px; height: 20px; }
 .sub .dsub { color: #cfd8dc; cursor: help; border-bottom: 1px dotted #607d8b; }
 .slotcard { position: relative; }
 .slotcard .stamp { position: absolute; z-index: 3; top: -10px; left: 50%; transform: translateX(-50%) rotate(-4deg); padding: .3em .7em; border-radius: 6px; font: 700 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 3px 0 var(--outline); cursor: help; }
 .slotcard .stamp.flaw { background: #e53950; color: #fff; border: 2px dashed #fff; }
-.slotcard .stamp.will { background: #c77dff; color: #1a0026; border: 2px solid #fff; }
 .slotcard.flawed .tile { border-style: dashed; }
-.slotcard.willed .tile { box-shadow: 0 6px 0 var(--outline), 0 0 0 2px var(--outline), 0 0 22px rgba(199,125,255,.55); }
 .chip.flawed { border-style: dashed; box-shadow: 0 0 0 2px rgba(229,57,80,.55); }
 .chip sup.gr { background: #2e7d32; color: #fff; }
 .setline.pawn { color: #ffb27a; }
 .hint.warn { color: #ffb27a; }
 .btn .ico { width: 22px; height: 22px; vertical-align: -5px; }
-.pawn-grid .tile, .will-grid .tile { width: 170px; }
+.pawn-grid .tile { width: 170px; }
 .floor.door .dr { font-size: 11px; color: #ffd166; margin-right: 2px; }
 .floor.nem { border-color: #c77dff; color: #e3b8ff; box-shadow: inset 0 0 0 1px rgba(199,125,255,.5); }
 .floor.nem .skull { filter: hue-rotate(250deg) saturate(2); }
@@ -1046,7 +1044,6 @@ html.reduce .slip.land, html.reduce .slip.pop, html.reduce .board.bump, html.red
 .end-right { display: flex; flex-direction: column; max-height: calc(var(--vh, 100vh) - 56px); min-height: 0; }
 .end-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .end-actions { flex: none; margin-top: 12px; justify-content: center; }
-.end-right .will-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; zoom: .78; }
 .end-right .analyze { margin-top: 8px; padding: 6px 10px; } .end-right .analyze .hint { display: none; }
 .end-right .lead { margin: 0 0 8px; }
 @media (max-width: 960px) { .endwrap { height: auto; min-height: 100%; } .end-right { max-height: none; } .end-scroll { overflow: visible; } .modal.endfull { overflow: auto; } }
@@ -1062,7 +1059,6 @@ html.reduce .slip.land, html.reduce .slip.pop, html.reduce .board.bump, html.red
 .meta-chips { display: flex; gap: 8px; margin-right: 10px; }
 .meta-chip { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--outline); background: var(--panel2); cursor: help; box-shadow: 0 3px 0 var(--outline); }
 .meta-chip.nem { border-color: #c4472a; background: #3a1812; }
-.meta-chip.will { border-color: var(--gold); }
 .meta-chip svg { width: 24px; height: 24px; }
 .opts.modes { grid-template-columns: 1fr 1fr; gap: 12px; }
 .mode-opt { padding: 10px 16px; }
@@ -1373,7 +1369,7 @@ html.reduce .logo img { animation: none; }
 .topbar .disp.odo b { align-items: center; }
 @container tb (max-width: 1200px) { .topbar .pill { padding: 0 .6em; font-size: .95rem; } }
 
-/* Menu: Nemezis i Testament jako ikonki obok nicka (nie zwiększają wysokości menu) */
+/* Menu: Nemezis jako ikonka obok nicka (nie zwiększają wysokości menu) */
 .home-top { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
 .home-top .me-badge { margin-bottom: 0; }
 .home-top .meta-chips { margin-right: 0; }

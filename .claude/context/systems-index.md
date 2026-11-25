@@ -15,7 +15,7 @@ Zasada: znajdź wiersz → przeczytaj **tylko** wskazaną sekcję `DESIGN.md` (`
 | Postacie (12 aktywnych) | `data.js` `CHARS`, `CHAR_IDS`, `UNLOCKS`; `profile.js` `CHECKS` | 16, 25, 29 | `dev/e2e-postacie.mjs` |
 | Wrogowie, bossowie, elity, szablony pięter | `data.js` `ENEMIES`, `BOSSES`, `FLOOR_TPL`, `AFFIXES`; `rules.js` `encounterIds`, `buildSetup` | 5, 12, 18, 26, 29 | |
 | Hordy, kontry bossów (`buildProfile`, `counterPlan`; kontry tylko od palnika `RULES.counterFrom` = 4) | `rules.js`, `data.js` `COUNTERS` | 29, 32 | |
-| Okólniki, Wadliwa Partia, Nemezis, Testament | `data.js` `DECREES`, `FLAWS`; `rules.js` | 11 | `dev/e2e-jeszcze.mjs` |
+| Okólniki, Wadliwa Partia, Nemezis | `data.js` `DECREES`, `FLAWS`; `rules.js` | 11 | `dev/e2e-jeszcze.mjs` |
 | Trasy, Klątwy, Dogrywka, Towarzysz, Arena Duchów | `data.js` `ROUTES`, `CURSES`, `COMPANIONS`; `rules.js` `choose` | 18 | `dev/e2e-nowosci.mjs` |
 | Lombard, Odsetki (drzwi usunięte w Patchu 1.1) | `rules.js` (`pawn`, `redeem`) | 11, 34 | |
 | Dodatkowe rundy (Gruszka, Pipsztal) | `data.js` `EXTRA_AT`; `rules.js` | 26 | `dev/e2e-extra.mjs` |

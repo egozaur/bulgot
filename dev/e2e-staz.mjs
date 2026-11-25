@@ -21,9 +21,9 @@ const over = () => p.evaluate(() => document.scrollingElement.scrollHeight - inn
 await p.goto(URL0, { waitUntil: 'networkidle0' });
 await p.evaluate(() => localStorage.clear()); await reload();
 
-// 1. Menu: pigułka Stażu, przycisk Dyżuru, Sklepik; bez przewijania w typowych oknach (także z Nemezis i Testamentem)
+// 1. Menu: pigułka Stażu, przycisk Dyżuru, Sklepik; bez przewijania w typowych oknach (także z Nemezis)
 ok(!!(await p.$('.staz-pill')) && !!(await p.$('[data-act=daily]')) && !!(await p.$('[data-act=shop]')), 'menu ma pigułkę Stażu, Dyżur dnia i Sklepik');
-await patchProfile("pr.nemesis = { enemy: 'szczur-pasz', title: 'Brygadzista', given: 'Grażyna', lvl: 1, affix: 'zly', tile: 'ziarno-mocy' }; pr.will = { tile: 'ziarno-mocy', char: 'pyrtek' };");
+await patchProfile("pr.nemesis = { enemy: 'szczur-pasz', title: 'Brygadzista', given: 'Grażyna', lvl: 1, affix: 'zly', tile: 'ziarno-mocy' };");
 await reload();
 for (const [w, h] of [[1920, 925], [1920, 1080], [1366, 650], [1366, 768], [1280, 720], [1440, 900]]) {
   await p.setViewport({ width: w, height: h }); await wait(200);
@@ -31,7 +31,7 @@ for (const [w, h] of [[1920, 925], [1920, 1080], [1366, 650], [1366, 768], [1280
 }
 await p.setViewport({ width: 1440, height: 900 });
 await p.screenshot({ path: OUT + '/staz-menu.png' });
-await patchProfile('delete pr.nemesis; delete pr.will;');
+await patchProfile('delete pr.nemesis;');
 
 // 2. Awans: okno z wyborem nagrody (1 z 2), Talony, kolejka
 await patchProfile("pr.xp = 20; pr.talons = 6; pr.lvlPending = [{ lvl: 1, opts: ['piora', 'talon'] }];");

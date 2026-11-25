@@ -157,10 +157,9 @@ export function offerCard(id, i) {
   const buy = t.event
     ? '<div class="buynote">Wydarzenie: tylko do wyboru</div>'
     : `<button class="btn small buy" data-act="buyoffer" data-i="${i}" ${r.coins < price || left < 2 ? 'disabled' : ''} title="Dokup ten kafelek za Ziarna (Shift + ${i + 1}). Darmowy wybór zostaje.">Dokup za ${price} ${art.coinIcon()}</button>`;
-  const flaw = i === r.flawAt, will = r.will && id === r.will;
-  const stamp = flaw ? '<div class="stamp flaw" title="Efekty kafelka są o 50% mocniejsze, ale ma ukrytą wadę, która ujawni się po następnej walce.">Wada fabryczna · +50%</div>'
-    : will ? '<div class="stamp will" title="Kafelek zapisany w Testamencie Pyrtka po poprzednim runie.">Testament</div>' : '';
-  return `<div class="slotcard ${flaw ? 'flawed' : ''} ${will ? 'willed' : ''}">${stamp}${tileCard(id, { i })}${buy}</div>`;
+  const flaw = i === r.flawAt;
+  const stamp = flaw ? '<div class="stamp flaw" title="Efekty kafelka są o 50% mocniejsze, ale ma ukrytą wadę, która ujawni się po następnej walce.">Wada fabryczna · +50%</div>' : '';
+  return `<div class="slotcard ${flaw ? 'flawed' : ''}">${stamp}${tileCard(id, { i })}${buy}</div>`;
 }
 // Lombard Lisa: przycisk zastawu albo wykupu.
 export function pawnBtn() {

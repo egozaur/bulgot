@@ -87,9 +87,9 @@ ok(end.facts.length === 1 && !/małp/i.test(end.facts.join(' ')),'ciekawostki pr
 await p.screenshot({ path: OUT + '/koniec-pelny.png' });
 for (const [w, h] of [[1920, 1080], [1366, 650], [1280, 720]]) {
   await p.setViewport({ width: w, height: h }); await wait(400);
-  const fit = await p.evaluate(() => { const q = s => { const e = document.querySelector(s); return e && e.getBoundingClientRect(); }; const a = q('.end-actions'), f = q('.fact'), t = q('.end-title'); return { actionsBottom: a && Math.round(a.bottom), factBottom: f && Math.round(f.bottom), titleBottom: t && Math.round(t.bottom), vh: innerHeight, scrollY: document.querySelector('.modal.endfull').scrollTop, will: document.querySelectorAll('.will-grid .tile').length }; });
+  const fit = await p.evaluate(() => { const q = s => { const e = document.querySelector(s); return e && e.getBoundingClientRect(); }; const a = q('.end-actions'), f = q('.fact'), t = q('.end-title'); return { actionsBottom: a && Math.round(a.bottom), factBottom: f && Math.round(f.bottom), titleBottom: t && Math.round(t.bottom), vh: innerHeight, scrollY: document.querySelector('.modal.endfull').scrollTop }; });
   console.log('koniec ' + w + 'x' + h + ':', JSON.stringify(fit));
-  ok(fit.actionsBottom <= fit.vh && fit.factBottom <= fit.vh && fit.titleBottom <= fit.vh, 'ekran końca mieści się w oknie ' + w + 'x' + h + ' (przyciski, ciekawostki i tytuł widoczne, Testament: ' + fit.will + ' kafelki)');
+  ok(fit.actionsBottom <= fit.vh && fit.factBottom <= fit.vh && fit.titleBottom <= fit.vh, 'ekran końca mieści się w oknie ' + w + 'x' + h + ' (przyciski, ciekawostki i tytuł widoczne)');
   await p.screenshot({ path: OUT + '/koniec-' + w + 'x' + h + '.png' });
 }
 await p.setViewport({ width: 1920, height: 925 }); await wait(300);
