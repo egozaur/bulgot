@@ -27,6 +27,7 @@ const AREAS = {
   postacie: ['e2e-postacie', 'e2e-ukryte'],
   faktura: ['e2e-faktura'],
   koniec: ['e2e-analiza'],
+  fakty: ['test-fakty', 'e2e-analiza'],   // ciekawostki końca runu: testy jednostkowe (czyste Node) + ekran końca w Edge
   podpowiedzi: ['e2e-podpowiedzi'],
   staz: ['e2e-staz'],
   kasyno: ['e2e-kasyno'],
@@ -49,7 +50,7 @@ const tests = [...new Set(wanted)];
 
 const portOpen = () => new Promise(res => { const s = net.connect(PORT, '127.0.0.1'); s.once('connect', () => { s.destroy(); res(true); }); s.once('error', () => res(false)); });
 let server = null;
-if (tests.some(t => t !== 'srv') && !(await portOpen())) {
+if (tests.some(t => t !== 'srv' && t !== 'test-fakty') && !(await portOpen())) {
   server = spawn(process.execPath, [SERVE, ROOT, String(PORT)], { env: { ...process.env, LOBBY: path.join(ROOT, 'egozaur.github.io') }, stdio: 'ignore' });
   for (let i = 0; i < 30 && !(await portOpen()); i++) await new Promise(r => setTimeout(r, 200));
   if (!(await portOpen())) { console.error('Serwer plików nie wystartował'); server.kill(); process.exit(2); }

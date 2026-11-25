@@ -51,7 +51,9 @@ koniec runu: rules.endRun → profile.onRunEnd (Staż, odblokowania, osiągnięc
 | `text.js` | 23 KB | teksty Kronikarza, `CHAR_PERKS`, `BOSS_INTRO`, `STAT_GROUPS`, `statValue` |
 | `tip.js` | 13 KB | jedna pływająca podpowiedź `#tip` |
 | `scenes.js` | 12 KB | tła walki (3 strefy) |
-| `fakty.js` | 9 KB | ciekawostki na ekranie końca |
+| `fakty.js` | 20 KB | ciekawostki końca runu: generatory i wybór (DESIGN.md 35) |
+| `fakty-teksty.js` | 15 KB | szablony tekstów ciekawostek |
+| `fakty-pamiec.js` | 6 KB | dziennik runu, historia, pamięć pięter, rekordy wstydu, zakład (localStorage) |
 | `audio.js` | 8,5 KB | dźwięk WebAudio |
 | `api.js` | 4,5 KB | serwer albo tryb lokalny |
 | `index.html` | 1,4 KB | punkt wejścia (`app.js` jako moduł, `style.css`, `fight.css`; adresy mają `?v=` do cache-bustingu) |

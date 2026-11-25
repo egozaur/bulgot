@@ -46,7 +46,8 @@ Zasada: znajdź wiersz → przeczytaj **tylko** wskazaną sekcję `DESIGN.md` (`
 | Panel boczny bohatera | `ui/side.js` (`sideHTML`, `setIconsHTML`, `skillRingsHTML`, `statListHTML`, `zoneCompareHTML`, `linkChipsHTML`, `animOn`, `applyAnim`) |
 | Walka na żywo | `ui/fight.js` (`startFight`, `frame`, `stepOnce`, `useSkill`, `onEvent`, `finishFight`, `skillFx` → `fx.js`; tła `scenes.js`; CSS `fight.css`) |
 | Faktura i Tablica Zarządu | `ui/invoice.js` (`showInvoice`, `boardHTML`, `flyToBoard`, `fitBoard`, `showSlip`) |
-| Ekran końca | `ui/end.js` (`showEnd`, `endFacts` → `fakty.js`, `showAnalyzeDialog`) |
+| Ekran końca | `ui/end.js` (`showEnd`, `endFacts`/`chooseFacts` → `fakty.js`, `showAnalyzeDialog`) |
+| Ciekawostki końca runu | `fakty.js`, `fakty-teksty.js`, `fakty-pamiec.js`; dziennik z `finishFight` w `ui/fight.js`; DESIGN.md 35; test `node dev/test-area.mjs fakty` |
 | Okna: ranking, Księga, profil, historia, pomoc, ustawienia, menu | `ui/windows.js` (`showRanking`, `showBook`, `showProfile`, `showKurnik`, `showHistory`, `showHelp`, `showSettings`, `showMenu`) |
 | Kliknięcia i klawisze | `ui/input.js` (tablica `ACT`, nawigacja strzałkami `navItems`/`navMove`); sam `document.addEventListener('keydown'…)` jest w `app.js` |
 | Staż, Sklepik, Dyżur dnia | `ui/meta.js` (`showLevelUp`, `showShop`, `showDaily`, `startDaily`) |

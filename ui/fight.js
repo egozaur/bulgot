@@ -8,7 +8,8 @@ import * as snd from '../audio.js';
 import { fightScene, sceneClouds } from '../scenes.js';
 import { castFx, markHit, trapSnap, SK_COLOR } from '../fx.js';
 import { $, G, TILE, act, closeOverlay, esc, openOverlay, sleep, toast } from './core.js';
-import { showEnd } from './end.js';
+import { fm, showEnd } from './end.js';
+import { floorEntry } from '../fakty-pamiec.js';
 import { render } from './home.js';
 import { INV, invoiceOn, showInvoice } from './invoice.js';
 import { bossIntroOf, compForm, enemyFig, floorKronHTML } from './run.js';
@@ -35,6 +36,7 @@ export const RING = 2 * Math.PI * 36;
 export function startFight(setup) {
   const run = G.run, f = new Fight(setup);
   const F = G.fight = { setup, f, inputs: [], queue: [], acc: 0, last: 0, paused: false, finishing: false, units: new Map(), raf: 0, bossBanner: false, fxDelay: null, hitDelay: new Map(), trapEl: null, domeEl: null };
+  F.pre = { hp: setup.hero ? setup.hero.hp : run.hp, coins: run.coins, rested: !!run.rested };   // stan sprzed walki do dziennika runu (ciekawostki końca)
   G.screen = 'fight';
   const boss = setup.enemies.find(e => e.boss);
   $('#screen').innerHTML = '';
@@ -326,6 +328,7 @@ export async function finishFight() {
   }
   stopFight(); G.fight = null; closeOverlay();
   const res = j.result;
+  if (!G.duelRun && res && F.pre) fm().addFloor(G.run.id, floorEntry(F.setup, F.pre, res));   // dziennik runu: wpis tej walki
   if (res.win !== local.win) toast('Serwer rozliczył walkę inaczej niż Twoja przeglądarka. Obowiązuje wynik serwera.', true, 5000);
   if (G.run.phase === 'over') { G.screen = 'run'; return showEnd(j); }
   G.screen = 'run'; if (F.setup.extra) { render(); fightToasts(j); return; }

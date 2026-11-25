@@ -6,6 +6,7 @@ import * as T from '../text.js';
 import * as F from '../fabula.js';
 import * as snd from '../audio.js';
 import { failFacts, pickFacts, winFacts } from '../fakty.js';
+import { createMemory } from '../fakty-pamiec.js';
 import { $, G, TILE, act, closeOverlay, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js';
 import { cls, feathers } from './fight.js';
 import { BURNERS, render } from './home.js';
@@ -69,11 +70,27 @@ export async function sendAnalysis(withNote) {
   backFromAnalyze();
 }
 export function backFromAnalyze() { const f = G.ana && G.ana.from; if (f === 'hist') showHistory(); else if (G.lastEndJ) showEnd(G.lastEndJ, true); else closeOverlay(); }
-// Kontekst ciekawostek na ekranie końca (przegrana: dane z ostatniej walki, wygrana: ogólne).
+// Pamięć ciekawostek (dziennik runu, historia, pamięć pięter, rekordy wstydu, zakład): localStorage przez store, patrz fakty-pamiec.js.
+// leniwie: moduły ui/* importują się cyklicznie, więc store z core.js bywa jeszcze niezainicjowany przy ładowaniu tego pliku
+let fmInst = null;
+export const fm = () => fmInst || (fmInst = createMemory(store));
+// Kontekst ciekawostek na ekranie końca: ostatnia walka, cały run (dziennik z finishFight), historia poprzednich runów i dane serwera.
 export function endFacts(j, win) {
   const r = G.run, M = D.MODES[r.mode], res = j.result || (G.lastEndJ && G.lastEndJ.result) || null, seed = parseInt(String(r.id).slice(-6), 10) || 0;
-  const e = G.lastEnd || {}, st = r.stats || {}, lastKind = store.get('bulgot:lastfact') || '';
-  if (win) { store.set('bulgot:lastlose', 'null'); return winFacts({ mode: r.mode, garnek: r.garnek, seed, lastKind, floor: e.floor || null, flawless: st.flawless || 0, rerolls: st.rerolls || 0, coins: r.coins, maxHit: st.maxHit || 0 }); }
+  const e = G.lastEnd || {}, st = r.stats || {};
+  const skillDef = s => D.SKILLS[s.id] || {};
+  const c = {
+    runId: r.id, win, mode: r.mode, modeName: M.name, rounds: M.rounds, round: r.round, garnek: r.garnek, garnekName: D.GARNEK[r.garnek].name, char: r.char, seed,
+    result: res, coins: r.coins, score: r.score, best: e.prevBest || 0, newBest: !!e.newBest, above: e.above || null, floor: e.floor || null,
+    stats: st, rerolls: st.rerolls || 0, buys: st.buys || 0, flawless: st.flawless || 0, maxHit: st.maxHit || 0, rested: !!r.rested, restCost: r.restCost, restPct: r.restPct,
+    hasSkills: r.skills.length > 0, skillName: r.skills.length ? skillDef(r.skills[0]).name || '' : '',
+    stunSkill: (r.skills.map(skillDef).find(d => /^Ogłusza/.test(d.text || '')) || {}).name || '',
+    runs: G.profile.counters.runs, maxGarnek: D.GARNEK.length - 1, garnekScore: D.RULES.garnekScore, fullRounds: D.MODES.full.rounds,
+    scoreRound: D.RULES.scoreRound, scoreCoin: D.RULES.scoreCoin, prices: D.RULES.prices,
+    log: fm().log(r.id), hist: fm().hist().filter(h => h.id !== r.id), mem: fm().floors(), shame: fm().shame(), seen: fm().seen(), now: fm().now(), bet: fm().bet(),
+  };
+  G.factsCtx = c;
+  if (win) { store.set('bulgot:lastlose', 'null'); return winFacts(c); }
   const k = r.killer, kd = k && (D.ENEMIES[k.enemy] || D.BOSSES[k.enemy]);
   const boss = r.boss ? D.BOSSES[r.boss] : null;
   // seria porażek na tym samym piętrze (zapamiętana w przeglądarce, liczona raz na run)
@@ -82,16 +99,20 @@ export function endFacts(j, win) {
     const n = last && last.mode === r.mode && last.round === r.round && last.garnek === r.garnek ? last.count + 1 : 1;
     store.set('bulgot:lastlose', JSON.stringify({ mode: r.mode, round: r.round, garnek: r.garnek, count: n })); G.streakOf = { id: r.id, n };
   }
-  const streak = G.streakOf.n;
   const sets = Object.entries(D.SETS).map(([id, st]) => ({ id, name: st.name, n: setOwned(id) })).filter(x => x.n === 1);
-  return failFacts({
-    mode: r.mode, modeName: M.name, rounds: M.rounds, round: r.round, garnek: r.garnek, garnekName: D.GARNEK[r.garnek].name, seed,
-    result: res, abandoned: !res && r.ended === 'lose', coins: r.coins, hasSkills: r.skills.length > 0, boss: !!boss, bossName: boss ? boss.name : '',
-    killerName: kd ? kd.name : '', nemesis: !!(k && k.nemesis), setHint: sets.length ? sets[0].name : '', streak, runs: G.profile.counters.runs,
-    lastKind, score: r.score, best: e.prevBest || 0, newBest: !!e.newBest, above: e.above || null, floor: e.floor || null,
-    rerolls: st.rerolls || 0, buys: st.buys || 0, rested: !!r.rested, restCost: r.restCost, restPct: r.restPct,
-    scoreRound: D.RULES.scoreRound, scoreCoin: D.RULES.scoreCoin, prices: D.RULES.prices,
+  Object.assign(c, {
+    abandoned: !res && r.ended === 'lose', boss: !!boss, bossName: boss ? boss.name : '', killer: kd || null, killerId: k ? k.enemy : null, killerName: kd ? kd.name : '', nemesis: !!(k && k.nemesis),
+    setHint: sets.length ? sets[0].name : '', streak: G.streakOf.n, nr: (G.fabNr || {})[r.id] || null,
   });
+  return failFacts(c);
+}
+// Wybór jednej ciekawostki i zapis do pamięci (raz na run). Po przeładowaniu strony ten sam run dostaje tę samą ciekawostkę z historii.
+export function chooseFacts(j, win) {
+  const r = G.run, done = fm().hist().find(h => h.id === r.id);
+  if (done) return done.fact ? [done.fact] : [];
+  const f = pickFacts(endFacts(j, win));
+  fm().commit(G.factsCtx, f[0] || null);
+  return f;
 }
 // Porażka: „Pracownik nr N zakończył współpracę na piętrze X” plus puenta wg strefy. Numer rośnie o 1 na run (zapis w przeglądarce),
 // ostatnia śmierć trafia do radiowęzła następnego runu (floorKronHTML). Wygrana kasuje ślad.
@@ -132,8 +153,8 @@ export function showEnd(j, quiet = false) {
   const endTitle = win ? (ending === 'awans' ? T.END_WIN.title : 'WOLNOŚĆ!') : T.END_LOSE.title;
   const feathers = win ? [8, 18, 27, 36, 45, 55, 63, 72, 81, 90].map((x, i) => `<i style="left:${x}%;--r:${(i * 67) % 360}deg;--dl:${(i * 0.17).toFixed(2)}s;--dx:${(i % 2 ? 1 : -1) * (10 + i * 3)}px"></i>`).join('') : '';
   const scene = `<div class="endscene ${win ? 'win' : 'lose'}" aria-hidden="true"><div class="es-steam"><i></i><i></i><i></i></div><div class="es-clip"><div class="es-hero">${art.portrait(r.char, r.form)}</div></div><div class="es-pot">${art.potArt(win)}</div>${win ? `<div class="es-confetti">${feathers}</div>` : ''}</div>`;
-  // Ciekawostka jest losowana raz na run (ponowne otwarcie ekranu, np. po analizie, pokazuje tę samą); zapamiętujemy rodzaj, żeby się nie powtarzała z rzędu.
-  if (!G.factsOf || G.factsOf.id !== r.id) { const f = pickFacts(endFacts(G.lastEndJ, win)); G.factsOf = { id: r.id, facts: f }; if (f[0]) store.set('bulgot:lastfact', f[0].kind); }
+  // Ciekawostka jest wybierana raz na run (ponowne otwarcie ekranu, także po przeładowaniu strony, pokazuje tę samą); rotację pilnuje fakty-pamiec.js.
+  if (!G.factsOf || G.factsOf.id !== r.id) G.factsOf = { id: r.id, facts: chooseFacts(G.lastEndJ, win) };
   const facts = G.factsOf.facts;
   // pełny ekran: po lewej scena, tytuł i ciekawostki; po prawej rachunek, rekordy, odblokowania i przyciski
   openOverlay(`<div class="endwrap ${win ? 'win' : 'lose'}"><div class="end-left">${scene}<h2 class="end-title ${win ? '' : 'lose'}">${endTitle}</h2>
