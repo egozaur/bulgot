@@ -14,6 +14,8 @@ import { power } from './lib-power.mjs';
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i >= 0 ? process.argv[i + 1] : d; };
 const MODE = arg('mode', 'full'), GARNEK = +arg('garnek', 0), N = +arg('n', 300), POLICY = arg('policy', 'smart'), POOL = arg('pool', 'all'), CHAR = arg('char', 'pyrtek');
 const SEED0 = +arg('seed', 1);
+// --without id,rodzina,flatatk: wyłącza kafelki z ofert (pomiar wpływu); flatatk = każdy kafelek z płaskim Atakiem (klucz atkT), np. `--without sila,flatatk`
+for (const w of (arg('without', '') || '').split(',').filter(Boolean)) for (const t of TILES) if (t.id === w || t.fam === w || (w === 'flatatk' && (t.fx || []).some(f => f.k === 'atkT'))) t.hatched = true;
 if (process.argv.includes('--noroutes')) for (const k of Object.keys(ROUTES)) ROUTES[k] = { name: k, text: '' };   // trasy bez modyfikatorów (pomiar)
 if (process.argv.includes('--bossorig')) for (const k of Object.keys(BOSS_POOL)) BOSS_POOL[k] = [k];   // tylko oryginalni bossowie (pomiar wpływu wariantów)
 const EXTRA = arg('extra', 'smart'), EXTRAHP = +arg('extrahp', 60), XS = { offers: 0, fights: 0, wins: 0, byId: {} };   // --extra never|always|smart (smart: walczy od --extrahp % życia)

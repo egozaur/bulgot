@@ -122,7 +122,8 @@ export const fmtPerSec = v => { const x = Math.round(v) / 100; return (Math.roun
 export function statValue(k, S) {
   switch (k) {
     case 'aspd': return [fmtPerSec(S.aspd), '/ s'];
-    case 'crit': case 'evade': return [String(S[k]), '%'];
+    case 'crit': return [String(S.critRaw != null ? S.critRaw : S.crit), '%'];   // surowa wartość: powyżej 100% nadwyżka zamienia się w siłę dziobnięcia
+    case 'evade': return [String(S[k]), '%'];
     case 'regen': return [fmtRegen(S.regen), '/ s'];
     default: return [String(S[k]), ''];
   }
@@ -131,7 +132,7 @@ export function statValue(k, S) {
 export function statBonus(k, S, base) {
   const key = k === 'maxHp' ? 'hp' : k;
   if (!base || base[key] == null) return { txt: '', neg: false, d: 0 };
-  const d = S[k] - base[key];
+  const d = (k === 'crit' && S.critRaw != null ? S.critRaw : S[k]) - base[key];
   if (!d) return { txt: '', neg: false, d: 0 };
   const a = Math.abs(d), body = k === 'aspd' ? fmtPerSec(a) : k === 'regen' ? fmtRegen(a) : String(a);
   return { txt: (d > 0 ? '+' : '−') + body, neg: d < 0, d };
