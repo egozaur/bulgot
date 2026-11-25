@@ -17,10 +17,10 @@ Zasada: znajdź wiersz → przeczytaj **tylko** wskazaną sekcję `DESIGN.md` (`
 | Hordy, kontry bossów (`buildProfile`, `counterPlan`; kontry tylko od palnika `RULES.counterFrom` = 4) | `rules.js`, `data.js` `COUNTERS` | 29, 32 | |
 | Okólniki, Wadliwa Partia, Nemezis, Testament | `data.js` `DECREES`, `FLAWS`; `rules.js` | 11 | `dev/e2e-jeszcze.mjs` |
 | Trasy, Klątwy, Dogrywka, Towarzysz, Arena Duchów | `data.js` `ROUTES`, `CURSES`, `COMPANIONS`; `rules.js` `choose` | 18 | `dev/e2e-nowosci.mjs` |
-| Rozwidlenie Korytarza, Lombard, Odsetki | `rules.js` (`choose`, `pawn`, `redeem`) | 11, 24 | |
+| Lombard, Odsetki (drzwi usunięte w Patchu 1.1) | `rules.js` (`pawn`, `redeem`) | 11, 34 | |
 | Dodatkowe rundy (Gruszka, Pipsztal) | `data.js` `EXTRA_AT`; `rules.js` | 26 | `dev/e2e-extra.mjs` |
 | Balans i audyty | `dev/sim-balance.mjs` | 9, 17, 27, 30 | skill `bulgot-balance` |
-| Wersja reguł (unieważnianie runów) | `rules.js` `RUN_V` (= 22) | 12 | podbij przy zmianie spotkań/walki |
+| Wersja reguł (unieważnianie runów) | `rules.js` `RUN_V` (= 23) | 12 | podbij przy zmianie spotkań/walki |
 
 ## Meta, profil, serwer
 
@@ -41,7 +41,7 @@ Zasada: znajdź wiersz → przeczytaj **tylko** wskazaną sekcję `DESIGN.md` (`
 |---|---|
 | Wspólne narzędzia, stan `G`, skalowanie, nakładki, wywołanie serwera | `ui/core.js` (`$`, `esc`, `store`, `G`, `applyScale`, `toast`, `openOverlay`, `act`, `charView`) |
 | Start, render, ekran startowy, wybór trybu/postaci/palnika | `ui/home.js` (`init`, `render`, `renderHome`, `renderSetup`, `metaChips`; `art.eggArt`, `art.burnerArt`) |
-| Ekran runu: karty kafelków, okólnik, górny pasek, sceny faz, wybór i dokup | `ui/run.js` (`tileCard`, `offerCard`, `renderRun`, `topbarHTML`, `stageHTML`, `stageOffer`/`stageDoor`/`stageShop`/`stageRoute`/`stageVictory`/…, `doPick`, `doBuy`, `swapSlots`) |
+| Ekran runu: karty kafelków, okólnik, górny pasek, sceny faz, wybór i dokup | `ui/run.js` (`tileCard`, `offerCard`, `renderRun`, `topbarHTML`, `stageHTML`, `stageOffer`/`stageShop`/`stageRoute`/`stageVictory`/…, `doPick`, `doBuy`, `swapSlots`) |
 | Wieża / schody | `ui/tower.js` (`stairsHTML`, `fitTower`, `towerHTML`; `art.stairs*`) |
 | Panel boczny bohatera | `ui/side.js` (`sideHTML`, `setIconsHTML`, `skillRingsHTML`, `statListHTML`, `zoneCompareHTML`, `linkChipsHTML`, `animOn`, `applyAnim`) |
 | Walka na żywo | `ui/fight.js` (`startFight`, `frame`, `stepOnce`, `useSkill`, `onEvent`, `finishFight`, `skillFx` → `fx.js`; tła `scenes.js`; CSS `fight.css`) |
