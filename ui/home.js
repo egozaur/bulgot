@@ -4,6 +4,7 @@ import { LOCAL, getPlayer, playerNow, avatarUrl } from '../api.js';
 import * as D from '../shared/data.js';
 import * as art from '../art.js';
 import * as T from '../text.js';
+import * as F from '../fabula.js';
 import { maybeCasinoAsk } from './casino.js';
 import { $, G, SPIN, TILE, act, charView, esc, fmtNum } from './core.js';
 import { startFight } from './fight.js';
@@ -93,6 +94,8 @@ export const burnMult = (g, s) => ((1 + g * .25) * (1 + D.cursePct(s.curses) / 1
 export const BURN_HEAT = ['#7bd37b', '#e8d34a', '#ffb347', '#ff8c2b', '#e4572e', '#d6262d'];
 export const shortName = v => v.hidden ? '???' : v.name.replace(/^(Kurczak|Kura|Kogut|Indyczka) /, '').replace(/ .*/, '');
 export function setupOk() { const s = G.setup, p = G.profile; return p.chars.includes(charIds()[s.cur]) && s.garnek <= p.garnek; }
+// Teczka pracownicza postaci (fabuła): stanowisko, staż, powód.
+const teczkaHTML = t => `<div class="teczka"><span class="stamp">KADRY</span><h4>Teczka pracownicza</h4><dl><dt>Stanowisko</dt><dd>${esc(t.stan)}</dd><dt>Staż</dt><dd>${esc(t.staz)}</dd><dt>Powód</dt><dd>${esc(t.powod)}</dd></dl></div>`;
 export function renderSetup() {
   const p = G.profile, s = G.setup, ids = charIds();
   if (s.cur === undefined || s.cur < 0 || s.cur >= ids.length) s.cur = Math.max(0, ids.indexOf(s.char));
@@ -119,7 +122,7 @@ export function renderSetup() {
           <div class="pic ${open ? '' : 'lk'}">${art.eggArt(id, open)}</div>
           <h2 style="--hn:${v.name.length > 14 ? Math.round(52 * 14.5 / v.name.length) : 52}px">${esc(v.name)}</h2><div class="sub">${esc(v.style)}</div>
           ${(cc => cc && cc.hasCode && !open ? '<button class="btn small ghost codebtn" data-act="codeopen">🔑 Masz hasło?</button>' : '')(c)}</div>
-        <div class="panel"><h4>Statystyki bazowe</h4>${open ? stat('Życie', 100 + fx('hpPct')) + stat('Atak', 100 + fx('atkPct')) + stat('Szybkość ataku', 100 + fx('aspdPct')) : '<div class="pk lockrow"><span>???</span></div>'}</div></section>
+        <div class="panel"><h4>Statystyki bazowe</h4>${open ? stat('Życie', 100 + fx('hpPct')) + stat('Atak', 100 + fx('atkPct')) + stat('Szybkość ataku', 100 + fx('aspdPct')) : '<div class="pk lockrow"><span>???</span></div>'}</div>${open && F.TECZKI[id] ? teczkaHTML(F.TECZKI[id]) : ''}</section>
       <section class="s3-right"><div class="cap">2 · Moc palnika <small>↑ ↓</small></div><div class="blist">${burners}</div>
         <div class="panel pks"><h4>Zdolności</h4>${perks}</div></section>
     </div>

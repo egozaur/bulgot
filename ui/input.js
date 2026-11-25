@@ -6,14 +6,14 @@ import * as snd from '../audio.js';
 import { casinoAnswer, casinoOn, casinoSpin, showCasinoAsk } from './casino.js';
 import { DUEL_ACT } from './duel.js';
 import { $, G, TILE, act, closeOverlay, openOverlay, overlayOpen, store, toast } from './core.js';
-import { backFromAnalyze, sendAnalysis, showAnalyzeDialog, showEnd } from './end.js';
+import { backFromAnalyze, chooseEnding, sendAnalysis, showAnalyzeDialog, showEnd } from './end.js';
 import { banner, startFight, stopFight, useSkill } from './fight.js';
 import { carGo, charIds, garGo, init, render, setupOk } from './home.js';
 import { dismissInvoice, invoiceOn, showSlip } from './invoice.js';
 import { lvlPick, shopAct, showDaily, showShop, startDaily } from './meta.js';
 import { compForm, doBuy, doPick, needChoice, showPawn, showUpgrade } from './run.js';
 import { animOn, applyAnim } from './side.js';
-import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showDecreeRoll, showIntro, showKurnik, showMenu, showProfile, showRanking, showSettings } from './windows.js';
+import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showDecreeRoll, startIntro, showKurnik, showMenu, showProfile, showRanking, showSettings } from './windows.js';
 
 // ---------- obsługa kliknięć i klawiszy ----------
 export const ACT = {
@@ -35,7 +35,7 @@ export const ACT = {
     const s = G.setup; if (!setupOk()) return toast(G.profile.chars.includes(charIds()[s.cur]) ? 'Ten palnik jest zablokowany.' : 'Ta postać jest zablokowana.'); s.char = charIds()[s.cur];
     const j = await act('start', { mode: s.mode, char: s.char, garnek: s.garnek, curses: s.curses || [] }); if (!j) return;
     snd.sfx('bulgot'); G.screen = 'run'; render();
-    if (!store.get('bulgot:intro')) showIntro(showDecreeRoll); else showDecreeRoll();
+    startIntro(showDecreeRoll);
   },
   introgo: () => { const cb = G.introCb; G.introCb = null; closeOverlay(); if (cb) cb(); },
   pick: b => doPick(+b.dataset.i),
@@ -108,6 +108,8 @@ export const ACT = {
   acancel: () => backFromAnalyze(),
   asend: async () => sendAnalysis(true),
   asend0: async () => sendAnalysis(false),
+  offerfree: () => chooseEnding('ucieczka'),
+  offerprom: () => chooseEnding('awans'),
   histdl: () => { const blob = new Blob([JSON.stringify(G.hist || [], null, 1)], { type: 'application/json' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'bulgot-historia.json'; document.body.appendChild(a); a.click(); a.remove(); toast('Pobrano bulgot-historia.json'); },
   histcopy: async () => { try { await navigator.clipboard.writeText(JSON.stringify(G.hist || [], null, 1)); toast('Skopiowano historię do schowka'); } catch (e) { toast('Nie udało się skopiować. Użyj przycisku Pobierz.', true); } },
   help: () => showHelp(), settings: () => showSettings(), menu: () => showMenu(),

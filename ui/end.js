@@ -3,6 +3,7 @@
 import * as D from '../shared/data.js';
 import * as art from '../art.js';
 import * as T from '../text.js';
+import * as F from '../fabula.js';
 import * as snd from '../audio.js';
 import { failFacts, pickFacts, winFacts } from '../fakty.js';
 import { $, G, TILE, act, closeOverlay, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js';
@@ -92,22 +93,51 @@ export function endFacts(j, win) {
     scoreRound: D.RULES.scoreRound, scoreCoin: D.RULES.scoreCoin, prices: D.RULES.prices,
   });
 }
+// Porażka: „Pracownik nr N zakończył współpracę na piętrze X” plus puenta wg strefy. Numer rośnie o 1 na run (zapis w przeglądarce),
+// ostatnia śmierć trafia do radiowęzła następnego runu (floorKronHTML). Wygrana kasuje ślad.
+function lossLines(r) {
+  const nr = (G.fabNr || (G.fabNr = {}));
+  if (!nr[r.id]) {
+    let last = 4811; try { last = parseInt(store.get('bulgot:prac'), 10) || 4811; } catch (e) {}
+    nr[r.id] = last + 1; store.set('bulgot:prac', String(nr[r.id]));
+    const ch = D.CHARS[r.char]; store.set('bulgot:lastdeath', JSON.stringify({ n: nr[r.id], p: r.round, who: ch ? ch.name : 'bohater' }));
+  }
+  const seed = parseInt(String(r.id).slice(-6), 10) || r.done || 0;
+  return F.porazkaTekst({ n: nr[r.id], floor: r.round, zone: r.zone, boss: !!r.boss, seed, extra: T.LOSE_LINES });
+}
+// Po pokonaniu Prezesa: oferta awansu. Wybór zmienia tylko epilog (czysty obraz, wynik i ranking liczy serwer).
+export function showOffer(j) {
+  G.offerJ = j;
+  openOverlay(`<div class="offer"><div class="of-pres">${art.prezesArt()}</div><div class="of-say"><small>Prezes Rosołowski</small>
+    <p>„${esc(F.OFERTA.po)}”</p><p>„${esc(F.OFERTA.oferta)}”</p></div>
+    <div class="actions"><button class="btn primary big" data-act="offerfree" data-primary>Uciekam</button><button class="btn big" data-act="offerprom">Przyjmuję awans</button></div></div>`, { narrow: true, force: true });
+}
+export function chooseEnding(v) {
+  const r = G.run, j = G.offerJ; if (!r || !j) return;
+  (G.fabChoice || (G.fabChoice = {}))[r.id] = v; G.offerJ = null; closeOverlay(); showEnd(j);
+}
 export function showEnd(j, quiet = false) {
   if (G.duelRun) return showDuelEnd();   // pojedynek ma własny ekran końca (bez rekordów, Stażu i analizy)
+  if (!quiet && G.run && G.run.ended === 'win' && !(G.fabChoice && G.fabChoice[G.run.id])) return showOffer(j);
   const r = G.run, e = j.end || (G.lastEndJ && G.lastEndJ.end) || {}, win = r.ended === 'win', un = takeUnlocks();
   const mult = (100 + D.RULES.garnekScore * r.garnek) / 100;
   G.lastEnd = e; G.lastEndJ = j.result || !G.lastEndJ ? j : { ...j, result: G.lastEndJ.result };
   dismissInvoice(true);
   if (!quiet) { snd.sfx(win ? 'win' : 'lose'); if (!win) snd.sfx('bulgot'); }
-  const lines = win ? T.END_WIN.lines : [T.pickLine(T.LOSE_LINES, r.done)];
+  if (win) store.set('bulgot:lastdeath', '');
+  const ending = win ? ((G.fabChoice && G.fabChoice[r.id]) || 'ucieczka') : null, tk = F.TECZKI[r.char];
+  const lines = !win ? lossLines(r)
+    : ending === 'awans' ? [`Prezes Rosołowski: „${F.OFERTA.awans}”`, F.AWANS_WSPOLNY + (tk ? ' ' + tk.awans : ''), T.END_WIN.lines[1]]
+    : [`Prezes Rosołowski: „${F.OFERTA.ucieczka}”`, T.END_WIN.lines[0], tk ? tk.ucieczka : ''].filter(Boolean);
+  const endTitle = win ? (ending === 'awans' ? T.END_WIN.title : 'WOLNOŚĆ!') : T.END_LOSE.title;
   const feathers = win ? [8, 18, 27, 36, 45, 55, 63, 72, 81, 90].map((x, i) => `<i style="left:${x}%;--r:${(i * 67) % 360}deg;--dl:${(i * 0.17).toFixed(2)}s;--dx:${(i % 2 ? 1 : -1) * (10 + i * 3)}px"></i>`).join('') : '';
   const scene = `<div class="endscene ${win ? 'win' : 'lose'}" aria-hidden="true"><div class="es-steam"><i></i><i></i><i></i></div><div class="es-clip"><div class="es-hero">${art.portrait(r.char, r.form)}</div></div><div class="es-pot">${art.potArt(win)}</div>${win ? `<div class="es-confetti">${feathers}</div>` : ''}</div>`;
   // Ciekawostka jest losowana raz na run (ponowne otwarcie ekranu, np. po analizie, pokazuje tę samą); zapamiętujemy rodzaj, żeby się nie powtarzała z rzędu.
   if (!G.factsOf || G.factsOf.id !== r.id) { const f = pickFacts(endFacts(G.lastEndJ, win)); G.factsOf = { id: r.id, facts: f }; if (f[0]) store.set('bulgot:lastfact', f[0].kind); }
   const facts = G.factsOf.facts;
   // pełny ekran: po lewej scena, tytuł i ciekawostki; po prawej rachunek, rekordy, odblokowania i przyciski
-  openOverlay(`<div class="endwrap ${win ? 'win' : 'lose'}"><div class="end-left">${scene}<h2 class="end-title ${win ? '' : 'lose'}">${win ? T.END_WIN.title : T.END_LOSE.title}</h2>
-    ${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}
+  openOverlay(`<div class="endwrap ${win ? 'win' : 'lose'}"><div class="end-left">${scene}<h2 class="end-title ${win ? '' : 'lose'}">${endTitle}</h2>
+    ${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}${win ? `<p class="mailfoot">${esc(F.STOPKA[ending])}</p>` : ''}
     ${facts.length ? `<div class="facts">${facts.map((f, i) => `<div class="fact ${i ? 'second' : ''}" style="--i:${i}"><span class="fk">${i ? 'I jeszcze' : 'Ciekawostka'}</span>${esc(f.text)}</div>`).join('')}</div>` : ''}</div>
     <div class="end-right"><div class="end-scroll"><table class="scoretable"><tr><td>Ukończone piętra (${r.done} × ${D.RULES.scoreRound})</td><td>${fmtNum(r.done * D.RULES.scoreRound)}</td></tr>
       <tr><td>Ziarna w kieszeni (${r.coins} × ${D.RULES.scoreCoin})</td><td>${fmtNum(r.coins * D.RULES.scoreCoin)}</td></tr>

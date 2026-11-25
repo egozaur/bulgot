@@ -107,6 +107,12 @@ svg { display: block; }
 .stage { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
 .kron { font-style: italic; color: #e9d9b6; text-align: center; font-size: 1.02rem; padding: 4px 10px; min-height: 1.5em; }
 .kron::before { content: '“'; } .kron::after { content: '”'; }
+/* Radiowęzeł Korporacji (fabula.js): komunikat zamiast cytatu Kronikarza, bez kursywy i cudzysłowów. */
+.kron.radio { font-style: normal; color: #ffd23f; }
+.kron.radio::before { content: 'RADIO '; font: 700 .72em/1 var(--mono); letter-spacing: .15em; color: #ff9f80; }
+.kron.radio::after { content: ''; }
+.kron.radio.prezes { color: #ffb347; }
+.kron.radio.prezes::before { content: 'PREZES '; }
 .stage-title { text-align: center; }
 .stage-title h2 { font-size: 1.9rem; color: var(--amber); }
 .stage-title .sub { color: var(--muted); font-size: .95rem; }
@@ -627,6 +633,10 @@ html.reduce .beacons i::before { display: none; }
 .cine h3 { font-size: 2.6rem; color: #ffd0bf; text-shadow: 0 3px 0 #2b1a12, 0 0 20px rgba(228,87,46,.6); margin: 6px 0 2px; }
 .cine em { display: block; font: italic 700 1.05rem/1.2 var(--body); color: var(--amber); }
 .cine p { margin: 10px 0 0; font-style: italic; color: #e9d9b6; font-size: .95rem; }
+.cine .ik { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(255,159,128,.4); text-align: left; }
+.cine .ik svg { flex: none; width: 52px; height: 57px; }
+.cine .ik span { font-size: .92rem; color: #f3ead6; } .cine .ik b { display: block; font: 700 10px/1.2 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: #ffd23f; margin-bottom: 3px; }
+#fightlayer .cine .ik svg { width: calc(var(--u) * 5.2); height: calc(var(--u) * 5.7); } #fightlayer .cine .ik span { font-size: calc(var(--u) * 1.9); } #fightlayer .cine .ik b { font-size: calc(var(--u) * 1.2); }
 .cine.out { animation: fadeout .45s ease-in forwards; }
 @keyframes plate { from { transform: scaleX(.2); opacity: 0; } }
 @keyframes fadeout { to { opacity: 0; } }
@@ -944,6 +954,30 @@ html.reduce .inv { animation: fadein .3s both; } html.reduce .inv-row b, html.re
 .endfull .endscene { zoom: 2.3; margin: 10px auto 30px; }
 .endfull .end-title { font-size: clamp(3.6rem, 8vw, 7rem) !important; }
 .endfull .scoretable td { font-size: 1.05rem; padding: .4em .2em; } .endfull .scoretable tr.total td { font-size: 2rem; }
+/* Intro: scena z kamerą jadącą po fabryce (windows.js showIntro) */
+.modal.introscene { width: min(980px, 100%); }
+.in-stage { position: relative; height: clamp(220px, 46vh, 420px); overflow: hidden; border-radius: 10px; border: 3px solid var(--outline); background: #2a1a10; }
+.in-world { position: absolute; left: 0; top: 0; height: 100%; display: flex; will-change: transform; }
+.in-world > svg { height: 100%; width: auto; flex: none; }
+.in-hero { position: absolute; left: 7%; bottom: 21%; height: 26%; aspect-ratio: 1; z-index: 1; animation: inbob .5s ease-in-out infinite alternate; }
+.in-hero svg { width: 100%; height: 100%; }
+@keyframes inbob { to { transform: translateY(-4%); } }
+html.reduce .in-hero { animation: none; }
+.in-logo { position: absolute; left: 0; right: 0; top: 10px; z-index: 2; text-align: center; font: 800 .8rem/1 var(--mono); letter-spacing: .24em; color: var(--amber); text-shadow: 0 2px 0 #000; }
+.in-cap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 26px 18px 14px; min-height: 84px; font-size: 1.08rem; text-align: center; color: var(--ink); background: linear-gradient(transparent, rgba(10,6,3,.92) 45%); text-shadow: 0 2px 0 #000; transition: opacity .18s; }
+.in-list { margin-top: 10px; }
+html.reduce .in-world { transition: none !important; }
+.teczka { position: relative; margin-top: 8px; padding: 8px 10px; background: #e9d9b3; color: #2b1a12; border: 2px solid var(--outline); border-radius: 8px; font-size: .78rem; line-height: 1.3; }
+.teczka h4 { margin: 0 0 4px; font: 700 .72rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: #7b4a2c; }
+.teczka dl { display: grid; grid-template-columns: auto 1fr; gap: 1px 8px; margin: 0; } .teczka dt { font-weight: 700; color: #7b4a2c; } .teczka dd { margin: 0; }
+.teczka .stamp { position: absolute; right: 8px; top: 6px; border: 2px solid #b3321b; color: #b3321b; font: 800 .65rem/1 var(--mono); padding: 2px 5px; transform: rotate(7deg); opacity: .85; }
+.mailfoot { font: 12px/1.4 var(--mono); color: var(--faint); border-top: 1px solid var(--line); margin: 14px auto 0; padding-top: 8px; max-width: 580px; }
+.offer { display: grid; justify-items: center; gap: 12px; text-align: center; }
+.offer .of-pres svg { width: 96px; height: 105px; }
+.offer .of-say { background: #f6e9cf; color: #2b1a12; border: 3px solid var(--outline); border-radius: 14px; padding: 12px 16px; text-align: left; }
+.offer .of-say small { display: block; font: 700 11px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: #7b4a2c; margin-bottom: 6px; }
+.offer .of-say p { margin: 6px 0 0; font-size: 1rem; }
+.offer .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .facts { display: grid; gap: 10px; margin: 18px auto 0; max-width: 580px; text-align: left; }
 .fact { padding: 12px 16px; border-radius: 14px; background: rgba(0,0,0,.38); border: 2px solid var(--amber2, #ffb347); font-size: 1.05rem; line-height: 1.4; animation: popin .5s 1s both; }
 .fact.second { border-color: var(--line); font-size: .95rem; animation-delay: 1.5s; color: var(--muted); }

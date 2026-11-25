@@ -769,3 +769,14 @@ Decyzje właściciela (plan i makieta: `propozycje-statystyki/`):
 Pomiar bota (pełny, 400 partii na komórkę, ±2 pp; `.claude/context/balans-stan.md`): palnik 4 średnio z 19,2% do 22,0%, palnik 5 z 5,7% do 6,1%, palnik 3 z ok. 24,7% do 32,6% (brak kontr, zgodnie z decyzją). Styl na dziobnięciach (`--arch crit`, palnik 4) 16,8% wobec 22,8% dla bota bazowego, więc nie jest przesadzony.
 
 Pułapka: `dev/lib-power.mjs` (ocena kafelków przez bota) używał `S.dmg`; po usunięciu statystyki dawał NaN i wygrane bota spadały do ~0%. Nowe narzędzia tego typu nie mogą czytać nieistniejących pól.
+
+## 33. Fabuła: intro, radiowęzeł, Prezes Rosołowski, epilogi, porażka (2026-11-25, bez zmiany silnika i `RUN_V`)
+Cała warstwa to klient (czysty obraz): teksty i dane w `fabula.js`, ekrany w `ui/windows.js` (intro), `ui/end.js` (oferta, epilogi, porażka), `ui/run.js` (`floorKronHTML`), `ui/fight.js` (interkom na planszy bossa), `ui/home.js` (teczka). Zatwierdzone teksty i szkice: `propozycje-fabula/` (`teksty.md`, `index.html`).
+- **Kanon:** narrator Kronikarz, Korporacja Rosołowa S.A., bohater domyślny Pyrtek, antagonista **Prezes Rosołowski** (dawniej „Prezes Rosołu”; zmiana tylko w `text.js`, dane serwera `BOSSES` bez zmian).
+- **Intro:** pierwszy run scena `introSceneArt` (kamera jedzie od bramy do biura Zarządu, 5 zdań Kronikarza, bohater idzie z kamerą; przycisk `introgo`: „Pomiń ▸” → „Zaczynamy”). Kolejne runy: jedno zdanie w toaście (`startIntro`). Bez animacji lista zdań.
+- **Radiowęzeł:** co drugie zwykłe piętro zamiast linii Kronikarza (`radioLine`, 15 komunikatów na strefę, w strefie 3 co trzeci to wtrącenie Prezesa). Klasa `.kron.radio`. Komunikat do ok. 90 znaków (dłuższe zawijają się i psują `e2e-uklad`).
+- **Interkom Prezesa:** na planszy bossa (`bossIntro`) portret `prezesArt` i jedno zdanie (`PREZES_INTERKOM`), plansza trwa o 1,1 s dłużej.
+- **Zakończenie:** po wygranej oferta awansu PO walce (`showOffer`): „Uciekam” → epilog postaci (`TECZKI[id].ucieczka`), „Przyjmuję awans” → wspólny tekst plus dopisek postaci. Wybór tylko zmienia tekst epilogu i tytuł (WOLNOŚĆ! / AWANS!), serwer go nie zna. Stopka maila jako napisy końcowe.
+- **Teczka pracownicza:** `teczkaHTML` na ekranie wyboru postaci (tylko odblokowane), 12 aktywnych postaci w `TECZKI`.
+- **Porażka:** „Pracownik nr N zakończył współpracę na piętrze X” (licznik `bulgot:prac` od 4812) plus puenta wg strefy/bossa (`porazkaTekst`, pula z ostrymi i starymi `LOSE_LINES`). Ostatnia śmierć (`bulgot:lastdeath`) wraca jako „ślad poprzednika” w radiowęźle piętra 2 następnego runu; wygrana kasuje ślad.
+- **Testy:** `start`, `koniec`, `uklad`, `smoke`, `pojedynek`, `ksiega`, `jeszcze`, `podpowiedzi`, `kasyno` zielone. Stare, niezwiązane błędy: `e2e-walka` (2), `e2e-nowosci`, `e2e-faktura` (filtr po postaci), `e2e-staz`; `e2e-uklad` bywa niestabilny (ok. 40% uruchomień, także bez zmian).

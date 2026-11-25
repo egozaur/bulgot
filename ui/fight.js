@@ -11,7 +11,8 @@ import { $, G, TILE, act, closeOverlay, esc, openOverlay, sleep, toast } from '.
 import { showEnd } from './end.js';
 import { render } from './home.js';
 import { INV, invoiceOn, showInvoice } from './invoice.js';
-import { bossIntroOf, compForm, enemyFig, floorKron } from './run.js';
+import { bossIntroOf, compForm, enemyFig, floorKronHTML } from './run.js';
+import { PREZES_INTERKOM } from '../fabula.js';
 import { REDUCED } from './side.js';
 
 // ---------- walka na żywo ----------
@@ -45,7 +46,7 @@ export function startFight(setup) {
       <div class="timer" id="timer"><span id="tt">0:00</span><div class="tb"><i id="tbi" style="width:0"></i><u></u></div></div>
       <div class="ctl"><button data-act="pause" id="pausebtn" title="Pauza (P)">Pauza</button><button data-act="menu" title="Menu (Esc)">Menu</button></div></div>
     <div class="fcon"><div class="gdak" id="gdak" data-tip="Okno Gdakania&#10;Użyj kolejnej umiejętności w ciągu 1,5 s po poprzedniej. 2. w serii zadaje +20% obrażeń, 3. +50%. Trzy różne umiejętności pod rząd to Pełna Kurza Seria: dodatkowo ogłuszenie wrogów na 1 s."><span class="gl">SERIA</span><span class="gseg" id="gseg"><i></i><i></i><i></i></span><b id="gdakn">–</b><span class="gbar"><i id="gdaki"></i></span></div><div class="skillbar" id="skillbar"></div></div>
-    <div class="kron" id="kline">${esc(boss ? bossIntroOf(boss.boss).quote : floorKron())}</div></div>`;
+    ${boss ? `<div class="kron" id="kline">${esc(bossIntroOf(boss.boss).quote)}</div>` : floorKronHTML('kline')}</div>`;
   document.body.appendChild(layer);
   F.arena = $('#arena'); F.L = $('#fxs');
   // lekka paralaksa: tło, mgiełka i pierwszy plan przesuwają się za kursorem w różnym tempie (bez wpływu na walkę)
@@ -109,10 +110,11 @@ export const cls = (u, c, ms) => { u.spr.classList.remove(c); void u.spr.offsetW
 // Wejście bossa jak w kinie: czarne pasy, plansza z imieniem i tytułem, tekst Kronikarza. Walka stoi (tylko obraz, zegar nie liczy).
 export function bossIntro(boss) {
   const F = G.fight, I = bossIntroOf(boss.boss), [nm, ...rest] = I.title.split(', ');
+  const ik = !F.setup.extra && PREZES_INTERKOM[boss.boss], hold = ik ? 1100 : 0; // interkom Prezesa wydłuża plansze, żeby dało się go przeczytać
   const el = document.createElement('div'); el.className = 'cine'; el.setAttribute('role', 'status');
-  el.innerHTML = `<i class="bar t"></i><i class="bar b"></i><div class="plate"><small>${F.setup.extra ? 'DODATKOWY BOSS' : 'BOSS'} · PIĘTRO ${F.setup.round}</small><h3>${esc(nm)}</h3>${rest.length ? `<em>${esc(rest.join(', '))}</em>` : ''}<p>„${esc(I.quote)}”</p></div>`;
-  F.arena.appendChild(el); F.stopUntil = performance.now() + 2300;
-  setTimeout(() => el.classList.add('out'), 2000); setTimeout(() => el.remove(), 2500);
+  el.innerHTML = `<i class="bar t"></i><i class="bar b"></i><div class="plate"><small>${F.setup.extra ? 'DODATKOWY BOSS' : 'BOSS'} · PIĘTRO ${F.setup.round}</small><h3>${esc(nm)}</h3>${rest.length ? `<em>${esc(rest.join(', '))}</em>` : ''}<p>„${esc(I.quote)}”</p>${ik ? `<div class="ik" aria-hidden="true">${art.prezesArt()}<span><b>Interkom Prezesa Rosołowskiego</b>${esc(ik)}</span></div>` : ''}</div>`;
+  F.arena.appendChild(el); F.stopUntil = performance.now() + 2300 + hold;
+  setTimeout(() => el.classList.add('out'), 2000 + hold); setTimeout(() => el.remove(), 2500 + hold);
 }
 // Gruszka na starcie walki wyśmiewa build gracza (dymek nad bossem, po wstępie).
 export function gruszkaSay(boss) {

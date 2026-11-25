@@ -4,9 +4,10 @@ import { ranks as apiRanks, LOCAL, playerNow, avatarUrl } from '../api.js';
 import * as D from '../shared/data.js';
 import * as art from '../art.js';
 import * as T from '../text.js';
+import * as F from '../fabula.js';
 import * as snd from '../audio.js';
 import { casinoOn } from './casino.js';
-import { $, G, TILE, act, charView, esc, fmtNum, openOverlay, store, unlockName } from './core.js';
+import { $, G, TILE, act, charView, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js';
 import { cls } from './fight.js';
 import { BURNERS, lockText } from './home.js';
 import { invoiceOn } from './invoice.js';
@@ -172,10 +173,27 @@ export function showMenu() {
   const r = G.run && G.run.phase !== 'over';
   openOverlay(`<h2>Menu</h2><div class="actions" style="flex-direction:column;align-items:stretch"><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk i walka</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="history">Historia gier (test)</button><button class="btn primary" data-act="home">Wróć do menu głównego${r ? ' (run zapisany)' : ''}</button>${r ? '<button class="btn danger" data-act="abandon">Porzuć run</button>' : ''}</div>`, { narrow: true });
 }
+// Intro: pierwszy raz scena z kamerą (Kronikarz mówi, kamera jedzie od bramy do biura Zarządu); potem tylko jedno zdanie.
+// Jeden przycisk `introgo` jest od razu: „Pomiń ▸”, a po scenie „Zaczynamy”. Bez animacji (`bulgot:anim` = '0') widać całą listę zdań.
+export function startIntro(then) {
+  if (!store.get('bulgot:intro')) return showIntro(then);
+  toast(F.INTRO_KROTKIE[Math.floor(Math.random() * F.INTRO_KROTKIE.length)]);
+  then();
+}
 export function showIntro(then) {
   store.set('bulgot:intro', '1');
-  openOverlay(`<h2>Bulgot</h2>${T.INTRO.map(l => `<p class="lead" style="font-size:1.05rem">${esc(l)}</p>`).join('')}<div class="actions" style="margin-top:14px"><button class="btn primary big" data-act="introgo" data-primary>Zaczynamy</button></div>`, { narrow: true, force: true });
+  const r = G.run, lines = F.INTRO_PLANSZE, anim = animOn();
+  openOverlay(`<div class="in-stage" id="instage"><div class="in-logo">KORPORACJA ROSOŁOWA S.A.</div><div class="in-world" id="inworld">${art.introSceneArt()}</div><div class="in-hero">${r ? art.portrait(r.char, r.form) : ''}</div>
+    <div class="in-cap" id="incap">${anim ? esc(lines[0]) : ''}</div></div>
+    ${anim ? '' : `<div class="in-list">${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}</div>`}
+    <div class="actions" style="margin-top:12px"><button class="btn primary big" data-act="introgo" data-primary id="ingo">${anim ? 'Pomiń ▸' : 'Zaczynamy'}</button></div>`, { force: true, cls: 'introscene' });
   G.introCb = then;
+  if (!anim) { const w = $('#inworld'), s = $('#instage'); if (w && s) w.style.transform = `translateX(${-Math.max(0, w.scrollWidth - s.clientWidth)}px)`; return; }
+  const w = $('#inworld'), s = $('#instage'), cap = $('#incap'); if (!w || !s) return;
+  const dx = Math.max(0, w.scrollWidth - s.clientWidth), STEP = 3300;
+  requestAnimationFrame(() => { w.style.transition = `transform ${STEP * lines.length / 1000}s linear .9s`; w.style.transform = `translateX(${-dx}px)`; });
+  lines.forEach((l, i) => i && setTimeout(() => { const c = $('#incap'); if (!c || c !== cap) return; c.style.opacity = 0; setTimeout(() => { c.textContent = l; c.style.opacity = 1; }, 180); }, i * STEP));
+  setTimeout(() => { const b = $('#ingo'); if (b && $('#incap') === cap) b.textContent = 'Zaczynamy'; }, STEP * lines.length);
 }
 // Losowanie okólnika na starcie runu: maszyna losująca przewija nazwy (coraz wolniej), zatrzymuje się na okólniku z serwera
 // i zostaje na ekranie, dopóki gracz nie kliknie „Rozumiem” (ma czas przeczytać). Bez animacji (`bulgot:anim` = '0') od razu wynik.

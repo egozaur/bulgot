@@ -3,9 +3,10 @@
 import * as D from '../shared/data.js';
 import * as art from '../art.js';
 import * as T from '../text.js';
+import { radioLine, sladLine } from '../fabula.js';
 import * as snd from '../audio.js';
 import { setCounts } from '../shared/stats.js';
-import { $, G, TILE, act, esc, fmtNum, openOverlay, recipeFor, toast } from './core.js';
+import { $, G, TILE, act, esc, fmtNum, openOverlay, recipeFor, store, toast } from './core.js';
 import { cls } from './fight.js';
 import { BURNERS, render } from './home.js';
 import { boardHTML } from './invoice.js';
@@ -137,6 +138,17 @@ export function floorKron() {
   if (r.boss) return bossIntroOf(r.boss).quote;
   return T.pickLine(T.OFFER_LINES[r.zone], r.round - 1);
 }
+// Linia pod tytułem piętra: Kronikarz albo (co drugie zwykłe piętro) radiowęzeł Korporacji i wtrącenia Prezesa (fabula.js).
+export function floorKronHTML(id = '') {
+  const r = G.run, plain = !r.boss && !r.extraNow && !r.nemesisRound;
+  let rad = plain ? radioLine(r.zone, r.round) : null;
+  if (plain && r.round === 2) {   // ślad poprzednika: po śmierci w poprzednim runie pierwszy radiowęzeł o nim wspomina
+    let d = null; try { d = JSON.parse(store.get('bulgot:lastdeath') || 'null'); } catch (e) {}
+    if (d && d.n) rad = { text: sladLine(d), prezes: false };
+  }
+  const text = rad ? rad.text : floorKron();
+  return `<div class="kron${rad ? ' radio' + (rad.prezes ? ' prezes' : '') : ''}"${id ? ` id="${id}"` : ''}>${esc(text)}</div>`;
+}
 // Odpoczynek: za Ziarna leczy część życia, raz na rundę, przed walką.
 export function restBtn() {
   const r = G.run, off = r.rested || r.hp >= r.maxHp || r.coins < r.restCost || !!r.extraNow;
@@ -199,7 +211,7 @@ export function stageOffer() {
   const cost = r.rerollCost, free = cost === 0, blocked = cost === null || cost === undefined;
   const lost = r.lostPawn && r.foxDebt ? `<div class="hint warn">Lis zatrzymał ${esc(TILE[r.lostPawn] ? TILE[r.lostPawn].name : '')}. Lisy Windykatory są silniejsze o ${r.foxDebt * D.RULES.pawnFox}%.</div>` : '';
   return `<div class="stage-title"><h2>Piętro ${r.round}${r.boss ? ' · BOSS' : ''}</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${r.elite ? ' · elitarny wróg' : ''}${decreeSub()}</div></div>
-    <div class="kron">${esc(r.nemesisRound ? T.pickLine(T.NEMESIS_LINES, r.round) : floorKron())}</div>${decreeHTML()}${previewHTML()}
+    ${r.nemesisRound ? `<div class="kron">${esc(T.pickLine(T.NEMESIS_LINES, r.round))}</div>` : floorKronHTML()}${decreeHTML()}${previewHTML()}
     <div class="cards">${cards}</div>
     <div class="actions">${rerollBtn(cost, free, blocked, r.coins)}${restBtn()}${pawnBtn()}${upgradeBtn()}</div>${lost}`;
 }
@@ -327,7 +339,7 @@ export const lastBoss = () => { const b = G.run && G.run.stats.bossKills; return
 export function stagePrep() {
   const r = G.run;
   return `<div class="stage-title"><h2>Piętro ${r.round}: do walki!</h2><div class="sub">${esc(T.ZONE_NAMES[r.zone])}${decreeSub()}</div></div>
-    <div class="kron">${esc(r.nemesisRound ? T.pickLine(T.NEMESIS_LINES, r.round + 1) : floorKron())}</div>${decreeHTML()}${previewHTML()}
+    ${r.nemesisRound ? `<div class="kron">${esc(T.pickLine(T.NEMESIS_LINES, r.round + 1))}</div>` : floorKronHTML()}${decreeHTML()}${previewHTML()}
     <div class="actions">${restBtn()}<button class="btn primary big" data-act="tofight" data-primary>Do walki!</button></div>
     <div class="hint">W walce użyjesz umiejętności klawiszami 1, 2, 3. P robi pauzę. O to odpoczynek.<br><b>Okno Gdakania:</b> kolejna umiejętność w ciągu 1,5 s bije mocniej (2. +20%, 3. +50%), a trzy różne pod rząd ogłuszają wrogów na 1 s.</div>`;
 }

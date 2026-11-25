@@ -7,7 +7,7 @@ import * as snd from '../audio.js';
 import { $, G, act, closeOverlay, esc, fmtNum, openOverlay, overlayOpen, store, toast } from './core.js';
 import { cls } from './fight.js';
 import { render } from './home.js';
-import { showDecreeRoll, showIntro } from './windows.js';
+import { showDecreeRoll, startIntro } from './windows.js';
 
 // ---------- Staż, Sklepik Zakładowy, Dyżur dnia ----------
 // Staż to poziom konta w tle: Nadgodziny z runów → poziomy → Talony (2 za poziom) + wybór 1 z 2 nagród. Talony idą do Sklepiku (kosmetyka, nic nie zmienia siły).
@@ -70,7 +70,7 @@ export async function startDaily() {
   closeOverlay();
   const j = await act('start', { daily: true }); if (!j) return;
   snd.sfx('bulgot'); G.screen = 'run'; render();
-  if (!store.get('bulgot:intro')) showIntro(showDecreeRoll); else showDecreeRoll();
+  startIntro(showDecreeRoll);
 }
 
 // Ekran końca: Nadgodziny, rosół i wynik Dyżuru dnia.

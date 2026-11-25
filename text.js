@@ -6,7 +6,7 @@ export const TAGLINE = 'Awans albo rosół';
 export const INTRO = [
   'Kurnik Pod Dębem żył spokojnie, aż do nocy, gdy Korporacja Rosołowa S.A. zabrała cały drób na Wielki Rosół.',
   'Pisklę Pyrtek wypadło z ciężarówki i zostało samo.',
-  'Teraz musi wrócić do fabryki, przebić się przez dwadzieścia pięter i obalić Prezesa Rosołu, zanim woda w garnku zacznie bulgotać.',
+  'Teraz musi wrócić do fabryki, przebić się przez dwadzieścia pięter i obalić Prezesa Rosołowskiego, zanim woda w garnku zacznie bulgotać.',
 ];
 
 export const ZONE_NAMES = ['Kurnik i Podwórze', 'Magazyn Pasz i Chłodnia', 'Sortownia Jaj i Biuro Zarządu'];
@@ -42,7 +42,7 @@ export const OFFER_LINES = [
 export const BOSS_INTRO = {
   brojler: { title: 'Brojler Zdzisław, Szef Zmiany', quote: 'Mówią, że nigdy nie spał. To nieprawda. Po prostu nikt nie widział go na urlopie.' },
   skubarka: { title: 'Skubarka 3000', quote: 'Skubie, bo kocha. A kocha każde pióro, które znajdzie.' },
-  prezes: { title: 'Prezes Rosołu', quote: 'Padnie Prezes, a z nim upadnie cały cennik. Ale najpierw będzie spotkanie.' },
+  prezes: { title: 'Prezes Rosołowski', quote: 'Padnie Prezes, a z nim upadnie cały cennik. Ale najpierw będzie spotkanie.' },
 };
 
 export const WIN_LINES = [
@@ -66,7 +66,7 @@ export const LOSE_LINES = [
 export const END_WIN = {
   title: 'AWANS!',
   lines: [
-    'Prezes Rosołu leży u stóp Rambo Chickena. Garnek stygnie, a Kurnik znów jest wolny.',
+    'Prezes Rosołowski leży u stóp Rambo Chickena. Garnek stygnie, a Kurnik znów jest wolny.',
     'Kronikarz drżącą ręką zapisał: „I był to dzień, w którym kurczak został dyrektorem”.',
   ],
 };
@@ -136,7 +136,7 @@ export function statBonus(k, S, base) {
 }
 
 export const HELP = [
-  ['Cel', 'Wejdź na szczyt fabryki rosołu: pokonaj wszystkie piętra i Prezesa Rosołu. W trybie szybkim to 10 pięter, w pełnym 20.'],
+  ['Cel', 'Wejdź na szczyt fabryki rosołu: pokonaj wszystkie piętra i Prezesa Rosołowskiego. W trybie szybkim to 10 pięter, w pełnym 20.'],
   ['Jedna runda', 'Wybierasz jeden z czterech kafelków, potem następuje walka. Po wygranej dostajesz Ziarna i odzyskujesz część życia.'],
   ['Kafelki', 'Statystyki, umiejętności aktywne, przedmioty z synergią i ryzykowne wydarzenia. Przedmioty z jednego zestawu (Jajeczne, Zbożowe, Rambo, Rosołowe, Chłodnicze, Korporacyjne) dają bonusy od 2, 3 i 4 sztuk.'],
   ['Poziomy statystyk', 'Każda statystyka ma trzy poziomy zwykłe (plakietka I, II, III) i legendarny (★). Dwa takie same kafelki poziomu 1 lub 2 zlejesz za darmo w jeden wyższego poziomu (przycisk „Zlej kafelki”, klawisz U). Legendarne statystyki wypadają tylko z bossów: po bossie (poza Prezesem) z szansą 15% wybierasz 1 z 3.'],

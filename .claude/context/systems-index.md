@@ -54,6 +54,7 @@ Zasada: znajdź wiersz → przeczytaj **tylko** wskazaną sekcję `DESIGN.md` (`
 | Pojedynek dla 2 osób | `ui/duel.js` (`openDuel`, `DUEL_ACT`, `pollDuel`, `hudTick`, `showDuelEnd`); styl `.duel*`, `#duelhud`, `.pill.duelt`; test `dev/e2e-pojedynek.mjs` |
 | Podpowiedzi | `tip.js` + `statTip()`; atrybuty `data-tipk`, `data-tip` |
 | Teksty | `text.js` (Kronikarz, `CHAR_PERKS`, `BOSS_INTRO`, `STAT_GROUPS`) |
+| Fabuła: intro, radiowęzeł, Prezes Rosołowski, teczki, epilogi, porażka | `fabula.js` (dane i `radioLine`, `porazkaTekst`, `sladLine`); `ui/windows.js` `startIntro`/`showIntro`; `ui/end.js` `showOffer`/`chooseEnding`/`lossLines`; `ui/run.js` `floorKronHTML`; `ui/fight.js` `bossIntro`; `ui/home.js` `teczkaHTML`; `art.js` `introSceneArt`, `prezesArt`; `DESIGN.md` 33 |
 | Grafika | `art.js`: `ICON`, `ICON_OF`, `NEWBODY` (postacie) |
 
 Moduły `ui/` importują się nawzajem cyklicznie (dozwolone dla funkcji); stałe najwyższego poziomu nie mogą używać cudzych stałych w momencie ładowania modułu.

@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bulgot: makiety fabuły</title>
+<style>
+:root{--bg:#14100d;--bg2:#1c1611;--panel:#251d16;--panel2:#30261c;--line:#4a3a2a;--ink:#f6e9cf;--muted:#b9a88c;--faint:#8a7a62;--outline:#2b1a12;--amber:#ffb347;--amber2:#ff8c2b;--red:#e4572e;--teal:#2a9d8f;--gold:#ffd23f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,sans-serif}
+header{padding:14px 16px 0;max-width:980px;margin:0 auto}
+h1{margin:0 0 4px;font-size:1.3rem;color:var(--amber)}
+.sub{color:var(--muted);font-size:.9rem;margin:0 0 12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px;max-width:980px;margin:0 auto}
+.tabs button{background:var(--panel);color:var(--muted);border:2px solid var(--outline);border-bottom:0;border-radius:10px 10px 0 0;padding:.5em .9em;font:inherit;font-size:.9rem;cursor:pointer}
+.tabs button.on{background:var(--panel2);color:var(--amber);border-color:var(--line)}
+main{max-width:980px;margin:0 auto;padding:0 16px 40px}
+.panel{display:none;background:var(--panel2);border:2px solid var(--line);border-radius:0 12px 12px 12px;padding:14px}
+.panel.on{display:block}
+.note{color:var(--muted);font-size:.85rem;margin:10px 2px 0}
+.screen{position:relative;background:var(--bg2);border:3px solid var(--outline);border-radius:12px;overflow:hidden;aspect-ratio:16/9;min-height:260px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.btn{background:var(--amber2);color:#2b1a12;border:2px solid var(--outline);border-radius:10px;padding:.45em 1em;font:inherit;font-weight:700;cursor:pointer}
+.btn.ghost{background:var(--panel);color:var(--ink)}
+.btn.sel{outline:3px solid var(--gold)}
+svg{display:block}
+/* 1 intro */
+#introWorld{position:absolute;left:0;top:0;height:100%;width:auto;transition:transform 16s linear}
+.cap{position:absolute;left:0;right:0;bottom:0;padding:14px 18px 16px;background:linear-gradient(transparent,rgba(10,6,3,.92) 40%);font-size:1.05rem;min-height:84px;color:var(--ink);text-shadow:0 2px 0 #000}
+.cap b{color:var(--amber)}
+.skip{position:absolute;right:10px;top:10px;font-size:.8rem;opacity:.8}
+.logoin,.skip,.cap{z-index:2}
+.logoin{position:absolute;left:0;right:0;top:12px;text-align:center;font-weight:800;letter-spacing:.2em;color:var(--amber);font-size:.8rem;text-shadow:0 2px 0 #000}
+/* 2 prezes */
+.pres{display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:center;padding:16px;height:100%}
+.bubble{background:#f6e9cf;color:#2b1a12;border:3px solid var(--outline);border-radius:14px;padding:14px 16px;position:relative;font-size:1.05rem;min-height:90px}
+.bubble:before{content:"";position:absolute;left:-16px;top:40px;border:9px solid transparent;border-right-color:var(--outline)}
+.bubble small{display:block;margin-top:8px;color:#7b4a2c;font-weight:700}
+/* 3 radiowezel */
+.rw{position:absolute;left:0;right:0;top:0;background:#1a0f08;border-bottom:3px solid var(--outline);display:flex;align-items:center;gap:10px;padding:8px 12px;color:var(--gold);font-weight:700;font-size:.95rem;z-index:2}
+.rw .ic{flex:none}
+.rw span{animation:blink 2.4s steps(1) infinite}
+@keyframes blink{0%,92%{opacity:1}94%{opacity:.4}96%{opacity:1}98%{opacity:.5}}
+.tiles{position:absolute;left:0;right:0;top:56px;bottom:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 14px}
+.tile{background:var(--panel);border:3px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:.8rem;text-align:center}
+/* 4 epilogi */
+.teczka{background:#e9d9b3;color:#2b1a12;border:3px solid var(--outline);border-radius:8px;padding:12px 14px;font-size:.92rem;position:relative}
+.teczka h3{margin:0 0 6px;font-size:1rem;letter-spacing:.06em}
+.teczka dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0}
+.teczka dt{font-weight:700;color:#7b4a2c}.teczka dd{margin:0}
+.stamp{position:absolute;right:10px;top:10px;border:3px solid #b3321b;color:#b3321b;font-weight:800;padding:2px 8px;transform:rotate(8deg);font-size:.8rem;opacity:.85}
+.epi{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:20px 26px}
+.epi .tx{font-size:1.15rem}
+.mail{font-size:.75rem;color:var(--faint);border-top:1px solid var(--line);padding-top:8px;font-family:Consolas,monospace}
+/* 5 porazka */
+.p5{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:12px}
+.big{font-size:1.25rem;font-weight:800;color:var(--amber)}
+.punch{max-width:560px}
+input[type=range]{width:200px}
+@media(max-width:640px){.pres{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(2,1fr)}.screen{aspect-ratio:auto;min-height:340px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Bulgot: makiety fabuły</h1>
+<p class="sub">Propozycje 1, 2, 3, 4 i 6. Przykładowe teksty i grafiki do oceny, nic nie jest jeszcze w grze. Wygląd kafelków <code>.tile</code> pokazany tylko jako puste ramki.</p>
+</header>
+<div class="tabs" id="tabs">
+<button data-t="p1" class="on">1 Intro</button>
+<button data-t="p2">2 Prezes</button>
+<button data-t="p3">3 Radiowęzeł</button>
+<button data-t="p4">4 Teczka i epilog</button>
+<button data-t="p6">6 Rosół: dalszy ciąg</button>
+</div>
+<main>
+
+<!-- 1 INTRO -->
+<section class="panel on" id="p1">
+<div class="screen" id="introScreen">
+<div class="logoin">KORPORACJA ROSOŁOWA S.A.</div>
+<svg id="introWorld" viewBox="0 0 2600 360" preserveAspectRatio="xMinYMid slice" height="100%">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1a10"/><stop offset="1" stop-color="#4a2a14"/></linearGradient>
+<symbol id="kura" viewBox="0 0 60 60"><ellipse cx="30" cy="36" rx="18" ry="16" fill="#f6e9cf" stroke="#2b1a12" stroke-width="3"/><circle cx="40" cy="22" r="10" fill="#f6e9cf" stroke="#2b1a12" stroke-width="3"/><path d="M38 12q3-8 8-4-1 5-4 6z" fill="#e4572e" stroke="#2b1a12" stroke-width="2"/><path d="M49 23l9 3-9 3z" fill="#ffb347" stroke="#2b1a12" stroke-width="2"/><circle cx="43" cy="21" r="2" fill="#2b1a12"/><path d="M26 50v6M34 50v6" stroke="#ffb347" stroke-width="3"/></symbol>
+</defs>
+<rect width="2600" height="360" fill="url(#sky)"/>
+<!-- podloga -->
+<rect y="290" width="2600" height="70" fill="#1c1209"/>
+<!-- wejscie -->
+<rect x="60" y="90" width="260" height="200" fill="#3a2414" stroke="#2b1a12" stroke-width="4"/>
+<text x="190" y="130" text-anchor="middle" fill="#ffb347" font-size="22" font-weight="800">KORPORACJA ROSOŁOWA</text>
+<text x="190" y="156" text-anchor="middle" fill="#b9a88c" font-size="14">„Każdy pracownik jest ważny”</text>
+<rect x="150" y="200" width="80" height="90" fill="#14100d" stroke="#2b1a12" stroke-width="3"/>
+<g stroke="#8a7a62" stroke-width="5"><path d="M370 290v-70M370 255h60M430 290v-70"/><path d="M370 255l60-30M370 255l60 30"/></g>
+<text x="400" y="205" text-anchor="middle" fill="#8a7a62" font-size="11">KOŁOWROTEK</text>
+<!-- tasma -->
+<rect x="560" y="250" width="640" height="26" fill="#4a3a2a" stroke="#2b1a12" stroke-width="3"/>
+<g fill="#f6e9cf" stroke="#2b1a12" stroke-width="2"><ellipse cx="620" cy="238" rx="12" ry="15"/><ellipse cx="740" cy="238" rx="12" ry="15"/><ellipse cx="860" cy="238" rx="12" ry="15"/><ellipse cx="980" cy="238" rx="12" ry="15"/><ellipse cx="1100" cy="238" rx="12" ry="15"/></g>
+<g fill="#6b5a44"><circle cx="590" cy="288" r="10"/><circle cx="700" cy="288" r="10"/><circle cx="810" cy="288" r="10"/><circle cx="920" cy="288" r="10"/><circle cx="1030" cy="288" r="10"/><circle cx="1140" cy="288" r="10"/></g>
+<rect x="700" y="60" width="300" height="46" fill="#e4572e" stroke="#2b1a12" stroke-width="3"/>
+<text x="850" y="90" text-anchor="middle" fill="#fff" font-size="20" font-weight="800">DNI BEZ WYPADKU: 0</text>
+<!-- kotly -->
+<g stroke="#2b1a12" stroke-width="4">
+<rect x="1340" y="110" width="170" height="180" rx="22" fill="#6e6a62"/><rect x="1580" y="90" width="190" height="200" rx="24" fill="#5c5852"/><rect x="1850" y="120" width="160" height="170" rx="22" fill="#6e6a62"/>
+</g>
+<g fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="10" stroke-linecap="round"><path d="M1420 90q-18-30 0-60"/><path d="M1680 70q-18-30 0-60"/><path d="M1930 100q-18-30 0-60"/></g>
+<g fill="#ff8c2b" opacity=".85"><ellipse cx="1425" cy="270" rx="46" ry="12"/><ellipse cx="1675" cy="270" rx="52" ry="12"/><ellipse cx="1930" cy="270" rx="44" ry="12"/></g>
+<text x="1675" y="190" text-anchor="middle" fill="#2b1a12" font-size="18" font-weight="800">KOCIOŁ 3</text>
+<!-- biuro -->
+<rect x="2200" y="30" width="360" height="260" fill="#2a1a10" stroke="#2b1a12" stroke-width="4"/>
+<rect x="2220" y="50" width="320" height="130" fill="#ffd23f" fill-opacity=".18" stroke="#ffd23f" stroke-width="3"/>
+<g stroke="#ffd23f" stroke-opacity=".5" stroke-width="2"><path d="M2300 50v130M2380 50v130M2460 50v130"/></g>
+<text x="2380" y="205" text-anchor="middle" fill="#ffd23f" font-size="20" font-weight="800">ZARZĄD</text>
+<text x="2380" y="228" text-anchor="middle" fill="#b9a88c" font-size="12">wyjście tylko dla kadry</text>
+<rect x="2350" y="222" width="60" height="68" fill="#14100d" stroke="#ffd23f" stroke-width="3" opacity="0"/>
+<!-- sylwetka prezesa w oknie -->
+<g transform="translate(2360 78)"><circle cx="20" cy="22" r="16" fill="#14100d"/><rect x="2" y="38" width="36" height="46" rx="8" fill="#14100d"/><path d="M12 6q8-12 16 0z" fill="#14100d"/></g>
+<!-- kurczak -->
+<use href="#kura" x="30" y="236" width="56" height="56"/>
+</svg>
+<div class="skip btn ghost" id="introSkip">Pomiń ▸</div>
+<div class="cap" id="introCap"></div>
+</div>
+<div class="row"><button class="btn" id="introPlay">▶ Odtwórz ponownie</button><span class="note" style="margin:0">Dotyk/klik pomija. Przy kolejnych runach: jedno zdanie zamiast sceny.</span></div>
+<p class="note">Kamera jedzie od wejścia, przez taśmę i kotły, do przeszklonego biura na szczycie. Dole narrator w stylu firmowego filmu szkoleniowego. Ostatni kadr: Kurczak widzi drzwi „WYJŚCIE: tylko dla Zarządu”.</p>
+</section>
+
+<!-- 2 PREZES -->
+<section class="panel" id="p2">
+<div class="screen">
+<div class="pres">
+<svg viewBox="0 0 200 220" width="200" height="220" aria-label="Prezes Rosołowski">
+<rect x="20" y="170" width="160" height="50" rx="10" fill="#14100d" stroke="#2b1a12" stroke-width="4"/>
+<path d="M85 170l15 38 15-38z" fill="#fff" stroke="#2b1a12" stroke-width="3"/>
+<path d="M100 172l-8 14 8 22 8-22z" fill="#e4572e" stroke="#2b1a12" stroke-width="3"/>
+<ellipse cx="100" cy="115" rx="60" ry="62" fill="#f6e9cf" stroke="#2b1a12" stroke-width="5"/>
+<path d="M70 62q6-34 30-18q16-22 32 4q-10 10-20 10-8-6-18 2-14-2-24 2z" fill="#e4572e" stroke="#2b1a12" stroke-width="4"/>
+<path d="M92 118l32 10-32 12z" fill="#ffb347" stroke="#2b1a12" stroke-width="4"/>
+<circle cx="76" cy="100" r="9" fill="#fff" stroke="#2b1a12" stroke-width="3"/><circle cx="78" cy="101" r="3.5" fill="#2b1a12"/>
+<circle cx="124" cy="100" r="13" fill="none" stroke="#ffd23f" stroke-width="4"/><circle cx="124" cy="100" r="8" fill="#fff" stroke="#2b1a12" stroke-width="3"/><circle cx="126" cy="101" r="3.5" fill="#2b1a12"/>
+<path d="M137 108q14 20 6 54" stroke="#ffd23f" stroke-width="2" fill="none"/>
+<path d="M64 80q12-10 22-4" stroke="#2b1a12" stroke-width="4" fill="none"/>
+<path d="M60 150q-8 14 0 24M140 150q8 14 0 24" stroke="#f6e9cf" stroke-width="10" stroke-linecap="round" fill="none"/>
+</svg>
+<div>
+<div class="bubble" id="presTx"></div>
+<div class="row" id="presBtns"></div>
+</div>
+</div>
+</div>
+<p class="note">Prezes Rosołowski: uprzejmy, optymistyczny, mówi językiem prezentacji. Pojawia się przed bossami (jako „dyrektor działu” mówi jedno zdanie) i na szczycie. Portret to szkic, finalny wyglądałby jak reszta grafik w <code>art.js</code>.</p>
+</section>
+
+<!-- 3 RADIOWEZEL -->
+<section class="panel" id="p3">
+<div class="screen">
+<div class="rw"><svg class="ic" width="26" height="26" viewBox="0 0 26 26"><path d="M3 9h5l7-6v20l-7-6H3z" fill="#ffd23f" stroke="#2b1a12" stroke-width="2"/><path d="M18 8q4 5 0 10M21 5q7 8 0 16" stroke="#ffd23f" stroke-width="2" fill="none"/></svg><span id="rwTx"></span></div>
+<div class="tiles"><div class="tile">kafelek 1</div><div class="tile">kafelek 2</div><div class="tile">kafelek 3</div><div class="tile">kafelek 4</div></div>
+</div>
+<div class="row"><label>Piętro: <b id="rwFl">1</b></label><input type="range" id="rwRange" min="1" max="10" value="1"><button class="btn ghost" id="rwNext">Inny komunikat</button></div>
+<p class="note">Pasek na górze ekranu wyboru kafelków, jeden komunikat na piętro (pula ok. 60 tekstów). Pod koniec głośnik zaczyna się „zacinać” i mówi rzeczy, których nie powinien. Pasek można wyłączyć w ustawieniach.</p>
+</section>
+
+<!-- 4 TECZKA I EPILOG -->
+<section class="panel" id="p4">
+<div class="row" style="margin:0 0 10px" id="chBtns"></div>
+<div class="row" style="align-items:stretch;margin-top:0">
+<div class="teczka" style="flex:1 1 280px" id="teczka"></div>
+<div class="screen" style="flex:2 1 380px;aspect-ratio:auto;min-height:240px"><div class="epi"><div class="big">WOLNOŚĆ</div><div class="tx" id="epiTx"></div><div class="mail" id="epiMail"></div></div></div>
+</div>
+<p class="note">Lewo: „teczka pracownicza” na ekranie wyboru postaci (3 linijki i pieczątka). Prawo: epilog po pokonaniu Prezesa, 2–3 zdania i stopka maila jako napisy końcowe. Postacie poniżej to <b>przykłady</b>, nie nazwy z gry.</p>
+</section>
+
+<!-- 6 PORAZKA -->
+<section class="panel" id="p6">
+<div class="screen">
+<svg viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
+<rect width="800" height="450" fill="#1c1209"/>
+<g stroke="#2b1a12" stroke-width="6"><rect x="260" y="170" width="280" height="230" rx="40" fill="#6e6a62"/><rect x="240" y="150" width="320" height="34" rx="12" fill="#8a867e"/></g>
+<ellipse cx="400" cy="200" rx="120" ry="20" fill="#ff8c2b"/>
+<g fill="#ffd23f" opacity=".7"><circle cx="350" cy="196" r="6"/><circle cx="410" cy="204" r="5"/><circle cx="450" cy="195" r="7"/></g>
+<g fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="12" stroke-linecap="round"><path d="M340 140q-22-34 0-70"/><path d="M400 130q-22-34 0-70"/><path d="M460 140q-22-34 0-70"/></g>
+<circle cx="408" cy="188" r="8" fill="#f6e9cf" stroke="#2b1a12" stroke-width="3"/><path d="M402 178l-4-10M410 178l4-10" stroke="#2b1a12" stroke-width="3"/>
+</svg>
+<div class="p5" style="background:linear-gradient(rgba(0,0,0,.2),rgba(10,6,3,.78))">
+<div class="big" style="margin-top:auto">Rosół gotowy.</div>
+<div id="pTx" class="punch"></div>
+<div class="bubble" id="pRad" style="font-size:.9rem;max-width:520px;padding:8px 12px;min-height:0;margin-top:2px"></div>
+<div class="row" style="margin-top:4px;margin-bottom:auto"><button class="btn" id="pNext">Następny pracownik ▸</button></div>
+</div>
+</div>
+<div class="row"><label>Piętro śmierci: <b id="pFl">6</b></label><input type="range" id="pRange" min="1" max="10" value="6"></div>
+<p class="note">Zamiast samego ekranu wyniku: krótka scena z puentą zależną od piętra i nowy pracownik z kolejnym numerem. Ślady poprzednika wracają w radiowęźle następnego runu.</p>
+</section>
+</main>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+$$('#tabs button').forEach(b=>b.onclick=()=>{
+  $$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.t));
+  if(b.dataset.t==='p1')playIntro();
+});
+
+/* 1 intro */
+const introLines=[
+ [0,'<b>Kronikarz:</b> Zapisano, że Korporacja Rosołowa kochała swój drób. Szczególnie w garnku.'],
+ [3800,'Wchodziło się tu na własnych nogach. Wychodziło się zwykle w słoiku.'],
+ [7600,'W kotłach nic się nie marnowało. Korporacja liczyła wszystko, nawet bulgotanie.'],
+ [11400,'A na szczycie, za szkłem, siedział <b>Prezes Rosołowski</b> i patrzył w dół. Z apetytem.'],
+ [14800,'Pyrtek spojrzał w górę, wziął oddech i ruszył po schodach. Przed nim całe piętra.']
+];
+let introTimers=[];
+function playIntro(){
+  introTimers.forEach(clearTimeout);introTimers=[];
+  const w=$('#introWorld'),cap=$('#introCap');
+  w.style.transition='none';w.style.transform='translateX(0)';
+  void w.getBoundingClientRect();
+  const sw=$('#introScreen').clientWidth, h=$('#introScreen').clientHeight;
+  const worldW=2600*(h/360);
+  const dx=Math.max(0,worldW-sw);
+  w.style.transition='transform 16s linear';
+  requestAnimationFrame(()=>w.style.transform=`translateX(${-dx}px)`);
+  cap.innerHTML='';
+  introLines.forEach(([t,tx])=>introTimers.push(setTimeout(()=>{cap.style.opacity=0;setTimeout(()=>{cap.innerHTML=tx;cap.style.opacity=1},150)},t)));
+}
+$('#introPlay').onclick=playIntro;
+$('#introSkip').onclick=()=>{introTimers.forEach(clearTimeout);const w=$('#introWorld');w.style.transition='none';const sw=$('#introScreen').clientWidth,h=$('#introScreen').clientHeight;w.style.transform=`translateX(${-Math.max(0,2600*(h/360)-sw)}px)`;$('#introCap').innerHTML='<i>(pominięto, Kurczak już pod biurem)</i>';};
+$('#introCap').style.transition='opacity .15s';
+
+/* 2 prezes */
+const presL=[
+ ['Przed bossem (interkom)','„Dyrektorze Zdzisławie, mamy pewnego kurczaka. Proszę rozwiązać problem. Najlepiej z sosem.”'],
+ ['Połowa trasy','„Gratuluję przejścia pierwszego etapu. Pański awans został rozpatrzony negatywnie. Proszę kontynuować.”'],
+ ['Przed walką z Prezesem','„Witaj. Usiądź. Nie siadaj, i tak nie dasz rady. Zaczynamy spotkanie.”'],
+ ['Po pokonaniu','„To… nieregulaminowe. Zapiszę w protokole, że to była <i>moja</i> inicjatywa.”'],
+ ['Oferta awansu (po walce)','„Muszę przyznać, że jestem pod wrażeniem. Zostań moim zastępcą. Pensja: dwa ziarna miesięcznie, plus nieograniczony dostęp do garnka.”<br><br>[ Uciekam ] &nbsp; [ Przyjmuję awans ]']
+];
+presL.forEach((l,i)=>{const b=document.createElement('button');b.className='btn ghost';b.textContent=l[0];b.onclick=()=>setPres(i);$('#presBtns').appendChild(b)});
+function setPres(i){$('#presTx').innerHTML=presL[i][1]+'<small>Prezes Rosołowski</small>';$$('#presBtns .btn').forEach((b,j)=>b.classList.toggle('sel',j===i))}
+setPres(4);
+
+/* 3 radiowezel */
+const rw={
+ 1:['Dzień dobry, pracownicy. Przypominamy: stanowisko pracy to stanowisko pracy, a nie miejsce zamieszkania.','Nowi pracownicy proszeni są o zgłoszenie się do kotła numer 3. W celach wyłącznie informacyjnych.'],
+ 2:['Przypominamy: wyjście ewakuacyjne jest wyłącznie dla kadry.','Z uwagi na pożar w stołówce, stołówka jest zamknięta. Pożar trwa.'],
+ 3:['Szkolenie BHP odbędzie się w kotle. Obecność obowiązkowa.','Znaleziono czyjąś czapkę. Czapka zgłasza się sama.'],
+ 4:['Pracownik miesiąca: nikt. Pracownik poprzedniego miesiąca: też nikt.','Ogłaszamy konkurs na najlepszą ucieczkę. Nagroda: rosół.'],
+ 5:['Połowa drogi! Z tej okazji przerwa. Przerwa odwołana.','Informujemy, że rosół nie ma związku z pracownikami. Zdecydowanie.'],
+ 6:['Dział Kadr pyta: czy ktoś widział Pracownika nr 4811? Zgłoszenia przyjmuje kocioł.','Uprzejmie przypominamy o pozostałościach po poprzedniku z piętra 6.'],
+ 7:['Pracownicy, którzy dotarli tak wysoko, otrzymają specjalną zupę.','Głośniki testowe. Test. Test. Dosyć. Prezes prosi o dosyć.'],
+ 8:['Z-zarząd zaprasza na k-kawę. K-kawy nie ma. Z-zarząd jest.','Uwaga: kto czyta ten komunikat, jest w złym miejscu. Proszę dalej.'],
+ 9:['Nie ma żadnego wyjścia. To jest wyjście. Wyjście jest tutaj. Proszę wejść.','Rosołowski do pracownika: „Wiem, że mnie słyszysz. Chodź.”'],
+ 10:['(trzask) …on nie jest gotów. Na górze nie ma awansu. Na górze jest… (trzask)','Prezes Rosołowski zaprasza do biura. Wszyscy inni: dziękujemy.']
+};
+let rwi=0;
+function setRw(){const f=+$('#rwRange').value,a=rw[f];$('#rwFl').textContent=f;$('#rwTx').textContent=a[rwi%a.length]}
+$('#rwRange').oninput=()=>{rwi=0;setRw()};$('#rwNext').onclick=()=>{rwi++;setRw()};setRw();
+
+/* 4 teczka */
+const chars=[
+ {n:'Księgowy',st:'Dział Rozliczeń, 3 lata',why:'Policzył, ile jest „rosołu na pracownika”.',p:'Wyszedł na łąkę z wyliczonym zyskiem.',m:'Rozliczenie: koszt ucieczki 0 zł. Zysk: wolność.'},
+ {n:'Stażysta',st:'Staż nieodpłatny, 14 dni',why:'Ktoś powiedział „na ciepło”, nikt nie wyjaśnił jak.',p:'Pobiegł na łąkę i od razu założył firmę o nazwie Słonecznik. Bez regulaminu.',m:'Dziękujemy za staż. Prosimy o opinię (bez opinii).'},
+ {n:'Mistrz Zmiany',st:'Brygadzista, 11 lat',why:'Zna każdy kocioł i każdą bezpieczną drogę. Nigdy nią nie wyszedł.',p:'Przeszedł przez bramę jako pierwszy brygadzista od 11 lat. Odbił kartę wyjścia.',m:'Koniec zmiany. Odbij kartę. Odbito.'},
+ {n:'Recepcjonista',st:'Obsługa wejścia, 6 lat',why:'Wpuszczał kurczaki do środka. Teraz chce wyjść tą samą drogą.',p:'Wyszedł głównym wejściem. Zostawił po sobie kartkę: „Wrócę za pięć minut”.',m:'Wrócę za pięć minut. (Nie wróci.)'}
+];
+chars.forEach((c,i)=>{const b=document.createElement('button');b.className='btn ghost';b.textContent=c.n;b.onclick=()=>setCh(i);$('#chBtns').appendChild(b)});
+function setCh(i){const c=chars[i];
+ $('#teczka').innerHTML=`<div class="stamp">KADRY</div><h3>TECZKA PRACOWNICZA</h3><dl><dt>Stanowisko</dt><dd>${c.n}</dd><dt>Staż</dt><dd>${c.st}</dd><dt>Dlaczego chce uciec</dt><dd>${c.why}</dd></dl>`;
+ $('#epiTx').textContent=c.p;$('#epiMail').innerHTML='— Ta wiadomość jest poufna. Jeśli ją czytasz, uciekłeś.<br>'+c.m;
+ $$('#chBtns .btn').forEach((b,j)=>b.classList.toggle('sel',j===i))}
+setCh(0);
+
+/* 6 porazka */
+let pn=4812;
+const pun=[[1,2,'Kurczak nie zdążył nawet rozpakować walizki. Ale kocioł jest już rozpakowany.'],[3,5,'Dwa piętra drożej niż średnia. Dział Kadr jest pod wrażeniem. Kocioł też.'],[6,8,'Doszedł tam, gdzie wielu nie dochodzi. Rosół wyszedł wyjątkowo aromatyczny.'],[9,10,'Był tuż pod biurem. Prezes słyszał kroki. Prezes jest zawiedziony… i trochę głodny.']];
+function setP(){const f=+$('#pRange').value;$('#pFl').textContent=f;
+ const p=pun.find(x=>f>=x[0]&&f<=x[1]);
+ $('#pTx').innerHTML='Pracownik nr <b>'+pn+'</b> zakończył współpracę na piętrze <b>'+f+'</b>.<br><span style="color:var(--muted)">'+p[2]+'</span>';
+ $('#pRad').innerHTML='<b>Radiowęzeł (następny run):</b> „Przypominamy o pozostałościach po poprzedniku z piętra '+f+'. Prosimy ich nie jeść.”'}
+$('#pRange').oninput=setP;$('#pNext').onclick=()=>{pn++;setP();$('#pNext').textContent='Pracownik nr '+pn+' wchodzi ▸'};setP();
+playIntro();
+</script>
+</body>
+</html>
