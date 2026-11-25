@@ -41,6 +41,7 @@ export function endMeta(j, nr) {
 }
 // Wiersze rachunku (bez wiersza „Wynik”): ten sam zestaw na ekranie porażki (rozwijany) i wygranej (tabela).
 function scoreRows(r) {
+  const mult = (100 + D.RULES.garnekScore * r.garnek) / 100;
   return `<tr><td>Ukończone piętra (${r.done} × ${D.RULES.scoreRound})</td><td>${fmtNum(r.done * D.RULES.scoreRound)}</td></tr>
       <tr><td>Ziarna w kieszeni (${r.coins} × ${D.RULES.scoreCoin})</td><td>${fmtNum(r.coins * D.RULES.scoreCoin)}</td></tr>
       <tr><td>Premia za szybkość walk</td><td>${fmtNum(r.timeBonus)}</td></tr>
@@ -172,7 +173,8 @@ export function showEnd(j, quiet = false) {
   const facts = G.factsOf.facts;
   const bug = `<div class="es-bug" id="analyzebox">${analyzeHTML(r.id, !!(G.sentRuns && G.sentRuns[r.id]))}</div>`;
   const feather = e.feathers ? `<span class="es-pill es-fe">${art.emo('pioro')} Pióra do Kurnika <b>+${e.feathers}</b><small>razem ${G.profile.feathers | 0}</small></span>` : '';
-  const extras = `${endExtrasHTML(e, !win)}${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano poziom palnika ${G.profile.garnek}: ${esc(BURNERS[G.profile.garnek])} (${esc(D.GARNEK[G.profile.garnek].name)})</b></div>` : ''}${unlocksHTML(un)}${achHTML(takeAch())}`;
+  const ach = takeAch();   // osiągnięcia zdobyte w tym runie (jednorazowo)
+  const extras = `${endExtrasHTML(e, true)}${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano poziom palnika ${G.profile.garnek}: ${esc(BURNERS[G.profile.garnek])} (${esc(D.GARNEK[G.profile.garnek].name)})</b></div>` : ''}${unlocksHTML(un)}${achHTML(ach)}`;
   if (!win) {
     // PORAŻKA: sklep firmowy. Na podeście miska z pracownikiem i etykieta „ROSÓŁ nr N”, obok regał z całą partią, pod nim ciekawostka na wielkiej metce,
     // na dole pismo kadrowe (Awans Wroga), drobiazgi (wynik z rozwijanym rachunkiem, ranking, Staż) i przyciski.
@@ -192,19 +194,50 @@ export function showEnd(j, quiet = false) {
           <div class="actions end-actions"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><div class="es-sec"><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>
       </div></div>`, { force: true, cls: 'endfull' });
   } else {
-    // WYGRANA: po lewej scena z garnkiem Prezesa, tytuł i ciekawostka; po prawej rachunek, rekordy, odblokowania i przyciski
-    const feathersConf = [8, 18, 27, 36, 45, 55, 63, 72, 81, 90].map((x, i) => `<i style="left:${x}%;--r:${(i * 67) % 360}deg;--dl:${(i * 0.17).toFixed(2)}s;--dx:${(i % 2 ? 1 : -1) * (10 + i * 3)}px"></i>`).join('');
-    const scene = `<div class="endscene win" aria-hidden="true"><div class="es-steam"><i></i><i></i><i></i></div><div class="es-clip"><div class="es-hero">${art.portrait(r.char, r.form)}</div></div><div class="es-pot">${art.potArt(true)}</div><div class="es-confetti">${feathersConf}</div></div>`;
-    openOverlay(`<div class="endwrap win">${bug}<div class="end-left">${scene}<h2 class="end-title">${endTitle}</h2>
-      ${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}<p class="mailfoot">${esc(F.STOPKA[ending])}</p>
-      ${facts.length ? `<div class="facts">${facts.map((f, i) => `<div class="fact ${i ? 'second' : ''}" style="--i:${i}"><span class="fk">${i ? 'I jeszcze' : 'Ciekawostka'}</span>${esc(f.text)}</div>`).join('')}</div>` : ''}</div>
-      <div class="end-right"><div class="end-scroll"><table class="scoretable">${scoreRows(r)}
-        <tr class="total"><td>Wynik</td><td id="endscore" data-v="${r.score}">${fmtNum(r.score)}</td></tr></table>
-      ${e.newBest ? '<p class="lead" style="color:var(--gold)"><b>Nowy rekord życiowy w tym trybie!</b></p>' : ''}
-      ${e.rank && !e.daily ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}${extras}
-      ${e.feathers ? `<p class="lead">${art.emo('pioro')} Pióra do Kurnika: <b>+${e.feathers}</b> (razem ${G.profile.feathers | 0})</p>` : ''}</div>
-      <div class="actions end-actions"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>`, { force: true, cls: 'endfull' });
+    // WYGRANA: „Czek Zarządu” (układ jak makieta: czek na środku, kurczak w koronie po lewej, odznaka rekordu i epilog po prawej, nagrody w jednym rzędzie pod czekiem,
+    // drobne żetony w jednej linii i przyciski na dole). Wszystkie liczby i teksty pochodzą z danych runu; brakujące bloki znikają.
+    const M = D.MODES[r.mode], seed = parseInt(String(r.id).slice(-6), 10) || 0, ch = D.CHARS[r.char];
+    const floors = `${Math.min(r.done, M.rounds)} / ${M.rounds}${r.endless ? ' + dogrywka' : ''}`;
+    const cards = [];
+    un.forEach(u => cards.push(`<div class="ew-flip"><div class="in"><div class="back"><span>?</span></div><div class="front"><small>Odblokowano ${u.kind === 'char' ? 'postać' : 'kafelek'}</small>${u.kind === 'char' ? art.portrait(u.target) : art.tileIcon(u.target)}<b>${esc(unlockName(u))}</b><em>${esc(u.text)}</em></div></div></div>`));
+    ach.forEach(a => cards.push(`<div class="ew-prize">${art.medal(a.g, a.s)}<div><small>Nowe osiągnięcie</small><b>${esc(a.name)}</b><em>${esc(a.text)}</em></div></div>`));
+    if (e.garnekUnlocked) cards.push(`<div class="ew-prize">${art.burnerArt(G.profile.garnek)}<div><small>Nowy poziom palnika</small><b>${esc(BURNERS[G.profile.garnek])}</b><em>${esc(D.GARNEK[G.profile.garnek].name)}</em></div></div>`);
+    const sp = e.soup && D.SOUP_BY_ID[e.soup.id];
+    if (sp) cards.push(`<div class="ew-prize">${art.soupArt(sp.color)}<div><small>${e.soup.isNew ? 'Nowy rosół w Księdze!' : 'Ugotowałeś rosół'}</small><b>${esc(sp.name)}</b>${e.soup.isNew ? '' : `<em>×${e.soup.n}</em>`}</div></div>`);
+    const ups = e.staz && e.staz.ups && e.staz.ups.length;
+    if (ups) cards.push(`<div class="ew-prize">${art.medal('meta', '↑')}<div><small>Awans na Stażu</small><b>Poziom ${e.staz.level}</b><em>${D.STAZ.talons * e.staz.ups.length} Talony czeka w Sklepiku</em></div></div>`);
+    const prizes = cards.length ? `<div class="ew-prizes n${Math.min(cards.length, 7)}">${cards.map((c, i) => c.replace('<div class="ew-', `<div style="--d:${(1.5 + i * .45).toFixed(2)}s" class="ew-`)).join('')}</div>` : '';
+    const f0 = facts[0], fl = f0 ? f0.text.length : 0;
+    const memo = f0 ? `<div class="fact ew-fact ${fl > 150 ? 'fl' : fl > 90 ? 'fm' : ''}"><span class="fk">Tytułem · ciekawostka</span>${esc(f0.text)}</div>` : '';
+    const pills = `${e.rank && !e.daily ? `<span class="es-pill">Ranking (${esc(M.name)}): <b>#${e.rank}</b></span>` : ''}${endStazPill(e)}${feather}${e.daily ? `<span class="es-pill">Dyżur dnia: <b>+${e.daily.talons} Talony</b>, seria ${e.daily.streak}${e.rank ? `, miejsce dnia #${e.rank}` : ''}</span>` : ''}`;
+    const rcpt = `<details class="es-rcpt ew-rcpt"><summary><span>Rachunek</span><b>${fmtNum(r.score)} pkt</b><i aria-hidden="true">▾</i></summary><table class="scoretable">${scoreRows(r)}<tr class="total"><td>Wynik</td><td>${fmtNum(r.score)}</td></tr></table></details>`;
+    const epilog = `<details class="ew-epilog"><summary>${esc(lines[0])}<i aria-hidden="true">▾ Epilog</i></summary><div class="more">${lines.slice(1).map(l => `<p>${esc(l)}</p>`).join('')}<p class="ew-foot">${esc(F.STOPKA[ending])}</p></div></details>`;
+    openOverlay(`<div class="endwrap win endwin ${quiet ? 'ew-quiet' : ''} ${prizes ? '' : 'noprize'}">${bug}${quiet ? '' : winFx(seed)}
+      <div class="ew-head"><h2 class="end-title ew-title">${endTitle}</h2><div class="ew-sub">${ending === 'awans' ? 'Gratulujemy. Nie zostałeś rosołem.' : 'Gratulujemy ucieczki. Nie zostałeś rosołem.'} Tryb ${esc(M.name)} · ${floors} pięter</div></div>
+      <div class="ew-left"><div class="ew-hero">${art.portrait(r.char, r.form)}${art.crownArt('ew-crown')}</div></div>
+      <div class="ew-cheque"><div class="hd"><span>Rosołownia Regionalna · Czek Zarządu</span><span>nr ${String(seed).padStart(6, '0')} · piętro ${floors}</span></div>
+        <div class="pay"><div class="to"><small>Zapłać na rzecz</small><b>${esc(ch ? ch.name : 'Pracownik')}, pracownik (były)</b></div><div class="amt"><b id="endscore" data-v="${r.score}">${fmtNum(r.score)}</b><small>pkt</small></div></div>
+        <div class="words">Z tytułu: pokonania Prezesa Rosołowskiego · palnik ${r.garnek} (${esc(BURNERS[r.garnek])}) · ${floors} pięter</div>
+        ${memo}<div class="sign">P. Rosołowski<small>Prezes, jeszcze</small></div><div class="stamp">WYPŁACONO</div></div>
+      <div class="ew-right">${e.newBest ? '<div class="ew-record">Nowy rekord<br>życiowy!<small>w tym trybie</small></div>' : ''}${epilog}</div>
+      ${prizes}
+      <div class="ew-bottom"><div class="es-pills ew-chips">${rcpt}${pills}</div>
+        <div class="actions end-actions"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><div class="es-sec"><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>
+      </div>`, { force: true, cls: 'endfull' });
   }
   G.screen = 'home'; render();
   countUp($('#endscore'), quiet);
+}
+// Deszcz konfetti, piórek i złotych Ziaren: stały, mały zestaw cząstek (limit), pozycje z ziarna runu (bez Math.random), animuje tylko transform.
+function winFx(seed) {
+  let s = (seed % 2147483646) + 1; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const cols = ['#ffd23f', '#ff8c2b', '#e4572e', '#fff3d6', '#ffb347', '#2a9d8f'];
+  const piece = (kind, cls) => { const dur = 4 + rnd() * 4; return `<i class="ew-cf ${kind}" style="left:${(rnd() * 100).toFixed(1)}%;--dx:${((rnd() - .5) * 260).toFixed(0)}px;--rot:${(360 + rnd() * 720).toFixed(0)}deg;--dur:${dur.toFixed(2)}s;--dl:-${(rnd() * dur).toFixed(2)}s;--c:${cols[Math.floor(rnd() * cols.length)]};--s:${(8 + rnd() * 12).toFixed(1)}px"></i>`; };
+  const coin = () => { const dur = 2.4 + rnd() * 2; return `<i class="ew-coin" style="left:${(rnd() * 100).toFixed(1)}%;--dur:${dur.toFixed(2)}s;--dl:-${(rnd() * dur).toFixed(2)}s;--s:${(26 + rnd() * 20).toFixed(0)}px;--dx:${((rnd() - .5) * 120).toFixed(0)}px"></i>`; };
+  const kinds = ['c', 'c', 'f', 'p'];
+  let back = '', front = '';
+  for (let i = 0; i < 46; i++) back += piece(kinds[Math.floor(rnd() * kinds.length)]);
+  for (let i = 0; i < 12; i++) back += coin();
+  for (let i = 0; i < 14; i++) front += piece(i % 3 ? 'c' : 'f');
+  return `<div class="ew-sun" aria-hidden="true"></div><div class="ew-fx" aria-hidden="true">${back}</div><div class="ew-fx front" aria-hidden="true">${front}</div>`;
 }

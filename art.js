@@ -1031,3 +1031,6 @@ export function rosolBox(num = '4816', floor = 0) {
 
 // Mała ikona robaka (link „Zgłoś błąd” na ekranie końca).
 export const bugIcon = (cls = 'bugico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7a3 3 0 0 1 6 0M8 7h8v8a4 4 0 0 1-8 0zM12 11v9M5 9l3 2M19 9l-3 2M4 14h4M20 14h-4M5 20l3-3M19 20l-3-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+// ---------- Ekran wygranej („Czek Zarządu”): korona na głowie awansowanego kurczaka ----------
+export const crownArt = (cls = 'crown') => `<svg class="${cls}" viewBox="0 0 120 80" aria-hidden="true"><path d="M8 66 L2 14 L34 40 L60 4 L86 40 L118 14 L112 66Z" fill="#ffd23f" stroke="${O}" stroke-width="5" stroke-linejoin="round"/><rect x="12" y="52" width="96" height="14" fill="#e0a100" stroke="${O}" stroke-width="4"/><path d="M8 66 h104" stroke="${O}" stroke-width="5" stroke-linecap="round"/><path d="M26 44 L36 30 M60 20 L60 40" stroke="#fff3b0" stroke-width="3.5" stroke-linecap="round" opacity=".7"/><circle cx="60" cy="10" r="7" fill="#e4572e" stroke="${O}" stroke-width="3"/><circle cx="2" cy="14" r="6" fill="#e4572e" stroke="${O}" stroke-width="3"/><circle cx="118" cy="14" r="6" fill="#e4572e" stroke="${O}" stroke-width="3"/><circle cx="60" cy="59" r="4" fill="#fff3d6"/></svg>`;
