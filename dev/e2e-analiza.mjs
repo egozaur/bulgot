@@ -1,4 +1,4 @@
-// Bulgot: test „Wyślij do analizy” po zakończonej grze (ekran końca + historia) w tryb lokalnym.
+// Bulgot: test „Zgłoś błąd” (dawniej „Wyślij do analizy”) po zakończonej grze (ekran końca + historia) w tryb lokalnym.
 // Użycie: cd C:\Users\Kurczak\tools\pt && node C:\Users\Kurczak\pl3y\bulgot\dev\e2e-analiza.mjs [katalog na zrzuty]
 import puppeteer from 'file:///C:/Users/Kurczak/tools/pt/node_modules/puppeteer-core/lib/esm/puppeteer/puppeteer-core.js';
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
@@ -30,7 +30,7 @@ let end = false;
 for (let i = 0; i < 80 && !end; i++) { await wait(500); end = await p.evaluate(() => !!document.querySelector('#analyzebox')); }
 if (!end) { fail('ekran końca gry nie pojawił się (brak #analyzebox)'); await p.screenshot({ path: `${OUT}/analiza-brak.png` }); }
 else {
-  ok('ekran końca ma sekcję „Wyślij do analizy”');
+  ok('ekran końca ma link „Zgłoś błąd”');
   if (await p.$('#anote')) fail('pole komentarza nie powinno być widoczne przed kliknięciem');
   await p.click('[data-act=analyze]'); await wait(300);
   if (!(await p.$('.modal #anote')) || (await p.$$('.modal .atag')).length < 4) fail('po kliknięciu brak okna z pytaniem o komentarz'); else ok('okno z pytaniem o komentarz i znacznikami');

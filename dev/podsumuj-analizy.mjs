@@ -1,4 +1,4 @@
-// Bulgot: zwięzłe streszczenie partii wysłanych przez graczy („Wyślij do analizy”), pobranych do ../analizy-bulgot/*.json
+// Bulgot: zwięzłe streszczenie partii wysłanych przez graczy („Zgłoś błąd”, dawniej „Wyślij do analizy”), pobranych do ../analizy-bulgot/*.json
 // (pobieranie: dev/pobierz-analizy.mjs). Zamiast czytać surowe JSON-y (po 20+ KB każdy), pokazuje tabelę, agregaty i komentarze graczy.
 // Użycie: node dev/podsumuj-analizy.mjs [--dir <folder>] [--since YYYY-MM-DD] [--nick <nick>] [--char <id>] [--notes] [--id <id partii>]
 //   --notes  tylko partie z komentarzem lub znacznikami gracza

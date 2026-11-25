@@ -931,3 +931,103 @@ export function soupArt(color = '#f2cf7a') {
     <path d="M36 54 q4 -3 8 0 q4 3 8 0" stroke="#fff" stroke-width="1.8" ${NF} stroke-linecap="round" opacity=".6"/>
     <g class="soup-steam"><path d="M38 40 q-5 -8 0 -15 M50 38 q-5 -9 0 -18 M62 40 q-5 -8 0 -15" stroke="#fff" stroke-width="3" stroke-linecap="round" ${NF} opacity=".7"/></g>`, '0 0 100 100', 'fig soup-fig');
 }
+
+// ---------- Rosół pracownika (ekran końca porażki): miska, słoik, kostka, karton ----------
+// Kurczaka już nie ma; został produkt z jego numerem. Płaski wektor z głębią: grube obrysy, miękki połysk, ciepła paleta.
+let rosN = 0;
+const rosId = () => 'ros' + (++rosN);
+// pionowe paski kodu kreskowego wyliczone z numeru (zawsze te same), wpisane w prostokąt x0,y0,w,h
+function rosBars(num, x0, y0, w, h) {
+  const id = String(num); let hh = 7, x = 0; const out = [];
+  for (let i = 0; i < 30; i++) { hh = (hh * 31 + id.charCodeAt(i % id.length) + i) % 9973; const bw = 1 + (hh % 3); if (i % 2 === 0) out.push([x, bw]); x += bw + (hh % 2); }
+  const k = w / x;
+  return out.map(([bx, bw]) => `<rect x="${(x0 + bx * k).toFixed(1)}" y="${y0}" width="${(bw * k).toFixed(1)}" height="${h}" fill="${O}"/>`).join('');
+}
+const ros = (inner, vb, cls) => `<svg class="ros-art ${cls}" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${inner}</svg>`;
+const rosFs = (num, big, small) => String(num).length > 4 ? small : big;
+// Miska gorącego rosołu: makaron, marchewka, natka i wymowne resztki: kask roboczy, piórko, plakietka „NR …”.
+export function rosolBowl(num = '4816') {
+  const g = rosId();
+  const noodle = d => `<path d="${d}" fill="none" stroke="${O}" stroke-width="11" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#ffeaa8" stroke-width="6.5" stroke-linecap="round"/>`;
+  const carrot = (x, y, r = 1) => `<g transform="translate(${x} ${y}) scale(${r})"><ellipse rx="18" ry="10.5" fill="#ff8c2b" stroke="${O}" stroke-width="4"/><ellipse rx="9" ry="5" fill="#ffb347" stroke="#c75a10" stroke-width="2"/></g>`;
+  const parsley = (x, y, r = 1) => `<path transform="translate(${x} ${y}) scale(${r})" d="M0 0 q-10 -12 -2 -22 q12 6 2 22 q10 -14 22 -8 q-4 14 -22 8z" fill="#6fcf6f" stroke="${O}" stroke-width="3" stroke-linejoin="round"/>`;
+  const body = 'M22 130 C22 250 110 292 220 292 C330 292 418 250 418 130 Z';
+  return ros(`
+  <defs>
+    <radialGradient id="${g}s" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#ffd884"/><stop offset=".65" stop-color="#f3a63f"/><stop offset="1" stop-color="#d9822a"/></radialGradient>
+    <linearGradient id="${g}b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff4da"/><stop offset=".55" stop-color="#f6e2b8"/><stop offset="1" stop-color="#d9b47c"/></linearGradient>
+    <clipPath id="${g}c"><path d="${body}"/></clipPath>
+  </defs>
+  <g class="ros-steam" opacity=".62" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"><path d="M150 96 q-24 -26 0 -50 q22 -22 0 -52"/><path d="M226 90 q-22 -30 2 -56 q20 -24 -2 -50"/><path d="M296 98 q-20 -24 0 -46 q18 -20 0 -44"/></g>
+  <ellipse cx="220" cy="310" rx="178" ry="16" fill="rgba(0,0,0,.42)"/>
+  <path d="M160 288 h120 l10 -26 h-140z" fill="#c9461f" stroke="${O}" stroke-width="6" stroke-linejoin="round"/>
+  <path d="${body}" fill="url(#${g}b)"/>
+  <g clip-path="url(#${g}c)"><path d="M0 178 Q220 236 440 178 L440 214 Q220 272 0 214Z" fill="#e4572e"/><path d="M0 224 Q220 282 440 224" fill="none" stroke="#2a9d8f" stroke-width="6"/>${[40, 100, 160, 220, 280, 340, 400].map((x, i) => `<circle cx="${x}" cy="${202 + [10, 24, 33, 36, 33, 24, 10][i]}" r="5" fill="#ffd23f"/>`).join('')}</g>
+  <path d="M50 168 q8 62 74 96" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="9" stroke-linecap="round"/>
+  <path d="${body}" fill="none" stroke="${O}" stroke-width="7" stroke-linejoin="round"/>
+  <ellipse cx="220" cy="130" rx="198" ry="44" fill="#fff3d6" stroke="${O}" stroke-width="7"/>
+  <ellipse cx="220" cy="134" rx="172" ry="32" fill="url(#${g}s)" stroke="${O}" stroke-width="5"/>
+  <ellipse cx="220" cy="139" rx="148" ry="22" fill="none" stroke="rgba(160,70,10,.35)" stroke-width="4"/>
+  ${[[96, 128, 9], [330, 146, 7], [190, 118, 6], [270, 152, 8], [128, 148, 5], [356, 124, 5]].map(([x, y, r]) => `<ellipse cx="${x}" cy="${y}" rx="${r * 1.6}" ry="${r * .8}" fill="#ffe9a0" opacity=".85" stroke="#e4a23a" stroke-width="2"/>`).join('')}
+  ${noodle('M96 134 q22 -18 44 0 t44 0 t44 0')}${noodle('M168 152 q24 -16 48 0 t48 0 t36 0')}${noodle('M122 116 q20 -10 40 0 t40 0 t44 0')}
+  ${carrot(150, 130)}${carrot(304, 122, .9)}${carrot(232, 150, 1.05)}${parsley(332, 142)}${parsley(112, 144, .8)}
+  <path d="M118 126 q86 -28 176 -4" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="5" stroke-linecap="round"/>
+  <g transform="translate(70 132) rotate(-12) scale(1.35)"><path d="M0 16 q0 -30 26 -30 q26 0 26 30z" fill="#ffd23f" stroke="${O}" stroke-width="5" stroke-linejoin="round"/><path d="M-8 16 h68" stroke="${O}" stroke-width="8" stroke-linecap="round"/><path d="M26 -14 v20" stroke="${O}" stroke-width="4"/><path d="M10 6 q2 -14 14 -16" stroke="#fff" stroke-opacity=".6" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+  <ellipse cx="116" cy="138" rx="34" ry="7" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="3"/>
+  <g transform="translate(262 134) rotate(14)"><path d="M0 0 C-32 -42 -16 -100 16 -124 C38 -78 26 -36 0 0Z" fill="#ffd23f" stroke="${O}" stroke-width="5" stroke-linejoin="round"/><path d="M0 0 Q6 -54 16 -124" fill="none" stroke="#c98a10" stroke-width="3.5"/><path d="M4 -30 l-16 -10 M7 -52 l-18 -12 M10 -74 l-16 -12 M12 -96 l-12 -10 M5 -30 l16 -8 M8 -52 l16 -10 M11 -74 l12 -10" stroke="#c98a10" stroke-width="2.4" stroke-linecap="round"/></g>
+  <ellipse cx="262" cy="136" rx="26" ry="6" fill="none" stroke="rgba(255,255,255,.65)" stroke-width="3"/>
+  <g transform="translate(196 124) rotate(-72)"><path d="M0 0 C-9 -12 -5 -26 7 -33 C12 -21 10 -9 0 0Z" fill="#fff6dc" stroke="${O}" stroke-width="3" stroke-linejoin="round"/><path d="M0 0 L7 -33" stroke="#c9b48a" stroke-width="2"/></g>
+  <g transform="translate(330 -14) rotate(11)"><rect width="88" height="118" rx="13" fill="#fff6dc" stroke="${O}" stroke-width="5"/><rect x="30" y="9" width="28" height="9" rx="4.5" fill="${O}"/><circle cx="44" cy="52" r="23" fill="#ffd23f" stroke="${O}" stroke-width="4"/><path d="M60 52 l14 5 -14 6z" fill="#ff8c2b" stroke="${O}" stroke-width="3" stroke-linejoin="round"/><path d="M35 46 l7 7 M42 46 l-7 7" stroke="${O}" stroke-width="3.5" stroke-linecap="round"/><text x="44" y="88" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10" fill="#7b4a2c">NR</text><text x="44" y="108" text-anchor="middle" font-family="Baloo 2, Impact, sans-serif" font-weight="800" font-size="${rosFs(num, 25, 19)}" fill="${O}">${num}</text></g>
+  <ellipse cx="376" cy="138" rx="38" ry="9" fill="#f3a63f" stroke="${O}" stroke-width="4"/>
+  <ellipse cx="170" cy="112" rx="20" ry="5" fill="#fff" opacity=".35"/>`, '0 -20 440 350', 'ros-bowl');
+}
+// Słoik rosołu z etykietą: nazwa, numer pracownika, skład, piętro, kod kreskowy.
+export function rosolJar(num = '4816', floor = 0, total = 0) {
+  const g = rosId();
+  return ros(`
+  <defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7bd57"/><stop offset=".5" stop-color="#f0a23c"/><stop offset="1" stop-color="#d9822a"/></linearGradient></defs>
+  <ellipse cx="100" cy="266" rx="76" ry="9" fill="rgba(0,0,0,.4)"/>
+  <path d="M30 80 q0 -18 20 -18 h100 q20 0 20 18 v150 q0 30 -30 30 h-80 q-30 0 -30 -30z" fill="url(#${g})" stroke="${O}" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M34 80 q0 -12 16 -12 h100 q16 0 16 12 v10 h-132z" fill="#ffe9b0" opacity=".8"/>
+  <ellipse cx="52" cy="218" rx="13" ry="8" fill="#ff8c2b" stroke="${O}" stroke-width="3"/><ellipse cx="146" cy="226" rx="13" ry="8" fill="#ff8c2b" stroke="${O}" stroke-width="3"/>
+  <path d="M42 238 q14 -10 28 0 t28 0 t28 0" fill="none" stroke="${O}" stroke-width="9" stroke-linecap="round"/><path d="M42 238 q14 -10 28 0 t28 0 t28 0" fill="none" stroke="#ffeaa8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M150 112 C142 100 148 90 156 84 C162 96 160 104 150 112Z" fill="#ffd23f" stroke="${O}" stroke-width="3"/>
+  <rect x="44" y="46" width="112" height="22" fill="#d9822a" stroke="${O}" stroke-width="5"/>
+  <rect x="32" y="8" width="136" height="42" rx="12" fill="#e4572e" stroke="${O}" stroke-width="6"/>
+  <path d="M46 20 h108 M46 30 h108 M46 40 h108" stroke="${O}" stroke-width="2.5" opacity=".35"/><path d="M42 18 q50 -8 116 0" stroke="#fff" stroke-opacity=".5" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <rect x="24" y="112" width="152" height="108" rx="10" fill="#fff6dc" stroke="${O}" stroke-width="4"/><path d="M24 122 a10 10 0 0 1 10 -10 h132 a10 10 0 0 1 10 10 v14 h-152z" fill="#e4572e"/><path d="M24 136 h152" stroke="${O}" stroke-width="3"/>
+  <text x="100" y="131" text-anchor="middle" font-family="Baloo 2, Impact, sans-serif" font-weight="800" font-size="20" fill="#fff6dc" letter-spacing="2">ROSÓŁ</text>
+  <text x="100" y="164" text-anchor="middle" font-family="Baloo 2, Impact, sans-serif" font-weight="800" font-size="${rosFs(num, 29, 22)}" fill="${O}">nr ${num}</text>
+  <text x="100" y="178" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="8.4" fill="#7b4a2c">SKŁAD: 100% PRACOWNIK</text>
+  ${floor ? `<text x="100" y="188" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="600" font-size="7.6" fill="#7b4a2c">PIĘTRO ${floor}${total ? ' / ' + total : ''}</text>` : ''}
+  ${rosBars(num, 40, 193, 120, 18)}
+  <path d="M44 84 v140" stroke="#fff" stroke-opacity=".45" stroke-width="7" stroke-linecap="round"/>`, '0 0 200 276', 'ros-jar');
+}
+// Kostka bulionowa z nadrukiem „nr …”.
+export function rosolCube(num = '4816') {
+  return ros(`
+  <ellipse cx="90" cy="162" rx="76" ry="9" fill="rgba(0,0,0,.4)"/>
+  <path d="M20 44 L90 74 L90 150 L20 120Z" fill="#e4572e" stroke="${O}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M160 44 L90 74 L90 150 L160 120Z" fill="#c9411f" stroke="${O}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M90 14 L160 44 L90 74 L20 44Z" fill="#ffe6a8" stroke="${O}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M30 44 L90 18 L150 44 L90 70Z" fill="#ffd27a" opacity=".6"/>
+  <g transform="matrix(1 .4286 0 1 20 44)"><rect x="9" y="14" width="52" height="50" rx="4" fill="#fff6dc" stroke="${O}" stroke-width="2.6"/><text x="35" y="30" text-anchor="middle" font-family="Baloo 2, Impact, sans-serif" font-weight="800" font-size="11" fill="#b3321b">KOSTKA</text><text x="35" y="48" text-anchor="middle" font-family="Baloo 2, Impact, sans-serif" font-weight="800" font-size="${rosFs(num, 13, 11)}" fill="${O}">nr ${num}</text><text x="35" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="5.6" fill="#7b4a2c">NA 12 PORCJI</text></g>
+  <g transform="matrix(1 -.4286 0 1 90 74)"><path d="M0 22 h70 M0 54 h70" stroke="#ffd23f" stroke-width="5"/><circle cx="35" cy="38" r="12" fill="#ffd23f" stroke="${O}" stroke-width="3"/><path d="M46 38 l8 3 -8 3z" fill="#ff8c2b" stroke="${O}" stroke-width="2"/><circle cx="32" cy="35" r="2" fill="${O}"/></g>
+  <path d="M104 20 l14 -10 M118 28 l18 -4" stroke="#ffe6a8" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#ffe6a8" stroke="${O}" stroke-width="2"><rect x="146" y="140" width="9" height="7" rx="2" transform="rotate(14 150 143)"/><rect x="24" y="146" width="7" height="6" rx="2" transform="rotate(-18 27 149)"/></g>`, '0 0 180 176', 'ros-cube');
+}
+// Karton wysyłkowy z etykietą i kodem kreskowym.
+export function rosolBox(num = '4816', floor = 0) {
+  return ros(`
+  <ellipse cx="124" cy="196" rx="108" ry="10" fill="rgba(0,0,0,.4)"/>
+  <path d="M30 78 H176 V188 H30Z" fill="#cc8d4c" stroke="${O}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M176 78 L228 52 V162 L176 188Z" fill="#a96d34" stroke="${O}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M30 78 L82 52 H228 L176 78Z" fill="#e5ae66" stroke="${O}" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M120 52 H150 L98 78 H68Z" fill="#f2d27a" stroke="${O}" stroke-width="3"/>
+  <rect x="68" y="78" width="30" height="38" fill="#f2d27a" stroke="${O}" stroke-width="3"/>
+  <g transform="rotate(-2 100 140)"><rect x="42" y="112" width="124" height="66" rx="5" fill="#fff6dc" stroke="${O}" stroke-width="3"/><rect x="42" y="112" width="124" height="20" rx="5" fill="#e4572e"/><text x="104" y="128" text-anchor="middle" font-family="Baloo 2, Impact, sans-serif" font-weight="800" font-size="16" fill="#fff6dc" letter-spacing="2">ROSÓŁ</text><text x="104" y="157" text-anchor="middle" font-family="Baloo 2, Impact, sans-serif" font-weight="800" font-size="${rosFs(num, 26, 19)}" fill="${O}">nr ${num}</text>${rosBars(num, 56, 162, 96, 11)}<text x="104" y="176" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="6.4" fill="#7b4a2c">KARTON 1/1${floor ? ' · PIĘTRO ' + floor : ''}</text></g>
+  <g transform="translate(190 100) rotate(8)"><rect width="34" height="40" rx="6" fill="#ffd23f" stroke="${O}" stroke-width="3"/><path d="M17 33 V10 M9 18 l8 -8 8 8" fill="none" stroke="${O}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>`, '0 0 250 206', 'ros-box');
+}
+
+// Mała ikona robaka (link „Zgłoś błąd” na ekranie końca).
+export const bugIcon = (cls = 'bugico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7a3 3 0 0 1 6 0M8 7h8v8a4 4 0 0 1-8 0zM12 11v9M5 9l3 2M19 9l-3 2M4 14h4M20 14h-4M5 20l3-3M19 20l-3-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;

@@ -1,4 +1,4 @@
-// Bulgot, interfejs: ekran końca runu, osiągnięcia, ciekawostki, wysyłanie do analizy.
+// Bulgot, interfejs: ekran końca runu (porażka: półka sklepowa z rosołem pracownika), osiągnięcia, ciekawostki, zgłaszanie błędów.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
 import * as D from '../shared/data.js';
 import * as art from '../art.js';
@@ -12,7 +12,7 @@ import { cls, feathers } from './fight.js';
 import { BURNERS, render } from './home.js';
 import { showDuelEnd } from './duel.js';
 import { dismissInvoice } from './invoice.js';
-import { endExtrasHTML } from './meta.js';
+import { endExtrasHTML, endStazPill } from './meta.js';
 import { setOwned, tileCard } from './run.js';
 import { REDUCED } from './side.js';
 import { showHistory } from './windows.js';
@@ -28,12 +28,33 @@ export function unlocksHTML(list) {
   return list.map(u => `<div class="unlock-box"><b>Odblokowano ${u.kind === 'char' ? 'postać' : 'kafelek'}: ${esc(unlockName(u))}</b><div class="hint" style="text-align:left">${esc(u.text)}</div></div>`).join('');
 }
 
-// Po przegranej: kto awansował (Nemezis).
-export function endMeta(j) {
-  const r = G.run, p = G.profile, out = [];
-  if (r.ended !== 'lose') return '';
-  if (j.result && p.nemesis) { const n = p.nemesis, t = n.tile && TILE[n.tile]; out.push(`<div class="unlock-box nembox"><b>Awans Wroga: ${esc(n.name)}${n.lvl > 1 ? ' (awans ' + n.lvl + '.)' : ''}</b><div class="hint" style="text-align:left">${n.lvl > 1 ? 'Znowu wygrał i awansował wyżej.' : 'Twój zabójca dostał awans i cechę ' + esc(D.AFFIXES[n.affix].name) + '.'}${t ? ' Ukradł ci: ' + esc(t.name) + '.' : ''} Czeka na ciebie w następnym runie.</div></div>`); }
-  return out.join('');
+// Po przegranej: kto awansował (Nemezis) jako „Pismo kadrowe” z portretem wroga, cechą i ukradzionym przedmiotem.
+export function endMeta(j, nr) {
+  const r = G.run, p = G.profile;
+  if (r.ended !== 'lose' || !j.result || !p.nemesis) return '';
+  const n = p.nemesis, t = n.tile && TILE[n.tile], aff = D.AFFIXES[n.affix], en = D.ENEMIES[n.enemy];
+  return `<div class="es-pismo"><div class="ph"><span>Pismo kadrowe</span><em>Dział Kadr · Rosołownia Regionalna</em></div>
+    <div class="pr"><div class="port">${art.enemyArt(en ? en.art : 'rat')}<i class="tie"></i></div><div class="px"><div class="pt">Awans Wroga${n.lvl > 1 ? ' (awans ' + n.lvl + '.)' : ''}</div><div class="pn">${esc(n.name)}</div>
+      <div class="pc">${aff ? `<b>cecha: ${esc(aff.name)}</b>` : ''}${t ? `<span class="ukr">${art.tileIcon(n.tile)}ukradł ci: ${esc(t.name)}</span>` : ''}</div></div></div>
+    <p class="pd">${n.lvl > 1 ? 'Znowu wygrał i awansował wyżej.' : 'Twój zabójca dostał awans' + (aff ? ' i cechę ' + esc(aff.name) : '') + '.'}${t ? ' Ukradł ci: ' + esc(t.name) + '.' : ''} Czeka na ciebie w następnym runie.</p>
+    <div class="ps"><b>AWANS ZATWIERDZONY</b>${nr ? `<span>kosztem pracownika nr ${nr}</span>` : ''}</div></div>`;
+}
+// Wiersze rachunku (bez wiersza „Wynik”): ten sam zestaw na ekranie porażki (rozwijany) i wygranej (tabela).
+function scoreRows(r) {
+  return `<tr><td>Ukończone piętra (${r.done} × ${D.RULES.scoreRound})</td><td>${fmtNum(r.done * D.RULES.scoreRound)}</td></tr>
+      <tr><td>Ziarna w kieszeni (${r.coins} × ${D.RULES.scoreCoin})</td><td>${fmtNum(r.coins * D.RULES.scoreCoin)}</td></tr>
+      <tr><td>Premia za szybkość walk</td><td>${fmtNum(r.timeBonus)}</td></tr>
+      ${r.garnek ? `<tr><td>Mnożnik Garnka ${r.garnek} (${D.GARNEK[r.garnek].name})</td><td>×${mult.toFixed(2).replace('.', ',')}</td></tr>` : ''}
+      ${r.curses && r.curses.length ? `<tr><td>Klątwy Prezesa (${r.curses.map(c => esc(D.CURSES[c].name)).join(', ')})</td><td>×${(1 + D.cursePct(r.curses) / 100).toFixed(2).replace('.', ',')}</td></tr>` : ''}
+      ${r.endless ? `<tr><td>Dogrywka: piętra ponad limit (${Math.max(0, r.done - (r.cleared || 0))})</td><td>♾</td></tr>` : ''}`;
+}
+// Regał sklepu firmowego: ten sam pracownik w słoikach, kostkach i kartonach (jego sztuki podświetlone), sąsiedzi to koledzy z poprzednich numerów.
+function shelfHTML(nr, floor, total) {
+  const it = (svg, n, me, kind) => `<div class="sh-it${me ? ' me' : ''}">${svg}<div class="sh-pt">${me ? 'NR ' + n + ' · NIE NA SPRZEDAŻ' : kind + ' ' + n}</div></div>`;
+  const jars = [-4, -3, -2, -1, 0, 1, 2].map(d => it(art.rosolJar(nr + d, d ? 0 : floor, d ? 0 : total), nr + d, !d, 'SŁOIK'));
+  const cubes = [-3, -2, 0, 1].map(d => it(art.rosolCube(nr + d), nr + d, !d, 'KOSTKA'));
+  const boxes = [-1, 0, 2].map(d => it(art.rosolBox(nr + d, d ? 0 : floor), nr + d, !d, 'KARTON'));
+  return `<div class="es-shelf" aria-hidden="true"><div class="es-sign">Sklep firmowy · Rosołownia Regionalna</div><div class="es-cab"><div class="es-row">${jars.join('')}</div><div class="es-plank"></div><div class="es-row">${cubes.join('')}${boxes.join('')}</div><div class="es-plank"></div></div></div>`;
 }
 // Wynik na ekranie końca nabija się od zera (licznik jak w automacie); bez animacji przy prefers-reduced-motion.
 export function countUp(el, quiet) {
@@ -42,16 +63,17 @@ export function countUp(el, quiet) {
   const step = now => { if (!el.isConnected) return; const q = Math.min(1, (now - t0) / dur); el.textContent = fmtNum(Math.round(to * (1 - Math.pow(1 - q, 3)))); if (q < 1) requestAnimationFrame(step); else el.classList.add('done'); };
   el.textContent = '0'; setTimeout(() => requestAnimationFrame(step), 700);
 }
-// „Wyślij do analizy”: kopia zakończonego runu (z dziennikiem rund) trafia na serwer, skąd ją odbiera autor gry do strojenia balansu.
+// „Zgłoś błąd” (dawniej „Wyślij do analizy”, akcja nadal data-act="analyze"): kopia zakończonego runu (z dziennikiem rund) trafia na serwer,
+// skąd ją odbiera autor gry do strojenia balansu. Na ekranie końca to mały przyciemniony link z ikoną w rogu.
 export const ANALYZE_TAGS = [['za-latwo', 'Za łatwo'], ['za-trudno', 'Za trudno'], ['nudne', 'Nudne'], ['blad', 'Błąd w grze'], ['niejasne', 'Niejasne zasady'], ['super', 'Super zabawa']];
 export const analyzeHTML = (id, sent) => sent
-  ? '<div class="analyze-ok">✓ Wysłano do analizy. Dziękuję, to naprawdę pomaga w strojeniu gry!</div>'
-  : `<div class="analyze-row"><button class="btn" data-act="analyze" data-id="${esc(id)}">Wyślij do analizy</button></div><div class="hint">Wyślemy przebieg tej gry (wybory, wrogów, statystyki), żeby zbadać balans. Bez danych osobowych.</div>`;
+  ? '<span class="analyze-ok">✓ Zgłoszenie wysłane. Dziękuję!</span>'
+  : `<button class="es-bugbtn" data-act="analyze" data-id="${esc(id)}" data-tip="Wyślemy przebieg tej gry (wybory, wrogów, statystyki), żeby zbadać błąd albo balans. Bez danych osobowych.">${art.bugIcon()}<span>Zgłoś błąd</span></button>`;
 // Okno przed wysłaniem: pytanie o komentarz (co poszło za łatwo, źle itd.), który trafia do pliku partii razem z jej przebiegiem.
 export function showAnalyzeDialog(id, from) {
   G.ana = { id, from };
-  openOverlay(`<h2>Wyślij do analizy</h2>
-    <p class="lead">Chcesz dodać komentarz? Napisz, co poszło za łatwo, za trudno albo źle. Trafi do pliku razem z przebiegiem tej gry.</p>
+  openOverlay(`<h2>Zgłoś błąd</h2>
+    <p class="lead">Chcesz dodać komentarz? Napisz, co poszło za łatwo, za trudno albo się zepsuło. Wyślemy go razem z przebiegiem tej gry (wybory, wrogów, statystyki), bez danych osobowych.</p>
     <div class="atags">${ANALYZE_TAGS.map(([v, n]) => `<button class="atag" data-act="atag" data-v="${v}" aria-pressed="false">${n}</button>`).join('')}</div>
     <textarea id="anote" class="anote" rows="4" maxlength="300" placeholder="Twój komentarz (opcjonalnie), np. „walki kończą się w 2 sekundy, bo trzy umiejętności zabijają wszystko”" aria-label="Komentarz do analizy"></textarea>
     <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="asend" data-primary>Wyślij</button><button class="btn" data-act="asend0">Wyślij bez komentarza</button><button class="btn ghost" data-act="acancel">Wróć</button></div>`, { narrow: true, force: true });
@@ -61,7 +83,7 @@ export async function sendAnalysis(withNote) {
   const a = G.ana; if (!a) return;
   const note = withNote ? (($('#anote') || {}).value || '').trim() : '', tags = withNote ? [...document.querySelectorAll('.atag.on')].map(x => x.dataset.v) : [];
   const j = await act('analysis', { id: a.id, note, tags }); if (!j) return;
-  (G.sentRuns || (G.sentRuns = {}))[a.id] = true; snd.sfx('unlock'); toast('Wysłano do analizy. Dziękuję!');
+  (G.sentRuns || (G.sentRuns = {}))[a.id] = true; snd.sfx('unlock'); toast('Zgłoszenie wysłane. Dziękuję!');
   backFromAnalyze();
 }
 export function backFromAnalyze() { const f = G.ana && G.ana.from; if (f === 'hist') showHistory(); else if (G.lastEndJ) showEnd(G.lastEndJ, true); else closeOverlay(); }
@@ -136,7 +158,6 @@ export function showEnd(j, quiet = false) {
   if (G.duelRun) return showDuelEnd();   // pojedynek ma własny ekran końca (bez rekordów, Stażu i analizy)
   if (!quiet && G.run && G.run.ended === 'win' && !(G.fabChoice && G.fabChoice[G.run.id])) return showOffer(j);
   const r = G.run, e = j.end || (G.lastEndJ && G.lastEndJ.end) || {}, win = r.ended === 'win', un = takeUnlocks();
-  const mult = (100 + D.RULES.garnekScore * r.garnek) / 100;
   G.lastEnd = e; G.lastEndJ = j.result || !G.lastEndJ ? j : { ...j, result: G.lastEndJ.result };
   dismissInvoice(true);
   if (!quiet) { snd.sfx(win ? 'win' : 'lose'); if (!win) snd.sfx('bulgot'); }
@@ -146,28 +167,44 @@ export function showEnd(j, quiet = false) {
     : ending === 'awans' ? [`Prezes Rosołowski: „${F.OFERTA.awans}”`, F.AWANS_WSPOLNY + (tk ? ' ' + tk.awans : ''), T.END_WIN.lines[1]]
     : [`Prezes Rosołowski: „${F.OFERTA.ucieczka}”`, T.END_WIN.lines[0], tk ? tk.ucieczka : ''].filter(Boolean);
   const endTitle = win ? (ending === 'awans' ? T.END_WIN.title : 'WOLNOŚĆ!') : T.END_LOSE.title;
-  const feathers = win ? [8, 18, 27, 36, 45, 55, 63, 72, 81, 90].map((x, i) => `<i style="left:${x}%;--r:${(i * 67) % 360}deg;--dl:${(i * 0.17).toFixed(2)}s;--dx:${(i % 2 ? 1 : -1) * (10 + i * 3)}px"></i>`).join('') : '';
-  const scene = `<div class="endscene ${win ? 'win' : 'lose'}" aria-hidden="true"><div class="es-steam"><i></i><i></i><i></i></div><div class="es-clip"><div class="es-hero">${art.portrait(r.char, r.form)}</div></div><div class="es-pot">${art.potArt(win)}</div>${win ? `<div class="es-confetti">${feathers}</div>` : ''}</div>`;
   // Ciekawostka jest wybierana raz na run (ponowne otwarcie ekranu, także po przeładowaniu strony, pokazuje tę samą); rotację pilnuje fakty-pamiec.js.
   if (!G.factsOf || G.factsOf.id !== r.id) G.factsOf = { id: r.id, facts: chooseFacts(G.lastEndJ, win) };
   const facts = G.factsOf.facts;
-  // pełny ekran: po lewej scena, tytuł i ciekawostki; po prawej rachunek, rekordy, odblokowania i przyciski
-  openOverlay(`<div class="endwrap ${win ? 'win' : 'lose'}"><div class="end-left">${scene}<h2 class="end-title ${win ? '' : 'lose'}">${endTitle}</h2>
-    ${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}${win ? `<p class="mailfoot">${esc(F.STOPKA[ending])}</p>` : ''}
-    ${facts.length ? `<div class="facts">${facts.map((f, i) => `<div class="fact ${i ? 'second' : ''}" style="--i:${i}"><span class="fk">${i ? 'I jeszcze' : 'Ciekawostka'}</span>${esc(f.text)}</div>`).join('')}</div>` : ''}</div>
-    <div class="end-right"><div class="end-scroll"><table class="scoretable"><tr><td>Ukończone piętra (${r.done} × ${D.RULES.scoreRound})</td><td>${fmtNum(r.done * D.RULES.scoreRound)}</td></tr>
-      <tr><td>Ziarna w kieszeni (${r.coins} × ${D.RULES.scoreCoin})</td><td>${fmtNum(r.coins * D.RULES.scoreCoin)}</td></tr>
-      <tr><td>Premia za szybkość walk</td><td>${fmtNum(r.timeBonus)}</td></tr>
-      ${r.garnek ? `<tr><td>Mnożnik Garnka ${r.garnek} (${D.GARNEK[r.garnek].name})</td><td>×${mult.toFixed(2).replace('.', ',')}</td></tr>` : ''}
-      ${r.curses && r.curses.length ? `<tr><td>Klątwy Prezesa (${r.curses.map(c => esc(D.CURSES[c].name)).join(', ')})</td><td>×${(1 + D.cursePct(r.curses) / 100).toFixed(2).replace('.', ',')}</td></tr>` : ''}
-      ${r.endless ? `<tr><td>Dogrywka: piętra ponad limit (${Math.max(0, r.done - (r.cleared || 0))})</td><td>♾</td></tr>` : ''}
-      <tr class="total"><td>Wynik</td><td id="endscore" data-v="${r.score}">${fmtNum(r.score)}</td></tr></table>
-    ${e.newBest ? '<p class="lead" style="color:var(--gold)"><b>Nowy rekord życiowy w tym trybie!</b></p>' : ''}
-    ${e.rank && !e.daily ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}${endExtrasHTML(e)}
-    ${e.feathers ? `<p class="lead">${art.emo('pioro')} Pióra do Kurnika: <b>+${e.feathers}</b> (razem ${G.profile.feathers | 0})</p>` : ''}${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano poziom palnika ${G.profile.garnek}: ${esc(BURNERS[G.profile.garnek])} (${esc(D.GARNEK[G.profile.garnek].name)})</b></div>` : ''}${unlocksHTML(un)}${achHTML(takeAch())}${endMeta(j)}
-    <div class="analyze" id="analyzebox">${analyzeHTML(r.id, !!(G.sentRuns && G.sentRuns[r.id]))}</div></div>
-    <div class="actions end-actions"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>`, { force: true, cls: 'endfull' });
+  const bug = `<div class="es-bug" id="analyzebox">${analyzeHTML(r.id, !!(G.sentRuns && G.sentRuns[r.id]))}</div>`;
+  const feather = e.feathers ? `<span class="es-pill es-fe">${art.emo('pioro')} Pióra do Kurnika <b>+${e.feathers}</b><small>razem ${G.profile.feathers | 0}</small></span>` : '';
+  const extras = `${endExtrasHTML(e, !win)}${e.garnekUnlocked ? `<div class="unlock-box"><b>Odblokowano poziom palnika ${G.profile.garnek}: ${esc(BURNERS[G.profile.garnek])} (${esc(D.GARNEK[G.profile.garnek].name)})</b></div>` : ''}${unlocksHTML(un)}${achHTML(takeAch())}`;
+  if (!win) {
+    // PORAŻKA: sklep firmowy. Na podeście miska z pracownikiem i etykieta „ROSÓŁ nr N”, obok regał z całą partią, pod nim ciekawostka na wielkiej metce,
+    // na dole pismo kadrowe (Awans Wroga), drobiazgi (wynik z rozwijanym rachunkiem, ranking, Staż) i przyciski.
+    const nr = G.fabNr[r.id], M = D.MODES[r.mode], total = r.round > M.rounds ? '' : ' / ' + M.rounds, ch = D.CHARS[r.char];
+    const pismo = endMeta(j, nr);
+    const label = `<div class="es-label"><div class="lt">Rosołownia Regionalna · produkt końcowy</div><h2 class="end-title lose">${endTitle}</h2><div class="ln">nr ${nr}</div>
+      <div class="lr"><span>Piętro ${r.round}${total}</span><span>Partia: ${esc(ch ? ch.name : 'nieznana')}</span><span>Skład: 100% pracownik</span></div></div>`;
+    const fact = facts.length ? `<div class="fact es-fact" style="--i:0"><span class="fk">Informacja o produkcie · ciekawostka</span>${esc(facts[0].text)}</div>` : '';
+    const rcpt = `<details class="es-rcpt"><summary><span>Wynik</span><b id="endscore" data-v="${r.score}">${fmtNum(r.score)}</b><i aria-hidden="true">▾</i></summary><table class="scoretable">${scoreRows(r)}<tr class="total"><td>Wynik</td><td>${fmtNum(r.score)}</td></tr></table></details>`;
+    const pills = `${e.rank && !e.daily ? `<span class="es-pill">Ranking (${esc(M.name)}): <b>#${e.rank}</b></span>` : ''}${endStazPill(e)}${e.newBest ? '<span class="es-pill gold">Nowy rekord życiowy w tym trybie!</span>' : ''}`;
+    openOverlay(`<div class="endwrap lose endshop ${pismo ? '' : 'nonem'} ${fact ? '' : 'nofact'}">${bug}
+      <div class="es-podium"><div class="es-bowl">${art.rosolBowl(nr)}</div>${label}</div>
+      ${shelfHTML(nr, r.round, total.replace(' / ', ''))}${fact}
+      <div class="es-bottom">${pismo}
+        <div class="es-mid"><div class="es-extras">${extras}</div><div class="es-pills">${pills}</div>${rcpt}</div>
+        <div class="es-right"><div class="es-story">${lines.map((l, i) => `<p class="${i ? 's2' : 's1'}">${esc(l)}</p>`).join('')}</div>${feather}
+          <div class="actions end-actions"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><div class="es-sec"><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>
+      </div></div>`, { force: true, cls: 'endfull' });
+  } else {
+    // WYGRANA: po lewej scena z garnkiem Prezesa, tytuł i ciekawostka; po prawej rachunek, rekordy, odblokowania i przyciski
+    const feathersConf = [8, 18, 27, 36, 45, 55, 63, 72, 81, 90].map((x, i) => `<i style="left:${x}%;--r:${(i * 67) % 360}deg;--dl:${(i * 0.17).toFixed(2)}s;--dx:${(i % 2 ? 1 : -1) * (10 + i * 3)}px"></i>`).join('');
+    const scene = `<div class="endscene win" aria-hidden="true"><div class="es-steam"><i></i><i></i><i></i></div><div class="es-clip"><div class="es-hero">${art.portrait(r.char, r.form)}</div></div><div class="es-pot">${art.potArt(true)}</div><div class="es-confetti">${feathersConf}</div></div>`;
+    openOverlay(`<div class="endwrap win">${bug}<div class="end-left">${scene}<h2 class="end-title">${endTitle}</h2>
+      ${lines.map(l => `<p class="lead">${esc(l)}</p>`).join('')}<p class="mailfoot">${esc(F.STOPKA[ending])}</p>
+      ${facts.length ? `<div class="facts">${facts.map((f, i) => `<div class="fact ${i ? 'second' : ''}" style="--i:${i}"><span class="fk">${i ? 'I jeszcze' : 'Ciekawostka'}</span>${esc(f.text)}</div>`).join('')}</div>` : ''}</div>
+      <div class="end-right"><div class="end-scroll"><table class="scoretable">${scoreRows(r)}
+        <tr class="total"><td>Wynik</td><td id="endscore" data-v="${r.score}">${fmtNum(r.score)}</td></tr></table>
+      ${e.newBest ? '<p class="lead" style="color:var(--gold)"><b>Nowy rekord życiowy w tym trybie!</b></p>' : ''}
+      ${e.rank && !e.daily ? `<p class="lead">Miejsce w rankingu (${D.MODES[r.mode].name}): <b>#${e.rank}</b></p>` : ''}${extras}
+      ${e.feathers ? `<p class="lead">${art.emo('pioro')} Pióra do Kurnika: <b>+${e.feathers}</b> (razem ${G.profile.feathers | 0})</p>` : ''}</div>
+      <div class="actions end-actions"><button class="btn primary big" data-act="again" data-primary>Zagraj jeszcze raz</button><button class="btn" data-act="ranking">Ranking</button><button class="btn ghost" data-act="home">Menu</button></div></div></div>`, { force: true, cls: 'endfull' });
+  }
   G.screen = 'home'; render();
   countUp($('#endscore'), quiet);
 }
-

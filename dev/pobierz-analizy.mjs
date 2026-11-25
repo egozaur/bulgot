@@ -1,4 +1,4 @@
-// Bulgot: pobiera partie wysłane przez graczy przyciskiem „Wyślij do analizy” do folderu C:\Users\Kurczak\pl3y\analizy-bulgot.
+// Bulgot: pobiera partie wysłane przez graczy przyciskiem „Zgłoś błąd” (dawniej „Wyślij do analizy”) do folderu C:\Users\Kurczak\pl3y\analizy-bulgot.
 // Wymaga sekretu BG_ADMIN_KEY (ten sam, który jest ustawiony w Workerze: `wrangler secret put BG_ADMIN_KEY`).
 // Użycie: BG_ADMIN_KEY=... node dev/pobierz-analizy.mjs [--usun] [--api https://pl3y-server.pl3y.workers.dev] [--out <folder>]
 //   --usun  po zapisaniu plików kasuje te partie z serwera (domyślnie zostają).

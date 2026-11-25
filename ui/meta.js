@@ -73,10 +73,15 @@ export async function startDaily() {
   startIntro(showDecreeRoll);
 }
 
-// Ekran końca: Nadgodziny, rosół i wynik Dyżuru dnia.
-export function endExtrasHTML(e) {
+// Ekran końca: Nadgodziny, rosół i wynik Dyżuru dnia. Z pill = true Staż jest małym żetonem (endStazPill), a tu zostaje tylko komunikat o awansie na Stażu.
+export function endStazPill(e) {
+  if (!e.staz) return '';
+  const s = stazOf();
+  return `<span class="es-pill es-staz"><span>Nadgodziny <b>+${e.staz.gain}</b></span><span class="es-lvl">Staż ${s.level}</span>${stazBar(s)}<small>${s.into} / ${s.need}</small></span>`;
+}
+export function endExtrasHTML(e, pill = false) {
   let h = '';
-  if (e.staz) { const s = stazOf(); h += `<div class="endstaz"><span>Nadgodziny <b>+${e.staz.gain}</b></span><span class="es-lvl">Staż ${s.level}</span>${stazBar(s)}<small>${s.into} / ${s.need}</small></div>${e.staz.ups && e.staz.ups.length ? `<p class="lead" style="color:var(--gold)"><b>Awans na Stażu: poziom ${e.staz.level}!</b> Nagrodę odbierzesz w menu (${D.STAZ.talons * e.staz.ups.length} Talony czeka w Sklepiku).</p>` : ''}`; }
+  if (e.staz) { const s = stazOf(); h += `${pill ? '' : `<div class="endstaz"><span>Nadgodziny <b>+${e.staz.gain}</b></span><span class="es-lvl">Staż ${s.level}</span>${stazBar(s)}<small>${s.into} / ${s.need}</small></div>`}${e.staz.ups && e.staz.ups.length ? `<p class="lead" style="color:var(--gold)"><b>Awans na Stażu: poziom ${e.staz.level}!</b> Nagrodę odbierzesz w menu (${D.STAZ.talons * e.staz.ups.length} Talony czeka w Sklepiku).</p>` : ''}`; }
   if (e.soup) { const sp = D.SOUP_BY_ID[e.soup.id]; if (sp) h += `<div class="endsoup">${art.soupArt(sp.color)}<div><b>${e.soup.isNew ? 'Nowy rosół w Księdze!' : 'Ugotowałeś rosół'}</b><br>${esc(sp.name)}${e.soup.isNew ? '' : ` (×${e.soup.n})`}</div></div>`; }
   if (e.daily) h += `<p class="lead">Dyżur dnia: <b>+${e.daily.talons} Talony</b>, seria <b>${e.daily.streak}</b> ${e.daily.streak === 1 ? 'dzień' : 'dni'}${e.rank ? `, miejsce dnia <b>#${e.rank}</b>` : ''}.</p>`;
   return h;
