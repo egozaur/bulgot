@@ -42,7 +42,7 @@ await p.screenshot({ path: `${OUT}/panel-odznaki.png` });
 const st = await p.evaluate(() => {
   const rows = [...document.querySelectorAll('.slr')];
   const xs = rows.map(r => Math.round(r.querySelector('.slv b').getBoundingClientRect().right)), ux = rows.map(r => Math.round(r.querySelector('.slv i').getBoundingClientRect().left));
-  return { names: rows.map(r => r.querySelector('.sln').textContent.trim()), vals: rows.map(r => r.querySelector('.slv').textContent.replace(/\s+/g, '')), aligned: new Set(xs).size === 1 && new Set(ux).size === 1, oneLine: rows.every(r => r.getBoundingClientRect().height <= 26), groups: document.querySelectorAll('.slg').length };
+  return { names: rows.map(r => r.querySelector('.sln').textContent.trim()), vals: rows.map(r => r.querySelector('.slv').textContent.replace(/\s+/g, '')), aligned: new Set(xs).size === 1 && new Set(ux).size === 1, oneLine: rows.every(r => r.getBoundingClientRect().height <= 36), groups: document.querySelectorAll('.slg').length };
 });
 if (!st.names.includes('Dziobnięcie') || st.names.some(n => /Fortun|Krytyk|Moc Dziobnięcia|Obrażenia/i.test(n))) fail('nazwy statystyk: ' + st.names.join(', ')); else ok('nazwy statystyk: ' + st.names.join(', '));
 if (!st.aligned || !st.oneLine) fail('liczby i jednostki nie stoją w jednej linii: ' + JSON.stringify(st)); else ok('liczby i jednostki wyrównane, każdy wiersz w jednej linii');

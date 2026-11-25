@@ -1706,3 +1706,74 @@ html.reduce .decroll, html.reduce .decroll .ico { animation: none !important; }
 .upg-choice .btn small { font: 500 .7rem/1.25 var(--body, inherit); color: var(--muted); text-align: center; }
 .upg-choice .btn:hover, .upg-choice .btn:focus-visible { border-color: #7bd88f; }
 .upg-choice .btn.hot { border-color: var(--amber2); } .upg-choice .btn.hot:hover, .upg-choice .btn.hot:focus-visible { border-color: var(--red); box-shadow: 0 0 14px rgba(228,87,46,.5); }
+/* ===== Patch 1.1: nowy panel gracza (hub), wariant A ===== */
+.hub { gap: 8px; }
+.hubhead { position: relative; padding: 10px 12px 8px; cursor: help; }
+.hh-row { display: flex; gap: 12px; align-items: center; }
+.hubhead .h4-fig.hh-fig { flex: none; width: 108px; height: 108px; margin: 0; padding: 4px; }
+.hubhead .h4-fig .kin .fig { width: 100%; height: 100%; transform: scale(1.16) translateY(-2%); }
+.hubhead .pet { right: -8px; bottom: -6px; }
+.hh-tr { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.hh-nm { display: flex; flex-direction: column; padding-right: 40px; }
+.hh-nm b { font: 800 1.05rem/1.15 var(--display); color: var(--amber); white-space: nowrap; }
+.hh-nm span { font-size: .72rem; color: var(--muted); }
+.hh-hp { position: relative; height: 20px; border-radius: 6px; background: rgba(0,0,0,.45); border: 2px solid var(--outline); overflow: hidden; }
+.hh-hp i { position: absolute; inset: 0 auto 0 0; width: calc(var(--p) * 1%); background: linear-gradient(90deg, #c8402a, #ff8c2b); }
+.hh-hp b { position: relative; display: block; text-align: center; font: 800 .78rem/16px var(--mono); text-shadow: 0 1px 0 #000; }
+/* przycisk Odpoczynku w rogu karty */
+.hh-heal { position: absolute; top: 9px; right: 12px; z-index: 3; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; padding: 0; cursor: pointer; background: radial-gradient(circle at 50% 35%, #2f5a3a, #1b3324); border: 3px solid #6fcf6f; box-shadow: 0 3px 0 var(--outline), 0 0 10px rgba(111,207,111,.45); color: var(--ink); }
+.hh-heal .stico { width: 22px; height: 22px; }
+.hh-heal .pr { position: absolute; right: -7px; bottom: -7px; display: inline-flex; align-items: center; gap: 1px; padding: 0 4px 0 5px; border-radius: 8px; background: var(--outline); border: 2px solid var(--amber); font: 800 .66rem/1.25 var(--mono); color: var(--gold); }
+.hh-heal .pr svg { width: 9px; height: 9px; }
+.hh-heal:hover:not(:disabled), .hh-heal:focus-visible { filter: brightness(1.2); outline: none; }
+.hh-heal:disabled { opacity: .38; filter: grayscale(.6); cursor: not-allowed; box-shadow: 0 3px 0 var(--outline); }
+/* umiejętności na całą szerokość karty */
+.hubhead .srings { justify-content: space-between; gap: 0; margin-top: 12px; padding: 0 14px 20px; }
+.hubhead .sring { width: 66px; height: 66px; } .hubhead .sring .ico { width: 44px; height: 44px; }
+/* zestawy jako pigułki z nazwą */
+.hh-sets { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 2px; }
+.hh-sets .six { padding: 3px 9px 3px 6px; border-radius: 9px; background: rgba(0,0,0,.28); gap: 6px; font-size: .78rem; }
+.hh-sets .six .si-i { font-size: 18px; filter: none; } .hh-sets .six .si-nm { font-weight: 700; } .hh-sets .six .si-n { font-size: .8rem; }
+.hh-sets .six u { position: static; display: inline-flex; margin-left: 2px; } .hh-sets .six u i { width: 9px; height: 6px; border-radius: 2px; }
+/* statystyki: wiersz = nazwa + liczba + premia, pod spodem pasek z 10 segmentów */
+.hub .sl { display: flex; flex-direction: column; gap: 4px; }
+.hub .slr { display: block; min-height: 0; padding: 0 2px; border-radius: 7px; cursor: help; background: none; }
+.hub .slr.z { background: none; } .hub .slr:hover, .hub .slr:focus-visible { background: rgba(255,179,71,.1); outline: none; }
+.hub .slt { display: flex; align-items: center; gap: 7px; }
+.hub .slr .stico { width: 18px; height: 18px; flex: none; }
+.hub .slr .sln { flex: 1; min-width: 0; font-size: .86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hub .slr .slv { display: flex; align-items: baseline; gap: 3px; margin-left: auto; white-space: nowrap; }
+.hub .slr .slv b { font: 800 1.05rem var(--mono); } .hub .slr .slv i { font: 700 .68rem var(--mono); color: var(--faint); }
+.hub .slr .slv em { font: 800 .7rem var(--mono); font-style: normal; color: #7bd88f; background: rgba(111,207,111,.13); border-radius: 6px; padding: 0 5px; min-width: 2.2em; text-align: center; margin-left: 3px; }
+.hub .slr .slv em:empty { visibility: hidden; } .hub .slr .slv em.neg { color: #ff8a8a; background: rgba(228,87,46,.16); }
+.hub .slr .slv em.gd { visibility: visible; margin-left: 5px; animation: gdin .15s ease-out; }
+.hub .slr .slv em.gd.up { color: #b6ffb6; background: rgba(111,207,111,.3); } .hub .slr .slv em.gd.dn { color: #ffb0a0; background: rgba(228,87,46,.34); }
+@keyframes gdin { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
+html.reduce .hub .slr .slv em.gd { animation: none; }
+.hub .slr.pv { background: rgba(255,179,71,.12); }
+.hub .slb { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; margin-top: 2px; height: auto; flex: none; background: none; overflow: visible; }
+.hub .slb i { display: block; height: 6px; border-radius: 2px; background: rgba(255,255,255,.1); transform: skewX(-18deg); }
+.hub .slb i.on { background: linear-gradient(#ffd23f, #ff8c2b); box-shadow: 0 0 6px rgba(255,170,60,.55); }
+/* ocena względem strefy w jednej linii */
+.hzc { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding: 3px 8px; border-radius: 8px; background: rgba(0,0,0,.3); font-size: .7rem; }
+.hzc span { flex: 1; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hzc b { font: 800 .74rem var(--mono); padding: 1px 7px; border-radius: 6px; white-space: nowrap; cursor: help; }
+.hzc .hi { color: #7bd88f; background: rgba(111,207,111,.15); } .hzc .ok { color: var(--amber); background: rgba(255,179,71,.14); } .hzc .lo { color: #ff8a8a; background: rgba(228,87,46,.2); }
+/* kafelki pogrupowane wg typu */
+.tgrp { display: flex; align-items: flex-start; gap: 8px; padding: 3px 0; } .tgrp + .tgrp { border-top: 1px solid rgba(255,255,255,.07); }
+.tgl { flex: 0 0 78px; font: 700 .62rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding-top: 5px; } .tgl b { color: var(--amber); }
+.hub .tgrp .chips { gap: 4px; } .hub .tgrp .chip { width: 30px; height: 30px; } .hub .tgrp .chip .ico { width: 22px; height: 22px; }
+/* dopasowanie wysokości huba do okna */
+.hubhead .srings { margin-top: 6px; padding-bottom: 17px; }
+.hub .sl { gap: 3px; } .hzc { margin-top: 4px; }
+.hh-sets { margin-top: 0; }
+.tgl { flex-basis: 68px; } .hub .tgrp .chip { width: 28px; height: 28px; } .hub .tgrp .chip .ico { width: 21px; height: 21px; }
+.hub { gap: 6px; } .hubhead { padding-bottom: 4px; }
+/* bez zielonego pierścienia życia wokół portretu (życie pokazuje pasek obok) */
+.hubhead .h4-fig.hh-fig { background: radial-gradient(circle at 50% 40%, rgba(255,179,71,.38), rgba(0,0,0,.35)); border: 4px solid var(--amber2); padding: 0; box-shadow: 0 0 14px rgba(255,140,43,.45); }
+.hubhead .h4-fig.hh-fig .kin { box-shadow: none; background: none; }
+/* kolumny liczba / jednostka / premia mają stałe szerokości, więc liczby i jednostki stoją w jednej linii */
+.hub .slr .slv { display: grid; grid-template-columns: auto 3.4ch 4.4ch; align-items: baseline; gap: 0; }
+.hub .slr .slv b { justify-self: end; } .hub .slr .slv i { padding-left: 3px; } .hub .slr .slv em { margin-left: 0; justify-self: end; min-width: 0; }
+.hub .slr .slv em.gd { margin-left: 4px; justify-self: start; white-space: nowrap; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: rgba(20,14,10,.92); }
+.hub .slr { position: relative; }

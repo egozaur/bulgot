@@ -12,10 +12,10 @@ export function setIconsHTML() {
   const r = G.run, sc = setCounts(r.tiles, r.decree);
   const sets = Object.keys(D.SETS).filter(id => sc[id]).map(id => {
     const n = sc[id], step = D.SET_STEPS.filter(s => n >= s).length;
-    return `<div class="six t${step}" tabindex="0" data-tipk="set:${id}"><span class="si-i">${SET_ICON[id] || '⭐'}</span><b class="si-n">${n}</b><u>${D.SET_STEPS.map(s => `<i class="${n >= s ? 'on' : ''}"></i>`).join('')}</u></div>`;
+    return `<div class="six t${step}" tabindex="0" data-tipk="set:${id}"><span class="si-i">${SET_ICON[id] || '⭐'}</span><span class="si-nm">${esc(D.SETS[id].name)}</span><b class="si-n">${n}</b><u>${D.SET_STEPS.map(s => `<i class="${n >= s ? 'on' : ''}"></i>`).join('')}</u></div>`;
   });
   const ms = Object.entries(D.MILESTONES).map(([id, m]) => ({ m, n: Math.floor(r.tiles.filter(x => x === id).length / D.MILESTONE_EVERY) })).filter(x => x.n)
-    .map(x => `<div class="six ms" tabindex="0" data-tip="${esc(x.m.name + '\n' + x.m.text)}"><span class="si-i">⭐</span><b class="si-n">${x.n}</b></div>`);
+    .map(x => `<div class="six ms" tabindex="0" data-tip="${esc(x.m.name + '\n' + x.m.text)}"><span class="si-i">⭐</span><span class="si-nm">${esc(x.m.name)}</span><b class="si-n">${x.n}</b></div>`);
   return [...sets, ...ms];
 }
 // Trzy kółka umiejętności (klawisze 1–3): symbol, poziom, nazwa pod spodem; kolejność zmienia się przeciąganiem albo strzałkami ←/→ na aktywnym kółku.
@@ -30,44 +30,58 @@ export function skillRingsHTML() {
 }
 // Statystyki w jednej kolumnie: ikona, nazwa, liczba i jednostka w stałych kolumnach; mikropasek to tylko orientacyjna skala.
 export const BAR_CAP = { atk: 100, aspd: 300, crit: 100, maxHp: 150, armor: 80, evade: 75, regen: 50, luck: 100 };
+// Statystyki w jednej kolumnie (Patch 1.1): ikona, nazwa, liczba z jednostką i premia ponad bazę; pod spodem pasek z 10 segmentów (orientacyjna skala).
 export function statListHTML() {
-  const S = G.run.hero, base = (D.CHARS[G.run.char] || {}).base; let z = 0;
-  // Wszystkie statystyki są zawsze widoczne (także zero); zielona liczba z prawej to premia ponad bazę, czerwona to kara.
-  return `<div class="sl">${T.STAT_GROUPS.map(([gname, keys]) => {
-    const rows = keys.map(([k, label]) => {
-      const [num, unit] = T.statValue(k, S), bn = T.statBonus(k, S, base); z++;
-      return `<div class="slr ${z % 2 ? 'z' : ''}" tabindex="0" data-tipk="stat:${k}">${art.statIcon(k)}<span class="sln">${label}</span><span class="slb"><i style="width:${Math.max(4, Math.min(100, S[k] / BAR_CAP[k] * 100))}%"></i></span><span class="slv"><b>${num}</b><i>${unit}</i><em class="${bn.neg ? 'neg' : ''}">${bn.txt}</em></span></div>`;
-    }).join('');
-    return `<div class="slg">${gname}</div>${rows}`;
+  const S = G.run.hero, base = (D.CHARS[G.run.char] || {}).base;
+  const keys = T.STAT_GROUPS.flatMap(([, ks]) => ks);
+  return `<div class="sl">${keys.map(([k, label]) => {
+    const [num, unit] = T.statValue(k, S), bn = T.statBonus(k, S, base), on = Math.round(Math.max(0, Math.min(1, S[k] / BAR_CAP[k])) * 10);
+    return `<div class="slr" tabindex="0" data-k="${k}" data-tipk="stat:${k}"><span class="slt">${art.statIcon(k)}<span class="sln">${label}</span><span class="slv"><b>${num}</b><i>${unit}</i><em class="${bn.neg ? 'neg' : ''}">${bn.txt}</em></span></span><span class="slb">${Array.from({ length: 10 }, (_, i) => `<i class="${i < on ? 'on' : ''}"></i>`).join('')}</span></div>`;
   }).join('')}</div>`;
+}
+// Przycisk Odpoczynku w rogu karty bohatera: ta sama akcja i te same warunki co przycisk „Odpoczynek” na scenie oferty.
+export function healBtnHTML() {
+  const r = G.run, off = r.phase !== 'offer' || r.rested || r.hp >= r.maxHp || r.coins < r.restCost || !!r.extraNow;
+  const why = r.phase !== 'offer' ? 'Odpoczywać można przed wyborem kafelka' : r.extraNow ? 'Przed dodatkową rundą nie ma odpoczynku' : r.rested ? 'W tej rundzie już odpoczywałeś' : r.hp >= r.maxHp ? 'Masz pełne życie' : r.coins < r.restCost ? 'Za mało Ziaren' : `Odpoczynek (O): +${r.restPct}% życia za ${r.restCost} Ziaren`;
+  return `<button class="hh-heal" data-act="rest" ${off ? 'disabled' : ''} title="${esc(why)}" aria-label="Odpoczynek">${art.statIcon('regen')}<span class="pr">${r.restCost}${art.coinIcon()}</span></button>`;
+}
+// Kafelki pogrupowane wg typu: Legendarne, Przedmioty, Statystyki, Ryzyko (bez umiejętności: te są w kółkach).
+export function tileGroupsHTML(im) {
+  const r = G.run, counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
+  const grp = t => (t.boss || t.legend) ? 'Legendarne' : t.fam ? 'Statystyki' : t.type === 'risk' ? 'Ryzyko' : 'Przedmioty';
+  const GR = { Legendarne: [], Przedmioty: [], Statystyki: [], Ryzyko: [] };
+  Object.entries(counts).sort((a, b) => TILE[b[0]].rarity - TILE[a[0]].rarity || b[1] - a[1]).forEach(e => GR[grp(TILE[e[0]])].push(e));
+  const chip = ([id, n]) => {
+    const t = TILE[id], g = t.grow ? Math.min(t.grow.max, (r.grow || {})[id] || 0) : 0, fw = (r.flawed || []).find(w => w.id === id);
+    const tip = fw ? 'Wada fabryczna (+50% efektów): ' + (fw.flaw ? D.FLAWS[fw.flaw].name + '. ' + D.FLAWS[fw.flaw].text : 'ujawni się po walce') : '';
+    return `<div class="chip r${t.rarity} ${fw ? 'flawed' : ''} ${im.ids.includes(id) ? 'dhit' : ''} ${id === G.upFresh ? 'fresh' : ''}" tabindex="0" data-tipk="tile:${id}" data-tipx="${esc(tip)}">${lvlTag(t)}${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : ''}${g ? `<sup class="gr">+${g}</sup>` : ''}</div>`;
+  };
+  const body = Object.entries(GR).filter(([, l]) => l.length).map(([g, l]) => `<div class="tgrp"><span class="tgl">${g} <b>${l.reduce((a, x) => a + x[1], 0)}</b></span><div class="chips">${l.map(chip).join('')}</div></div>`).join('');
+  return { body, total: Object.values(counts).reduce((a, b) => a + b, 0) };
 }
 export function sideHTML() {
   const r = G.run, S = r.hero, ch = D.CHARS[r.char], cp = T.CHAR_PERKS[r.char] || { title: '', perks: [] };
   const pct = Math.max(0, Math.min(100, r.hp / S.maxHp * 100));
-  const items = setIconsHTML(), half = Math.ceil(items.length / 2), im = decreeImpact(r);
+  const items = setIconsHTML(), im = decreeImpact(r);
   const perkTip = cp.perks.map(([, sg, tx]) => (sg === '+' ? '＋ ' : '− ') + tx).join('\n');
   const heroTip = esc(ch.name + ' · ' + (cp.role || ch.style) + '\n' + ch.text + (perkTip ? '\n' + perkTip : ''));
   const pet = r.companion ? (() => { const c = r.companion, d = D.COMPANIONS[c.id]; return `<span class="pet" tabindex="0" data-tip="${esc(compForm(c) + ' (poziom ' + c.lvl + ' z 3)\n' + companionBlurb(c.id, c.lvl) + '\nRośnie po każdym pokonanym bossie.')}">${art.companionArt(c.id)}<b>${c.lvl}</b></span>`; })() : '';
   const bd = r.badges && r.badges.length ? `<div class="bdgs">${r.badges.map(bdg => `<div class="chip badge" tabindex="0" data-tipk="badge:${bdg}">${art.badgeIcon(bdg)}</div>`).join('')}</div>` : '';
   const links = linkChipsHTML();
-  const counts = {}; for (const id of r.tiles) { const t = TILE[id]; if (t && t.type !== 'skill') counts[id] = (counts[id] || 0) + 1; }
-  const chips = Object.entries(counts).sort((a, b) => TILE[b[0]].rarity - TILE[a[0]].rarity || b[1] - a[1]).map(([id, n]) => {
-    const t = TILE[id], g = t.grow ? Math.min(t.grow.max, (r.grow || {})[id] || 0) : 0, fw = (r.flawed || []).find(w => w.id === id);
-    const tip = fw ? 'Wada fabryczna (+50% efektów): ' + (fw.flaw ? D.FLAWS[fw.flaw].name + '. ' + D.FLAWS[fw.flaw].text : 'ujawni się po walce') : '';
-    return `<div class="chip r${t.rarity} ${fw ? 'flawed' : ''} ${im.ids.includes(id) ? 'dhit' : ''} ${id === G.upFresh ? 'fresh' : ''}" tabindex="0" data-tipk="tile:${id}" data-tipx="${esc(tip)}">${lvlTag(t)}${art.tileIcon(id)}${n > 1 ? `<sup>×${n}</sup>` : t.grow && g ? `<sup class="gr">+${g}</sup>` : ''}</div>`;
-  }).join('');
+  const tg = tileGroupsHTML(im);
   const pawnLine = r.pawned ? `<div class="setline pawn">W lombardzie: ${esc(TILE[r.pawned.id].name)}${r.pawned.canRedeem ? ` (wykup za ${r.pawned.cost} Ziaren tylko na tym piętrze)` : ' (wykup na następnym piętrze)'}</div>` : '';
   const foxLine = r.foxDebt ? `<div class="setline pawn">Lisy Windykatory silniejsze o ${r.foxDebt * D.RULES.pawnFox}% (przepadłe zastawy)</div>` : '';
-  return `<aside class="side">
-    <div class="panel hero-card hero4" tabindex="0" data-tip="${heroTip}">
-      <div class="h4-top"><div class="h4-col l">${items.slice(0, half).join('')}</div>
-        <div class="h4-mid"><div class="h4-fig" style="--p:${pct}"><div class="kin">${art.heroArt(r.char, r.form)}</div><span class="hpnum"><span data-ctr="hp">${r.hp}</span> / ${S.maxHp}</span>${pet}</div>
-          <div class="nm">${esc(ch.name)}</div><div class="fm">${esc(cp.title ? '★ ' + cp.title : cp.role || ch.style)}</div></div>
-        <div class="h4-col r">${items.slice(half).join('')}</div></div>
+  return `<aside class="side hub">
+    <div class="panel hero-card hubhead" tabindex="0" data-tip="${heroTip}">
+      ${healBtnHTML()}
+      <div class="hh-row"><div class="h4-fig hh-fig" style="--p:${pct}"><div class="kin">${art.heroArt(r.char, r.form)}</div>${pet}</div>
+        <div class="hh-tr"><div class="hh-nm"><b>${esc(ch.name)}</b><span>${esc(cp.title ? '★ ' + cp.title : cp.role || ch.style)}</span></div>
+          <div class="hh-hp" style="--p:${pct}"><i></i><b><span data-ctr="hp">${r.hp}</span> / ${S.maxHp}</b></div></div></div>
       ${skillRingsHTML()}
+      ${items.length ? `<div class="hh-sets">${items.join('')}</div>` : ''}
       ${links || bd ? `<div class="h4-mix">${links}${bd}</div>` : ''}</div>
-    <div class="panel"><h4>Statystyki</h4>${zoneCompareHTML()}${statListHTML()}</div>
-    <div class="panel"><h4>Kafelki (${r.tiles.length})</h4>${chips ? `<div class="chips">${chips}</div>` : '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${pawnLine}${foxLine}</div></aside>`;
+    <div class="panel"><h4>Statystyki</h4>${statListHTML()}${zoneCompareHTML()}</div>
+    <div class="panel"><h4>Kafelki (${tg.total})</h4>${tg.body || '<span class="hint">Jeszcze nic. Wybierz pierwszy kafelek.</span>'}${pawnLine}${foxLine}</div></aside>`;
 }
 // Liczniki tablicy rozdzielczej: licznik odcinkowy wyniku i przewijanie wartości przy zmianie (zielony / czerwony błysk).
 export const odoHTML = (n, len) => String(Math.max(0, n | 0)).padStart(len, '0').split('').map(d => `<i>${d}</i>`).join('');
@@ -121,7 +135,34 @@ export function linkChipsHTML() {
 }
 export function zoneCompareHTML() {
   const c = zoneCompare(); if (!c) return '';
-  const bar = (k, label, v, tip) => { const lv = v < 0.75 ? 'lo' : v > 1.3 ? 'hi' : 'ok', word = { lo: 'słabo', ok: 'OK', hi: 'mocno' }[lv];
-    return `<div class="zc ${lv}" tabindex="0" data-tip="${esc(tip)}">${art.statIcon(k)}<span class="zl">${label}</span><span class="zb"><i style="width:${Math.round(Math.min(1, v / 2) * 100)}%"></i><u></u></span><b>${word}</b></div>`; };
-  return `<div class="zcmp" aria-label="Porównanie z wrogami strefy">${bar('atk', 'Atak', c.off, 'Jak szybko pokonasz typową grupę wrogów tej strefy (Atak, Szybkość ataku i Dziobnięcie kontra ich Życie i Pancerz).')}${bar('armor', 'Obrona', c.def, 'Jak długo wytrzymasz ciosy typowej grupy wrogów tej strefy (Życie, Pancerz, Unik, Regeneracja kontra ich Atak).')}</div>`;
+  const lv = v => v < 0.75 ? ['lo', 'SŁABO'] : v > 1.3 ? ['hi', 'MOCNO'] : ['ok', 'OK'];
+  const [ac, aw] = lv(c.off), [dc, dw] = lv(c.def);
+  return `<div class="hzc" aria-label="Porównanie z wrogami strefy"><span>Wobec strefy</span><b class="${ac}" tabindex="0" data-tip="Jak szybko pokonasz typową grupę wrogów tej strefy (Atak, Szybkość ataku i Dziobnięcie kontra ich Życie i Pancerz).">Atak ${aw}</b><b class="${dc}" tabindex="0" data-tip="Jak długo wytrzymasz ciosy typowej grupy wrogów tej strefy (Życie, Pancerz, Unik, Regeneracja kontra ich Atak).">Obrona ${dw}</b></div>`;
+}
+
+
+// Podgląd zmiany statystyk przed wzięciem kafelka (Patch 1.1): serwer liczy różnice (view().preview), klient pokazuje je przy najechaniu na kartę.
+export function previewIds() { const r = G.run; return !r ? [] : r.phase === 'loot' ? (r.pending && r.pending.offer) || [] : r.offer || []; }
+export function clearPreview() {
+  document.querySelectorAll('.slr .gd').forEach(e => e.remove());
+  document.querySelectorAll('.slr.pv').forEach(e => e.classList.remove('pv'));
+}
+export function showPreview(i) {
+  clearPreview();
+  const r = G.run, id = previewIds()[i], d = id && r && r.preview && r.preview[id];
+  if (!d) return;
+  for (const [k, v] of Object.entries(d)) {
+    const row = document.querySelector(`.slr[data-k="${k}"]`); if (!row || !v) continue;
+    const a = Math.abs(v), body = k === 'aspd' ? T.fmtPerSec(a) : k === 'regen' ? T.fmtRegen(a) : String(a);
+    const em = document.createElement('em'); em.className = 'gd ' + (v > 0 ? 'up' : 'dn'); em.textContent = (v > 0 ? '▲ +' : '▼ −') + body + (k === 'crit' || k === 'evade' ? '%' : '');
+    em.title = 'Tyle zmieni się po wzięciu tego kafelka';
+    row.classList.add('pv'); row.querySelector('.slv').appendChild(em);
+  }
+}
+export function initPreview() {
+  const idx = e => { const t = e.target.closest && e.target.closest('.cards .tile[data-i]'); return t ? +t.dataset.i : -1; };
+  document.addEventListener('mouseover', e => { const i = idx(e); if (i >= 0) showPreview(i); });
+  document.addEventListener('mouseout', e => { if (idx(e) >= 0) clearPreview(); });
+  document.addEventListener('focusin', e => { const i = idx(e); if (i >= 0) showPreview(i); });
+  document.addEventListener('focusout', e => { if (idx(e) >= 0) clearPreview(); });
 }
