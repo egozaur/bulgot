@@ -28,6 +28,13 @@ export async function openDuel() {
   const j = await act('duel', { op: 'state' }); if (!j) return;
   DU.sig = ''; paint(true);
 }
+export function askDuelCode() {
+  if (G.duel && G.duel.state !== 'done') return openDuel();
+  openOverlay(`<h2>Pojedynek</h2><p class="lead">Tryb testowy: wpisz hasło, żeby wejść do pojedynku.</p>
+    <input id="duelgate" class="codein" type="password" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Hasło" aria-label="Hasło do pojedynku">
+    <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="duelgate" data-primary>Wejdź</button><button class="btn ghost" data-act="close">Wróć</button></div>`, { narrow: true });
+  setTimeout(() => { const i = $('#duelgate'); if (i) { i.focus(); i.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); DUEL_ACT.duelgate(); } }); } }, 60);
+}
 
 // Aktualizacja po każdej odpowiedzi serwera z polem duel (wywołują ją akcje i odpytywanie).
 export function duelChanged() { ensureLoops(); paint(false); }
@@ -189,7 +196,12 @@ async function autoFight() {
 
 // ---------- akcje z ACT (input.js) ----------
 export const DUEL_ACT = {
-  duel: () => openDuel(),
+  duel: () => askDuelCode(),
+  duelgate: () => {
+    const v = (($('#duelgate') || {}).value || '').trim().toLowerCase();
+    if (v !== 'duel') { snd.sfx('hurt'); return toast('Złe hasło.', true, 2400); }
+    closeOverlay(); openDuel();
+  },
   duelcreate: async () => { const j = await act('duel', { op: 'create' }); if (j) { DU.sig = ''; DU.picked = null; duelChanged(); } },
   dueljoin: async () => { const code = ($('#duelcode') || {}).value; if (!code || !code.trim()) return toast('Wpisz kod od znajomego.', true); const j = await act('duel', { op: 'join', code: code.trim() }); if (j) { DU.sig = ''; DU.picked = null; duelChanged(); } },
   duelchar: b => { (DU.picked || (DU.picked = { char: 'pyrtek', garnek: 0 })).char = b.dataset.v; snd.sfx('click'); DU.sig = ''; paint(true); },

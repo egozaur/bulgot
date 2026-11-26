@@ -153,7 +153,7 @@ export async function showHistory() {
     const res = h.outcome === 'win' ? '<b style="color:var(--green)">WYGRANA</b>' : h.abandoned ? 'porzucony' : '<b style="color:#ff8a6a">porażka</b>';
     return `<tr><td>${when(h.ended)}</td><td>${esc(D.MODES[h.mode].name)}${h.garnek ? ' · G' + h.garnek : ''}</td><td>${esc((D.CHARS[h.char] || {}).name || h.char)}</td><td>${res}</td><td>${h.floorsDone}/${D.MODES[h.mode].rounds}</td><td class="sc">${fmtNum(h.score)}</td><td>${esc(killer)}</td><td>${h.sent ? '<span class="sent">✓ wysłano</span>' : `<button class="btn small" data-act="analyze" data-id="${esc(h.id)}">Zgłoś</button>`}</td></tr>`;
   }).join('');
-  openOverlay(`<h2>Historia gier (test)</h2><p class="lead">Ostatnie ${last.length} runów zapisuje się automatycznie, z dziennikiem każdej rundy. Po testach napisz, żeby ją przeanalizować.</p>
+  openOverlay(`<h2>Historia gier</h2><p class="lead">Ostatnie ${last.length} runów zapisuje się automatycznie, z dziennikiem każdej rundy.</p>
     ${rows ? `<table class="rank-list"><thead><tr><th>Kiedy</th><th>Tryb</th><th>Postać</th><th>Wynik</th><th>Piętra</th><th style="text-align:right">Punkty</th><th>Pokonał go</th><th>Analiza</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="lead">Brak zakończonych runów. Zagraj i wróć tutaj.</p>'}
     <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="histdl" ${rows ? '' : 'disabled'}>Pobierz JSON (ostatnie 10)</button><button class="btn" data-act="histcopy" ${rows ? '' : 'disabled'}>Skopiuj JSON</button></div>`);
 }
@@ -175,7 +175,7 @@ export async function toggleFullscreen() {
 }
 export function showSettings() {
   const fs = fullscreenOn(), fsOk = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || document.exitFullscreen || document.webkitExitFullscreen);
-  openOverlay(`<h2>Dźwięk i ekran</h2><div class="setrow"><span>Efekty dźwiękowe</span><button class="toggle ${snd.settings.sfx ? 'on' : ''}" data-act="tsfx">${snd.settings.sfx ? 'WŁ.' : 'WYŁ.'}</button></div>
+  openOverlay(`<h2>Ustawienia</h2><div class="setrow"><span>Efekty dźwiękowe</span><button class="toggle ${snd.settings.sfx ? 'on' : ''}" data-act="tsfx">${snd.settings.sfx ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Głośność</span><span class="volbox"><input type="range" id="set-vol" min="0" max="100" step="5" value="${snd.settings.vol}" aria-label="Głośność"><b id="set-vol-n">${snd.settings.vol}%</b></span></div>
     ${G.profile.casino && G.profile.casino.unlocked ? `<div class="setrow"><span>Tryb kasynowy (kręcące się walce przy przetasowaniu)</span><button class="toggle ${casinoOn() || (G.profile.casino && G.profile.casino.on) ? 'on' : ''}" data-act="tcasino">${G.profile.casino.on ? 'WŁ.' : 'WYŁ.'}</button></div>` : ''}
     <div class="setrow"><span>Muzyka (bulgocząca pętla)</span><button class="toggle ${snd.settings.music ? 'on' : ''}" data-act="tmusic">${snd.settings.music ? 'WŁ.' : 'WYŁ.'}</button></div>
@@ -186,7 +186,7 @@ export function showSettings() {
 }
 export function showMenu() {
   const r = G.run && G.run.phase !== 'over';
-  openOverlay(`<h2>Menu</h2><div class="actions" style="flex-direction:column;align-items:stretch"><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk i ekran</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="history">Historia gier (test)</button><button class="btn primary" data-act="home">Wróć do menu głównego${r ? ' (run zapisany)' : ''}</button>${r ? '<button class="btn danger" data-act="abandon">Porzuć run</button>' : ''}</div>`, { narrow: true });
+  openOverlay(`<h2>Menu</h2><div class="actions" style="flex-direction:column;align-items:stretch"><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Ustawienia</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="ranking">Ranking</button><button class="btn primary" data-act="home">Wróć do menu głównego${r ? ' (run zapisany)' : ''}</button>${r ? '<button class="btn danger" data-act="abandon">Porzuć run</button>' : ''}</div>`, { narrow: true });
 }
 // Intro: pierwszy raz scena z kamerą (Kronikarz mówi, kamera jedzie od bramy do biura Zarządu); potem tylko jedno zdanie.
 // Jeden przycisk `introgo` jest od razu: „Pomiń ▸”, a po scenie „Zaczynamy”. Bez animacji (`bulgot:anim` = '0') widać całą listę zdań.

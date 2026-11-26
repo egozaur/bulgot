@@ -67,7 +67,7 @@ export function renderHome() {
         <button class="btn primary big" data-act="resume" data-primary>Kontynuuj</button><button class="btn small ghost" data-act="abandon">Porzuć run</button>`
       : `<div class="home-main"><button class="btn primary big" data-act="new" data-primary>Graj</button>${dailyBtn()}${duelBtn()}</div>`}
       <div class="home-row nav"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="kurnik" title="Trwałe ulepszenia za Pióra">${art.emo('pisklecarnia')} Kurnik <small>${G.profile.feathers | 0}</small></button><button class="btn" data-act="shop">Sklepik <small>🎟️ ${stazOf().talons}</small></button><button class="btn" data-act="profile">Profil</button><button class="btn" data-act="book" title="Księga Kurnika">Księga</button></div>
-      <div class="home-row small"><button class="btn small" data-act="help">Jak grać</button><button class="btn small" data-act="settings">Dźwięk i ekran</button><button class="btn small ghost" data-act="history">Historia (test)</button></div>
+      <div class="home-row small"><button class="btn small" data-act="help">Jak grać</button><button class="btn small" data-act="settings">Ustawienia</button></div>
       ${bestLine ? `<div class="best">Najlepsze wyniki. ${bestLine}</div>` : ''}
     </div></div></div>`;
 }
