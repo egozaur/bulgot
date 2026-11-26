@@ -1,13 +1,13 @@
 // Bulgot, interfejs: Staż, Sklepik Zakładowy, Dyżur dnia.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import { dailyRanks as apiDaily, playerNow } from '../api.js?v=20261126b';
-import * as D from '../shared/data.js?v=20261126b';
-import * as art from '../art.js?v=20261126b';
-import * as snd from '../audio.js?v=20261126b';
-import { $, G, act, closeOverlay, esc, fmtNum, openOverlay, overlayOpen, store, toast } from './core.js?v=20261126b';
-import { cls } from './fight.js?v=20261126b';
-import { render } from './home.js?v=20261126b';
-import { showDecreeRoll, startIntro } from './windows.js?v=20261126b';
+import { dailyRanks as apiDaily, playerNow } from '../api.js?v=20261126c';
+import * as D from '../shared/data.js?v=20261126c';
+import * as art from '../art.js?v=20261126c';
+import * as snd from '../audio.js?v=20261126c';
+import { $, G, act, closeOverlay, esc, fmtNum, openOverlay, overlayOpen, store, toast } from './core.js?v=20261126c';
+import { cls } from './fight.js?v=20261126c';
+import { render } from './home.js?v=20261126c';
+import { showDecreeRoll, startIntro } from './windows.js?v=20261126c';
 
 // ---------- Staż, Sklepik Zakładowy, Dyżur dnia ----------
 // Staż to poziom konta w tle: Nadgodziny z runów → poziomy → Talony (2 za poziom) + wybór 1 z 2 nagród. Talony idą do Sklepiku (kosmetyka, nic nie zmienia siły).

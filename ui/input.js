@@ -1,19 +1,19 @@
 // Bulgot, interfejs: obsługa kliknięć (tablica ACT) i sterowanie klawiszami/strzałkami.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import { LOCAL, playerNow } from '../api.js?v=20261126b';
-import * as D from '../shared/data.js?v=20261126b';
-import * as snd from '../audio.js?v=20261126b';
-import { casinoAnswer, casinoOn, casinoSpin, showCasinoAsk } from './casino.js?v=20261126b';
-import { DUEL_ACT } from './duel.js?v=20261126b';
-import { $, G, TILE, act, closeOverlay, openOverlay, overlayOpen, store, toast } from './core.js?v=20261126b';
-import { backFromAnalyze, chooseEnding, sendAnalysis, showAnalyzeDialog, showEnd } from './end.js?v=20261126b';
-import { banner, startFight, stopFight, useSkill } from './fight.js?v=20261126b';
-import { carGo, charIds, garGo, init, render, setupOk } from './home.js?v=20261126b';
-import { dismissInvoice, invoiceOn, showSlip } from './invoice.js?v=20261126b';
-import { lvlPick, shopAct, showDaily, showShop, startDaily } from './meta.js?v=20261126b';
-import { compForm, doBuy, doPick, needChoice, showPawn, showUpgrade } from './run.js?v=20261126b';
-import { animOn, applyAnim } from './side.js?v=20261126b';
-import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showDecreeRoll, startIntro, showKurnik, showMenu, showProfile, showRanking, showSettings, toggleFullscreen } from './windows.js?v=20261126b';
+import { LOCAL, playerNow } from '../api.js?v=20261126c';
+import * as D from '../shared/data.js?v=20261126c';
+import * as snd from '../audio.js?v=20261126c';
+import { casinoAnswer, casinoOn, casinoSpin, showCasinoAsk } from './casino.js?v=20261126c';
+import { DUEL_ACT } from './duel.js?v=20261126c';
+import { $, G, TILE, act, closeOverlay, openOverlay, overlayOpen, store, toast } from './core.js?v=20261126c';
+import { backFromAnalyze, chooseEnding, sendAnalysis, showAnalyzeDialog, showEnd } from './end.js?v=20261126c';
+import { banner, startFight, stopFight, useSkill } from './fight.js?v=20261126c';
+import { carGo, charIds, garGo, init, render, setupOk } from './home.js?v=20261126c';
+import { dismissInvoice, invoiceOn, showSlip } from './invoice.js?v=20261126c';
+import { lvlPick, shopAct, showDaily, showShop, startDaily } from './meta.js?v=20261126c';
+import { compForm, doBuy, doPick, needChoice, showPawn, showUpgrade } from './run.js?v=20261126c';
+import { animOn, applyAnim } from './side.js?v=20261126c';
+import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showDecreeRoll, startIntro, showKurnik, showMenu, showProfile, showRanking, showSettings, toggleFullscreen } from './windows.js?v=20261126c';
 
 // ---------- obsługa kliknięć i klawiszy ----------
 export const ACT = {

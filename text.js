@@ -213,7 +213,7 @@ export const CHAR_PERKS = {
   dinozaur: { role: 'Sekretny', title: 'Wykluwa się', perks: [['🥚', '+', 'Po 4 piętrach: Dinozaur (+30% Ataku i Życia)'], ['🛡️', '+', 'Do tego czasu bez żadnych kar']] },
 };
 
-import * as D from './shared/data.js?v=20261126b';
+import * as D from './shared/data.js?v=20261126c';
 
 // Gruszka (dodatkowy boss, piętro 3): facet-mędrzec z dragon staffem. 3 akty: otwarcie, szał, puenta.
 // Dominacja buildu gracza (z tagów kafelków/umiejętności) ustala kontrastowy staff i roast żywiołu.

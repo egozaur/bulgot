@@ -1,20 +1,20 @@
 // Bulgot, interfejs: walka na żywo na pełnym ekranie (silnik z shared/sim.js, efekty z fx.js).
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import * as D from '../shared/data.js?v=20261126b';
-import { Fight, MAX_TICKS, FURY_FROM } from '../shared/sim.js?v=20261126b';
-import * as art from '../art.js?v=20261126b';
-import * as T from '../text.js?v=20261126b';
-import * as snd from '../audio.js?v=20261126b';
-import { fightScene, sceneClouds } from '../scenes.js?v=20261126b';
-import { castFx, markHit, trapSnap, SK_COLOR } from '../fx.js?v=20261126b';
-import { $, G, TILE, act, closeOverlay, esc, openOverlay, sleep, toast } from './core.js?v=20261126b';
-import { fm, showEnd } from './end.js?v=20261126b';
-import { floorEntry } from '../fakty-pamiec.js?v=20261126b';
-import { render } from './home.js?v=20261126b';
-import { INV, invoiceOn, showInvoice } from './invoice.js?v=20261126b';
-import { bossIntroOf, compForm, enemyFig, floorKronHTML } from './run.js?v=20261126b';
-import { PREZES_INTERKOM } from '../fabula.js?v=20261126b';
-import { REDUCED } from './side.js?v=20261126b';
+import * as D from '../shared/data.js?v=20261126c';
+import { Fight, MAX_TICKS, FURY_FROM } from '../shared/sim.js?v=20261126c';
+import * as art from '../art.js?v=20261126c';
+import * as T from '../text.js?v=20261126c';
+import * as snd from '../audio.js?v=20261126c';
+import { fightScene, sceneClouds } from '../scenes.js?v=20261126c';
+import { castFx, markHit, trapSnap, SK_COLOR } from '../fx.js?v=20261126c';
+import { $, G, TILE, act, closeOverlay, esc, openOverlay, sleep, toast } from './core.js?v=20261126c';
+import { fm, showEnd } from './end.js?v=20261126c';
+import { floorEntry } from '../fakty-pamiec.js?v=20261126c';
+import { render } from './home.js?v=20261126c';
+import { INV, invoiceOn, showInvoice } from './invoice.js?v=20261126c';
+import { bossIntroOf, compForm, enemyFig, floorKronHTML } from './run.js?v=20261126c';
+import { PREZES_INTERKOM } from '../fabula.js?v=20261126c';
+import { REDUCED } from './side.js?v=20261126c';
 
 // ---------- walka na żywo ----------
 // ---------- walka na pełnym ekranie (Etap 1 przebudowy, 2026-11-23) ----------

@@ -1,18 +1,18 @@
 // Bulgot: punkt wejścia interfejsu. Cała logika (oferty, rerolle, walki, wyniki) liczy serwer; tu rysujemy ekrany i prowadzimy walkę na żywo
 // tym samym silnikiem (shared/sim.js), a lista wejść gracza leci na serwer, który powtarza walkę i wydaje wynik.
 // Kod interfejsu jest podzielony na moduły w ui/ (mapa: .claude/context/systems-index.md); tu zostają importy i rejestracja nasłuchiwaczy.
-import * as T from './text.js?v=20261126b';
-import * as snd from './audio.js?v=20261126b';
-import { initTip } from './tip.js?v=20261126b';
-import { $, G, SPIN, act, applyScale, closeOverlay, overlayOpen } from './ui/core.js?v=20261126b';
-import { useSkill } from './ui/fight.js?v=20261126b';
-import { carGo, charIds, garGo, init, render } from './ui/home.js?v=20261126b';
-import { ACT, ARROWS, navCurrent, navItems, navMove } from './ui/input.js?v=20261126b';
-import { fitBoard } from './ui/invoice.js?v=20261126b';
-import { swapSlots } from './ui/run.js?v=20261126b';
-import { applyAnim, initPreview } from './ui/side.js?v=20261126b';
-import { WIDE, fitTower } from './ui/tower.js?v=20261126b';
-import { RK, bookGo, showBook, showHelp, showRanking, showSettings } from './ui/windows.js?v=20261126b';
+import * as T from './text.js?v=20261126c';
+import * as snd from './audio.js?v=20261126c';
+import { initTip } from './tip.js?v=20261126c';
+import { $, G, SPIN, act, applyScale, closeOverlay, overlayOpen } from './ui/core.js?v=20261126c';
+import { useSkill } from './ui/fight.js?v=20261126c';
+import { carGo, charIds, garGo, init, render } from './ui/home.js?v=20261126c';
+import { ACT, ARROWS, navCurrent, navItems, navMove } from './ui/input.js?v=20261126c';
+import { fitBoard } from './ui/invoice.js?v=20261126c';
+import { swapSlots } from './ui/run.js?v=20261126c';
+import { applyAnim, initPreview } from './ui/side.js?v=20261126c';
+import { WIDE, fitTower } from './ui/tower.js?v=20261126c';
+import { RK, bookGo, showBook, showHelp, showRanking, showSettings } from './ui/windows.js?v=20261126c';
 
 window.__bulgot = G; G.render = () => render();      // podgląd stanu i odświeżanie w testach
 initPreview();   // Patch 1.1: podgląd zmiany statystyk po najechaniu na kartę oferty

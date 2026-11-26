@@ -1,19 +1,19 @@
 // Bulgot, interfejs: okna: ranking, Księga Kurnika, profil, historia, pomoc, ustawienia, menu.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import { ranks as apiRanks, LOCAL, playerNow, avatarUrl } from '../api.js?v=20261126b';
-import * as D from '../shared/data.js?v=20261126b';
-import * as art from '../art.js?v=20261126b';
-import * as T from '../text.js?v=20261126b';
-import * as F from '../fabula.js?v=20261126b';
-import * as snd from '../audio.js?v=20261126b';
-import { casinoOn } from './casino.js?v=20261126b';
-import { $, G, TILE, act, charView, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js?v=20261126b';
-import { cls } from './fight.js?v=20261126b';
-import { BURNERS, lockText } from './home.js?v=20261126b';
-import { invoiceOn } from './invoice.js?v=20261126b';
-import { soupsBook } from './meta.js?v=20261126b';
-import { tileCard } from './run.js?v=20261126b';
-import { animOn } from './side.js?v=20261126b';
+import { ranks as apiRanks, LOCAL, playerNow, avatarUrl } from '../api.js?v=20261126c';
+import * as D from '../shared/data.js?v=20261126c';
+import * as art from '../art.js?v=20261126c';
+import * as T from '../text.js?v=20261126c';
+import * as F from '../fabula.js?v=20261126c';
+import * as snd from '../audio.js?v=20261126c';
+import { casinoOn } from './casino.js?v=20261126c';
+import { $, G, TILE, act, charView, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js?v=20261126c';
+import { cls } from './fight.js?v=20261126c';
+import { BURNERS, lockText } from './home.js?v=20261126c';
+import { invoiceOn } from './invoice.js?v=20261126c';
+import { soupsBook } from './meta.js?v=20261126c';
+import { tileCard } from './run.js?v=20261126c';
+import { animOn } from './side.js?v=20261126c';
 
 // ---------- okna: ranking, księga, pomoc, ustawienia, menu ----------
 // Ranking: jeden ogólny (punkty) albo przefiltrowany po postaci, poziomie Garnka i graczu. Klik w nick, postać lub Garnek w tabeli ustawia filtr.

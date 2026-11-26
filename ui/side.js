@@ -1,11 +1,11 @@
 // Bulgot, interfejs: panel boczny bohatera: ikony zestawów, umiejętności, statystyki.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import * as D from '../shared/data.js?v=20261126b';
-import * as art from '../art.js?v=20261126b';
-import * as T from '../text.js?v=20261126b';
-import { setCounts, activeLinks } from '../shared/stats.js?v=20261126b';
-import { $, G, TILE, esc, store } from './core.js?v=20261126b';
-import { compForm, companionBlurb, decreeImpact, lvlTag, setsOf } from './run.js?v=20261126b';
+import * as D from '../shared/data.js?v=20261126c';
+import * as art from '../art.js?v=20261126c';
+import * as T from '../text.js?v=20261126c';
+import { setCounts, activeLinks } from '../shared/stats.js?v=20261126c';
+import { $, G, TILE, esc, store } from './core.js?v=20261126c';
+import { compForm, companionBlurb, decreeImpact, lvlTag, setsOf } from './run.js?v=20261126c';
 
 // Zestawy i kamienie milowe jako duże ikony z konturem w kolorze progu (po bokach portretu); kropki = progi 2/3/4/6.
 export function setIconsHTML() {

@@ -1,21 +1,21 @@
 // Bulgot, interfejs: ekran końca runu (porażka: półka sklepowa z rosołem pracownika), osiągnięcia, ciekawostki, zgłaszanie błędów.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import * as D from '../shared/data.js?v=20261126b';
-import * as art from '../art.js?v=20261126b';
-import * as T from '../text.js?v=20261126b';
-import * as F from '../fabula.js?v=20261126b';
-import * as snd from '../audio.js?v=20261126b';
-import { failFacts, pickFacts, winFacts } from '../fakty.js?v=20261126b';
-import { createMemory } from '../fakty-pamiec.js?v=20261126b';
-import { $, G, TILE, act, closeOverlay, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js?v=20261126b';
-import { cls, feathers } from './fight.js?v=20261126b';
-import { BURNERS, render } from './home.js?v=20261126b';
-import { showDuelEnd } from './duel.js?v=20261126b';
-import { dismissInvoice } from './invoice.js?v=20261126b';
-import { endExtrasHTML, endStazPill } from './meta.js?v=20261126b';
-import { setOwned, tileCard } from './run.js?v=20261126b';
-import { REDUCED } from './side.js?v=20261126b';
-import { showHistory } from './windows.js?v=20261126b';
+import * as D from '../shared/data.js?v=20261126c';
+import * as art from '../art.js?v=20261126c';
+import * as T from '../text.js?v=20261126c';
+import * as F from '../fabula.js?v=20261126c';
+import * as snd from '../audio.js?v=20261126c';
+import { failFacts, pickFacts, winFacts } from '../fakty.js?v=20261126c';
+import { createMemory } from '../fakty-pamiec.js?v=20261126c';
+import { $, G, TILE, act, closeOverlay, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js?v=20261126c';
+import { cls, feathers } from './fight.js?v=20261126c';
+import { BURNERS, render } from './home.js?v=20261126c';
+import { showDuelEnd } from './duel.js?v=20261126c';
+import { dismissInvoice } from './invoice.js?v=20261126c';
+import { endExtrasHTML, endStazPill } from './meta.js?v=20261126c';
+import { setOwned, tileCard } from './run.js?v=20261126c';
+import { REDUCED } from './side.js?v=20261126c';
+import { showHistory } from './windows.js?v=20261126c';
 
 export function takeAch() { const a = G.ach || []; G.ach = []; return a; }
 export function achHTML(list) {

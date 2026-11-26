@@ -1,19 +1,19 @@
 // Bulgot, interfejs: start aplikacji, render, ekran startowy, przygotowanie runu (tryb, postać, palnik).
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import { LOCAL, getPlayer, playerNow, avatarUrl } from '../api.js?v=20261126b';
-import * as D from '../shared/data.js?v=20261126b';
-import * as art from '../art.js?v=20261126b';
-import * as T from '../text.js?v=20261126b';
-import * as F from '../fabula.js?v=20261126b';
-import { maybeCasinoAsk } from './casino.js?v=20261126b';
-import { $, G, SPIN, TILE, act, charView, esc, fmtNum } from './core.js?v=20261126b';
-import { startFight } from './fight.js?v=20261126b';
-import { duelBtn, hudTick, resumeDuel } from './duel.js?v=20261126b';
-import { fitBoard } from './invoice.js?v=20261126b';
-import { maybeLevelUp, stazOf, stazPill } from './meta.js?v=20261126b';
-import { renderRun } from './run.js?v=20261126b';
-import { rollCounters } from './side.js?v=20261126b';
-import { fitTower } from './tower.js?v=20261126b';
+import { LOCAL, getPlayer, playerNow, avatarUrl } from '../api.js?v=20261126c';
+import * as D from '../shared/data.js?v=20261126c';
+import * as art from '../art.js?v=20261126c';
+import * as T from '../text.js?v=20261126c';
+import * as F from '../fabula.js?v=20261126c';
+import { maybeCasinoAsk } from './casino.js?v=20261126c';
+import { $, G, SPIN, TILE, act, charView, esc, fmtNum } from './core.js?v=20261126c';
+import { startFight } from './fight.js?v=20261126c';
+import { duelBtn, hudTick, resumeDuel } from './duel.js?v=20261126c';
+import { fitBoard } from './invoice.js?v=20261126c';
+import { maybeLevelUp, stazOf, stazPill } from './meta.js?v=20261126c';
+import { renderRun } from './run.js?v=20261126c';
+import { rollCounters } from './side.js?v=20261126c';
+import { fitTower } from './tower.js?v=20261126c';
 
 // ---------- start ----------
 export async function init() {

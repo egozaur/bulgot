@@ -1,13 +1,13 @@
 // Bulgot, interfejs: faktura i Tablica Zarządu.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import * as D from '../shared/data.js?v=20261126b';
-import * as art from '../art.js?v=20261126b';
-import * as T from '../text.js?v=20261126b';
-import * as snd from '../audio.js?v=20261126b';
-import { $, G, TILE, act, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js?v=20261126b';
-import { takeUnlocks } from './end.js?v=20261126b';
-import { pop } from './fight.js?v=20261126b';
-import { REDUCED } from './side.js?v=20261126b';
+import * as D from '../shared/data.js?v=20261126c';
+import * as art from '../art.js?v=20261126c';
+import * as T from '../text.js?v=20261126c';
+import * as snd from '../audio.js?v=20261126c';
+import { $, G, TILE, act, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js?v=20261126c';
+import { takeUnlocks } from './end.js?v=20261126c';
+import { pop } from './fight.js?v=20261126c';
+import { REDUCED } from './side.js?v=20261126c';
 
 // ---------- faktura i Tablica Zarządu ----------
 // Po wygranej walce faktura Korporacji Rosołowej spada na ekran, młotek przybija ją gwoździem, po czym leci na Tablicę Zarządu

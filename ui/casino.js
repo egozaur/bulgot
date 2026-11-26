@@ -1,11 +1,11 @@
 // Bulgot, interfejs: tryb kasynowy: przetasowanie oferty jako automat.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import * as D from '../shared/data.js?v=20261126b';
-import * as art from '../art.js?v=20261126b';
-import * as snd from '../audio.js?v=20261126b';
-import { $, G, SPIN, TILE, act, closeOverlay, openOverlay, overlayOpen, toast } from './core.js?v=20261126b';
-import { banner, cls, shake } from './fight.js?v=20261126b';
-import { animOn } from './side.js?v=20261126b';
+import * as D from '../shared/data.js?v=20261126c';
+import * as art from '../art.js?v=20261126c';
+import * as snd from '../audio.js?v=20261126c';
+import { $, G, SPIN, TILE, act, closeOverlay, openOverlay, overlayOpen, toast } from './core.js?v=20261126c';
+import { banner, cls, shake } from './fight.js?v=20261126c';
+import { animOn } from './side.js?v=20261126c';
 
 // ---------- Tryb kasynowy: przetasowanie oferty jako automat ----------
 // Odblokowuje się po 5 przetasowaniach na jednym piętrze (serwer: profile.casino). Domyślnie wyłączony; po odpowiedzi „Tak” włączony na stałe, wyłączany w ustawieniach.

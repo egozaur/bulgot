@@ -1,13 +1,13 @@
 // Bulgot, interfejs: Pojedynek dla 2 osób (kod, głosowanie na postać i palnik, losowanie, odliczanie, termin 60 s, wynik).
 // Stan meczu trzyma serwer (G.duel = widok meczu, G.duelRun = termin i obrażenia mojego runu). Klient tylko pokazuje i odpytuje co 2 s.
-import { call } from '../api.js?v=20261126b';
-import * as D from '../shared/data.js?v=20261126b';
-import * as T from '../text.js?v=20261126b';
-import * as snd from '../audio.js?v=20261126b';
-import { $, G, act, charView, closeOverlay, esc, fmtNum, openOverlay, sleep, store, toast } from './core.js?v=20261126b';
-import { startFight } from './fight.js?v=20261126b';
-import { BURNERS, render } from './home.js?v=20261126b';
-import { animOn } from './side.js?v=20261126b';
+import { call } from '../api.js?v=20261126c';
+import * as D from '../shared/data.js?v=20261126c';
+import * as T from '../text.js?v=20261126c';
+import * as snd from '../audio.js?v=20261126c';
+import { $, G, act, charView, closeOverlay, esc, fmtNum, openOverlay, sleep, store, toast } from './core.js?v=20261126c';
+import { startFight } from './fight.js?v=20261126c';
+import { BURNERS, render } from './home.js?v=20261126c';
+import { animOn } from './side.js?v=20261126c';
 
 const DU = { poll: 0, tick: 0, sig: '', picked: null, spin: 0, starting: false, autoFight: false, lastForce: 0, shownResult: '' };
 export const srvNow = () => Date.now() + (G.duelOff || 0);

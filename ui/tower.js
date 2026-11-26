@@ -1,11 +1,11 @@
 // Bulgot, interfejs: klatka schodowa i wieża pięter.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import * as D from '../shared/data.js?v=20261126b';
-import * as art from '../art.js?v=20261126b';
-import { $, G, esc } from './core.js?v=20261126b';
-import { cls } from './fight.js?v=20261126b';
-import { zoneAt } from './run.js?v=20261126b';
-import { REDUCED } from './side.js?v=20261126b';
+import * as D from '../shared/data.js?v=20261126c';
+import * as art from '../art.js?v=20261126c';
+import { $, G, esc } from './core.js?v=20261126c';
+import { cls } from './fight.js?v=20261126c';
+import { zoneAt } from './run.js?v=20261126c';
+import { REDUCED } from './side.js?v=20261126c';
 
 // ---------- klatka schodowa (komputer): zygzakowate schody, kurczak wchodzi piętro wyżej, płomień rośnie od dołu ----------
 // Kamera przesuwa się za kurczakiem, a górne piętra toną w mgle (nie wiadomo, co jest wyżej); ściana zmienia kolor ze strefą.
