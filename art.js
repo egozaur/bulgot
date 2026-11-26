@@ -491,16 +491,33 @@ const ENEMY = {
 };
 ENEMY.intern2 = ENEMY.intern;
 // Dodatkowi bossowie (piętra 3 i 6): Gruszka w piżamie (kurczak z głową gruszki) i Pipsztal w czarnym dresie; pies Pipsztala to osobny wróg.
-ENEMY.gruszka = () => `<g transform="translate(6 12) scale(.9)">
-    <path d="M36 88 v6 m-8 0 h16 M66 88 v6 m-8 0 h16" stroke="#e8902a" stroke-width="5.5" stroke-linecap="round"/>
-    <path d="M88 70 q14 -2 8 -20 q-16 6 -8 20 z" fill="#6b1d2a" ${S}/>
-    <ellipse cx="52" cy="66" rx="34" ry="26" fill="#c9a26b" ${S}/>
-    <path d="M26 56 q26 -14 52 0 l4 34 h-60z" fill="#5c6bc0" ${S}/><path d="M40 52 l12 40 l12 -40" ${S2} ${NF}/><path d="M28 76 q24 8 48 0" stroke="#fff3d6" stroke-width="5" ${NF}/>
-    <path d="M42 4 q-7 0 -9 9 q-15 8 -15 24 q0 15 24 15 q24 0 24 -15 q0 -16 -15 -24 q-2 -9 -9 -9z" fill="#f0a246" ${S}/>
-    <path d="M56 22 q8 10 4 24 q-6 6 -14 6 q12 -8 10 -30z" fill="#b9701a" opacity=".55"/><circle cx="30" cy="22" r="1.4" fill="#b9701a"/><circle cx="50" cy="28" r="1.4" fill="#b9701a"/><circle cx="34" cy="44" r="1.4" fill="#b9701a"/>
-    <path d="M42 5 q-2 -8 4 -12" stroke="#6b4423" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M44 -2 q12 -8 20 0 q-8 8 -20 0z" fill="#4caf50" ${S2}/>
-    <path d="M24 36 l-12 3 l12 5 z" fill="#ffb02e" ${S}/>${eye(33, 31, 7.5, -2)}${eye(49, 31, 6, -2)}${brow(25, 22, 40, 27)}
-    <path d="M78 34 h12 l-2 12 q-4 3 -8 0z" fill="#ffd9b0" ${S2}/><path d="M84 46 v14 m-5 0 h10" ${S2}/></g>`;
+ENEMY.gruszka = () => `<g class="gruszka-art">
+    <ellipse cx="52" cy="92" rx="30" ry="5" fill="rgba(0,0,0,.22)"/>
+    <g class="gstaff">
+      <g class="gstaff-bar"><rect x="-4" y="34" width="112" height="7" rx="3.5" fill="#b7c1cc" stroke="${O}" stroke-width="2.4"/><rect x="2" y="35.5" width="96" height="2.2" rx="1.1" fill="#e7edf3" opacity=".55"/></g>
+      <g class="gclaw gclaw-l" transform="translate(2,37)">
+        <circle r="6.5" fill="#7a8794" stroke="${O}" stroke-width="2.2"/>
+        <g class="staff-tip"><path d="M0 -4 C-10 -16 -20 -18 -24 -12 C-18 -8 -10 -4 -2 0 Z" fill="var(--staff-tip,#64d7ff)" stroke="${O}" stroke-width="1.8"/><path d="M-2 0 C-14 4 -20 12 -18 20 C-12 16 -6 8 0 4 Z" fill="var(--staff-tip,#64d7ff)" stroke="${O}" stroke-width="1.8"/><path d="M2 -1 C10 -10 20 -10 24 -4 C18 -2 10 2 4 3 Z" fill="var(--staff-tip,#64d7ff)" stroke="${O}" stroke-width="1.8"/><circle cx="-13" cy="-10" r="1.3" fill="#fff" opacity=".85"/><circle cx="-11" cy="11" r="1.2" fill="#fff" opacity=".85"/></g>
+      </g>
+      <g class="gclaw gclaw-r" transform="translate(102,37)">
+        <circle r="6.5" fill="#7a8794" stroke="${O}" stroke-width="2.2"/>
+        <g class="staff-tip"><path d="M0 -4 C10 -16 20 -18 24 -12 C18 -8 10 -4 2 0 Z" fill="var(--staff-tip,#64d7ff)" stroke="${O}" stroke-width="1.8"/><path d="M2 0 C14 4 20 12 18 20 C12 16 6 8 0 4 Z" fill="var(--staff-tip,#64d7ff)" stroke="${O}" stroke-width="1.8"/><path d="M-2 -1 C-10 -10 -20 -10 -24 -4 C-18 -2 -10 2 -4 3 Z" fill="var(--staff-tip,#64d7ff)" stroke="${O}" stroke-width="1.8"/><circle cx="13" cy="-10" r="1.3" fill="#fff" opacity=".85"/><circle cx="11" cy="11" r="1.2" fill="#fff" opacity=".85"/></g>
+      </g>
+    </g>
+    <g class="gpear">
+      <path d="M52 8 C47 8 44 12 44 16 C32 20 24 30 24 42 C24 55 34 60 34 68 C34 81 41 90 52 90 C63 90 70 81 70 68 C70 60 80 55 80 42 C80 30 72 20 60 16 C60 12 57 8 52 8 Z" fill="#86c85a" ${S}/>
+      <path d="M60 18 C68 25 73 34 73 44 C73 56 65 60 65 68 C65 78 60 86 52 88 C62 87 68 79 68 68 C68 60 78 55 78 42 C78 31 71 21 60 17 Z" fill="#5ea53a" opacity=".55"/>
+      <path d="M52 9 C50 4 54 0 58 -2" stroke="#6b4423" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M56 3 C64 -3 72 0 74 5 C66 8 60 7 56 3 Z" fill="#58b24b" stroke="${O}" stroke-width="2"/>
+      <circle cx="36" cy="48" r="1.8" fill="#6ea83f"/><circle cx="44" cy="70" r="1.7" fill="#6ea83f"/><circle cx="62" cy="74" r="1.5" fill="#6ea83f"/><circle cx="66" cy="52" r="1.5" fill="#6ea83f"/>
+      <path d="M39 36 Q44 33 49 36" stroke="${O}" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+      <path d="M56 36 Q61 33 66 36" stroke="${O}" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="44" cy="43" rx="4.4" ry="4.8" fill="#fff3d6" stroke="${O}" stroke-width="2.2"/><circle cx="45.2" cy="43.5" r="2.1" fill="${O}"/><circle cx="46" cy="42.7" r=".7" fill="#fff"/>
+      <ellipse cx="60" cy="43" rx="4.1" ry="4.5" fill="#fff3d6" stroke="${O}" stroke-width="2.2"/><circle cx="61.1" cy="43.5" r="1.9" fill="${O}"/><circle cx="61.8" cy="42.7" r=".65" fill="#fff"/>
+      <path d="M45 53 Q52 58 60 52" stroke="${O}" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+      <path d="M58 52 Q61 50 63 53" stroke="${O}" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </g>
+  </g>`;
 ENEMY.pipsztal = () => `<g transform="translate(8 4) scale(.92)">
     <path d="M36 88 v6 m-8 0 h16 M66 88 v6 m-8 0 h16" stroke="#e8902a" stroke-width="5.5" stroke-linecap="round"/>
     <path d="M88 70 q14 -2 8 -20 q-16 6 -8 20 z" fill="#6b1d2a" ${S}/>

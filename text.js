@@ -186,53 +186,176 @@ export const CHAR_PERKS = {
   sanepid: { title: 'Kontrola Salmonelli', perks: [['🦠', '+', '25% Salmonelli przy ataku, rozprzestrzenia się'], ['📋', '+', '5+ stosów: wróg +25% obrażeń, −20% szybkości'], ['🥚', '+', 'Start: Zgniłe Jajo'], ['atk', '-', '−20% Ataku'], ['maxHp', '-', '−10% Życia']] },
   wanda: { title: 'Złote Jaja', perks: [['🥚', '+', 'Start: Tykające Jajo, uderza we wszystkich'], ['📈', '+', 'Jaja rosną o 4% za piętro (maks. +60%)'], ['🪺', '+', 'Zestaw Jajeczny liczy się o 1 sztukę więcej'], ['atk', '-', '−15% Ataku']] },
   zwiazkowiec: { title: 'Strajk Włoski', perks: [['⏸️', '+', 'Wrogowie zaczynają ogłuszeni (1,8 s, także fale)'], ['🎯', '+', '+25% obrażeń w ogłuszone i zamrożone cele'], ['🗣️', '+', 'Start: Pianie Grozy'], ['atk', '-', '−20% Ataku'], ['maxHp', '-', '−12% Życia']] },
-  pacyfista: { title: 'Bez Ataku', perks: [['☮️', '-', 'Zero zwykłych ataków'], ['⚡', '+', 'Umiejętności +30% mocy, −40% cooldownu'], ['🧪', '+', 'Oparzenie, Salmonella, Krwawienie +60%'], ['🐣', '+', 'Towarzysz od startu, +60% mocy'], ['regen', '+', 'Regeneracja +0,8 / s']] },
+  pacyfista: { title: 'Bez Ataku', perks: [['☮️', '-', 'Zero zwykłych ataków'], ['⚡', '+', 'Umiejętności +30% mocy, −40% cooldownu'], ['🎯', '+', 'Dziobnięcie z kafelków → moc umiejętności'], ['🧪', '+', 'Oparzenie, Salmonella, Krwawienie +60%'], ['🐣', '+', 'Towarzysz od startu, +60% mocy'], ['regen', '+', 'Regeneracja +0,8 / s']] },
   pyrtek: { title: 'Bez fanaberii', perks: [['atk', '+', '+7% Ataku'], ['maxHp', '+', '+7% Życia']] },
   kwoka: { title: 'Czołg', perks: [['maxHp', '+', '+12% Życia'], ['🌾', '+', 'Start: Zagrzebanie w Sianie'], ['aspd', '-', '−25% szybkości ataku']] },
   kaczor: { title: 'Ryzyko i Odsetki', perks: [['🪙', '+', '+10 Ziaren, Odsetki do 5'], ['🔄', '+', '1 reroll gratis na piętro'], ['🎲', '+', 'Więcej kafelków ryzyka']] },
   indor: { title: 'Ciężkie ciosy', perks: [['atk', '+', '+55% Ataku'], ['crit', '+', '+10% szansy na dziobnięcie'], ['aspd', '-', '−30% szybkości ataku']] },
-  zjarany: { title: 'Podpala wrogów', perks: [['🔥', '+', '30% Oparzenia przy ataku'], ['☁️', '+', 'Chmura Dymu co 4 s'], ['aspd', '-', '−45% szybkości ataku'], ['atk', '-', '−10% Ataku']] },
+  zjarany: { title: 'Podpala wrogów', perks: [['🔥', '+', '30% Oparzenia przy ataku'], ['☁️', '+', 'Chmura Dymu co 4 s'], ['aspd', '-', '−35% szybkości ataku'], ['atk', '-', '−5% Ataku']] },
   barista: { title: 'Rozgrzewka', perks: [['aspd', '+', '+5% szybkości ataku za każdy cios (maks. +60%)'], ['⚡', '+', 'Start: Szał Dziobów'], ['maxHp', '-', '−20% Życia'], ['atk', '-', '−5% Ataku'], ['🧊', '-', 'Każda walka zaczyna się „na zimno”']] },
-  ges: { title: 'Kapitał pracuje', perks: [['🪙', '+', '+1% Ataku za każde 5 Ziaren (maks. +25%)'], ['💰', '+', '+15 Ziaren, +1 po wygranej, Odsetki do 6'], ['atk', '-', '−10% Ataku'], ['⚖️', '-', 'Każde wydane Ziarno to utracona moc']] },
+  ges: { title: 'Kapitał pracuje', perks: [['🪙', '+', '+2% Ataku za każde 5 Ziaren (maks. +25% przy 60)'], ['💰', '+', '+15 Ziaren, +1 po wygranej, Odsetki do 6'], ['atk', '-', '−10% Ataku'], ['⚖️', '-', 'Każde wydane Ziarno to utracona moc']] },
   lodziarz: { title: 'Mróz', perks: [['❄️', '+', '15% Mrozu przy ataku'], ['🧊', '+', 'Zmrożeni zadają −10%'], ['aspd', '-', '−25% szybkości ataku']] },
   pielegniarka: { title: 'Leczenie', perks: [['regen', '+', 'Regeneracja +0,8 / s'], ['💚', '+', 'Leczenie po rundzie +5 pkt proc.'], ['atk', '-', '−25% Ataku']] },
-  rzeznik: { title: 'Krwawienie', perks: [['🩸', '+', 'Każdy atak: Krwawienie'], ['💚', '+', 'Zabicie krwawiącego wroga: +5% Życia'], ['🗡️', '+', 'Start: Darcie Pierza'], ['maxHp', '-', '−10% Życia'], ['atk', '-', '−5% Ataku']] },
+  rzeznik: { title: 'Krwawienie', perks: [['🩸', '+', 'Każdy atak: Krwawienie'], ['💚', '+', 'Zabicie krwawiącego wroga: +3% Życia'], ['🗡️', '+', 'Start: Darcie Pierza'], ['maxHp', '-', '−10% Życia'], ['atk', '-', '−5% Ataku']] },
   wrozka: { title: 'Lepsze oferty', perks: [['luck', '+', '+30 Szczęścia'], ['🔄', '+', '1 reroll gratis na piętro'], ['atk', '+', '+8% Ataku']] },
   stazysta: { title: 'Rośnie z piętrami', perks: [['📈', '+', '+5% statystyk za piętro (maks. +40%)'], ['atk', '-', '−22% Ataku na start'], ['maxHp', '-', '−22% Życia na start']] },
   mutant: { title: 'Mistrz umiejętności', perks: [['⏱️', '+', 'Cooldowny −25%'], ['🎲', '+', 'Start: losowa umiejętność'], ['maxHp', '-', '−15% Życia']] },
   gigachad: { title: 'Jedno Koło, Jedna Sztuczka', perks: [['⚡', '+', 'Umiejętność ×2,5 mocy, −30% cooldownu'], ['atk', '+', '+15% Ataku'], ['🎪', '-', 'Tylko 1 slot umiejętności'], ['aspd', '-', '−10% szybkości ataku'], ['maxHp', '-', '−10% Życia']] },
-  jajeczko: { title: 'Szklana Kula', perks: [['evade', '+', '+75% uniku'], ['atk', '+', '+150% Ataku, +5% za każdy unik w walce'], ['aspd', '+', '+30% szybkości ataku'], ['🥚', '+', 'Start: Gniazdo Zapasowe'], ['maxHp', '-', 'Tylko 3 punkty życia']] },
+  jajeczko: { title: 'Szklana Kula', perks: [['evade', '+', '+75% uniku'], ['atk', '+', '+150% Ataku, +5% za każdy unik w walce'], ['aspd', '+', '+30% szybkości ataku'], ['🥚', '+', 'Start: Gniazdo Zapasowe (70% Życia)'], ['maxHp', '-', 'Tylko 3 punkty życia']] },
   krypto: { title: 'Rynek Decyduje', perks: [['📈', '+', 'Co piętro statystyki od −30% do +55%'], ['📉', '-', 'Kurs poznasz dopiero w walce']] },
   alkoholik: { title: 'Wieczny Poniedziałek', perks: [['crit', '+', '+30% szansy na dziobnięcie'], ['🍺', '+', '+120% Mocy Dziobnięcia'], ['aspd', '-', '−25% szybkości ataku'], ['maxHp', '-', '−15% Życia']] },
   wegan: { title: 'Bez Mięsa', perks: [['🥬', '-', 'Odpoczynek leczy o połowę mniej'], ['maxHp', '-', '−10% Życia']] },
   baba: { title: 'Drogi Targ', perks: [['🪙', '+', '+25 Ziaren na start'], ['🛒', '-', 'Kupuje o 30% drożej'], ['atk', '-', '−12% Ataku'], ['maxHp', '-', '−12% Życia']] },
   influencer: { title: 'Zasięgi', perks: [['crit', '+', '+35% szansy na dziobnięcie'], ['🤳', '+', '+100% Mocy Dziobnięcia'], ['maxHp', '-', '−25% Życia'], ['atk', '-', '−15% Ataku']] },
   skibidi: { title: 'Chaos', perks: [['🎲', '+', 'Start: 2 losowe umiejętności'], ['⏱️', '+', 'Cooldowny −10%'], ['maxHp', '-', '−25% Życia'], ['atk', '-', '−12% Ataku']] },
-  emeryt: { title: 'Twardy Staruszek', perks: [['armor', '+', '+6 Pancerza, +3% Ataku za każde 4 Pancerza'], ['maxHp', '+', '+10% Życia, Regeneracja +1 / s'], ['aspd', '-', '−35% szybkości ataku']] },
+  emeryt: { title: 'Twardy Staruszek', perks: [['armor', '+', '+6 Pancerza, +3% Ataku za każde 2 Pancerza'], ['maxHp', '+', '+10% Życia, Regeneracja +1 / s'], ['aspd', '-', '−35% szybkości ataku']] },
   sigma: { title: 'Samotny Wilk', perks: [['atk', '+', '+3% Ataku'], ['maxHp', '+', '+3% Życia'], ['🐺', '-', 'Bonusy zestawów i powiązań nie działają']] },
   dinozaur: { role: 'Sekretny', title: 'Wykluwa się', perks: [['🥚', '+', 'Po 4 piętrach: Dinozaur (+30% Ataku i Życia)'], ['🛡️', '+', 'Do tego czasu bez żadnych kar']] },
 };
 
-// Gruszka (dodatkowy boss na piętrze 3): na starcie walki wyśmiewa aktualny build. Wybiera najsłabszą stronę bohatera (najwyższy „wstyd”).
-export function gruszkaTaunt(r) {
-  const S = r.hero || {}, f1 = n => (n / 100).toFixed(2).replace('.', ','), sk = (r.skills || []).length, tiles = (r.tiles || []).length;
-  const L = [];   // [wstyd 0..100, tekst]
-  L.push([sk === 0 ? 95 : 0, 'Zero umiejętności? Ja bym się też wstydziła, więc cię rozumiem.']);
-  L.push([sk === 1 ? 55 : 0, 'Jedna umiejętność. Jedna! U mnie na podwórzu i kura ma więcej sztuczek.']);
-  L.push([S.armor <= 1 ? 80 : S.armor <= 4 ? 45 : 0, `Pancerz ${S.armor}? Przez ten dziurawy kubraczek widać nawet pestki.`]);
-  L.push([S.evade <= 0 ? 50 : 0, 'Unik 0%? Stoisz jak gruszka w sadzie. Tylko mniej smaczny.']);
-  L.push([S.crit < 8 ? 65 : S.crit < 15 ? 40 : 0, `Szansa na dziobnięcie ${S.crit}%. Tyle trafień to ja mam w skórce od jednego uderzenia.`]);
-  L.push([S.aspd < 85 ? 70 : S.aspd < 100 ? 35 : 0, `Szybkość ${f1(S.aspd)} na sekundę? Moje pestki szybciej spadają z drzewa.`]);
-  L.push([S.maxHp < 85 ? 60 : 0, `${S.maxHp} punktów życia? Rosół z ciebie wyjdzie rzadki.`]);
-  L.push([S.atk < 12 ? 55 : 0, `Atak ${S.atk}? Łaskoczesz mnie, kurczaku, i to bez przekonania.`]);
-  L.push([(r.coins | 0) >= 14 ? 62 : 0, `${r.coins} Ziaren w kieszeni, a build jak z kantyny. Warto było oszczędzać?`]);
-  L.push([tiles <= 5 ? 58 : 0, `Zaledwie ${tiles} kafelków. Składasz tego kurczaka na gwoździe i ślinę.`]);
-  L.push([(r.hp * 100 < (S.maxHp || 1) * 55) ? 72 : 0, `Z ${r.hp} życia chcesz się ze mną bić? Odważnie. Głupio, ale odważnie.`]);
-  L.push([10, 'Ten build wygląda jak pomysł stażysty po trzech kawach.']);
-  L.push([8, 'Widziałam lepsze kafelki na dnie kosza z odpadami.']);
-  L.sort((a, b) => b[0] - a[0] || a[1].length - b[1].length);
-  return L[0][1];
+import * as D from './shared/data.js';
+
+// Gruszka (dodatkowy boss, piętro 3): facet-mędrzec z dragon staffem. 3 akty: otwarcie, szał, puenta.
+// Dominacja buildu gracza (z tagów kafelków/umiejętności) ustala kontrastowy staff i roast żywiołu.
+const GSTAFF = { fire: 'frost', frost: 'fire', poison: 'antidote', bleed: 'bandage', mix: 'default' };
+const GTAGS = ['ogien', 'lod', 'trucizna', 'krew'];
+const GTAG_KEY = { ogien: 'fire', lod: 'frost', trucizna: 'poison', krew: 'bleed' };
+function gHash(s) { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; }
+function gPick(arr, seed) { return arr[gHash(String(seed)) % arr.length]; }
+function gCountTags(r) {
+  const n = { ogien: 0, lod: 0, trucizna: 0, krew: 0 };
+  for (const id of r.tiles || []) { const t = D.TILE_BY_ID[id]; if (t && t.tags) for (const tg of t.tags) if (n[tg] !== undefined) n[tg]++; }
+  for (const s of r.skills || []) { const sk = D.SKILLS[s.id]; if (sk && sk.tags) for (const tg of sk.tags) if (n[tg] !== undefined) n[tg] += 2; }
+  return n;
 }
+export function gruszkaBuild(r) {
+  const n = gCountTags(r);
+  let best = 'mix', bv = 0, tie = 0;
+  for (const tg of GTAGS) { const v = n[tg]; if (v > bv) { best = GTAG_KEY[tg]; bv = v; tie = 1; } else if (v && v === bv) tie++; }
+  if (!bv || tie > 1) return 'mix';
+  return best;
+}
+export function gruszkaStaff(r) { return GSTAFF[gruszkaBuild(r)] || 'default'; }
+
+const G_OPEN = {
+  armor: [
+    'Czytałem wczoraj o pancerzach i mam pytanie: ty to założyłeś dla beki, czy serio myślałeś, że to coś zatrzyma? Bo mój staff już się śmieje.',
+    'Przejrzałem rano trzy poradniki o obronie i patrzę na ciebie z czystą fascynacją. Ten pancerz to jest manifest ignorancji.',
+    'Wczoraj ogarniałem temat pancerzy i myślałem, że najgorsze już widziałem. Gratuluję, właśnie pobiłeś rekord.',
+  ],
+  hp: [
+    'Wchodzisz z takim życiem? Czytałem dziś rano o regeneracji, to są podstawy. Ty wyglądasz, jakbyś przyszedł po szybką egzekucję. Spoko, jestem pomocnym gościem.',
+    'Z tym HP to ja nie wiem, czy mam walczyć, czy wezwać karetkę. Przeczytałem wczoraj o pierwszej pomocy, więc mogę ci potrzymać staffa na pocieszenie.',
+    'Masz tyle życia, że to jest bardziej dramat niż walka. Ale luz, przeczytałem artykuł o empatii, więc będę delikatny. Żart.',
+  ],
+  coins: [
+    'Obejrzałem wczoraj jeden film o ekonomii i już wiem: siedzisz na Ziarnie jak jebany smok na skarbie, a grasz jak żul. Oburzające.',
+    'Tyle Ziaren i zero sensu w tym buildzie. Czytałem wczoraj o inwestowaniu i jestem oburzony. Ty nie oszczędzasz, ty marnujesz potencjał.',
+    'Kieszenie pełne, build pusty. Przejrzałem dwa wątki o ekonomii i muszę powiedzieć wprost: robisz to kurwa tragicznie.',
+  ],
+  skills: [
+    'Ogarnąłem wczoraj trzy nowe techniki kręcenia staffem i mam więcej rozwoju niż twój cały pasek. Jest tak pusty, że mógłbym tam spokojnie robić rozgrzewkę.',
+    'Ten pasek umiejętności to jakiś żart? Przeczytałem wczoraj o rozwoju osobistym i czuję się urażony samym patrzeniem na ciebie.',
+    'Masz tyle umiejętności co entuzjazmu do nauki. Ja przynajmniej wczoraj coś ogarnąłem, a ty? Pusto i wstyd.',
+  ],
+  glass: [
+    'Dużo ataku, zero obrony. Przejrzałem wczoraj poradnik, jak to się kończy. Spoiler: szybko, boleśnie i bez godności.',
+    'Szklana armata, klasyka internetu. Czytałem o tym wczoraj i dalej nie rozumiem, jak dorośli ludzie świadomie to robią.',
+    'Bijesz mocno, ale stoisz jak z kartonu. Ogarnąłem ten błąd wczoraj w pięć minut, a ty zrobiłeś z niego osobowość.',
+  ],
+  chaos: [
+    'Patrzę na ten build i mam jedno pytanie: to był plan, czy po prostu klikałeś w co popadnie i liczyłeś na cud?',
+    'Przeanalizowałem twój build przez trzy sekundy. To wystarczyło, żeby zobaczyć, że planu nie ma. W ogóle.',
+    'Ten build wygląda, jakbyś składał go w ciemno. Ja bym chociaż przeczytał jeden wątek, ale ty najwyraźniej masz inne hobby.',
+  ],
+  atk: [
+    'Ten atak to jest jakiś nieśmiały żart? Przeczytałem wczoraj o sile uderzenia i muszę ci powiedzieć, że to, co robisz, nie kwalifikuje się.',
+    'Z taką siłą to ty mnie co najwyżej przewiejesz. Ja wczoraj machnąłem staffem mocniej przez przypadek.',
+    'Atak masz taki, że muszę się upewnić, czy ty serio próbujesz. Przeczytałem o ofensywie, spróbuj ty też.',
+  ],
+  aspd: [
+    'Poruszasz się tak wolno, że zdążyłem wczoraj przeczytać artykuł, zrobić notatki i dalej czekam na twój ruch.',
+    'Ta szybkość to dramat. Ja kręcę staffem szybciej, niż ty podejmujesz decyzje. A to już, kurwa, niepokojące.',
+    'Serio tak wolno? Przeczytałem wczoraj o optymalizacji tempa i boli mnie, że ty nie przeczytałeś nic.',
+  ],
+  evade: [
+    'Zero uniku. Stoisz jakbyś czekał na autograf. Spoko, podpiszę ci się staffem po mordzie.',
+    'Przeczytałem wczoraj o unikach i wygląda to fascynująco. Szkoda, że ty tego nie doświadczysz, bo stoisz jak słup.',
+    'Nawet nie próbujesz się ruszać? Ja ogarnąłem podstawy footworku wczoraj w jeden wieczór. To nie jest czarna magia, debilu.',
+  ],
+  crit: [
+    'Ten kryt to jest loteria dla ludzi bez planu. A ja, jak czytałem wczoraj, wolę pewne rzeczy. Na przykład pewną wygraną.',
+    'Szansa na kryta masz taką, że ja mam większe szanse zrozumieć twój build. A uwierz, próbowałem.',
+    'Krytycznie to wygląda tylko twoje planowanie. Przeczytałem wczoraj o procentach i twoje mnie nie przekonują.',
+  ],
+};
+const G_CONTRA = {
+  fire: [
+    'Przyszedłeś z ogniem? Przeczytałem wczoraj o termodynamice, zerknąłem na twój build i wziąłem lód. To się nazywa przygotowanie, ty przewidywalny fishu.',
+    'Ogień? Słodkie. Ja po jednym artykule o chłodzeniu przemysłowym przyszedłem z lodem. Myślenie wyprzedzające, spróbuj kiedyś.',
+    'Zerknąłem na te twoje podpalenia i od razu dobrałem zimny staff. Przeczytałem wczoraj, że ogień gaśnie. Ty zaraz też.',
+  ],
+  frost: [
+    'Mróz? Serio? Przeglądnąłem dwa wątki, dobrałem ogień i już wiem, jak cię rozmrozić. Oburzająco proste.',
+    'Budujesz na mrozie, a ja czytałem wczoraj o cieple. Zgadnij, kto tu przyszedł z płomiennym kijem? Oczywiście, że ja.',
+    'Lód to twój cały plan? Ja po pięciu minutach w internecie mam kontrę i uśmiech. Ty masz problem.',
+  ],
+  poison: [
+    'Salmonella? Ja po jednym artykule z rana jestem praktycznie lekarzem. Dobrałem kontrę, zanim zdążyłeś kichnąć.',
+    'Trucizny? Słodziutko. Przeczytałem wczoraj o odtrutkach i przyszedłem tu czysty jak sumienie. Czego ty nie rozumiesz.',
+    'Chcesz mnie truć? Ja po jednym scrollu medycznym już wiem, czym to zneutralizować. Poziom przygotowania: ja. Poziom: ty.',
+  ],
+  bleed: [
+    'Budujesz na krwawieniu? Poczytałem o pierwszej pomocy i przyszedłem przygotowany. Ty przyszedłeś jak amator.',
+    'Krwawienie to twój plan? Przeczytałem wczoraj o opatrunkach i mam to ogarnięte. Następny pomysł poproszę.',
+    'Chcesz ciąć? Spoko, ja ogarnąłem temat tamowania w jeden wieczór. Twój cały build właśnie stracił sens.',
+  ],
+  mix: [
+    'Przejrzałem twój build i szczerze? Nawet nie musiałem dobierać kontry. Wziąłem klasyk, bo i tak wystarczy.',
+    'Patrzę na ten miszmasz i nie wiem, co ty chciałeś osiągnąć. Ja wziąłem standardowy staff, bo na chaos nie potrzeba doktoratu.',
+    'Twój build jest tak niespójny, że przeczytałem o wszystkim po trochu i dalej jestem lepiej przygotowany od ciebie.',
+  ],
+};
+const G_RAGE = [
+  'Przeczytałem o drugiej fazie walki. To jest ta część, gdzie ja kręcę szybciej, a ty żałujesz swoich decyzji życiowych.',
+  'Widzisz, jak teraz kręci się staff? To jest tempo człowieka, który już wszystko zrozumiał. Ty dalej nic.',
+  'Dobra, przełączyłem tryb. Wczoraj czytałem o eskalacji i stwierdziłem, że pasuje idealnie do tej chwili.',
+];
+const G_WIN = ['Tym razem nafarciłaś.....'];
+const G_LOSE = [
+  'I to by było na tyle. Może przed następnym podejściem przeczytaj cokolwiek o budowaniu postaci, bo to było naprawdę żenujące.',
+  'Koniec wykładu. Przyszedłeś, nie przeczytałeś, przegrałeś. Klasyczny schemat.',
+  'Set skończony. Ja wyszedłem poobijany, ale mądrzejszy. Ty po prostu wyszedłeś poobijany.',
+];
+
+export function gruszkaLine(r, act, seedExtra = '') {
+  const S = r.hero || {}, f1 = n => (n / 100).toFixed(2).replace('.', ','), sk = (r.skills || []).length, tiles = (r.tiles || []).length;
+  const seed = `${r.seed}|${r.round}|${act}|${seedExtra}|${r.hp}|${r.coins}|${sk}|${tiles}`;
+  if (act === 'rage') return gPick(G_RAGE, seed);
+  if (act === 'win') return G_WIN[0];
+  if (act === 'lose') return gPick(G_LOSE, seed);
+  // act === 'open': roast najsłabszej strony + szansa na kontrę żywiołową
+  const dom = gruszkaBuild(r);
+  const L = []; // [wstyd, pool]
+  L.push([S.armor <= 1 ? 90 : S.armor <= 4 ? 55 : 0, G_OPEN.armor]);
+  L.push([S.evade <= 0 ? 70 : S.evade < 8 ? 45 : 0, G_OPEN.evade]);
+  L.push([S.crit < 8 ? 60 : S.crit < 15 ? 35 : 0, G_OPEN.crit]);
+  L.push([S.aspd < 85 ? 72 : S.aspd < 100 ? 40 : 0, G_OPEN.aspd]);
+  L.push([S.maxHp < 85 ? 62 : 0, G_OPEN.hp]);
+  L.push([S.atk < 12 ? 60 : 0, G_OPEN.atk]);
+  L.push([(r.coins | 0) >= 14 ? 68 : 0, G_OPEN.coins]);
+  L.push([sk <= 1 ? 74 : sk === 2 ? 45 : 0, G_OPEN.skills]);
+  L.push([tiles <= 5 ? 58 : 0, G_OPEN.chaos]);
+  L.push([(r.hp * 100 < (S.maxHp || 1) * 55) ? 75 : 0, G_OPEN.hp]);
+  L.push([S.atk >= 20 && S.armor <= 4 ? 66 : 0, G_OPEN.glass]);
+  L.push([dom !== 'mix' ? 64 : 0, G_CONTRA[dom] || G_CONTRA.mix]);
+  L.push([18, G_OPEN.chaos]);
+  L.sort((a, b) => b[0] - a[0]);
+  const top = L.filter(x => x[0] > 0).slice(0, 3);
+  const pool = gPick(top.length ? top : [[10, G_OPEN.chaos]], seed + '|pool')[1];
+  return gPick(pool, seed + '|line');
+}
+export function gruszkaTaunt(r) { return gruszkaLine(r, 'open'); }
 
 // ---------- Pojedynek dla 2 osób ----------
 export const DUEL_NO_AGREE_BURNER = 'Nie zgodziliście się co do palnika, więc będzie najgorętszy: palnik 5.';

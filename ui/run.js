@@ -291,18 +291,17 @@ export function stageArena() {
 }
 // Dodatkowa runda po wygranej na piętrze 3 (Gruszka) i 6 (Pipsztal): opcjonalna walka z życiem, które ci zostało.
 export const EXTRA_INFO = {
-  gruszka: { title: 'Gruszka czeka w sadzie', sub: 'Wielki kurczak z głową gruszki wyszedł z cienia i wygląda na obrażonego, że jeszcze stoisz.', kron: 'Zacznie od docinków. Skończy na obieraniu.' },
+  gruszka: { title: 'Gruszka kręci staffem', sub: 'Facet-gruszka z dragon staffem. Zerknął na twój build, przeczytał jeden artykuł i już jest oburzony.', kron: 'Zacznie od wykładu. Skończy na obrotach.' },
   pipsztal: { title: 'Pipsztal wchodzi z Lakusiem', sub: 'Kurczak w dresie, nóż w skrzydle i pies Lakuś, który nie trzyma moczu. Pytanie o pięć złotych to dopiero początek.', kron: 'Lakuś sika, Pipsztal tnie. Ty ogłuszony.' },
 };
 export function stageExtra() {
-  const r = G.run, id = r.pending.boss, X = EXTRA_INFO[id], d = D.BOSSES[id], hpPct = Math.round(r.hp * 100 / r.maxHp);
+  const r = G.run, id = r.pending.boss, X = EXTRA_INFO[id], d = D.BOSSES[id];
   const cards = [
     choiceCard(0, art.enemyArt(d.art), 'Walcz: ' + d.name, 'Walka z życiem, które ci zostało (' + r.hp + ' z ' + r.maxHp + '). Nagroda: +' + D.RULES.extraCoins + ' Ziaren i wybór 1 z 3 legendarnych statystyk. Przegrana kończy run, a leczenie po piętrze dostajesz dopiero po walce.', '<div class="tmeta"><span class="tag up">Ryzyko</span></div>'),
     choiceCard(1, art.doorIcon(false), 'Odpuszczam', 'Odchodzisz bez bicia piany, dostajesz leczenie po piętrze i idziesz dalej.'),
   ].join('');
   return `<div class="stage-title"><h2>Dodatkowa runda: ${esc(d.name)}</h2><div class="sub">${esc(X.title)}. Opcjonalna, możesz odpuścić.</div></div>
     <div class="kron">${esc(X.kron)}</div>
-    <div class="ghostcard"><div class="gfig">${art.enemyArt(d.art)}</div><div class="gst"><b>${esc(d.name)}, ${esc(d.title)}</b><span>${esc(X.sub)}</span><span>${esc(d.text)}</span><span>Twoje życie: ${r.hp} / ${r.maxHp} (${hpPct}%)</span>${hpPct < 60 ? '<span style="color:#ff9f80"><b>Uwaga:</b> masz mało życia. Przegrana kończy cały run, więc rozsądniej odpuścić.</span>' : ''}</div></div>
     <div class="cards">${cards}</div>`;
 }
 export function stageContract() {

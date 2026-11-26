@@ -57,7 +57,7 @@ export function startFight(setup) {
   if (f.comp) { const cc = f.loadout.companion; makeUnit('comp', { name: compForm(cc), art: art.companionArt(cc.id), pos: COMP_POS }); }
   for (const e of f.enemies) makeUnit(e.uid, { e, name: e.name, art: enemyFig(e) });
   layoutUnits(); buildSkillbar(); updateUI(true);
-  if (boss) { bossIntro(boss); snd.sfx('boss'); if (setup.extra === 'gruszka') gruszkaSay(boss); } else if (setup.tpl && D.FLOOR_TPL[setup.tpl]) banner(D.FLOOR_TPL[setup.tpl].name + '!', D.FLOOR_TPL[setup.tpl].text, false); else banner('Walka!', '', false);
+  if (boss) { bossIntro(boss); snd.sfx('boss'); if (setup.extra === 'gruszka') { gruszkaStaffTheme(); gruszkaSay(boss, 'open'); } } else if (setup.tpl && D.FLOOR_TPL[setup.tpl]) banner(D.FLOOR_TPL[setup.tpl].name + '!', D.FLOOR_TPL[setup.tpl].text, false); else banner('Walka!', '', false);
   F.last = 0; F.raf = requestAnimationFrame(frame);
 }
 
@@ -109,6 +109,7 @@ export function pop(text, cls, x, bottom = 46) {
   $('#fxl').appendChild(d); setTimeout(() => d.remove(), 1000);
 }
 export const cls = (u, c, ms) => { u.spr.classList.remove(c); void u.spr.offsetWidth; u.spr.classList.add(c); setTimeout(() => u.spr.classList.remove(c), ms); };
+export const clsEl = (u, c, ms) => { u.el.classList.remove(c); void u.el.offsetWidth; u.el.classList.add(c); setTimeout(() => u.el.classList.remove(c), ms); };
 // Wejście bossa jak w kinie: czarne pasy, plansza z imieniem i tytułem, tekst Kronikarza. Walka stoi (tylko obraz, zegar nie liczy).
 export function bossIntro(boss) {
   const F = G.fight, I = bossIntroOf(boss.boss), [nm, ...rest] = I.title.split(', ');
@@ -118,11 +119,29 @@ export function bossIntro(boss) {
   F.arena.appendChild(el); F.stopUntil = performance.now() + 2300 + hold;
   setTimeout(() => el.classList.add('out'), 2000 + hold); setTimeout(() => el.remove(), 2500 + hold);
 }
-// Gruszka na starcie walki wyśmiewa build gracza (dymek nad bossem, po wstępie).
-export function gruszkaSay(boss) {
-  const F = G.fight, fb = F.f.enemies.find(e => e.boss), u = fb && F.units.get(fb.uid); if (!u) return;
-  const txt = T.gruszkaTaunt({ ...G.run, hp: F.setup.hero.hp });
-  setTimeout(() => { if (G.fight !== F) return; const b = document.createElement('div'); b.className = 'saybub'; b.textContent = '„' + txt + '”'; u.el.appendChild(b); setTimeout(() => b.classList.add('out'), 3600); setTimeout(() => b.remove(), 4100); }, 2300);
+// Gruszka: 3 akty stand-upu (otwarcie / szał / puenta). Teksty w T.gruszkaLine, kontrast staffa z buildu gracza.
+export function gruszkaUnit(F = G.fight) { const fb = F && F.f.enemies.find(e => e.boss && e.id === 'gruszka'); return fb ? F.units.get(fb.uid) : null; }
+export function gruszkaSay(boss, act = 'open', opts = {}) {
+  const F = G.fight, u = gruszkaUnit(F); if (!u) return;
+  const hero = (G.run && G.run.hero) || F.f.loadout.hero || {};
+  const txt = T.gruszkaLine({ ...(G.run || {}), hero, hp: F.f.hero ? F.f.hero.hp : (G.run ? G.run.hp : 0) }, act, opts.seed || '');
+  const delay = opts.delay ?? (act === 'open' ? 2300 : 0), hold = opts.hold ?? (act === 'win' ? 4200 : 3600);
+  setTimeout(() => {
+    if (G.fight !== F) return;
+    u.el.style.opacity = '1';
+    u.el.classList.remove('dying', 'dead');
+    u.spr.classList.remove('dead', 'frozen');
+    const b = document.createElement('div'); b.className = 'saybub' + (act === 'rage' ? ' rage' : act === 'win' ? ' win' : '');
+    b.textContent = '„' + txt + '”'; u.el.appendChild(b);
+    setTimeout(() => b.classList.add('out'), hold); setTimeout(() => b.remove(), hold + 500);
+  }, delay);
+}
+export function gruszkaStaffTheme() {
+  const F = G.fight; if (!F || F.setup.extra !== 'gruszka') return;
+  const u = gruszkaUnit(F); if (!u) return;
+  const hero = (G.run && G.run.hero) || F.f.loadout.hero || {};
+  const staff = T.gruszkaStaff({ ...(G.run || {}), hero, hp: F.f.hero ? F.f.hero.hp : (G.run ? G.run.hp : 0) });
+  u.el.dataset.staff = staff; u.el.classList.add('gruszka');
 }
 // Zamach skrzydłem bohatera (łuk przed dziobem) i pióra wylatujące z pokonanego wroga.
 export function swoosh(u) {
@@ -175,7 +194,7 @@ export function skillFx(e, ev) {
 export function onEvent(e) {
   const F = G.fight, f = F.f, hero = F.units.get('hero'), tu = k => F.units.get(k);
   switch (e.k) {
-    case 'swing': cls(hero, 'lunge', 240); swoosh(hero); break;
+    case 'swing': { cls(hero, 'lunge', 240); swoosh(hero); break; }
     case 'hit': {
       const u = tu(e.to); if (!u) break;
       // trafienie umiejętności pokazujemy dopiero, gdy doleci jej animacja (fxDelay ustawia receptura z fx.js)
@@ -185,7 +204,20 @@ export function onEvent(e) {
       const show = () => { if (G.fight !== F) return; cls(u, 'flash', 110); if (!['burn', 'poison', 'bleed'].includes(e.kind)) cls(u, e.crit ? 'knockbig' : 'knock', 220); pop(e.crit ? e.d + '!' : e.d, e.crit ? 'crit' : e.kind === 'bleed' || e.kind === 'burn' || e.kind === 'poison' ? e.kind : e.kind === 'egg' ? 'egg' : '', u.x, ub(u)); snd.sfx(e.crit ? 'crit' : 'hit'); if (e.crit) shake(); };
       d > 0 ? setTimeout(show, d) : show(); break;
     }
-    case 'hurt': { const dg = tu(e.from); if (dg && dg.e && dg.e.art === 'pipdog') pop('sik!', 'txt', HX, 64); cls(hero, 'hurtshake', 260); pop('-' + e.d, e.kind === 'burn' ? 'hurt burn' : 'hurt', HX); const a = tu(e.from); if (a) cls(a, 'lunge', 240); snd.sfx('hurt'); if (e.d * 100 >= f.S.maxHp * 12 || e.crit) shake(); break; }
+    case 'hurt': {
+      const dg = tu(e.from);
+      if (dg && dg.e && dg.e.art === 'pipdog') pop('sik!', 'txt', HX, 64);
+      if (dg && dg.e && dg.e.id === 'gruszka') {
+        clsEl(dg, 'staff-spinfast', 560);
+        const hit = document.createElement('div'); hit.className = 'gruszka-hit'; hit.setAttribute('aria-hidden', 'true');
+        const tip = getComputedStyle(dg.el).getPropertyValue('--staff-tip').trim();
+        if (tip) hit.style.setProperty('--staff-tip', tip);
+        hero.el.appendChild(hit); setTimeout(() => hit.remove(), 480);
+      }
+      cls(hero, 'hurtshake', 260); pop('-' + e.d, e.kind === 'burn' ? 'hurt burn' : 'hurt', HX);
+      const a = tu(e.from); if (a && !(a.e && a.e.id === 'gruszka')) cls(a, 'lunge', 240);
+      snd.sfx('hurt'); if (e.d * 100 >= f.S.maxHp * 12 || e.crit) shake(); break;
+    }
     case 'heal': pop('+' + e.n, 'heal', HX); snd.sfx('heal'); break;
     case 'miss': { const u = tu(e.to); if (u) pop('unik', 'txt', u.x); snd.sfx('miss'); break; }
     case 'dodge': pop('unik!', 'txt', HX); snd.sfx('miss'); break;
@@ -224,7 +256,12 @@ export function onEvent(e) {
     case 'counter': { const C = D.COUNTERS[e.id]; if (C) { banner(C.icon + ' ' + C.name, C.text, true, 6500); snd.sfx('boss'); const u = tu(e.uid); if (u && u.el) { u.el.classList.add('hit'); setTimeout(() => u.el.classList.remove('hit'), 500); } } break; }
     case 'arrive': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: enemyFig(en) }); layoutUnits(); if (!F.waveBanner || F.waveBanner !== f.tick) { F.waveBanner = f.tick; banner('Nadciąga kolejna fala!', '', true); snd.sfx('boss'); } } break; }
     case 'summon': { const en = f.enemies.find(x => x.uid === e.uid); if (en) { makeUnit(en.uid, { e: en, name: en.name, art: enemyFig(en) }); layoutUnits(); } break; }
-    case 'phase': banner('Faza ' + e.n, '', true); snd.sfx('phase'); shake(); break;
+    case 'phase': {
+      const u = tu(e.uid);
+      if (u && u.e && u.e.id === 'gruszka') { snd.sfx('phase'); shake(); clsEl(u, 'rage-spin', 1600); gruszkaSay(u.e, 'rage', { hold: 3200 }); }
+      else { banner('Faza ' + e.n, '', true); snd.sfx('phase'); shake(); }
+      break;
+    }
     case 'skubanie': banner('Skubanie!', 'Wyłączony kafelek: ' + TILE[e.tile].name, true); snd.sfx('phase'); break;
     case 'skubanie-end': pop('kafelek wraca', 'txt', HX, 74); break;
     case 'blockslot': banner('Restrukturyzacja', 'Slot ' + (e.slot + 1) + ' zablokowany', true); snd.sfx('phase'); break;
@@ -232,7 +269,13 @@ export function onEvent(e) {
     case 'kill': {
       const u = tu(e.uid); if (!u) break;
       const hd = F.hitDelay.get(e.uid) || 0;   // wróg znika dopiero po trafieniu animacji umiejętności
-      const go = () => { if (G.fight !== F) return; u.el.classList.remove('idle'); u.el.classList.add('dead'); feathers(u); setTimeout(() => { u.el.remove(); F.units.delete(e.uid); }, 900); layoutUnits(); };
+      const go = () => {
+        if (G.fight !== F) return;
+        u.el.classList.remove('idle'); u.el.classList.add('dead'); feathers(u);
+        const keep = F.setup.extra === 'gruszka' && u.e && u.e.id === 'gruszka';
+        if (!keep) setTimeout(() => { u.el.remove(); F.units.delete(e.uid); }, 900);
+        layoutUnits();
+      };
       hd > 0 ? setTimeout(go, hd + 60) : go(); break;
     }
     case 'react': { const u = tu(e.uid), R = D.REACTIONS[e.r]; if (u && R) { pop(R.name + '!', 'react ' + e.r, u.x, 80); burst(u, e.r); } if (e.r === 'szok') shake(); if (!REDUCED.matches) F.stopUntil = performance.now() + 120; snd.sfx('crit'); break; }
@@ -326,8 +369,9 @@ export async function finishFight() {
     if (G.fight !== F) return;
     await retryOverlay();
   }
-  stopFight(); G.fight = null; closeOverlay();
   const res = j.result;
+  if (F.setup.extra === 'gruszka') { gruszkaSay(null, res.win ? 'win' : 'lose', { hold: 4600 }); await sleep(5200); }
+  stopFight(); G.fight = null; closeOverlay();
   if (!G.duelRun && res && F.pre) fm().addFloor(G.run.id, floorEntry(F.setup, F.pre, res));   // dziennik runu: wpis tej walki
   if (res.win !== local.win) toast('Serwer rozliczył walkę inaczej niż Twoja przeglądarka. Obowiązuje wynik serwera.', true, 5000);
   if (G.run.phase === 'over') { G.screen = 'run'; return showEnd(j); }
