@@ -58,7 +58,7 @@ export function renderHome() {
   return `<a class="lobby-link" href="/">← PL3Y</a>
   <div class="home"><div class="home-bg"></div><div class="bubbles">${bubblesHTML()}</div>
   <div class="home-in">
-    <div class="home-top"><div class="me-badge" ${LOCAL ? '' : 'data-act="changeplayer" style="cursor:pointer" title="Zmień gracza"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>${stazPill()}${metaChips()}</div>
+    <div class="home-top"><div class="me-badge" ${new URLSearchParams(location.search).has('local') ? '' : 'data-act="changeplayer" style="cursor:pointer" title="Zmień gracza"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>${stazPill()}${metaChips()}</div>
     ${art.towerArt(G.profile.garnek || 0)}
     <h1 class="logo" aria-label="Bulgot"><img src="logo.png?v=1" alt="Bulgot"></h1>
     <div class="tagline">${esc(T.TAGLINE)} <span class="patchtag" title="Numer wydania gry">Patch ${T.PATCH}</span></div>

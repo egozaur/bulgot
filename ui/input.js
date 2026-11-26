@@ -1,6 +1,6 @@
 // Bulgot, interfejs: obsługa kliknięć (tablica ACT) i sterowanie klawiszami/strzałkami.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import { playerNow } from '../api.js?v=20261126b';
+import { LOCAL, playerNow } from '../api.js?v=20261126b';
 import * as D from '../shared/data.js?v=20261126b';
 import * as snd from '../audio.js?v=20261126b';
 import { casinoAnswer, casinoOn, casinoSpin, showCasinoAsk } from './casino.js?v=20261126b';
@@ -20,7 +20,7 @@ export const ACT = {
   ...DUEL_ACT,
   retry: async () => { await init(); },
   changeplayer: () => {
-    if (LOCAL) return toast('Tryb lokalny: zmiana gracza jest niedostępna.', true, 2600);
+    if (new URLSearchParams(location.search).has('local')) return toast('Tryb lokalny: zmiana gracza jest niedostępna.', true, 2600);
     openOverlay(`<h2>Zmienić gracza?</h2><p class="lead">Chcesz się wylogować lub przełączyć konto gracza?</p><div class="actions"><button class="btn danger" data-act="changeplayer-yes">Zmień gracza</button><button class="btn" data-act="close" data-primary>Anuluj</button></div>`, { narrow: true });
   },
   'changeplayer-yes': async () => {
