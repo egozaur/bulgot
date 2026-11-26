@@ -1,17 +1,17 @@
 // Bulgot, interfejs: karty kafelków, ekran runu: podglądy, okólnik, górny pasek, sceny faz, wybór kafelków.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import * as D from '../shared/data.js';
-import * as art from '../art.js';
-import * as T from '../text.js';
-import { radioLine, sladLine } from '../fabula.js';
-import * as snd from '../audio.js';
-import { setCounts } from '../shared/stats.js';
-import { $, G, TILE, act, esc, fmtNum, openOverlay, recipeFor, store, toast } from './core.js';
-import { cls } from './fight.js';
-import { BURNERS, render } from './home.js';
-import { boardHTML } from './invoice.js';
-import { odoHTML, sideHTML } from './side.js';
-import { WIDE, stairsHTML, towerHTML } from './tower.js';
+import * as D from '../shared/data.js?v=20261126b';
+import * as art from '../art.js?v=20261126b';
+import * as T from '../text.js?v=20261126b';
+import { radioLine, sladLine } from '../fabula.js?v=20261126b';
+import * as snd from '../audio.js?v=20261126b';
+import { setCounts } from '../shared/stats.js?v=20261126b';
+import { $, G, TILE, act, esc, fmtNum, openOverlay, recipeFor, store, toast } from './core.js?v=20261126b';
+import { cls } from './fight.js?v=20261126b';
+import { BURNERS, render } from './home.js?v=20261126b';
+import { boardHTML } from './invoice.js?v=20261126b';
+import { odoHTML, sideHTML } from './side.js?v=20261126b';
+import { WIDE, stairsHTML, towerHTML } from './tower.js?v=20261126b';
 
 // ---------- karty kafelków ----------
 export function setOwned(set) { return G.run ? G.run.tiles.filter(id => TILE[id] && setsOf(TILE[id]).includes(set)).length : 0; }

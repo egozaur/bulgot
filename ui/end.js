@@ -1,21 +1,21 @@
 // Bulgot, interfejs: ekran końca runu (porażka: półka sklepowa z rosołem pracownika), osiągnięcia, ciekawostki, zgłaszanie błędów.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import * as D from '../shared/data.js';
-import * as art from '../art.js';
-import * as T from '../text.js';
-import * as F from '../fabula.js';
-import * as snd from '../audio.js';
-import { failFacts, pickFacts, winFacts } from '../fakty.js';
-import { createMemory } from '../fakty-pamiec.js';
-import { $, G, TILE, act, closeOverlay, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js';
-import { cls, feathers } from './fight.js';
-import { BURNERS, render } from './home.js';
-import { showDuelEnd } from './duel.js';
-import { dismissInvoice } from './invoice.js';
-import { endExtrasHTML, endStazPill } from './meta.js';
-import { setOwned, tileCard } from './run.js';
-import { REDUCED } from './side.js';
-import { showHistory } from './windows.js';
+import * as D from '../shared/data.js?v=20261126b';
+import * as art from '../art.js?v=20261126b';
+import * as T from '../text.js?v=20261126b';
+import * as F from '../fabula.js?v=20261126b';
+import * as snd from '../audio.js?v=20261126b';
+import { failFacts, pickFacts, winFacts } from '../fakty.js?v=20261126b';
+import { createMemory } from '../fakty-pamiec.js?v=20261126b';
+import { $, G, TILE, act, closeOverlay, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js?v=20261126b';
+import { cls, feathers } from './fight.js?v=20261126b';
+import { BURNERS, render } from './home.js?v=20261126b';
+import { showDuelEnd } from './duel.js?v=20261126b';
+import { dismissInvoice } from './invoice.js?v=20261126b';
+import { endExtrasHTML, endStazPill } from './meta.js?v=20261126b';
+import { setOwned, tileCard } from './run.js?v=20261126b';
+import { REDUCED } from './side.js?v=20261126b';
+import { showHistory } from './windows.js?v=20261126b';
 
 export function takeAch() { const a = G.ach || []; G.ach = []; return a; }
 export function achHTML(list) {

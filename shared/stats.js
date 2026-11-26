@@ -42,7 +42,7 @@ export function heroStats(loadout, opt = {}) {
   if (ch.crypto && loadout.seed !== undefined) {   // Kurczak Kryptowalutowy: kurs zmienia się co piętro (deterministycznie z ziarna runu)
     const [lo, hi] = ch.crypto; add('allPct', lo + makeRng(mix(loadout.seed, hash('crypto'), loadout.floors || 0)).int(hi - lo + 1));
   }
-  if (ch.coinAtk) add('atkPct', Math.min(25, Math.floor((loadout.coins || 0) / 5)));   // Gęś Księgowa: Ziarna w kieszeni zamieniają się w moc
+  if (ch.coinAtk) add('atkPct', Math.min(25, Math.floor((loadout.coins || 0) / 5) * 2));   // Gęś Księgowa: +2% za 5 Ziaren, cap +25% przy 60 Ziarnach
   const ids = loadout.tiles.filter((_, i) => i !== opt.off);
   const has = id => ids.includes(id);
   // Kolejne kopie tego samego kafelka słabną (RULES.copyDecay: mnożnik % dla 1., 2., ... kopii; ostatni dotyczy wszystkich dalszych), tylko dodatnie efekty.
@@ -60,7 +60,8 @@ export function heroStats(loadout, opt = {}) {
   if (ku.silownia) { add('hpPct', ku.silownia); add('atkPct', ku.silownia); }
   if (ku.gabinet) add('restBonus', 5 * ku.gabinet);
   if (ku.szkola) add('cdPct', 4 * ku.szkola);
-  if ((loadout.curses || []).includes('kruche-kosci')) add('hpPct', -25);
+  if ((loadout.curses || []).includes('kruche-kosci')) add('hpPct', -15);
+  if ((loadout.curses || []).includes('ciasne-gniazdo')) add('skillPow', 20);   // mniej slotów, ale mocniejsze umiejętności
   // Wadliwa Partia: kafelek z wadą ma o flawBoost% mocniejsze dodatnie efekty; wada działa dopiero po ujawnieniu (on).
   for (const w of (loadout.flawed || [])) {
     if (!has(w.id)) continue;
@@ -98,6 +99,8 @@ export function heroStats(loadout, opt = {}) {
   if (lk['zboze-jajo']) add('coinFlat', 1);
   if (lk['zboze-rambo']) add('armor', Math.min(15, Math.floor((loadout.coins || 0) / 10)));
   if (lk['ogien-krew']) add('burnBleed', 25);
+  // Nagroda za specjalizację: 6+ znaczników jednego żywiołu (kafelki + umiejętności) daje +10% wszystkich statystyk.
+  if (!ch.noSets && Object.values(elemCounts(ids, loadout.skills)).some(n => n >= 6)) add('allPct', 10);
   if (rb >= 2) add('atkPct', 20);
   if (zb >= 2) add('coinPct', 10);
   if (rs >= 2) add('burnPct', 25);
@@ -126,9 +129,11 @@ export function heroStats(loadout, opt = {}) {
   if (egg && je >= 4) egg = Math.floor(egg * 75 / 100);
   if (egg && lk['jajo-lod']) egg = Math.floor(egg * 120 / 100);
 
+  // Pacyfista nie wykonuje zwykłych ataków: szansa na Dziobnięcie staje się mocą umiejętności, żeby kafelki nie były martwe.
+  if (acc.noAttack && acc.crit) { add('skillPow', acc.crit); acc.crit = 0; }
   const all = acc.allPct || 0;
   const armor = Math.max(0, Math.floor((b.armor + (acc.armor || 0)) * (100 + all) / 100));
-  const armorAtk = acc.armorAtk ? Math.min(45, Math.floor(armor / 4) * acc.armorAtk) : 0;   // Emeryt Janusz: każde 4 pkt Pancerza = +3% Ataku
+  const armorAtk = acc.armorAtk ? Math.min(45, Math.floor(armor / 2) * acc.armorAtk) : 0;   // Emeryt Janusz: każde 2 pkt Pancerza = +3% Ataku
   // Atak = (baza + płaskie premie) × (100 + premie %) / 100. Płaska premia rodziny „Siła” (atkT) jest w dziesiątych częściach Ataku (5 = +0,5), liczona na liczbach całkowitych; zaokrąglenie na końcu, żeby małe premie nie ginęły przy niskim Ataku.
   const atk = Math.round(((b.atk + (acc.atkFlat || 0)) * 10 + (acc.atkT || 0)) * (100 + (acc.atkPct || 0) + all + armorAtk) / 1000);
   const maxHp = Math.max(1, Math.floor((b.hp + (acc.hpFlat || 0)) * (100 + (acc.hpPct || 0) + all) / 100));

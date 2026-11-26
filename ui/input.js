@@ -1,31 +1,31 @@
 // Bulgot, interfejs: obsługa kliknięć (tablica ACT) i sterowanie klawiszami/strzałkami.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import { playerNow } from '../api.js';
-import * as D from '../shared/data.js';
-import * as snd from '../audio.js';
-import { casinoAnswer, casinoOn, casinoSpin, showCasinoAsk } from './casino.js';
-import { DUEL_ACT } from './duel.js';
-import { $, G, TILE, act, closeOverlay, openOverlay, overlayOpen, store, toast } from './core.js';
-import { backFromAnalyze, chooseEnding, sendAnalysis, showAnalyzeDialog, showEnd } from './end.js';
-import { banner, startFight, stopFight, useSkill } from './fight.js';
-import { carGo, charIds, garGo, init, render, setupOk } from './home.js';
-import { dismissInvoice, invoiceOn, showSlip } from './invoice.js';
-import { lvlPick, shopAct, showDaily, showShop, startDaily } from './meta.js';
-import { compForm, doBuy, doPick, needChoice, showPawn, showUpgrade } from './run.js';
-import { animOn, applyAnim } from './side.js';
-import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showDecreeRoll, startIntro, showKurnik, showMenu, showProfile, showRanking, showSettings, toggleFullscreen } from './windows.js';
+import { playerNow } from '../api.js?v=20261126b';
+import * as D from '../shared/data.js?v=20261126b';
+import * as snd from '../audio.js?v=20261126b';
+import { casinoAnswer, casinoOn, casinoSpin, showCasinoAsk } from './casino.js?v=20261126b';
+import { DUEL_ACT } from './duel.js?v=20261126b';
+import { $, G, TILE, act, closeOverlay, openOverlay, overlayOpen, store, toast } from './core.js?v=20261126b';
+import { backFromAnalyze, chooseEnding, sendAnalysis, showAnalyzeDialog, showEnd } from './end.js?v=20261126b';
+import { banner, startFight, stopFight, useSkill } from './fight.js?v=20261126b';
+import { carGo, charIds, garGo, init, render, setupOk } from './home.js?v=20261126b';
+import { dismissInvoice, invoiceOn, showSlip } from './invoice.js?v=20261126b';
+import { lvlPick, shopAct, showDaily, showShop, startDaily } from './meta.js?v=20261126b';
+import { compForm, doBuy, doPick, needChoice, showPawn, showUpgrade } from './run.js?v=20261126b';
+import { animOn, applyAnim } from './side.js?v=20261126b';
+import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showDecreeRoll, startIntro, showKurnik, showMenu, showProfile, showRanking, showSettings, toggleFullscreen } from './windows.js?v=20261126b';
 
 // ---------- obsługa kliknięć i klawiszy ----------
 export const ACT = {
   ...DUEL_ACT,
   retry: async () => { await init(); },
   changeplayer: () => {
-    if (LOCAL || !(window.PL3Y && window.PL3Y.player)) return;
+    if (LOCAL) return toast('Tryb lokalny: zmiana gracza jest niedostępna.', true, 2600);
     openOverlay(`<h2>Zmienić gracza?</h2><p class="lead">Chcesz się wylogować lub przełączyć konto gracza?</p><div class="actions"><button class="btn danger" data-act="changeplayer-yes">Zmień gracza</button><button class="btn" data-act="close" data-primary>Anuluj</button></div>`, { narrow: true });
   },
   'changeplayer-yes': async () => {
-    if (!(window.PL3Y && window.PL3Y.player)) return;
     closeOverlay();
+    if (!(window.PL3Y && window.PL3Y.player && window.PL3Y.player.change)) return toast('Nie udało się otworzyć zmiany gracza.', true, 3000);
     await window.PL3Y.player.change();
     await act('state');
     render();

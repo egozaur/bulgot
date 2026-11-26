@@ -1,13 +1,13 @@
 // Bulgot, interfejs: wspólne narzędzia, stan gry (G), skalowanie, okna nakładki, wywołania serwera.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import { call } from '../api.js';
-import * as D from '../shared/data.js';
-import * as art from '../art.js';
-import * as T from '../text.js';
-import * as snd from '../audio.js';
-import { cls } from './fight.js';
-import { render } from './home.js';
-import { tileCard } from './run.js';
+import { call } from '../api.js?v=20261126b';
+import * as D from '../shared/data.js?v=20261126b';
+import * as art from '../art.js?v=20261126b';
+import * as T from '../text.js?v=20261126b';
+import * as snd from '../audio.js?v=20261126b';
+import { cls } from './fight.js?v=20261126b';
+import { render } from './home.js?v=20261126b';
+import { tileCard } from './run.js?v=20261126b';
 
 export const $ = (s, r = document) => r.querySelector(s);
 export const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

@@ -1,19 +1,19 @@
 // Bulgot, interfejs: okna: ranking, Księga Kurnika, profil, historia, pomoc, ustawienia, menu.
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import { ranks as apiRanks, LOCAL, playerNow, avatarUrl } from '../api.js';
-import * as D from '../shared/data.js';
-import * as art from '../art.js';
-import * as T from '../text.js';
-import * as F from '../fabula.js';
-import * as snd from '../audio.js';
-import { casinoOn } from './casino.js';
-import { $, G, TILE, act, charView, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js';
-import { cls } from './fight.js';
-import { BURNERS, lockText } from './home.js';
-import { invoiceOn } from './invoice.js';
-import { soupsBook } from './meta.js';
-import { tileCard } from './run.js';
-import { animOn } from './side.js';
+import { ranks as apiRanks, LOCAL, playerNow, avatarUrl } from '../api.js?v=20261126b';
+import * as D from '../shared/data.js?v=20261126b';
+import * as art from '../art.js?v=20261126b';
+import * as T from '../text.js?v=20261126b';
+import * as F from '../fabula.js?v=20261126b';
+import * as snd from '../audio.js?v=20261126b';
+import { casinoOn } from './casino.js?v=20261126b';
+import { $, G, TILE, act, charView, esc, fmtNum, openOverlay, store, toast, unlockName } from './core.js?v=20261126b';
+import { cls } from './fight.js?v=20261126b';
+import { BURNERS, lockText } from './home.js?v=20261126b';
+import { invoiceOn } from './invoice.js?v=20261126b';
+import { soupsBook } from './meta.js?v=20261126b';
+import { tileCard } from './run.js?v=20261126b';
+import { animOn } from './side.js?v=20261126b';
 
 // ---------- okna: ranking, księga, pomoc, ustawienia, menu ----------
 // Ranking: jeden ogólny (punkty) albo przefiltrowany po postaci, poziomie Garnka i graczu. Klik w nick, postać lub Garnek w tabeli ustawia filtr.

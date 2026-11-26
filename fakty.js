@@ -7,8 +7,8 @@
 // pickFacts(list) wybiera dokładnie jednego (albo żadnego). Punkty p: im wyższe, tym trafniejsza i bardziej zaskakująca obserwacja;
 // od p odejmowana jest kara za świeżość (to, co gracz widział niedawno), więc słaba ciekawostka nie wygra tylko dlatego, że dawno jej nie było.
 
-import { TX, fill, needsNr } from './fakty-teksty.js';
-import { agg, floorKey } from './fakty-pamiec.js';
+import { TX, fill, needsNr } from './fakty-teksty.js?v=20261126b';
+import { agg, floorKey } from './fakty-pamiec.js?v=20261126b';
 
 export const MIN_FACT = 40;      // poniżej tego progu (po karze za świeżość) ciekawostka się nie pokazuje, chyba że to awaryjna (floor)
 const MIN_SAMPLE = 20;           // tyle runów musi być w statystykach serwera, żeby podawać procenty o innych graczach

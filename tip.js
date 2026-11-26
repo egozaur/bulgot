@@ -2,10 +2,10 @@
 // Jedno pływające okienko #tip, zawsze w całości w oknie przeglądarki (z uwzględnieniem skali interfejsu).
 // Elementy opisuje się atrybutami: data-tipk="tile:<id>" | "set:<id>" | "stat:<klucz>" | "badge:<id>" (+ data-tipx = dopisek),
 // albo zwykłym data-tip="Tytuł\nopis" (pierwsza linia pogrubiona).
-import * as D from './shared/data.js';
-import * as art from './art.js';
-import { setCounts, activeLinks } from './shared/stats.js';
-import * as T from './text.js';
+import * as D from './shared/data.js?v=20261126b';
+import * as art from './art.js?v=20261126b';
+import { setCounts, activeLinks } from './shared/stats.js?v=20261126b';
+import * as T from './text.js?v=20261126b';
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const TILE = D.TILE_BY_ID;

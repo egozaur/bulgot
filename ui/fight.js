@@ -1,20 +1,20 @@
 // Bulgot, interfejs: walka na żywo na pełnym ekranie (silnik z shared/sim.js, efekty z fx.js).
 // Wydzielone z app.js (2026-11-24). Wszystkie funkcje i stałe są eksportowane i dzielą stan przez G (ui/core.js).
-import * as D from '../shared/data.js';
-import { Fight, MAX_TICKS, FURY_FROM } from '../shared/sim.js';
-import * as art from '../art.js';
-import * as T from '../text.js';
-import * as snd from '../audio.js';
-import { fightScene, sceneClouds } from '../scenes.js';
-import { castFx, markHit, trapSnap, SK_COLOR } from '../fx.js';
-import { $, G, TILE, act, closeOverlay, esc, openOverlay, sleep, toast } from './core.js';
-import { fm, showEnd } from './end.js';
-import { floorEntry } from '../fakty-pamiec.js';
-import { render } from './home.js';
-import { INV, invoiceOn, showInvoice } from './invoice.js';
-import { bossIntroOf, compForm, enemyFig, floorKronHTML } from './run.js';
-import { PREZES_INTERKOM } from '../fabula.js';
-import { REDUCED } from './side.js';
+import * as D from '../shared/data.js?v=20261126b';
+import { Fight, MAX_TICKS, FURY_FROM } from '../shared/sim.js?v=20261126b';
+import * as art from '../art.js?v=20261126b';
+import * as T from '../text.js?v=20261126b';
+import * as snd from '../audio.js?v=20261126b';
+import { fightScene, sceneClouds } from '../scenes.js?v=20261126b';
+import { castFx, markHit, trapSnap, SK_COLOR } from '../fx.js?v=20261126b';
+import { $, G, TILE, act, closeOverlay, esc, openOverlay, sleep, toast } from './core.js?v=20261126b';
+import { fm, showEnd } from './end.js?v=20261126b';
+import { floorEntry } from '../fakty-pamiec.js?v=20261126b';
+import { render } from './home.js?v=20261126b';
+import { INV, invoiceOn, showInvoice } from './invoice.js?v=20261126b';
+import { bossIntroOf, compForm, enemyFig, floorKronHTML } from './run.js?v=20261126b';
+import { PREZES_INTERKOM } from '../fabula.js?v=20261126b';
+import { REDUCED } from './side.js?v=20261126b';
 
 // ---------- walka na żywo ----------
 // ---------- walka na pełnym ekranie (Etap 1 przebudowy, 2026-11-23) ----------
