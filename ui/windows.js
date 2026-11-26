@@ -160,18 +160,33 @@ export async function showHistory() {
 export function showHelp() {
   openOverlay(`<h2>Jak grać</h2><p class="lead">${esc(T.INTRO.join(' '))}</p><div class="help-list">${T.HELP.map(([h, t]) => `<div><b>${h}</b><p>${esc(t)}</p></div>`).join('')}</div>`);
 }
+export function fullscreenOn() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+export async function toggleFullscreen() {
+  try {
+    if (fullscreenOn()) {
+      await (document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen && document.webkitExitFullscreen());
+    } else {
+      const el = document.documentElement;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (!req) return toast('Pełny ekran nie jest dostępny w tej przeglądarce.', true);
+      await req.call(el);
+    }
+  } catch (e) { toast('Nie udało się zmienić trybu pełnego ekranu.', true); }
+}
 export function showSettings() {
-  openOverlay(`<h2>Dźwięk i walka</h2><div class="setrow"><span>Efekty dźwiękowe</span><button class="toggle ${snd.settings.sfx ? 'on' : ''}" data-act="tsfx">${snd.settings.sfx ? 'WŁ.' : 'WYŁ.'}</button></div>
+  const fs = fullscreenOn(), fsOk = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || document.exitFullscreen || document.webkitExitFullscreen);
+  openOverlay(`<h2>Dźwięk i ekran</h2><div class="setrow"><span>Efekty dźwiękowe</span><button class="toggle ${snd.settings.sfx ? 'on' : ''}" data-act="tsfx">${snd.settings.sfx ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Głośność</span><span class="volbox"><input type="range" id="set-vol" min="0" max="100" step="5" value="${snd.settings.vol}" aria-label="Głośność"><b id="set-vol-n">${snd.settings.vol}%</b></span></div>
     ${G.profile.casino && G.profile.casino.unlocked ? `<div class="setrow"><span>Tryb kasynowy (kręcące się walce przy przetasowaniu)</span><button class="toggle ${casinoOn() || (G.profile.casino && G.profile.casino.on) ? 'on' : ''}" data-act="tcasino">${G.profile.casino.on ? 'WŁ.' : 'WYŁ.'}</button></div>` : ''}
     <div class="setrow"><span>Muzyka (bulgocząca pętla)</span><button class="toggle ${snd.settings.music ? 'on' : ''}" data-act="tmusic">${snd.settings.music ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Faktura po wygranej walce (zamiast okna wyniku)</span><button class="toggle ${invoiceOn() ? 'on' : ''}" data-act="tinv">${invoiceOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
     <div class="setrow"><span>Animacje (wyłącz, jeśli ruch Ci przeszkadza)</span><button class="toggle ${animOn() ? 'on' : ''}" data-act="tanim">${animOn() ? 'WŁ.' : 'WYŁ.'}</button></div>
+    <div class="setrow"><span>Pełny ekran</span><button class="toggle ${fs ? 'on' : ''}" data-act="tfullscreen" ${fsOk ? '' : 'disabled'}>${fs ? 'WŁ.' : 'WYŁ.'}</button></div>
     <p class="hint">Wyciszenie dźwięku w lobby wycisza także tę grę.</p>`, { narrow: true });
 }
 export function showMenu() {
   const r = G.run && G.run.phase !== 'over';
-  openOverlay(`<h2>Menu</h2><div class="actions" style="flex-direction:column;align-items:stretch"><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk i walka</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="history">Historia gier (test)</button><button class="btn primary" data-act="home">Wróć do menu głównego${r ? ' (run zapisany)' : ''}</button>${r ? '<button class="btn danger" data-act="abandon">Porzuć run</button>' : ''}</div>`, { narrow: true });
+  openOverlay(`<h2>Menu</h2><div class="actions" style="flex-direction:column;align-items:stretch"><button class="btn" data-act="help">Jak grać</button><button class="btn" data-act="settings">Dźwięk i ekran</button><button class="btn" data-act="book">Księga Kurnika</button><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="history">Historia gier (test)</button><button class="btn primary" data-act="home">Wróć do menu głównego${r ? ' (run zapisany)' : ''}</button>${r ? '<button class="btn danger" data-act="abandon">Porzuć run</button>' : ''}</div>`, { narrow: true });
 }
 // Intro: pierwszy raz scena z kamerą (Kronikarz mówi, kamera jedzie od bramy do biura Zarządu); potem tylko jedno zdanie.
 // Jeden przycisk `introgo` jest od razu: „Pomiń ▸”, a po scenie „Zaczynamy”. Bez animacji (`bulgot:anim` = '0') widać całą listę zdań.

@@ -12,12 +12,15 @@ import { fitBoard } from './ui/invoice.js';
 import { swapSlots } from './ui/run.js';
 import { applyAnim, initPreview } from './ui/side.js';
 import { WIDE, fitTower } from './ui/tower.js';
-import { RK, bookGo, showBook, showHelp, showRanking } from './ui/windows.js';
+import { RK, bookGo, showBook, showHelp, showRanking, showSettings } from './ui/windows.js';
 
 window.__bulgot = G; G.render = () => render();      // podgląd stanu i odświeżanie w testach
 initPreview();   // Patch 1.1: podgląd zmiany statystyk po najechaniu na kartę oferty
 
 applyScale(); addEventListener('resize', applyScale);
+const onFsChange = () => { const ov = $('#overlay'); if (ov && !ov.hidden && ov.querySelector('[data-act="tfullscreen"]')) showSettings(); };
+addEventListener('fullscreenchange', onFsChange);
+addEventListener('webkitfullscreenchange', onFsChange);
 initTip({ run: () => G.run });
 
 WIDE.addEventListener('change', () => { if (G.screen === 'run' && G.run) render(); });

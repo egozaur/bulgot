@@ -58,7 +58,7 @@ export function renderHome() {
   return `<a class="lobby-link" href="/">← PL3Y</a>
   <div class="home"><div class="home-bg"></div><div class="bubbles">${bubblesHTML()}</div>
   <div class="home-in">
-    <div class="home-top"><div class="me-badge" ${LOCAL ? '' : 'data-act="changeplayer" style="cursor:pointer"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>${stazPill()}${metaChips()}</div>
+    <div class="home-top"><div class="me-badge" ${LOCAL ? '' : 'data-act="changeplayer" style="cursor:pointer" title="Zmień gracza"'}>${avatarHTML(pl)} Gracz <b>${esc(pl ? pl.nick : '')}</b>${LOCAL ? ' (tryb lokalny)' : ''}</div>${stazPill()}${metaChips()}</div>
     ${art.towerArt(G.profile.garnek || 0)}
     <h1 class="logo" aria-label="Bulgot"><img src="logo.png?v=1" alt="Bulgot"></h1>
     <div class="tagline">${esc(T.TAGLINE)} <span class="patchtag" title="Numer wydania gry">Patch ${T.PATCH}</span></div>
@@ -66,8 +66,8 @@ export function renderHome() {
       ${run ? `<div class="resume">Trwa run: <b>${esc(D.MODES[run.mode].name)}</b>, piętro ${run.round}/${run.rounds}, ${run.coins} ${art.coinIcon()} Ziaren</div>
         <button class="btn primary big" data-act="resume" data-primary>Kontynuuj</button><button class="btn small ghost" data-act="abandon">Porzuć run</button>`
       : `<div class="home-main"><button class="btn primary big" data-act="new" data-primary>Graj</button>${dailyBtn()}${duelBtn()}</div>`}
-      <div class="home-row"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="kurnik" title="Trwałe ulepszenia za Pióra">${art.emo('pisklecarnia')} Kurnik <small>${G.profile.feathers | 0}</small></button><button class="btn" data-act="shop">Sklepik <small>🎟️ ${stazOf().talons}</small></button><button class="btn" data-act="profile">Profil</button><button class="btn" data-act="book">Księga Kurnika</button></div>
-      <div class="home-row small"><button class="btn small" data-act="help">Jak grać</button><button class="btn small" data-act="settings">Dźwięk</button><button class="btn small ghost" data-act="history">Historia (test)</button></div>
+      <div class="home-row nav"><button class="btn" data-act="ranking">Ranking</button><button class="btn" data-act="kurnik" title="Trwałe ulepszenia za Pióra">${art.emo('pisklecarnia')} Kurnik <small>${G.profile.feathers | 0}</small></button><button class="btn" data-act="shop">Sklepik <small>🎟️ ${stazOf().talons}</small></button><button class="btn" data-act="profile">Profil</button><button class="btn" data-act="book" title="Księga Kurnika">Księga</button></div>
+      <div class="home-row small"><button class="btn small" data-act="help">Jak grać</button><button class="btn small" data-act="settings">Dźwięk i ekran</button><button class="btn small ghost" data-act="history">Historia (test)</button></div>
       ${bestLine ? `<div class="best">Najlepsze wyniki. ${bestLine}</div>` : ''}
     </div></div></div>`;
 }
@@ -91,7 +91,8 @@ export function cursesHTML() {
 export const lockText = c => c.secret ? '???' : ((D.UNLOCK_BY_ID[c.lock] || {}).text || '');
 export const burnMult = (g, s) => ((1 + g * .25) * (1 + D.cursePct(s.curses) / 100)).toFixed(2).replace('.', ',');
 export const BURN_HEAT = ['#7bd37b', '#e8d34a', '#ffb347', '#ff8c2b', '#e4572e', '#d6262d'];
-export const shortName = v => v.hidden ? '???' : v.name.replace(/^(Kurczak|Kura|Kogut|Indyczka) /, '').replace(/ .*/, '');
+const SHORT_NAMES = { jajeczko: 'Jajko', sanepid: 'Sanepid', wanda: 'Wanda', gigachad: 'Monocykl', zwiazkowiec: 'Związkowiec', pacyfista: 'Pacyfista' };
+export const shortName = (v, id) => v.hidden ? '???' : (SHORT_NAMES[id] || v.name.replace(/^(Kurczak|Kura|Kogut|Indyczka|Pan|Pani|Inspektor|Nioska) /, '').replace(/ .*/, ''));
 export function setupOk() { const s = G.setup, p = G.profile; return p.chars.includes(charIds()[s.cur]) && s.garnek <= p.garnek; }
 // Teczka pracownicza postaci (fabuła): stanowisko, staż, powód.
 const teczkaHTML = t => `<div class="teczka"><span class="stamp">KADRY</span><h4>Teczka pracownicza</h4><dl><dt>Stanowisko</dt><dd>${esc(t.stan)}</dd><dt>Staż</dt><dd>${esc(t.staz)}</dd><dt>Powód</dt><dd>${esc(t.powod)}</dd></dl></div>`;
@@ -104,7 +105,7 @@ export function renderSetup() {
   const fx = k => (c.fx.find(f => f.k === k) || { v: 0 }).v;
   const stat = (l, val) => `<div class="sbar"><span>${l}</span><div class="tr"><i class="${val < 100 ? 'd' : ''}" style="width:${Math.min(100, val / 170 * 100)}%"></i></div><b>${val}%</b></div>`;
   const roster = ids.map((cid, i) => { const cc = D.CHARS[cid], o = p.chars.includes(cid), vv = charView(cc, o);
-    return `<button class="tl ${i === s.cur ? 'on' : ''} ${o ? '' : 'lk'}" data-act="carpick" data-v="${i}" data-char="${cid}" aria-label="${esc(vv.name)}"><div class="egg-art">${art.eggArt(cid, o)}</div><span>${esc(shortName(vv))}</span></button>`; }).join('');
+    return `<button class="tl ${i === s.cur ? 'on' : ''} ${o ? '' : 'lk'}" data-act="carpick" data-v="${i}" data-char="${cid}" aria-label="${esc(vv.name)}"><div class="egg-art">${art.eggArt(cid, o)}</div><span>${esc(shortName(vv, cid))}</span></button>`; }).join('');
   const modes = Object.entries(T.MODE_INFO).map(([mid, mi]) => { const dm = D.MODES[mid], bf = Object.keys(dm.bosses).map(Number);
     return `<button class="smode ${s.mode === mid ? 'on' : ''}" data-act="setmode" data-v="${mid}"><h3>${mi.name}</h3><div class="fl">${Array.from({ length: dm.rounds }, (_, i) => `<i class="${bf.includes(i + 1) ? 'b' : ''}"></i>`).join('')}</div><p>${dm.rounds} pięter${bf.length ? ' · ' + bf.length + ' bossów' : ''}</p></button>`; }).join('');
   const burners = D.GARNEK.map((gg, i) => i).reverse().map(i => { const open2 = i <= p.garnek, gg = D.GARNEK[i];

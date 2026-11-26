@@ -13,13 +13,23 @@ import { dismissInvoice, invoiceOn, showSlip } from './invoice.js';
 import { lvlPick, shopAct, showDaily, showShop, startDaily } from './meta.js';
 import { compForm, doBuy, doPick, needChoice, showPawn, showUpgrade } from './run.js';
 import { animOn, applyAnim } from './side.js';
-import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showDecreeRoll, startIntro, showKurnik, showMenu, showProfile, showRanking, showSettings } from './windows.js';
+import { RK, bookGo, confirmAbandon, showBook, showHelp, showHistory, showDecreeRoll, startIntro, showKurnik, showMenu, showProfile, showRanking, showSettings, toggleFullscreen } from './windows.js';
 
 // ---------- obsługa kliknięć i klawiszy ----------
 export const ACT = {
   ...DUEL_ACT,
   retry: async () => { await init(); },
-  changeplayer: async () => { if (window.PL3Y && window.PL3Y.player) { await window.PL3Y.player.change(); await act('state'); render(); } },
+  changeplayer: () => {
+    if (LOCAL || !(window.PL3Y && window.PL3Y.player)) return;
+    openOverlay(`<h2>Zmienić gracza?</h2><p class="lead">Chcesz się wylogować lub przełączyć konto gracza?</p><div class="actions"><button class="btn danger" data-act="changeplayer-yes">Zmień gracza</button><button class="btn" data-act="close" data-primary>Anuluj</button></div>`, { narrow: true });
+  },
+  'changeplayer-yes': async () => {
+    if (!(window.PL3Y && window.PL3Y.player)) return;
+    closeOverlay();
+    await window.PL3Y.player.change();
+    await act('state');
+    render();
+  },
   new: () => { G.screen = 'setup'; render(); },
   home: () => { closeOverlay(); stopFight(); G.fight = null; G.screen = 'home'; render(); },
   resume: () => { G.screen = 'run'; render(); },
@@ -115,6 +125,7 @@ export const ACT = {
   tmusic: b => { snd.setMusic(!snd.settings.music); showSettings(); },
   tanim: () => { store.set('bulgot:anim', animOn() ? '0' : '1'); applyAnim(); showSettings(); },
   tinv: () => { store.set('bulgot:invoice', invoiceOn() ? '0' : '1'); dismissInvoice(true); showSettings(); },
+  tfullscreen: async () => { await toggleFullscreen(); showSettings(); },
   abandon: () => confirmAbandon(),
   'abandon-yes': async () => { closeOverlay(); stopFight(); G.fight = null; const j = await act('abandon'); if (!j) return; G.screen = 'run'; showEnd(j); },
   again: () => { closeOverlay(); G.screen = 'setup'; render(); },
